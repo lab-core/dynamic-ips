@@ -1,0 +1,3 @@
+file(REMOVE_RECURSE
+  "DARP_IPS.lib"
+)

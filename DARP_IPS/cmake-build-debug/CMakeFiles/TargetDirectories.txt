@@ -1,0 +1,12 @@
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/CMakeFiles/static_DARP.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/DARP_IPS.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/edit_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/rebuild_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data/CMakeFiles/rebuild_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data/CMakeFiles/data.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data/CMakeFiles/edit_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities/CMakeFiles/utilities.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities/CMakeFiles/edit_cache.dir
+D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities/CMakeFiles/rebuild_cache.dir
