@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.20)
+project(DARP_IPS)
+
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+SET(DARP_IPS_LIB DARP_IPS)
+
+INCLUDE_DIRECTORIES(SRC)
+add_subdirectory(src)
+
+add_executable(static_DARP src/main.cpp)
+target_link_libraries(static_DARP ${DARP_IPS_LIB})
