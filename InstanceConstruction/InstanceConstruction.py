@@ -55,17 +55,26 @@ def filter_records_time_period(df_input, period_start, period_end):
     df_input = df_input[df_input.tpep_pickup_datetime <= period_end]
     return df_input
 
+# function to calculate datetime fileds based on seconds from an origin datetime and calculate min travel time in seconds to dataframe
+def calculate_times_seconds(df_input, origin_time):
+    df_input['pickup_time_sec'] = (df_input['tpep_pickup_datetime'] - origin_time).dt.seconds
+    df_input['dropoff_time_sec'] = (df_input['tpep_dropoff_datetime'] - origin_time).dt.seconds
+    
+    # add min travel time to dataframe
+    df_input['min_travel_time'] = (df_input['tpep_dropoff_datetime'] - df_input['tpep_pickup_datetime']).dt.seconds 
+    return df_input    
+
 # function to perform all required operations on the input data and transfer it
-def transfer_dataset(df_input, polygon, period_start, period_end):
+def transfer_dataset(df_input, polygon, period_start, period_end, origin_time):
     df_filtered = filter_records_time_period(df_input, period_start, period_end);
     df_reduced = remove_unwanted_data(df_filtered);
     df_limited = trip_requests_inside_polygon(df_reduced , polygon.to_numpy());
     
     # sort records based on request time
-    df_output = df_limited.sort_values(by=['tpep_pickup_datetime'])
+    df_sorted = df_limited.sort_values(by=['tpep_pickup_datetime']);
     
-    # add min travel time to dataframe
-    df_output['min_travel_time'] = (df_output['tpep_dropoff_datetime'] - df_output['tpep_pickup_datetime']).dt.seconds 
+    # calculate datetime fileds based (in seconds) and add min travel time (in seconds) to dataframe
+    df_output = calculate_times_seconds(df_sorted, origin_time);
     
     print("\nThe number of data records in time period is:", len(df_filtered.index))
     print("The number of clean data records is:", len(df_reduced.index))
@@ -85,24 +94,26 @@ print ("READING DATA: ")
 print ("...........")
 # Importing trip record data and polygon points of desired area
 trip_filename = "yellow_tripdata_2015-07.csv"
-polygon_filename = "Manhattan_polygon_neigh1-6.csv"
+polygon_filename = "Manhattan_polygon_1_to_5.csv"
 df_tripdata = pd.read_csv(trip_filename, sep=',', header = 0)
 df_polygon = pd.read_csv(polygon_filename, sep=',', header = 0)
 
 # determine the desired period of time for trip requests
-period_start = dt.datetime(2015,7,1,16,0,0)
-period_end = dt.datetime(2015,7,1,17,0,0)
+period_start = dt.datetime(2015,7,13,16,0,0)
+period_end = dt.datetime(2015,7,13,16,1,0)
+
+origin_time = dt.datetime(2015,7,13,0,0,0)
 print("\n====================================================================")
 print ("SITUATION OF DATASET BEFORE TRANSFER: ")
 show_data_situation(df_tripdata)
 
 # ************************** Transfering Data *********************************** #
-df_instance = transfer_dataset(df_tripdata, df_polygon, period_start, period_end)
+df_instance = transfer_dataset(df_tripdata, df_polygon, period_start, period_end, origin_time)
 
 print("\n====================================================================")
 print ("SITUATION OF DATASET AFTER TRANSFER: ")
 show_data_situation(df_instance)
 print()
 print(df_instance.head(5))
-file_name = "tripdata_" + period_start.strftime("%Y-%m-%d")+"_"+period_start.strftime("%H")+"-"+period_end.strftime("%H")+".csv"
-df_instance.to_csv(file_name)
+file_name = "tripdata_" + period_start.strftime("%Y-%m-%d")+"_"+period_start.strftime("%H")+"-"+period_start.strftime("%M")+"_to_"+period_end.strftime("%H")+"-"+period_end.strftime("%M")+".csv"
+df_instance.to_csv(file_name, index=False)
