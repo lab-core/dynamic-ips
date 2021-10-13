@@ -24,7 +24,10 @@
 				<Option type="1"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add option="-DIL_STD"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
 					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um"/>
@@ -48,7 +51,10 @@
 				<Option type="1"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add option="-DIL_STD"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
 					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um"/>
@@ -92,6 +98,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -116,6 +124,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -140,6 +150,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -164,6 +176,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -188,6 +202,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -212,6 +228,8 @@
 				<Option type="2"/>
 				<Option compiler="msvc8"/>
 				<Compiler>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"/>
+					<Add directory="C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"/>
 					<Add directory="D:/projects/dynamic-ips/DARP_IPS/SRC"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\ATLMFC\include"/>
 					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include"/>
@@ -283,6 +301,9 @@
 			<Option target="utilities"/>
 		</Unit>
 		<Unit filename="D:/projects/dynamic-ips/DARP_IPS/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="D:/projects/dynamic-ips/DARP_IPS/FindCPLEX.cmake">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 		<Unit filename="D:/projects/dynamic-ips/DARP_IPS/src/CMakeLists.txt">

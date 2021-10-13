@@ -12,9 +12,16 @@ set(CMAKE_DEPENDS_CHECK_CXX
   )
 set(CMAKE_CXX_COMPILER_ID "MSVC")
 
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_CXX
+  "IL_STD"
+  )
+
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../SRC"
+  "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"
+  "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"
   )
 
 # The set of dependency files which are needed:

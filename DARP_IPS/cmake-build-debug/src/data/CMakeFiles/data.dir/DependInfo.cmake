@@ -17,6 +17,8 @@ set(CMAKE_CXX_COMPILER_ID "MSVC")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"
+  "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"
   "../SRC"
   )
 
