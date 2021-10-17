@@ -31,6 +31,8 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     string title;
     std::string name;
     int nbVehicles = -1, nbRequests = -1;
+    float sourceLatitude = -1, sourceLongitude = -1;
+    float sinkLatitude = -1, sinkLongitude = -1;
     std::vector<PVehicle> vehicles;
 
     while (file.good()) {
@@ -48,6 +50,16 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
         else if (strEndWith(title, "NUM_REQUESTS "))
             file >> nbRequests;
 
+        // read the source coordination
+        else if (strEndWith(title, "SOURCE_LONGITUDE "))
+            file >> sourceLongitude;
+        else if (strEndWith(title, "SOURCE_LATITUDE "))
+            file >> sourceLatitude;
+        else if (strEndWith(title, "SINK_LONGITUDE "))
+            file >> sinkLongitude;
+        else if (strEndWith(title, "SINK_LATITUDE "))
+            file >> sinkLatitude;
+
         // read vehicles specifications
         else if (strEndWith(title, "VEHICLES_INFO")) {
             for (int v = 0; v < nbVehicles; ++v) {
@@ -62,7 +74,11 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
         }
     }
 
-    return std::make_shared<Instance>(name, nbVehicles, vehicles, nbRequests);
+    // main graph initialization with source and sink
+    PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, SOURCE),
+            std::make_shared<Node>(sinkLatitude, sinkLongitude, SINK));
+
+    return std::make_shared<Instance>(name, nbVehicles, vehicles, nbRequests, mainGraph);
 }
 
 //************************************************************************
@@ -120,6 +136,7 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
             }
         }
     }
+    pInstance->mainGraph_->addNewRequests(pInstance->requests_);
 }
 
 
