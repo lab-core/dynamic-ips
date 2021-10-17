@@ -6,6 +6,9 @@
 #define _INSTANCE_H
 
 #include "utilities/MyTools.h"
+#include "data/Vehicle.h"
+#include "data/Request.h"
+#include "data/Graph.h"
 
 //-----------------------------------------------------------------------------
 //  Instance class
@@ -15,10 +18,8 @@
 // useful types
 class Instance;
 typedef std::shared_ptr<Instance> PInstance;
-class Vehicle;
-typedef std::shared_ptr<Vehicle> PVehicle;
-class Request;
-typedef std::shared_ptr<Request> PRequest;
+class Graph;
+typedef std::shared_ptr<Graph> PGraph;
 
 #define TimePerPassenger 10         			// service time (time to pickup or drop off) per passenger
 
@@ -33,14 +34,17 @@ public:
     int nbRequests_;                            // Number of requests
     std::vector<PRequest> requests_;            // List of requests
 
+    PGraph mainGraph_;
+
     // Constructor and Destructor
-    Instance(std::string &name, int nbVehicles, std::vector<PVehicle> &vehicles, int nbRequests);
+    Instance(std::string &name, int nbVehicles, std::vector<PVehicle> &vehicles, int nbRequests, PGraph &mainGraph);
 
     virtual ~Instance();
 
     // Getters and Setters
 
     // Display function
+    std::string toString();
 };
 
 
