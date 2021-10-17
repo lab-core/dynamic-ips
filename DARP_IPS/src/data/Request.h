@@ -12,8 +12,8 @@
 //  contains the request info request time, number of passengers, pickup and drop off location
 //---------------------------------------------------------------------------------------------
 
-enum STATUS {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
-static const std::vector<std::string> statusName = {
+enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
+static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
 
 class Request {
@@ -29,7 +29,7 @@ public:
     float minDist_;                 // minimum travel distance between pickup and drop off location
     float minTravelTime_;           // minimum travel time between pickup and drop off location
     float penalty_;                 // penalty of not serving at current period
-    STATUS requestStatus_;          // status of the request 0:no action 1:picked up 2:complete
+    RequestStatus requestStatus_;          // status of the request 0:no action 1:picked up 2:complete
 
     // Constructor and Destructor
     Request(const int requestId, float pickUpLatitude, float pickUpLongitude, float dropOffLatitude,
@@ -38,7 +38,10 @@ public:
 
     virtual ~Request();
 
+    // Display function
+    std::string toString() const;
 };
+typedef std::shared_ptr<Request> PRequest;
 
 
 #endif //_REQUEST_H

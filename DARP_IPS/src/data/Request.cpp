@@ -23,3 +23,13 @@ Request::Request(const int requestId, float pickUpLatitude, float pickUpLongitud
 }
 
 Request::~Request() {}
+
+// Display function
+std::string Request::toString() const {
+    std::stringstream repStr;
+    repStr << "\t" << "# REQUEST ( " << requestID_ << " ) :" << std::endl;
+    repStr << "\t" << "# PICKUP_COORDINATE    :" << "(" << PickUpLatitude_ << " , " << PickUpLongitude_ << ")" << std::endl;
+    repStr << "\t" << "# DROPOFF_COORDINATE   :" << "(" << DropOffLatitude_ << " , " << DropOffLongitude_ << ")" << std::endl;
+    repStr << "\t" << "# NUMBER_OF_PASSENGERS :" << nbPassengers_ << std::endl;
+    return repStr.str();
+}
