@@ -5,6 +5,7 @@
 #ifndef _VEHICLE_H
 #define _VEHICLE_H
 
+#include "utilities/MyTools.h"
 
 //-----------------------------------------------------------------------------
 //  vehicle class
@@ -27,9 +28,12 @@ public:
 
     // Setters
     void setNumPassengers(int numPassengers);
-
     void setDepartTime(int departTime);
+
+    // Display function
+    std::string toString() const;
 };
+typedef std::shared_ptr<Vehicle> PVehicle;
 
 
 #endif //_VEHICLE_H

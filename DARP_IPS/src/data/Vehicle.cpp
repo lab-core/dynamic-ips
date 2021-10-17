@@ -26,3 +26,13 @@ void Vehicle::setNumPassengers(int numPassengers) {
 void Vehicle::setDepartTime(int departTime) {
     departTime_ = departTime;
 }
+
+// Display function
+std::string Vehicle::toString() const {
+    std::stringstream repStr;
+    repStr << "\t" << "# VEHICLE ( " << vehicleID_ << " ) :" << std::endl;;
+    repStr << "\t" << "# VEHICLE_CAPACITY     :" << capacity_ << std::endl;
+    repStr << "\t" << "# START_TIME (seconds) :" << startTime_ << std::endl;
+    repStr << "\t" << "# END_TIME (seconds)   :" << endTime_ << std::endl;
+    return repStr.str();
+}
