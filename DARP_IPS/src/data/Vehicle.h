@@ -6,6 +6,8 @@
 #define _VEHICLE_H
 
 #include "utilities/MyTools.h"
+#include "data/Route.h"
+
 
 //-----------------------------------------------------------------------------
 //  vehicle class
@@ -14,26 +16,35 @@
 
 class Vehicle {
 public:
-    const int vehicleID_;       // vehicle ID
-    int startTime_;             // vehicle start time
-    int endTime_;               // vehicle end time
-    int capacity_;              // vehicle capacity
-    int numPassengers_;         // number of passengers in the vehicle
-    int departTime_;            // time the vehicle arrives at its departing stop for the epoch
+    int vehicleID_;                         // vehicle ID
+    float startTime_;                       // vehicle start time
+    float endTime_;                         // vehicle end time
+    int capacity_;                          // vehicle capacity
+    int numPassengers_;                     // number of passengers in the vehicle
+    float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
+    std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
+    std::vector<PRoute> generatedRoutes_;   // list of generated routes
+    std::string departID_;
+    std::string sinkID_;
+    PRoute* currentRoute_;
+
 
     // Constructor and Destructor
-    Vehicle(const int vehicleId, int capacity, int startTime, int endTime);
+    Vehicle(int vehicleId, int capacity, float startTime, float endTime);
 
     virtual ~Vehicle();
 
     // Setters
-    void setNumPassengers(int numPassengers);
-    void setDepartTime(int departTime);
+    void setDepartTime(float departTime);
 
     // Display function
     std::string toString() const;
+
+    // function to update vehicle depart time at each time and
+    // update the situation of nodes and ride requests
+    void updateStatus(int epoch);
 };
-typedef std::shared_ptr<Vehicle> PVehicle;
+
 
 
 #endif //_VEHICLE_H
