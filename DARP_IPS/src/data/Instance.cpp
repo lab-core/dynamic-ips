@@ -23,7 +23,7 @@ std::string Instance::toString() {
     std::stringstream repStr;
     repStr << std::endl;
     repStr << "***************************************************************************" << std::endl;
-    repStr << "***************************    Instance Info    ***************************" << std::endl;
+    repStr << "**                             Instance Info                             **" << std::endl;
     repStr << "***************************************************************************" << std::endl;
     repStr << "# " << std::endl;
     repStr << "# INSTANCE_NAME       \t= " << name_ << std::endl;
@@ -32,17 +32,18 @@ std::string Instance::toString() {
     repStr << "# " << std::endl;
 
     // display 3 requests information
-    repStr << "# REQUESTS_INFO (3 records): ";
-    repStr << "------------------------" << std::endl;
-    for (int i = 0; i < 3; ++i) {
-        repStr << requests_[i]->toString() << std::endl;
+    repStr << "--------------------- REQUESTS_INFO (Max 3 records) ---------------------" << std::endl;
+    int n = std::min(3, nbRequests_);
+    for (int i = 0; i < n; ++i) {
+        repStr << requests_[i]->toString();
     }
-    repStr << "# " << std::endl;
-    repStr << "# VEHICLES_INFO (3 records): ";
-    repStr << "------------------------" << std::endl;
-    for (int i = 0; i < 3; ++i) {
-        repStr << vehicles_[i]->toString() << std::endl;
+    repStr << "--------------------- VEHICLES_INFO (Max 3 records) ---------------------" << std::endl;
+    int m = std::min(3, nbVehicles_);
+    for (int i = 0; i < m; ++i) {
+        repStr << vehicles_[i]->toString();
     }
-
     return repStr.str();
 }
+
+
+

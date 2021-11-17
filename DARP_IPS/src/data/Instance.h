@@ -15,13 +15,16 @@
 //  contains the instance data including vehicle info and requests
 //-----------------------------------------------------------------------------
 
-// useful types
-class Instance;
-typedef std::shared_ptr<Instance> PInstance;
-class Graph;
-typedef std::shared_ptr<Graph> PGraph;
 
-#define TimePerPassenger 10         			// service time (time to pickup or drop off) per passenger
+
+
+// I consider 10 seconds for each passenger to pickup or drop off
+#define TimePerPassenger 0         			// service time (time to pickup or drop off) per passenger
+/*static const float alphaParam = 1.5;
+static const float betaParam = 240;
+static const float deltaPram = 420;
+static const int epochLength = 30;*/
+
 
 
 class Instance {
@@ -33,7 +36,7 @@ public:
 
     int nbRequests_;                            // Number of requests
     std::vector<PRequest> requests_;            // List of requests
-
+    std::map<std::string , PRequest> nameToRequest_;
     PGraph mainGraph_;
 
     // Constructor and Destructor
