@@ -12,11 +12,12 @@
 using std::to_string;
 // Constructor and Destructor
 
-Node::Node(string nodeId, PRequest &relatedRequest, NodeType type) : nodeID_(nodeId),
-                                                                related_Request_(&relatedRequest), type_(type) {
+Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID) : nodeID_(nodeId),
+            related_Request_(&relatedRequest), type_(type), pairNodeID_(pairNodeID) {
     reachTime_ = 0;
     deltaTime_ = relatedRequest->deltaTime_;
     nodeStatus_ = DEFINED;
+    requestTime_ = relatedRequest->earlyPick_;
 
     if (type == PICKUP){
         locLatitude_ = relatedRequest->PickUpLatitude_;
@@ -37,13 +38,23 @@ Node::Node(float locLatitude, float locLongitude, NodeType type) : locLatitude_(
     reachTime_ = 0;
     nbPassengers_ = 0;
     deltaTime_ = 0;
+    requestTime_ = 0;
     nodeStatus_ = DEFINED;
 
     if (type == SOURCE)
-        nodeID_ = "SO_0";
+        nodeID_ = Tools::createNodeID(0, SOURCE);
     else if (type == SINK)
-        nodeID_ = "SI_0";
+        nodeID_ = Tools::createNodeID(0, SINK);
 }
+
+void Node::setPairNodeId(const string &pairNodeId) {
+    pairNodeID_ = pairNodeId;
+}
+
+void Node::setType(NodeType type) {
+    type_ = type;
+}
+
 
 Node::~Node() = default;
 
@@ -58,25 +69,39 @@ Graph::Graph() {
 };
 
 Graph::Graph(PNode source, PNode sink) {
-    nbNodes_ = 2;
-    nodes_.insert(std::pair<std::string, PNode> (source->nodeID_, source));
-    nodes_.insert(std::pair<std::string, PNode> (sink->nodeID_, sink));
+//    nodes_.emplace_back(source);
+//    nodes_.emplace_back(sink);
+    nbNodes_ = 0;
+    addNewNode(source);
+    addNewNode(sink);
 }
 
+// function for adding node to graph
+void Graph::addNewNode(PNode node) {
+    nodes_.insert(std::pair<std::string, PNode> (node->nodeID_, node));
+//    node->setPenalty(0);
+    nodeIDToInt_[node->nodeID_] = nbNodes_;
+    intToNodeID_.push_back(node->nodeID_);
+    nbNodes_++;
+}
 // function for updating the graph and adding new request
 void Graph::addNewRequests(std::vector<PRequest> &newRequests) {
-    string ID;
     for (int r = 0; r < newRequests.size(); ++r) {
-        // create pickup node
-        ID = "PI_" + to_string(newRequests[r]->requestID_);
-        nodes_.insert(std::pair<std::string,PNode> (ID, std::make_shared<Node>(ID, newRequests[r], PICKUP)));
+        // create pickup node and drop off nodes
+        newRequests[r]->setPenalty(0);
 
-        // create drop off node
-        ID = "DR_" + to_string(newRequests[r]->requestID_);
-        nodes_.insert(std::pair<std::string,PNode> (ID, std::make_shared<Node>(ID, newRequests[r], DROPOFF)));
-        nbNodes_ = nbNodes_ + 2;
+        std::string pickID = Tools::createNodeID(newRequests[r]->getRequestId(), PICKUP);
+        std::string dropID = Tools::createNodeID(newRequests[r]->getRequestId(), DROPOFF);
+
+        addNewNode(std::make_shared<Node>(pickID, newRequests[r], PICKUP, dropID));
+        addNewNode(std::make_shared<Node>(dropID, newRequests[r], DROPOFF, pickID));
+
     }
 }
 
 
-
+float calcTravelTime(PNode startNode, PNode endNode) {
+    double dist = Tools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
+                                      endNode->locLatitude_, endNode->locLongitude_);
+    return dist * TimePerMile;
+}
