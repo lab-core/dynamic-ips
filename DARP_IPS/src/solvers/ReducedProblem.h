@@ -1,37 +1,81 @@
 //
-// Created by Ella on 2021-10-09.
+// Created by Ella on 2021-11-10.
 //
 
-#ifndef _REDUCEDPROBLEM_H
-#define _REDUCEDPROBLEM_H
+#ifndef DARP_IPS_REDUCEDPROBLEM_H
+#define DARP_IPS_REDUCEDPROBLEM_H
 
 #include "utilities/MyTools.h"
-#include "data/Graph.h"
-struct Route;
-typedef std::shared_ptr<Route> PRoute;
+#include "solvers/CPLEXModeler.h"
+#include "data/Route.h"
+#include "data/Instance.h"
 
-struct Route {
-    int vehicleID_;                         // the vehicle for which the route has created
-    const int routeID_;                     // variable name or route ID
-    float totalDelay_;                      // sum of waiting times of the requests served by the route
-    vector<PNode> routeNodes_;             // ordered list of the nodes that are visited within the route
-    vector<int> routeRequests_;       // set of requests covered by the route
-    std::vector<float> plannedReachTime_;    // time that vehicle is planned to reach each node
-    std::vector<int> plannedPassengers_;     // number of passengers in the vehicle at each node
-
-    // Constructor and Destructor
-    Route(int vehicleId, const int routeId);
-    virtual ~Route();
-
-    // function that create column from the route
-    std::vector<bool> createRouteColumn(int nbRequests, int nbVehicles);
-
-};
+//---------------------------------------------------------------------------------------------
+//  Reduced Problem class
+//  Build and solve the Reduced problem of the ISUD
+//---------------------------------------------------------------------------------------------
 
 
 class ReducedProblem {
+public:
+    IloEnv env_;
+    IloModel RPModel_;
+    IloCplex RPCplex_;
+    IloObjective reducedObj_;
 
+    // Variables
+    IloNumVarArray routeVar_;
+    IloNumVarArray zVar_;
+
+    // dual costs
+    IloNumArray requestDuals_;
+    IloNumArray vehicleDuals_;
+
+    // right-hand-side of constraints
+    IloNumArray requestRHS_;
+    IloNumArray vehicleRHS_;
+
+    // set of constraints
+    IloRangeArray requestConst_;
+    IloRangeArray vehicleConst_;
+
+    vector<int> orderToRequest_;
+    std::map<int, int> requestToOrder_;
+
+    std::vector<PRoute> routesToAdd_;
+
+    // Constructor and Destructor
+    ReducedProblem(PInstance &pInst);
+    virtual ~ReducedProblem();
+
+    // this function reset the model based the current set of routes and changed the set of constraints (size)
+    void updateRequestOrder(PInstance &pInst);
+
+    // this function clear all objects from the model at the start of each epoch
+    void clearModel(PInstance &pInst);
+
+    // this function initialized the model and define empty set of constraints
+    void initializeModel(PInstance &pInst);
+
+    // this function adds routeVar to the model
+    void addRouteVar(PRoute &newRoute);
+
+    // this function adds zVar to the model used for the routes that served only one request
+    void addZVar(PRequest &request);
+
+    // this function add one route at each iteration of the algorithm during one epoch
+    void updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution);
+
+    // this function build the model at the start of each epoch
+    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+
+    // this function solve the model and remove all columns except than the current base
+    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    std::map<std::string , PRoute> &generatedRoutes);
+
+    // Display function
+    std::string toString() const;
 };
 
 
-#endif //_REDUCEDPROBLEM_H
+#endif //DARP_IPS_REDUCEDPROBLEM_H
