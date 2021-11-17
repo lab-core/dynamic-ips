@@ -13,19 +13,61 @@
 #include <map>
 #include <string>
 #include <limits.h>
+#include <chrono>
+#include <iomanip>
+
+
 
 
 using std::string;
 using std::vector;
+using std::chrono::high_resolution_clock;
 //-----------------------------------------------------------------------------
 //  Definition of useful tools and data types
 //-----------------------------------------------------------------------------
 
-static const int DECIMALS = 3;  // precision when printing floats
+// useful types
+class Instance;
+typedef std::shared_ptr<Instance> PInstance;
+class Request;
+typedef std::shared_ptr<Request> PRequest;
+class Vehicle;
+typedef std::shared_ptr<Vehicle> PVehicle;
+class Graph;
+typedef std::shared_ptr<Graph> PGraph;
+class Node;
+typedef std::shared_ptr<Node> PNode;
+class Route;
+typedef std::shared_ptr<Route> PRoute;
+class ReducedProblem;
+typedef std::shared_ptr<ReducedProblem> PReducedProblem;
+
+static const int DECIMALS = 3;          // precision when printing floats
+// the constant 275 calculated by excel just to convert distance in mile to travel time in sec
+static const float TimePerMile = 15;   // travel time per mile distance
+static const float alphaParam = 1.5;
+static const float betaParam = 240;
+static const float deltaPram = 420;
+static const int epochLength = 30;
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
 template<class T> using vector3D = std::vector<vector2D<T>>;
+
+// Different node types and their names
+enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
+/*static const std::vector<std::string> nodeTypeName = {
+        "SOURCE ",
+        "SINK   ",
+        "PICKUP ",
+        "DROPOFF"
+};*/
+static const char *NodeTypeStr[] = {
+        "SOURCE ",
+        "SINK   ",
+        "PICKUP ",
+        "DROPOFF"
+};
 
 namespace Tools {
     // class for defining exception errors
@@ -78,6 +120,44 @@ namespace Tools {
 
     // function to calculate the distance
     double calcDistance(double lat1, double long1, double lat2, double long2);
+
+    // function to calculate travel time between two coordinate
+    float calcTravelTime(double lat1, double long1, double lat2, double long2);
+
+    // function to create node ID based on request ID
+    std::string createNodeID(int requestID, NodeType type);
+
+    // Appends the values of v2 vector to at the end of v1 vector
+    template <typename T>
+    std::vector<T> appendVectors(std::vector<T> & v1, std::vector<T> & V2);
+
+    class Timer {
+    private:
+        high_resolution_clock::time_point cpuInit_;
+        std::chrono::duration<double> cpuSinceStart_;
+        std::chrono::duration<double> cpuSinceInit_;
+
+        int coStop_;	        //number of times the timer was stopped
+        bool isInit_;
+        bool isStarted_;
+        bool isStopped_;
+
+        // Constructor and Destructor
+    public:
+        Timer();
+        virtual ~Timer();
+
+
+        void init();        // function fo initialize the timer
+        bool isInit();      // function to check initialization status
+        void start();       // function to start the timer
+        void stop();        // function to stop the timer
+
+        // get the time spent since the initialization of the timer and since the last
+        // time it was started
+        const std::chrono::duration<double> dSinceInit();
+        const std::chrono::duration<double> dSinceStart();
+    };
 
 }; // Tools namespace
 
