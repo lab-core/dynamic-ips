@@ -1,4 +1,4 @@
-C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - NMake Makefiles" D:\projects\dynamic-ips\DARP_IPS
+C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - NMake Makefiles" D:\projects\dynamic-ips\DARP_IPS
 lib/x64_windows_msvc14/stat_mda
 Found studio dirs: C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201;C:/Program Files/IBM/ILOG/CPLEX_Studio201
 -- Found CPLEX Studio: C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201
@@ -7,42 +7,12 @@ CPLEX_LIB C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/lib/x64_wind
 CPLEX_LIBRARY C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/lib/x64_windows_msvc14/stat_mda/cplex2010.lib
 CPLEX_LIBRARY_DEBUG C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/lib/x64_windows_msvc14/stat_mdd/cplex2010.lib
 CPLEX_DLL C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/bin/x64_win64/cplex2010.dll
-CMake Warning (dev) at C:/Users/Ella/AppData/Local/JetBrains/Toolbox/apps/CLion/ch-0/212.5080.54/bin/cmake/win/share/cmake-3.20/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
-  The package name passed to `find_package_handle_standard_args`
-  (CPLEX_CONCERT) does not match the name of the calling package (CPLEX).
-  This can lead to problems in calling code that expects `find_package`
-  result variables (e.g., `_FOUND`) to follow a certain pattern.
-Call Stack (most recent call first):
-  FindCPLEX.cmake:140 (find_package_handle_standard_args)
-  CMakeLists.txt:7 (find_package)
-This warning is for project developers.  Use -Wno-dev to suppress it.
-
-CMake Warning (dev) at C:/Users/Ella/AppData/Local/JetBrains/Toolbox/apps/CLion/ch-0/212.5080.54/bin/cmake/win/share/cmake-3.20/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
-  The package name passed to `find_package_handle_standard_args`
-  (CPLEX_ILOCPLEX) does not match the name of the calling package (CPLEX).
-  This can lead to problems in calling code that expects `find_package`
-  result variables (e.g., `_FOUND`) to follow a certain pattern.
-Call Stack (most recent call first):
-  FindCPLEX.cmake:177 (find_package_handle_standard_args)
-  CMakeLists.txt:7 (find_package)
-This warning is for project developers.  Use -Wno-dev to suppress it.
-
-CMake Warning (dev) at C:/Users/Ella/AppData/Local/JetBrains/Toolbox/apps/CLion/ch-0/212.5080.54/bin/cmake/win/share/cmake-3.20/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
-  The package name passed to `find_package_handle_standard_args` (CPLEX_CP)
-  does not match the name of the calling package (CPLEX).  This can lead to
-  problems in calling code that expects `find_package` result variables
-  (e.g., `_FOUND`) to follow a certain pattern.
-Call Stack (most recent call first):
-  FindCPLEX.cmake:211 (find_package_handle_standard_args)
-  CMakeLists.txt:7 (find_package)
-This warning is for project developers.  Use -Wno-dev to suppress it.
-
 -- Could NOT find CPLEX_CP (missing: CPLEX_CP_LIBRARY CPLEX_CP_LIBRARY_DEBUG CPLEX_CP_INCLUDE_DIR) 
 -----CPLEX IS FOUND-----
 -----CPLEX CONCERT IS FOUND-----
 -----CPLEX ILOCPLEX IS FOUND-----
 -- System: Windows-10.0.19043
--- Build type: Release
+-- Build type: Debug
 -- Compiler version: 19.29.30040.0
 -- Configuring done
 -- Generating done

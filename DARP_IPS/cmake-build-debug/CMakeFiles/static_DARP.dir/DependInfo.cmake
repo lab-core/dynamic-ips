@@ -19,7 +19,8 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "../SRC"
+  "C:/Program Files/eigen-3.4.0"
+  "../src"
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"
   )
@@ -33,6 +34,7 @@ set(CMAKE_TARGET_LINKED_INFO_FILES
   "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/DARP_IPS.dir/DependInfo.cmake"
   "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data/CMakeFiles/data.dir/DependInfo.cmake"
   "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities/CMakeFiles/utilities.dir/DependInfo.cmake"
+  "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/solvers/CMakeFiles/solvers.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

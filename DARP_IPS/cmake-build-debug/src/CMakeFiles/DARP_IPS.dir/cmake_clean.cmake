@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/DARP_IPS.dir/main.cpp.obj"
-  "CMakeFiles/DARP_IPS.dir/solvers/ReducedProblem.cpp.obj"
   "DARP_IPS.lib"
   "DARP_IPS.pdb"
 )

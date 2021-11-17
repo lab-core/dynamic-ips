@@ -37,10 +37,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -67,7 +67,7 @@ edit_cache\fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -157,6 +157,19 @@ utilities\fast:
 	$(MAKE) $(MAKESILENT) -f src\utilities\CMakeFiles\utilities.dir\build.make /nologo -$(MAKEFLAGS) src\utilities\CMakeFiles\utilities.dir\build
 .PHONY : utilities\fast
 
+#=============================================================================
+# Target rules for targets named solvers
+
+# Build rule for target.
+solvers: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) solvers
+.PHONY : solvers
+
+# fast build rule for target.
+solvers\fast:
+	$(MAKE) $(MAKESILENT) -f src\solvers\CMakeFiles\solvers.dir\build.make /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\build
+.PHONY : solvers\fast
+
 src\main.obj: src\main.cpp.obj
 .PHONY : src\main.obj
 
@@ -191,6 +204,7 @@ help:
 	@echo ... rebuild_cache
 	@echo ... DARP_IPS
 	@echo ... data
+	@echo ... solvers
 	@echo ... static_DARP
 	@echo ... utilities
 	@echo ... src/main.obj

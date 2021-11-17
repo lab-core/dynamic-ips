@@ -3,6 +3,6 @@ set(SOURCE_FILES
         Vehicle.cpp
         Instance.cpp
         Request.cpp
-        Graph.cpp)
+        Graph.cpp Route.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})

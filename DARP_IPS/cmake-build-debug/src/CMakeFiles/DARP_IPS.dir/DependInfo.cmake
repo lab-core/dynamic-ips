@@ -9,7 +9,6 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "D:/projects/dynamic-ips/DARP_IPS/src/main.cpp" "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/DARP_IPS.dir/main.cpp.obj"
-  "D:/projects/dynamic-ips/DARP_IPS/src/solvers/ReducedProblem.cpp" "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/CMakeFiles/DARP_IPS.dir/solvers/ReducedProblem.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "MSVC")
 
@@ -17,7 +16,8 @@ set(CMAKE_CXX_COMPILER_ID "MSVC")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"
-  "../SRC"
+  "C:/Program Files/eigen-3.4.0"
+  "../src"
   )
 
 # The set of dependency files which are needed:
@@ -28,6 +28,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
 set(CMAKE_TARGET_LINKED_INFO_FILES
   "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data/CMakeFiles/data.dir/DependInfo.cmake"
   "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities/CMakeFiles/utilities.dir/DependInfo.cmake"
+  "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/solvers/CMakeFiles/solvers.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

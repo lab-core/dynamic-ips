@@ -34,10 +34,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -72,17 +72,20 @@ clean: src\clean
 src\all: src\CMakeFiles\DARP_IPS.dir\all
 src\all: src\data\all
 src\all: src\utilities\all
+src\all: src\solvers\all
 .PHONY : src\all
 
 # Recursive "preinstall" directory target.
 src\preinstall: src\data\preinstall
 src\preinstall: src\utilities\preinstall
+src\preinstall: src\solvers\preinstall
 .PHONY : src\preinstall
 
 # Recursive "clean" directory target.
 src\clean: src\CMakeFiles\DARP_IPS.dir\clean
 src\clean: src\data\clean
 src\clean: src\utilities\clean
+src\clean: src\solvers\clean
 .PHONY : src\clean
 
 #=============================================================================
@@ -99,6 +102,21 @@ src\data\preinstall:
 # Recursive "clean" directory target.
 src\data\clean: src\data\CMakeFiles\data.dir\clean
 .PHONY : src\data\clean
+
+#=============================================================================
+# Directory level rules for directory src\solvers
+
+# Recursive "all" directory target.
+src\solvers\all: src\solvers\CMakeFiles\solvers.dir\all
+.PHONY : src\solvers\all
+
+# Recursive "preinstall" directory target.
+src\solvers\preinstall:
+.PHONY : src\solvers\preinstall
+
+# Recursive "clean" directory target.
+src\solvers\clean: src\solvers\CMakeFiles\solvers.dir\clean
+.PHONY : src\solvers\clean
 
 #=============================================================================
 # Directory level rules for directory src\utilities
@@ -122,14 +140,15 @@ src\utilities\clean: src\utilities\CMakeFiles\utilities.dir\clean
 CMakeFiles\static_DARP.dir\all: src\CMakeFiles\DARP_IPS.dir\all
 CMakeFiles\static_DARP.dir\all: src\data\CMakeFiles\data.dir\all
 CMakeFiles\static_DARP.dir\all: src\utilities\CMakeFiles\utilities.dir\all
+CMakeFiles\static_DARP.dir\all: src\solvers\CMakeFiles\solvers.dir\all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=9,10 "Built target static_DARP"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=14,15 "Built target static_DARP"
 .PHONY : CMakeFiles\static_DARP.dir\all
 
 # Build rule for subdir invocation for target.
 CMakeFiles\static_DARP.dir\rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 0
 .PHONY : CMakeFiles\static_DARP.dir\rule
@@ -149,14 +168,15 @@ CMakeFiles\static_DARP.dir\clean:
 # All Build rule for target.
 src\CMakeFiles\DARP_IPS.dir\all: src\data\CMakeFiles\data.dir\all
 src\CMakeFiles\DARP_IPS.dir\all: src\utilities\CMakeFiles\utilities.dir\all
+src\CMakeFiles\DARP_IPS.dir\all: src\solvers\CMakeFiles\solvers.dir\all
 	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\depend
 	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=1,2,3 "Built target DARP_IPS"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=1,2 "Built target DARP_IPS"
 .PHONY : src\CMakeFiles\DARP_IPS.dir\all
 
 # Build rule for subdir invocation for target.
 src\CMakeFiles\DARP_IPS.dir\rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 0
 .PHONY : src\CMakeFiles\DARP_IPS.dir\rule
@@ -177,12 +197,12 @@ src\CMakeFiles\DARP_IPS.dir\clean:
 src\data\CMakeFiles\data.dir\all:
 	$(MAKE) $(MAKESILENT) -f src\data\CMakeFiles\data.dir\build.make /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\depend
 	$(MAKE) $(MAKESILENT) -f src\data\CMakeFiles\data.dir\build.make /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=4,5,6,7,8 "Built target data"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=3,4,5,6,7,8 "Built target data"
 .PHONY : src\data\CMakeFiles\data.dir\all
 
 # Build rule for subdir invocation for target.
 src\data\CMakeFiles\data.dir\rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 0
 .PHONY : src\data\CMakeFiles\data.dir\rule
@@ -203,7 +223,7 @@ src\data\CMakeFiles\data.dir\clean:
 src\utilities\CMakeFiles\utilities.dir\all:
 	$(MAKE) $(MAKESILENT) -f src\utilities\CMakeFiles\utilities.dir\build.make /nologo -$(MAKEFLAGS) src\utilities\CMakeFiles\utilities.dir\depend
 	$(MAKE) $(MAKESILENT) -f src\utilities\CMakeFiles\utilities.dir\build.make /nologo -$(MAKEFLAGS) src\utilities\CMakeFiles\utilities.dir\build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=11,12,13,14 "Built target utilities"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=16,17,18,19 "Built target utilities"
 .PHONY : src\utilities\CMakeFiles\utilities.dir\all
 
 # Build rule for subdir invocation for target.
@@ -221,6 +241,32 @@ utilities: src\utilities\CMakeFiles\utilities.dir\rule
 src\utilities\CMakeFiles\utilities.dir\clean:
 	$(MAKE) $(MAKESILENT) -f src\utilities\CMakeFiles\utilities.dir\build.make /nologo -$(MAKEFLAGS) src\utilities\CMakeFiles\utilities.dir\clean
 .PHONY : src\utilities\CMakeFiles\utilities.dir\clean
+
+#=============================================================================
+# Target rules for target src/solvers/CMakeFiles/solvers.dir
+
+# All Build rule for target.
+src\solvers\CMakeFiles\solvers.dir\all:
+	$(MAKE) $(MAKESILENT) -f src\solvers\CMakeFiles\solvers.dir\build.make /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\depend
+	$(MAKE) $(MAKESILENT) -f src\solvers\CMakeFiles\solvers.dir\build.make /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=9,10,11,12,13 "Built target solvers"
+.PHONY : src\solvers\CMakeFiles\solvers.dir\all
+
+# Build rule for subdir invocation for target.
+src\solvers\CMakeFiles\solvers.dir\rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 5
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\all
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles 0
+.PHONY : src\solvers\CMakeFiles\solvers.dir\rule
+
+# Convenience name for target.
+solvers: src\solvers\CMakeFiles\solvers.dir\rule
+.PHONY : solvers
+
+# clean rule for target.
+src\solvers\CMakeFiles\solvers.dir\clean:
+	$(MAKE) $(MAKESILENT) -f src\solvers\CMakeFiles\solvers.dir\build.make /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\clean
+.PHONY : src\solvers\CMakeFiles\solvers.dir\clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

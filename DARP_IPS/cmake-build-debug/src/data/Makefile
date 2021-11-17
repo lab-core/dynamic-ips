@@ -37,10 +37,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -67,7 +67,7 @@ rebuild_cache\fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -223,6 +223,36 @@ Request.cpp.s:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
 .PHONY : Request.cpp.s
 
+Route.obj: Route.cpp.obj
+.PHONY : Route.obj
+
+# target to build an object file
+Route.cpp.obj:
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+	$(MAKE) $(MAKESILENT) -f src\data\CMakeFiles\data.dir\build.make /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\Route.cpp.obj
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+.PHONY : Route.cpp.obj
+
+Route.i: Route.cpp.i
+.PHONY : Route.i
+
+# target to preprocess a source file
+Route.cpp.i:
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+	$(MAKE) $(MAKESILENT) -f src\data\CMakeFiles\data.dir\build.make /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\Route.cpp.i
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+.PHONY : Route.cpp.i
+
+Route.s: Route.cpp.s
+.PHONY : Route.s
+
+# target to generate assembly for a file
+Route.cpp.s:
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+	$(MAKE) $(MAKESILENT) -f src\data\CMakeFiles\data.dir\build.make /nologo -$(MAKEFLAGS) src\data\CMakeFiles\data.dir\Route.cpp.s
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+.PHONY : Route.cpp.s
+
 Vehicle.obj: Vehicle.cpp.obj
 .PHONY : Vehicle.obj
 
@@ -271,6 +301,9 @@ help:
 	@echo ... Request.obj
 	@echo ... Request.i
 	@echo ... Request.s
+	@echo ... Route.obj
+	@echo ... Route.i
+	@echo ... Route.s
 	@echo ... Vehicle.obj
 	@echo ... Vehicle.i
 	@echo ... Vehicle.s

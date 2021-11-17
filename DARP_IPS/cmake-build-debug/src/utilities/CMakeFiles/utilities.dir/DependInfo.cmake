@@ -18,7 +18,8 @@ set(CMAKE_CXX_COMPILER_ID "MSVC")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include"
   "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/concert/include"
-  "../SRC"
+  "C:/Program Files/eigen-3.4.0"
+  "../src"
   )
 
 # The set of dependency files which are needed:

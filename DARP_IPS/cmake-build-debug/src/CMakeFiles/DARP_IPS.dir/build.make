@@ -33,10 +33,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -80,44 +80,17 @@ src\CMakeFiles\DARP_IPS.dir\main.cpp.s: cmake_force
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
-src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj: src\CMakeFiles\DARP_IPS.dir\flags.make
-src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj: ..\src\solvers\ReducedProblem.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/CMakeFiles/DARP_IPS.dir/solvers/ReducedProblem.cpp.obj"
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj /FdCMakeFiles\DARP_IPS.dir\DARP_IPS.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\solvers\ReducedProblem.cpp
-<<
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-
-src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DARP_IPS.dir/solvers/ReducedProblem.cpp.i"
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\solvers\ReducedProblem.cpp
-<<
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-
-src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DARP_IPS.dir/solvers/ReducedProblem.cpp.s"
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\solvers\ReducedProblem.cpp
-<<
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-
 # Object files for target DARP_IPS
 DARP_IPS_OBJECTS = \
-"CMakeFiles\DARP_IPS.dir\main.cpp.obj" \
-"CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj"
+"CMakeFiles\DARP_IPS.dir\main.cpp.obj"
 
 # External object files for target DARP_IPS
 DARP_IPS_EXTERNAL_OBJECTS =
 
 src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\main.cpp.obj
-src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj
 src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\build.make
 src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library DARP_IPS.lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library DARP_IPS.lib"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
 	$(CMAKE_COMMAND) -P CMakeFiles\DARP_IPS.dir\cmake_clean_target.cmake
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug

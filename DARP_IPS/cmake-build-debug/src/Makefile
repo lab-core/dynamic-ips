@@ -37,10 +37,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -67,7 +67,7 @@ edit_cache\fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -163,36 +163,6 @@ main.cpp.s:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
 .PHONY : main.cpp.s
 
-solvers\ReducedProblem.obj: solvers\ReducedProblem.cpp.obj
-.PHONY : solvers\ReducedProblem.obj
-
-# target to build an object file
-solvers\ReducedProblem.cpp.obj:
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.obj
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : solvers\ReducedProblem.cpp.obj
-
-solvers\ReducedProblem.i: solvers\ReducedProblem.cpp.i
-.PHONY : solvers\ReducedProblem.i
-
-# target to preprocess a source file
-solvers\ReducedProblem.cpp.i:
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.i
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : solvers\ReducedProblem.cpp.i
-
-solvers\ReducedProblem.s: solvers\ReducedProblem.cpp.s
-.PHONY : solvers\ReducedProblem.s
-
-# target to generate assembly for a file
-solvers\ReducedProblem.cpp.s:
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\solvers\ReducedProblem.cpp.s
-	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : solvers\ReducedProblem.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -205,9 +175,6 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
-	@echo ... solvers/ReducedProblem.obj
-	@echo ... solvers/ReducedProblem.i
-	@echo ... solvers/ReducedProblem.s
 .PHONY : help
 
 

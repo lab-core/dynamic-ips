@@ -33,10 +33,10 @@ NULL=nul
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5080.54\bin\cmake\win\bin\cmake.exe -E rm -f
+RM = C:\Users\Ella\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\212.5457.51\bin\cmake\win\bin\cmake.exe -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -155,12 +155,38 @@ src\data\CMakeFiles\data.dir\Graph.cpp.s: cmake_force
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
+src\data\CMakeFiles\data.dir\Route.cpp.obj: src\data\CMakeFiles\data.dir\flags.make
+src\data\CMakeFiles\data.dir\Route.cpp.obj: ..\src\data\Route.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object src/data/CMakeFiles/data.dir/Route.cpp.obj"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\data.dir\Route.cpp.obj /FdCMakeFiles\data.dir\data.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\data\Route.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\data\CMakeFiles\data.dir\Route.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/data.dir/Route.cpp.i"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\data.dir\Route.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\data\Route.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\data\CMakeFiles\data.dir\Route.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/data.dir/Route.cpp.s"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\data.dir\Route.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\data\Route.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
 # Object files for target data
 data_OBJECTS = \
 "CMakeFiles\data.dir\Vehicle.cpp.obj" \
 "CMakeFiles\data.dir\Instance.cpp.obj" \
 "CMakeFiles\data.dir\Request.cpp.obj" \
-"CMakeFiles\data.dir\Graph.cpp.obj"
+"CMakeFiles\data.dir\Graph.cpp.obj" \
+"CMakeFiles\data.dir\Route.cpp.obj"
 
 # External object files for target data
 data_EXTERNAL_OBJECTS =
@@ -169,9 +195,10 @@ src\data\data.lib: src\data\CMakeFiles\data.dir\Vehicle.cpp.obj
 src\data\data.lib: src\data\CMakeFiles\data.dir\Instance.cpp.obj
 src\data\data.lib: src\data\CMakeFiles\data.dir\Request.cpp.obj
 src\data\data.lib: src\data\CMakeFiles\data.dir\Graph.cpp.obj
+src\data\data.lib: src\data\CMakeFiles\data.dir\Route.cpp.obj
 src\data\data.lib: src\data\CMakeFiles\data.dir\build.make
 src\data\data.lib: src\data\CMakeFiles\data.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library data.lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX static library data.lib"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\data
 	$(CMAKE_COMMAND) -P CMakeFiles\data.dir\cmake_clean_target.cmake
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
