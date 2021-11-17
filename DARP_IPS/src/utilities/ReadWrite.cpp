@@ -107,11 +107,10 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
 
             for (int r = 0; r < pInstance->nbRequests_; ++r) {
                 // attributes for reading trip requests file
-                int requestID = -1, nbPassengers = -1;
+                int nbPassengers = -1;
                 float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
                         earlyPick = -1, minDist = -1, minTravelTime = -1, deltaTime = -1;
 
-                requestID = r;
                 file >> nbPassengers;
                 file >> minDist;
                 file >> pickUpLongitude;
@@ -120,19 +119,19 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
                 file >> dropOffLatitude;
                 file >> earlyPick;
 
-                /* ==================================needs modification=================================== */
-                // I consider 10 seconds for each passenger to pickup or drop off
-                // the constant 475 calculated by excel just to convert distance in mile to travel time in sec
+                // the starting time of the instance is 16pm
+                earlyPick -= 57600;
 
                 minDist = Tools::calcDistance(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
                 deltaTime = nbPassengers * TimePerPassenger;
-                minTravelTime = minDist * 475;
 
-                pInstance->requests_.emplace_back(std::make_shared<Request>(requestID, pickUpLatitude,
+                minTravelTime = Tools::calcTravelTime(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude,
                                                                             pickUpLongitude, dropOffLatitude,
                                                                             dropOffLongitude,
                                                                             earlyPick, nbPassengers, deltaTime, minDist,
                                                                             minTravelTime));
+                pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
             }
         }
     }
