@@ -22,9 +22,11 @@ Request::Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatit
 
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
+    readEpoch_ = 0;
     char* name2 = new char[255];
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
+    subStatus_ = NOTSELECTED;
 }
 
 Request::~Request() {}
