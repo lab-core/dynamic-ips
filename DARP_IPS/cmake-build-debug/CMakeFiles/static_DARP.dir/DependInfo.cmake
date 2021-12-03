@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "D:/projects/dynamic-ips/DARP_IPS/src/main.cpp" "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/CMakeFiles/static_DARP.dir/src/main.cpp.obj"
+  "D:/projects/dynamic-ips/DARP_IPS/src/dynamicMain.cpp" "D:/projects/dynamic-ips/DARP_IPS/cmake-build-debug/CMakeFiles/static_DARP.dir/src/dynamicMain.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "MSVC")
 

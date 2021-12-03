@@ -34,4 +34,5 @@ static void createPattern (IloNumArray& pattern, PRoute route, std::map<int, int
     }
 }
 
+
 #endif //_CPLEXMODELER_H

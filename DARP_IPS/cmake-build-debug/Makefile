@@ -106,17 +106,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named static_DARP
+# Target rules for targets named dynamic_DARP
 
 # Build rule for target.
-static_DARP: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) static_DARP
-.PHONY : static_DARP
+dynamic_DARP: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) dynamic_DARP
+.PHONY : dynamic_DARP
 
 # fast build rule for target.
-static_DARP\fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\build
-.PHONY : static_DARP\fast
+dynamic_DARP\fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\dynamic_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\dynamic_DARP.dir\build
+.PHONY : dynamic_DARP\fast
 
 #=============================================================================
 # Target rules for targets named DARP_IPS
@@ -170,29 +170,29 @@ solvers\fast:
 	$(MAKE) $(MAKESILENT) -f src\solvers\CMakeFiles\solvers.dir\build.make /nologo -$(MAKEFLAGS) src\solvers\CMakeFiles\solvers.dir\build
 .PHONY : solvers\fast
 
-src\main.obj: src\main.cpp.obj
-.PHONY : src\main.obj
+src\dynamicMain.obj: src\dynamicMain.cpp.obj
+.PHONY : src\dynamicMain.obj
 
 # target to build an object file
-src\main.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\src\main.cpp.obj
-.PHONY : src\main.cpp.obj
+src\dynamicMain.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\dynamic_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\dynamic_DARP.dir\src\dynamicMain.cpp.obj
+.PHONY : src\dynamicMain.cpp.obj
 
-src\main.i: src\main.cpp.i
-.PHONY : src\main.i
+src\dynamicMain.i: src\dynamicMain.cpp.i
+.PHONY : src\dynamicMain.i
 
 # target to preprocess a source file
-src\main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\src\main.cpp.i
-.PHONY : src\main.cpp.i
+src\dynamicMain.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\dynamic_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\dynamic_DARP.dir\src\dynamicMain.cpp.i
+.PHONY : src\dynamicMain.cpp.i
 
-src\main.s: src\main.cpp.s
-.PHONY : src\main.s
+src\dynamicMain.s: src\dynamicMain.cpp.s
+.PHONY : src\dynamicMain.s
 
 # target to generate assembly for a file
-src\main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\static_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\static_DARP.dir\src\main.cpp.s
-.PHONY : src\main.cpp.s
+src\dynamicMain.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\dynamic_DARP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\dynamic_DARP.dir\src\dynamicMain.cpp.s
+.PHONY : src\dynamicMain.cpp.s
 
 # Help Target
 help:
@@ -204,12 +204,12 @@ help:
 	@echo ... rebuild_cache
 	@echo ... DARP_IPS
 	@echo ... data
+	@echo ... dynamic_DARP
 	@echo ... solvers
-	@echo ... static_DARP
 	@echo ... utilities
-	@echo ... src/main.obj
-	@echo ... src/main.i
-	@echo ... src/main.s
+	@echo ... src/dynamicMain.obj
+	@echo ... src/dynamicMain.i
+	@echo ... src/dynamicMain.s
 .PHONY : help
 
 

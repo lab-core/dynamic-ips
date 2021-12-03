@@ -504,6 +504,36 @@ C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include/ilcplex/ilomod
 
 C:/Program Files/IBM/ILOG/CPLEX_Studio_Community201/cplex/include/ilcplex/iloparam.h
 
+D:/projects/dynamic-ips/DARP_IPS/src/utilities/MyTools.cpp
+MyTools.h
+D:/projects/dynamic-ips/DARP_IPS/src/utilities/MyTools.h
+cmath
+-
+chrono
+-
+
+D:/projects/dynamic-ips/DARP_IPS/src/utilities/MyTools.h
+vector
+-
+iostream
+-
+sstream
+-
+fstream
+-
+memory
+-
+map
+-
+string
+-
+limits.h
+-
+chrono
+-
+iomanip
+-
+
 D:/projects/dynamic-ips/DARP_IPS/src/utilities/ReadWrite.cpp
 ReadWrite.h
 D:/projects/dynamic-ips/DARP_IPS/src/utilities/ReadWrite.h

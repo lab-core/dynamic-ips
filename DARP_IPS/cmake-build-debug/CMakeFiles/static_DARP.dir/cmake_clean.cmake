@@ -2,7 +2,7 @@ file(REMOVE_RECURSE
   "../bin/static_DARP.exe"
   "../bin/static_DARP.exe.manifest"
   "../bin/static_DARP.pdb"
-  "CMakeFiles/static_DARP.dir/src/main.cpp.obj"
+  "CMakeFiles/static_DARP.dir/src/dynamicMain.cpp.obj"
   "static_DARP.lib"
 )
 

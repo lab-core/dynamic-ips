@@ -155,12 +155,64 @@ src\solvers\CMakeFiles\solvers.dir\ReducedProblem.cpp.s: cmake_force
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
+src\solvers\CMakeFiles\solvers.dir\ComplementPro.cpp.obj: src\solvers\CMakeFiles\solvers.dir\flags.make
+src\solvers\CMakeFiles\solvers.dir\ComplementPro.cpp.obj: ..\src\solvers\ComplementPro.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object src/solvers/CMakeFiles/solvers.dir/ComplementPro.cpp.obj"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\solvers.dir\ComplementPro.cpp.obj /FdCMakeFiles\solvers.dir\solvers.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\solvers\ComplementPro.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\solvers\CMakeFiles\solvers.dir\ComplementPro.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/solvers.dir/ComplementPro.cpp.i"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\solvers.dir\ComplementPro.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\solvers\ComplementPro.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\solvers\CMakeFiles\solvers.dir\ComplementPro.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/solvers.dir/ComplementPro.cpp.s"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\solvers.dir\ComplementPro.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\solvers\ComplementPro.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\solvers\CMakeFiles\solvers.dir\MasterModeler.cpp.obj: src\solvers\CMakeFiles\solvers.dir\flags.make
+src\solvers\CMakeFiles\solvers.dir\MasterModeler.cpp.obj: ..\src\solvers\MasterModeler.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/solvers/CMakeFiles/solvers.dir/MasterModeler.cpp.obj"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\solvers.dir\MasterModeler.cpp.obj /FdCMakeFiles\solvers.dir\solvers.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\solvers\MasterModeler.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\solvers\CMakeFiles\solvers.dir\MasterModeler.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/solvers.dir/MasterModeler.cpp.i"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\solvers.dir\MasterModeler.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\solvers\MasterModeler.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
+src\solvers\CMakeFiles\solvers.dir\MasterModeler.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/solvers.dir/MasterModeler.cpp.s"
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\solvers.dir\MasterModeler.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\solvers\MasterModeler.cpp
+<<
+	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
+
 # Object files for target solvers
 solvers_OBJECTS = \
 "CMakeFiles\solvers.dir\MIPSolver.cpp.obj" \
 "CMakeFiles\solvers.dir\ISUDAlgorithm.cpp.obj" \
 "CMakeFiles\solvers.dir\SubProblem.cpp.obj" \
-"CMakeFiles\solvers.dir\ReducedProblem.cpp.obj"
+"CMakeFiles\solvers.dir\ReducedProblem.cpp.obj" \
+"CMakeFiles\solvers.dir\ComplementPro.cpp.obj" \
+"CMakeFiles\solvers.dir\MasterModeler.cpp.obj"
 
 # External object files for target solvers
 solvers_EXTERNAL_OBJECTS =
@@ -169,9 +221,11 @@ src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\MIPSolver.cpp.obj
 src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\ISUDAlgorithm.cpp.obj
 src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\SubProblem.cpp.obj
 src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\ReducedProblem.cpp.obj
+src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\ComplementPro.cpp.obj
+src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\MasterModeler.cpp.obj
 src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\build.make
 src\solvers\solvers.lib: src\solvers\CMakeFiles\solvers.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library solvers.lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX static library solvers.lib"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src\solvers
 	$(CMAKE_COMMAND) -P CMakeFiles\solvers.dir\cmake_clean_target.cmake
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug

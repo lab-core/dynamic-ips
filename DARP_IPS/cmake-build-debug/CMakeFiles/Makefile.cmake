@@ -67,7 +67,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/static_DARP.dir/DependInfo.cmake"
+  "CMakeFiles/dynamic_DARP.dir/DependInfo.cmake"
   "src/CMakeFiles/DARP_IPS.dir/DependInfo.cmake"
   "src/data/CMakeFiles/data.dir/DependInfo.cmake"
   "src/utilities/CMakeFiles/utilities.dir/DependInfo.cmake"

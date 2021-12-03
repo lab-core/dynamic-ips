@@ -55,33 +55,33 @@ include CMakeFiles\static_DARP.dir\progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles\static_DARP.dir\flags.make
 
-CMakeFiles\static_DARP.dir\src\main.cpp.obj: CMakeFiles\static_DARP.dir\flags.make
-CMakeFiles\static_DARP.dir\src\main.cpp.obj: ..\src\main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/static_DARP.dir/src/main.cpp.obj"
+CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.obj: CMakeFiles\static_DARP.dir\flags.make
+CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.obj: ..\src\dynamicMain.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/static_DARP.dir/src/dynamicMain.cpp.obj"
 	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\static_DARP.dir\src\main.cpp.obj /FdCMakeFiles\static_DARP.dir\ /FS -c D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\static_DARP.dir\src\dynamicMain.cpp.obj /FdCMakeFiles\static_DARP.dir\ /FS -c D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 
-CMakeFiles\static_DARP.dir\src\main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/static_DARP.dir/src/main.cpp.i"
-	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\static_DARP.dir\src\main.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/static_DARP.dir/src/dynamicMain.cpp.i"
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 
-CMakeFiles\static_DARP.dir\src\main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/static_DARP.dir/src/main.cpp.s"
+CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/static_DARP.dir/src/dynamicMain.cpp.s"
 	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\static_DARP.dir\src\main.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\static_DARP.dir\src\dynamicMain.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 
 # Object files for target static_DARP
 static_DARP_OBJECTS = \
-"CMakeFiles\static_DARP.dir\src\main.cpp.obj"
+"CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.obj"
 
 # External object files for target static_DARP
 static_DARP_EXTERNAL_OBJECTS =
 
-..\bin\static_DARP.exe: CMakeFiles\static_DARP.dir\src\main.cpp.obj
+..\bin\static_DARP.exe: CMakeFiles\static_DARP.dir\src\dynamicMain.cpp.obj
 ..\bin\static_DARP.exe: CMakeFiles\static_DARP.dir\build.make
 ..\bin\static_DARP.exe: src\DARP_IPS.lib
 ..\bin\static_DARP.exe: "C:\Program Files\IBM\ILOG\CPLEX_Studio_Community201\cplex\lib\x64_windows_msvc14\stat_mdd\cplex2010.lib"

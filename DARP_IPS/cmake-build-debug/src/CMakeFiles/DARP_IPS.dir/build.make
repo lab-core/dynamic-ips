@@ -55,39 +55,39 @@ include src\CMakeFiles\DARP_IPS.dir\progress.make
 # Include the compile flags for this target's objects.
 include src\CMakeFiles\DARP_IPS.dir\flags.make
 
-src\CMakeFiles\DARP_IPS.dir\main.cpp.obj: src\CMakeFiles\DARP_IPS.dir\flags.make
-src\CMakeFiles\DARP_IPS.dir\main.cpp.obj: ..\src\main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/CMakeFiles/DARP_IPS.dir/main.cpp.obj"
+src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj: src\CMakeFiles\DARP_IPS.dir\flags.make
+src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj: ..\src\dynamicMain.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/CMakeFiles/DARP_IPS.dir/dynamicMain.cpp.obj"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
 	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\DARP_IPS.dir\main.cpp.obj /FdCMakeFiles\DARP_IPS.dir\DARP_IPS.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj /FdCMakeFiles\DARP_IPS.dir\DARP_IPS.pdb /FS -c D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
-src\CMakeFiles\DARP_IPS.dir\main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DARP_IPS.dir/main.cpp.i"
+src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DARP_IPS.dir/dynamicMain.cpp.i"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\DARP_IPS.dir\main.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe > CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
-src\CMakeFiles\DARP_IPS.dir\main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DARP_IPS.dir/main.cpp.s"
+src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DARP_IPS.dir/dynamicMain.cpp.s"
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
 	C:\PROGRA~2\MICROS~3\2019\COMMUN~1\VC\Tools\MSVC\1429~1.300\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\DARP_IPS.dir\main.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\main.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\DARP_IPS.dir\dynamicMain.cpp.s /c D:\projects\dynamic-ips\DARP_IPS\src\dynamicMain.cpp
 <<
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
 
 # Object files for target DARP_IPS
 DARP_IPS_OBJECTS = \
-"CMakeFiles\DARP_IPS.dir\main.cpp.obj"
+"CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj"
 
 # External object files for target DARP_IPS
 DARP_IPS_EXTERNAL_OBJECTS =
 
-src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\main.cpp.obj
+src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj
 src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\build.make
 src\DARP_IPS.lib: src\CMakeFiles\DARP_IPS.dir\objects1.rsp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library DARP_IPS.lib"

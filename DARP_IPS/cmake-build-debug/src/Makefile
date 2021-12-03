@@ -133,35 +133,35 @@ DARP_IPS\fast:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
 .PHONY : DARP_IPS\fast
 
-main.obj: main.cpp.obj
-.PHONY : main.obj
+dynamicMain.obj: dynamicMain.cpp.obj
+.PHONY : dynamicMain.obj
 
 # target to build an object file
-main.cpp.obj:
+dynamicMain.cpp.obj:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\main.cpp.obj
+	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.obj
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : main.cpp.obj
+.PHONY : dynamicMain.cpp.obj
 
-main.i: main.cpp.i
-.PHONY : main.i
+dynamicMain.i: dynamicMain.cpp.i
+.PHONY : dynamicMain.i
 
 # target to preprocess a source file
-main.cpp.i:
+dynamicMain.cpp.i:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\main.cpp.i
+	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.i
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : main.cpp.i
+.PHONY : dynamicMain.cpp.i
 
-main.s: main.cpp.s
-.PHONY : main.s
+dynamicMain.s: dynamicMain.cpp.s
+.PHONY : dynamicMain.s
 
 # target to generate assembly for a file
-main.cpp.s:
+dynamicMain.cpp.s:
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug
-	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\main.cpp.s
+	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\DARP_IPS.dir\build.make /nologo -$(MAKEFLAGS) src\CMakeFiles\DARP_IPS.dir\dynamicMain.cpp.s
 	cd D:\projects\dynamic-ips\DARP_IPS\cmake-build-debug\src
-.PHONY : main.cpp.s
+.PHONY : dynamicMain.cpp.s
 
 # Help Target
 help:
@@ -172,9 +172,9 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... DARP_IPS
-	@echo ... main.obj
-	@echo ... main.i
-	@echo ... main.s
+	@echo ... dynamicMain.obj
+	@echo ... dynamicMain.i
+	@echo ... dynamicMain.s
 .PHONY : help
 
 

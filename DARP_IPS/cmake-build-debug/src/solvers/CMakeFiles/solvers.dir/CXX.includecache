@@ -46,6 +46,36 @@ ilcplex/ilocplex.h
 data/Route.h
 ../src/solvers/data/Route.h
 
+../src/solvers/ComplementPro.h
+solvers/CPLEXModeler.h
+../src/solvers/solvers/CPLEXModeler.h
+data/Route.h
+../src/solvers/data/Route.h
+solvers/MasterModeler.h
+../src/solvers/solvers/MasterModeler.h
+Eigen/Dense
+../src/solvers/Eigen/Dense
+
+../src/solvers/MasterModeler.h
+utilities/MyTools.h
+../src/solvers/utilities/MyTools.h
+solvers/CPLEXModeler.h
+../src/solvers/solvers/CPLEXModeler.h
+data/Instance.h
+../src/solvers/data/Instance.h
+
+../src/solvers/ReducedProblem.h
+utilities/MyTools.h
+../src/solvers/utilities/MyTools.h
+solvers/CPLEXModeler.h
+../src/solvers/solvers/CPLEXModeler.h
+data/Route.h
+../src/solvers/data/Route.h
+data/Instance.h
+../src/solvers/data/Instance.h
+solvers/MasterModeler.h
+../src/solvers/solvers/MasterModeler.h
+
 ../src/utilities/MyTools.h
 vector
 -
@@ -1758,6 +1788,20 @@ C:/Program Files/eigen-3.4.0/Eigen/src/plugins/ReshapedMethods.h
 ReshapedMethods.h
 C:/Program Files/eigen-3.4.0/Eigen/src/plugins/ReshapedMethods.h
 
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/ComplementPro.cpp
+ComplementPro.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/ComplementPro.h
+
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/ComplementPro.h
+solvers/CPLEXModeler.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/CPLEXModeler.h
+data/Route.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Route.h
+solvers/MasterModeler.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/MasterModeler.h
+Eigen/Dense
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/Eigen/Dense
+
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/ISUDAlgorithm.cpp
 ISUDAlgorithm.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/ISUDAlgorithm.h
@@ -1771,8 +1815,10 @@ data/Route.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Route.h
 data/Instance.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Instance.h
-ReducedProblem.h
-D:/projects/dynamic-ips/DARP_IPS/src/solvers/ReducedProblem.h
+solvers/ReducedProblem.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/ReducedProblem.h
+solvers/ComplementPro.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/ComplementPro.h
 Eigen/Dense
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/Eigen/Dense
 
@@ -1785,6 +1831,18 @@ data/Instance.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Instance.h
 solvers/CPLEXModeler.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/CPLEXModeler.h
+
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/MasterModeler.cpp
+MasterModeler.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/MasterModeler.h
+
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/MasterModeler.h
+utilities/MyTools.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/utilities/MyTools.h
+solvers/CPLEXModeler.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/CPLEXModeler.h
+data/Instance.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Instance.h
 
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/ReducedProblem.cpp
 ReducedProblem.h
@@ -1799,6 +1857,8 @@ data/Route.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Route.h
 data/Instance.h
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/data/Instance.h
+solvers/MasterModeler.h
+D:/projects/dynamic-ips/DARP_IPS/src/solvers/solvers/MasterModeler.h
 
 D:/projects/dynamic-ips/DARP_IPS/src/solvers/SubProblem.cpp
 SubProblem.h
