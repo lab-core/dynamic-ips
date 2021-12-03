@@ -26,7 +26,9 @@ public:
     std::vector<PRoute> generatedRoutes_;   // list of generated routes
     std::string departID_;
     std::string sinkID_;
-    PRoute* currentRoute_;
+    PRoute currentRoute_;
+    PRoute solutionRoute_;
+    PRoute emptyRoute_;
 
 
     // Constructor and Destructor
@@ -36,6 +38,10 @@ public:
 
     // Setters
     void setDepartTime(float departTime);
+    void setEmptyRoute(PInstance &pInst);
+    void setCurrentRoute(PRoute currentRoute);
+
+    void setEndTime(float endTime);
 
     // Display function
     std::string toString() const;
