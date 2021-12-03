@@ -135,7 +135,13 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
             }
         }
     }
-    pInstance->mainGraph_->addNewRequests(pInstance->requests_);
+
+    // define an empty route for each vehicle and set it as the current route for the initialization
+    pInstance->instGraph_->addNewRequests(pInstance->requests_);
+    for (int v = 0; v < pInstance->nbVehicles_; ++v) {
+        pInstance->vehicles_[v]->setEmptyRoute(pInstance);
+        pInstance->vehicles_[v]->setCurrentRoute(pInstance->vehicles_[v]->emptyRoute_);
+    }
 }
 
 
