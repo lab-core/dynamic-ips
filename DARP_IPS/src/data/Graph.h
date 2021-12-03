@@ -35,9 +35,9 @@ public:
     float reachTime_;               // the time that vehicle reach to the node
     int nbPassengers_;              // number of passengers to pick up or drop off
     float deltaTime_;               // time to perform pick up or drop off
-    int nodeStatus_;                // status of the node: no action, planned, completed
+    NodeStatus nodeStatus_;         // status of the node: no action, planned, completed
     float requestTime_;             // earliest possible pick up time for the request (request time)
-//    float penalty_;                 // penalty of not serving the related request at current period
+//    float penalty_;               // penalty of not serving the related request at current period
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
@@ -80,6 +80,6 @@ public:
 typedef std::shared_ptr<Graph> PGraph;
 
 // function to calculate travel time between two node
-float calcTravelTime(PNode startNode, PNode endNode);
+double calcTravelTime(PNode startNode, PNode endNode);
 
 #endif //_GRAPH_H

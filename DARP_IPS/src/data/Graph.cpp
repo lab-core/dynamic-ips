@@ -100,7 +100,7 @@ void Graph::addNewRequests(std::vector<PRequest> &newRequests) {
 }
 
 
-float calcTravelTime(PNode startNode, PNode endNode) {
+double calcTravelTime(PNode startNode, PNode endNode) {
     double dist = Tools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
                                       endNode->locLatitude_, endNode->locLongitude_);
     return dist * TimePerMile;
