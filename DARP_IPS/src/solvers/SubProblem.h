@@ -19,9 +19,9 @@ public:
     PVehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
     std::vector<PRequest> subRequests_;     // List of requests
-    int numRoutes_;                         // number of routes found that match conditions
+    /*int numRoutes_;                         // number of routes found that match conditions
     float bestReducedCost_;                 // best reduced cost found
-    std::vector<PRoute> generatedRoutes_;   // list of generated routes after solving
+    std::vector<PRoute> generatedRoutes_;   // list of generated routes after solving*/
 
     // defining objects on the CPLEX model
     IloEnv env_;
@@ -39,7 +39,7 @@ public:
     virtual ~SubProblem();
 
     // calculation of penalties and initialization of the subgraph
-    void initSubGraph(PInstance &pInst, int epoch);
+    void initSubGraph(PInstance &pInst);
 
     // Build and solve the subProblem with CPLEX
     void BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual, std::map<int, int>& requestToOrder);

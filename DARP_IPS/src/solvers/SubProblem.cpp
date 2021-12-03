@@ -12,8 +12,8 @@
 // Constructor and Destructor
 SubProblem::SubProblem(PVehicle &vehicle) : Vehicle_(&vehicle){
     subGraph_ = std::make_shared<Graph>();
-    numRoutes_ = 0;
-    bestReducedCost_ = 0;
+    /*numRoutes_ = 0;
+    bestReducedCost_ = 0;*/
     SubProModel_ = IloModel(env_);
 }
 SubProblem::~SubProblem() {
@@ -21,27 +21,27 @@ SubProblem::~SubProblem() {
 }
 
 // calculation of penalties and initialization of the subgraph
-void SubProblem::initSubGraph(PInstance &pInst, int epoch) {
+void SubProblem::initSubGraph(PInstance &pInst) {
 
     // create graph with source and sink
-    subGraph_ = std::make_shared<Graph>(pInst->mainGraph_->nodes_[(*Vehicle_)->departID_],
-                                        pInst->mainGraph_->nodes_[(*Vehicle_)->sinkID_]);
+    subGraph_ = std::make_shared<Graph>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
+                                        pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
 
     // adding onboard nodes to the graph
     for (int i = 0; i < (*Vehicle_)->onboards_.size(); ++i) {
-        subGraph_->addNewNode(pInst->mainGraph_->nodes_[(*Vehicle_)->onboards_[i]]);
+        subGraph_->addNewNode(pInst->instGraph_->nodes_[(*Vehicle_)->onboards_[i]]);
     }
 
     // adding available nodes based on the penalty
     for (int r = 0; r < pInst->nbRequests_; ++r) {
-        if (pInst->requests_[r]->requestStatus_ == NO_ACTION) {
-            float minWait = (*Vehicle_)->departTime_ +
-                            calcTravelTime(pInst->mainGraph_->nodes_[(*Vehicle_)->departID_],
-                                           pInst->mainGraph_->nodes_[Tools::createNodeID(subRequests_[r]->getRequestId(), PICKUP)])
+        if ((pInst->requests_[r]->requestStatus_ == NO_ACTION)&&(pInst->requests_[r]->subStatus_ == NOTSELECTED)) {
+            double minWait = (*Vehicle_)->departTime_ +
+                            calcTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
+                                           pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
                             - pInst->requests_[r]->earlyPick_;
             if (minWait <= pInst->requests_[r]->penalty_) {
-                subGraph_->addNewNode(pInst->mainGraph_->nodes_[Tools::createNodeID(subRequests_[r]->getRequestId(), PICKUP)]);
-                subGraph_->addNewNode(pInst->mainGraph_->nodes_[Tools::createNodeID(subRequests_[r]->getRequestId(), DROPOFF)]);
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)]);
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), DROPOFF)]);
 
                 // adding available requests
                 subRequests_.push_back(pInst->requests_[r]);
@@ -148,7 +148,7 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         SubProModel_.add(expr5 == 0);
 
         // without following constraints some drop off points are before their pickups
-        SubProModel_.add(U[pickIndex] - U[dropIndex] <= 0);
+ //       SubProModel_.add(U[pickIndex] - U[dropIndex] <= 0);
 
         // constraints 10c -------------------
         SubProModel_.add(U[pickIndex] >= subRequests_[i]->earlyPick_);
@@ -156,10 +156,20 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         // constraints 11c -------------------
         IloExpr expr11(env_);
         expr11 = U[dropIndex] - U[pickIndex] - subRequests_[i]->deltaTime_;
-        float t = calcTravelTime(subGraph_->nodes_[pickID],
-                                 subGraph_->nodes_[dropID]);
-        SubProModel_.add(t <= expr11 <= std::max(alphaParam * t, betaParam + t));
+    //    float t = calcTravelTime(subGraph_->nodes_[pickID], subGraph_->nodes_[dropID]);
+        float t = subRequests_[i]->minTravelTime_;
+
+        SubProModel_.add(expr11 <= std::max(alphaParam * t, betaParam + t));
+        SubProModel_.add(expr11 >=t);
     }
+
+    IloExpr exprT(env_);
+    for (int i = 0; i < subGraph_->nbNodes_; ++i) {
+        for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+            exprT += X[i][j];
+        }
+    }
+    SubProModel_.add(exprT <= 7);
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         // constraints 2c -------------------
@@ -196,7 +206,7 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         // constraints 14c -------------------
         SubProModel_.add(W[i] <= (*Vehicle_)->capacity_);
 
-        if (subGraph_->nodes_[subGraph_->intToNodeID_[i]]->nodeStatus_ == PLANNED) {
+        /*if (subGraph_->nodes_[subGraph_->intToNodeID_[i]]->nodeStatus_ == PLANNED) {
             std::string onboardID = subGraph_->intToNodeID_[i];
             std::string pickNodeID = subGraph_->nodes_[onboardID]->pairNodeID_;
 
@@ -215,7 +225,27 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
             float t = calcTravelTime(subGraph_->nodes_[onboardID],
                                      subGraph_->nodes_[pickNodeID]);
             SubProModel_.add(t <= expr12 <= std::max(alphaParam * t, betaParam + t));
+        }*/
+    }
+    for (int i = 0; i < (*Vehicle_)->onboards_.size(); ++i) {
+        std::string onboardID = subGraph_->nodes_[(*Vehicle_)->onboards_[i]]->nodeID_;
+ //       std::string pickNodeID = subGraph_->nodes_[onboardID]->pairNodeID_;
+
+        // constraints 6c -------------------
+        IloExpr expr6(env_);
+        for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+            expr6 += X[j][subGraph_->nodeIDToInt_[onboardID]];
         }
+        SubProModel_.add(expr6 == 1);
+
+        // constraints 12c -------------------
+        IloExpr expr12(env_);
+        expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - (*subGraph_->nodes_[onboardID]->related_Request_)->pickTime_
+                 - (*subGraph_->nodes_[onboardID]->related_Request_)->deltaTime_;
+
+        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
+        SubProModel_.add(expr12 <= std::max(alphaParam * t, betaParam + t));
+        SubProModel_.add(expr12 >= t);
     }
 }
 
@@ -225,16 +255,27 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
 void SubProblem::SolveCPLEX() {
     try {
         SubProbCplex_ = IloCplex(SubProModel_);
+        SubProbCplex_.setOut(env_.getNullStream());
 
         // set the parameters
         SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Replace, 2);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.05);
-//    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
+    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 3);
-        SubProbCplex_.setParam(IloCplex::TiLim, 500);
+        SubProbCplex_.setParam(IloCplex::TiLim, 100);
+        SubProbCplex_.solve();
+        if (SubProbCplex_.getObjValue() <= -0.00001) {
+            SubProbCplex_.setParam(IloCplex::TiLim, 50);
+            SubProbCplex_.populate();
+        }
 
-        SubProbCplex_.populate();
+        /*if (SubProbCplex_.getObjValue() < 0) {
+            std::cout << "# Incumbent objective value = " << SubProbCplex_.getObjValue() << std::endl;
+            std::cout << "# Second phase (population is started: " << std::endl;
+            SubProbCplex_.populate();
+        }*/
+
 //        SubProbCplex_.solve();
     }
     catch (IloException& e) {
@@ -245,10 +286,13 @@ void SubProblem::SolveCPLEX() {
 // function to convert solution to routes and save them in vehicle object
 void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map<std::string , PRoute> &generatedRoutes) {
     try {
+        int repeatFlag = 0;
+        availableRoutes.clear();
         for (int s = 0; s < SubProbCplex_.getSolnPoolNsolns(); ++s) {
 
             // extracting the value of variables in each solution
             if (SubProbCplex_.getObjValue(s) < 0) {
+                repeatFlag = 0;
                 IloNumArray uVal(env_);
                 IloNumArray wVal(env_);
                 IloNum2D xVal(env_, subGraph_->nbNodes_);
@@ -283,13 +327,24 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
                                                                           uVal[i], wVal[i]);
                             /*(*Vehicle_)->generatedRoutes_.back()->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
                                                                           uVal[i], wVal[i]);*/
+                            if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
+                                (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;
                             currentNodeIndex = i;
                             break;
                         }
                     }
                 }
-                generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
-                availableRoutes.push_back(newRoute);
+                for (int r = 0; r < availableRoutes.size(); ++r) {
+                    if (newRoute == availableRoutes[r]) {
+                        repeatFlag = 1;
+                        break;
+                    }
+                }
+                if (repeatFlag == 0) {
+                    availableRoutes.push_back(newRoute);
+                    generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
+                }
+
             }
         }
     }
@@ -304,6 +359,7 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
 std::string SubProblem::toString() const {
     std::stringstream repStr;
     repStr << std::endl;
+    repStr << "# ------------------------------------------------------------" << std::endl;
     repStr << "# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: " << (*Vehicle_)->vehicleID_ << std::endl;
     repStr << "#" << std::endl;
     repStr << "# Solution status = " << SubProbCplex_.getStatus() << std::endl;
@@ -311,7 +367,7 @@ std::string SubProblem::toString() const {
     repStr << "# The solution pool contains = " << SubProbCplex_.getSolnPoolNsolns() << " solutions." << std::endl;
     repStr << "# " << SubProbCplex_.getSolnPoolNreplaced() << " solutions were replaced in the solution pool " << std::endl;
 
-    env_.out() << "# In total, " << SubProbCplex_.getSolnPoolNsolns() + SubProbCplex_.getSolnPoolNreplaced() <<
+    repStr << "# In total, " << SubProbCplex_.getSolnPoolNsolns() + SubProbCplex_.getSolnPoolNreplaced() <<
     " solutions were generated." << std::endl;
 
     int nbValidSolution = 0;
