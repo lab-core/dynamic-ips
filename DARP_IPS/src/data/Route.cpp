@@ -33,9 +33,14 @@ const unsigned int Route::getRouteId() const {return routeID_;}
 
 void Route::updateReducedCost(IloNumArray &requestDuals, IloNumArray &vehicleDual, std::map<int, int> &requestToOrder) {
     reducedCost_ = totalDelay_ - vehicleDual[vehicleID_];
-    for (int r = 0; r < routeRequests.size(); ++r) {
-        reducedCost_ -= requestDuals[requestToOrder[routeRequests[r]]];
+    for (int i = 0; i < routeNodes_.size(); ++i) {
+        if (routeNodes_[i]->type_ == PICKUP){
+            reducedCost_ -= requestDuals[requestToOrder[(*routeNodes_[i]->related_Request_)->getRequestId()]];
+        }
     }
+    /*for (int r = 0; r < routeRequests.size(); ++r) {
+        reducedCost_ -= requestDuals[requestToOrder[routeRequests[r]]];
+    }*/
 }
 
 // this function is used to add nodes to the routes
@@ -51,9 +56,9 @@ void Route::addNode(PNode node, float departTime, int departPassengers) {
     else
     {
         plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-        float reachTime = plannedReachTime_.back()+ routeNodes_.back()->deltaTime_ +
+        double reachTime = plannedReachTime_.back()+ routeNodes_.back()->deltaTime_ +
                           calcTravelTime(routeNodes_.back(), node);
-        if (node->type_ == PICKUP) {
+        if ((node->type_ == PICKUP) || ((node->type_ == DROPOFF)&&(node->nodeStatus_ == PLANNED))) {
             routeRequests.push_back((*node->related_Request_)->getRequestId());
             // a request can not be picked up before its early pick time
             if (reachTime < node->requestTime_)
@@ -69,6 +74,25 @@ void Route::addNode(PNode node, float departTime, int departPassengers) {
     }
 }
 
+// this function is used to remove completed nodes from the routes
+void Route::removeNode(int nodeIndex) {
+    routeSize_ = routeSize_ - nodeIndex;
+    routeNodes_.erase(routeNodes_.begin(), routeNodes_.begin()+nodeIndex);
+    plannedReachTime_.erase(plannedReachTime_.begin(), plannedReachTime_.begin()+nodeIndex);
+    plannedPassengers_.erase(plannedPassengers_.begin(), plannedPassengers_.begin()+nodeIndex);
+    routeRequests.clear();
+    totalDelay_ = 0;
+    for (int i = 1; i < routeNodes_.size(); ++i) {
+        if ((routeNodes_[i]->type_ == DROPOFF)&&(routeNodes_[i]->nodeStatus_ == PLANNED))
+            routeRequests.push_back((*routeNodes_[i]->related_Request_)->getRequestId());
+        if (routeNodes_[i]->type_ == PICKUP) {
+            routeRequests.push_back((*routeNodes_[i]->related_Request_)->getRequestId());
+            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
+        }
+
+    }
+}
+
 // Display function
 std::string Route::toString() const {
     std::stringstream repStr;
@@ -76,10 +100,10 @@ std::string Route::toString() const {
     repStr << "#" << std::left << std::endl;
     repStr << "#\t" << std::setw(24) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << routeSize_-2 << std::endl;
     repStr << "#\t" << std::setw(24) << "- TOTAL_DELAY (seconds)" << " : " << totalDelay_ << std::endl;
     repStr << "#" << std::endl;
-    repStr << "#" << std::endl;
+//    repStr << "#" << std::endl;
 
     // print table header
     repStr << "# ------------------------------------------------------------------------" << std::endl;
@@ -114,9 +138,10 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(11) << routeNodes_.back()->nodeID_;
     repStr << std::right << std::setw(11) << plannedReachTime_.back() << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_.back() << std::endl;
-    repStr << "# ________________________________________________________________________" << std::endl;
+//    repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
+
 
 
 

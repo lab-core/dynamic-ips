@@ -24,7 +24,7 @@ public:
     static unsigned int routeCount_;            // Counter the number of routes generated
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
-    float totalDelay_;                          // sum of waiting times of the requests served by the route
+    double totalDelay_;                          // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
     std::vector<unsigned int> routeRequests;    // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
@@ -47,11 +47,21 @@ public:
     // this function is used to add nodes to the routes
     void addNode(PNode node, float departTime, int departPassengers);
 
+    // this function is used to remove completed nodes from the routes
+    void removeNode(int nodeIndex);
+
     // Display function
     std::string toString() const;
 
 
 
+};
+
+inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
+    return (
+            ((lhs->totalDelay_ == rhs->totalDelay_) &&
+            (lhs->routeSize_ == rhs->routeSize_))
+            );
 };
 
 #endif //_ROUTE_H
