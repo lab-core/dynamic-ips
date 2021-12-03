@@ -9,7 +9,8 @@
 #include "solvers/CPLEXModeler.h"
 #include "data/Route.h"
 #include "data/Instance.h"
-#include "ReducedProblem.h"
+#include "solvers/ReducedProblem.h"
+#include "solvers/ComplementPro.h"
 #include "Eigen/Dense"
 
 //---------------------------------------------------------------------------------------------
@@ -19,8 +20,9 @@
 class ISUDAlgorithm {
 public:
     PReducedProblem ReducedPro_;
+    PComplementPro CompPro_;
     std::map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
-//    std::vector<PRoute> availableRoutes_;                   // list of available routes based on set of requests
+//    std::vector<PRoute> availableRoutes_;                 // list of available routes based on set of requests
     std::map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
 
 
@@ -31,11 +33,20 @@ public:
     Eigen::MatrixXd incMatrix_;                             // incompatibility matrix
     std::map<int, int> incRequestToOrder_;                  // order of requests in incompatibility matrix
 
+    int improveIter_;
+    double objValue_;
+    Tools::Timer *isudTime_;
+
+    int improveStatus_;
+
 
     // Constructor and Destructor
-    ISUDAlgorithm(PInstance &pInst);
+    ISUDAlgorithm();
+
+    virtual ~ISUDAlgorithm();
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
+    // Reduced problem is also solved to initialized dual costs
     void initialization(PInstance &pInst);
 
     // function to create M2 matrix for each column in the current solution
@@ -54,16 +65,24 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(int &vehicleID);
 
+    // this function create empty routes that only goes form source to sink
+    void createEmptyRoute(PInstance &pInst);
+
     // improve the solution through solving Reduce problem
     void reduceProImprove(PInstance &pInst);
 
+    // improve the solution through solving Complementary problem
+    void CPImprove(PInstance &pInst);
 
-    void createEmptyRoute(PInstance &pInst);
+    void solveISUD(PInstance &pInst, int epoch);
+
+    // Display function
+    std::string toString() const;
+
+    // function to evaluate available routes and find proper ones to be added to the models
+    void updateRoutesToAdd(int compDegree, PInstance &pInst);
 
 };
 
-
-// function that create column from the route
-const std::vector<PRoute> createInitialRoutes(PInstance &pInst);
 
 #endif //_REDUCEDPROBLEM_H
