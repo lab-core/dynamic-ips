@@ -9,6 +9,7 @@
 #include "solvers/CPLEXModeler.h"
 #include "data/Route.h"
 #include "data/Instance.h"
+#include "solvers/MasterModeler.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -16,46 +17,18 @@
 //---------------------------------------------------------------------------------------------
 
 
-class ReducedProblem {
+class ReducedProblem : public MasterModeler{
 public:
-    IloEnv env_;
-    IloModel RPModel_;
-    IloCplex RPCplex_;
-    IloObjective reducedObj_;
-
     // Variables
     IloNumVarArray routeVar_;
     IloNumVarArray zVar_;
 
-    // dual costs
-    IloNumArray requestDuals_;
-    IloNumArray vehicleDuals_;
-
-    // right-hand-side of constraints
-    IloNumArray requestRHS_;
-    IloNumArray vehicleRHS_;
-
-    // set of constraints
-    IloRangeArray requestConst_;
-    IloRangeArray vehicleConst_;
-
-    vector<int> orderToRequest_;
-    std::map<int, int> requestToOrder_;
-
-    std::vector<PRoute> routesToAdd_;
-
     // Constructor and Destructor
-    ReducedProblem(PInstance &pInst);
-    virtual ~ReducedProblem();
+    ReducedProblem();
 
-    // this function reset the model based the current set of routes and changed the set of constraints (size)
-    void updateRequestOrder(PInstance &pInst);
-
-    // this function clear all objects from the model at the start of each epoch
-    void clearModel(PInstance &pInst);
 
     // this function initialized the model and define empty set of constraints
-    void initializeModel(PInstance &pInst);
+    void ResetRPModel();
 
     // this function adds routeVar to the model
     void addRouteVar(PRoute &newRoute);

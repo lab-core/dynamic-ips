@@ -10,78 +10,48 @@
 //---------------------------------------------------------------------------------------------
 
 // Constructor and Destructor
-ReducedProblem::ReducedProblem(PInstance &pInst) {
-    RPModel_ = IloModel(env_);
-
-    requestRHS_ = IloNumArray(env_);
-    vehicleRHS_ = IloNumArray(env_);
-
-    requestDuals_ = IloNumArray(env_);
-    vehicleDuals_ = IloNumArray(env_);
+ReducedProblem::ReducedProblem() : MasterModeler() {
 
     // defining variable
-    zVar_ = IloNumVarArray(env_, 0.0, IloInfinity, ILOFLOAT);
-    routeVar_ = IloNumVarArray(env_, 0.0, IloInfinity, ILOFLOAT);
+    zVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
+    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
 }
 
-ReducedProblem::~ReducedProblem() {
-    env_.end();
-}
-
-// this function reset the model based the current set of routes and changed the set of constraints (size)
-void ReducedProblem::updateRequestOrder(PInstance &pInst) {
-    orderToRequest_.clear();
-    requestToOrder_.clear();
-    for (int i = 0; i < pInst->nbRequests_; ++i) {
-        orderToRequest_.push_back(pInst->requests_[i]->getRequestId());
-        requestToOrder_[pInst->requests_[i]->getRequestId()] = i;
-    }
-}
-
-// this function clear all objects from the model at the start of each epoch
-void ReducedProblem::clearModel(PInstance &pInst) {
-    RPModel_.end();
-}
 
 // this function initialized the model and define empty set of constraints
-void ReducedProblem::initializeModel(PInstance &pInst) {
+void ReducedProblem::ResetRPModel() {
 
-    // update order of requests
-    updateRequestOrder(pInst);
+    try {
+        int modelExist = 0;
+        for (int r = routeVar_.getSize()-1; r >= 0; --r) {
+            routeVar_[r].end();
+            routeVar_.remove(r,1);
+            modelExist = 1;
+        }
+        for (int i = zVar_.getSize()-1; i >= 0; --i) {
+            zVar_[i].end();
+            zVar_.remove(i,1);
+            modelExist = 1;
+        }
+        if (modelExist == 1) {
+            Model_.remove(requestConst_);
+            Model_.remove(vehicleConst_);
+        }
 
-    // define and add objective
-    reducedObj_ = IloMinimize(env_);
-    RPModel_.add(reducedObj_);
-
-
-    // defining constraints
-    createIloNumArray (requestRHS_, pInst->nbRequests_, 1);
-    createIloNumArray (vehicleRHS_, pInst->nbVehicles_, 1);
-
-    requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
-    vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
-
-    RPModel_.add(requestConst_);
-    RPModel_.add(vehicleConst_);
-
+    }
+    catch (IloException& e) {
+        std::cout << e << std::endl;
+    }
 }
 
 // this function adds routeVar to the model
 void ReducedProblem::addRouteVar(PRoute &newRoute) {
-    IloNumArray columnVar(env_, orderToRequest_.size());
-    createPattern(columnVar, newRoute, requestToOrder_);
-    IloNumVar numVar = IloNumVar(reducedObj_(newRoute->totalDelay_) + requestConst_(columnVar)
-                                 + vehicleConst_[newRoute->vehicleID_](1));
-    numVar.setName(newRoute->name_);
-    routeVar_.add(numVar);
+        MasterModeler::addRouteVar(routeVar_, newRoute, POSITIVE);
 }
 
 // this function adds zVar to the model used for the routes that served only one request
 void ReducedProblem:: addZVar(PRequest &request) {
-    IloNumVar numVar = IloNumVar(reducedObj_(request->penalty_) +
-                                 requestConst_[requestToOrder_[request->getRequestId()]](1));
-    numVar.setName(request->name_);
-    zVar_.add(numVar);
+    MasterModeler::addZVar(zVar_, request, POSITIVE);
 }
 
 // this function add one route at each iteration of the algorithm during one epoch
@@ -90,8 +60,8 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
         std::cout << "There is no route to be added" << std::endl;
         throw Tools::myException("The input route is empty, No new column is passed to be added", __LINE__);
     }
-    std::cout << "number of route columns before update: " << routeVar_.getSize() << std::endl;
-    std::cout << "number of z columns before update: " << zVar_.getSize() << std::endl;
+    /*std::cout << "# number of route columns before update: " << routeVar_.getSize() << std::endl;
+    std::cout << "# number of z columns before update: " << zVar_.getSize() << std::endl;*/
 
     // add the new compatible column to the model
     for (int i = 0; i < routesToAdd_.size(); ++i) {
@@ -105,43 +75,56 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
             addZVar(*routeSolution[r]->routeNodes_[1]->related_Request_);
         }
     }
-    std::cout << "number of route columns after update: " << routeVar_.getSize() << std::endl;
-    std::cout << "number of z columns after update: " << zVar_.getSize() << std::endl;
+    /*std::cout << "# number of route columns after update: " << routeVar_.getSize() << std::endl;
+    std::cout << "# number of z columns after update: " << zVar_.getSize() << std::endl;*/
 }
 
 // this function build the model at the start of each epoch
 void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution) {
 
     // model initialization (defining empty set of constraints and adding objective)
-    initializeModel(pInst);
+    ResetRPModel();
+    int rhs = 1;
+    MasterModeler::initializeModel(pInst, rhs);
+
+
+ //   MasterModeler::initializeModel(pInst, rhs);
 
         // adding request columns (z variables)
     for (int i = 0; i < zSolution.size(); ++i) {
         addZVar(zSolution[i]);
+//        env_.out() << Model_;
     }
 
     // adding solution columns
     for (int r = 0; r < routeSolution.size(); ++r) {
         addRouteVar(routeSolution[r]);
+//        env_.out() << Model_;
 
         // add related compatible z variables
         if (routeSolution[r]->routeRequests.size() == 1) {
             addZVar(*routeSolution[r]->routeNodes_[1]->related_Request_);
+//            env_.out() << Model_;
         }
     }
 
     //adding new route variables
     for (int r = 0; r < routesToAdd_.size(); ++r) {
         addRouteVar(routesToAdd_[r]);
+//        env_.out() << Model_;
     }
+//    env_.out() << Model_;
+
 }
 
 // this function solve the model and remove all columns except than the current base
 void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                                 std::vector<PRoute> &routeSolution, std::map<std::string , PRoute> &generatedRoutes) {
     try {
-        RPCplex_ = IloCplex(RPModel_);
-        RPCplex_.solve();
+
+        Cplex_ = IloCplex(Model_);
+ //       env_.out() << Model_;
+        Cplex_.solve();
 
         // getting dual values
         requestDuals_.clear();
@@ -151,17 +134,18 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
         vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
+        std::cout << "REDUCED DUALS:" << std::endl;
         for (int r = 0; r < pInst->nbRequests_; ++r) {
-            requestDuals_[r] = RPCplex_.getDual(requestConst_[r]);
+            requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
             std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
         }
         for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            vehicleDuals_[v] = RPCplex_.getDual(vehicleConst_[v]);
+            vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
             std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
         }
 
         // printing solution status
-        std::cout << toString();
+        std::cout << MasterModeler::toString();
 
         // saving the result and remove out of base variables
         zSolution.clear();
@@ -170,12 +154,16 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         IloNumArray zVal(env_);
         IloNumArray routeVal(env_);
 
-        RPCplex_.getValues(zVal, zVar_);
-        RPCplex_.getValues(routeVal, routeVar_);
+
+        Cplex_.getValues(zVal, zVar_);
+        Cplex_.getValues(routeVal, routeVar_);
+        env_.out() << routeVal << std::endl;
+        env_.out() << zVal << std::endl;
 
         for (int r = routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
                 routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
+                pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(generatedRoutes[routeVar_[r].getName()]);
             }
             else {
                 routeVar_[r].end();
@@ -206,11 +194,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 std::string ReducedProblem::toString() const {
     std::stringstream repStr;
     repStr << std::endl;
-    repStr << "# REDUCED PROBLEM SOLVED: " << std::endl;
-    repStr << "#" << std::endl;
-    repStr << "# Solution status = " << RPCplex_.getStatus() << std::endl;
-    repStr << "# Incumbent objective value = " << RPCplex_.getObjValue() << std::endl;
-
+    repStr << "# =======================  REDUCED PROBLEM SOLVED  ======================= " << std::endl;
+    repStr << MasterModeler::toString();
     return repStr.str();
 }
 
