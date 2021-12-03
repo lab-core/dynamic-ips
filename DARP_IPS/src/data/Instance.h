@@ -35,12 +35,15 @@ public:
     std::vector<PVehicle> vehicles_;            // List of vehicles
 
     int nbRequests_;                            // Number of requests
+    int nbNewRequests_;                         // Number of requests added after each epoch
     std::vector<PRequest> requests_;            // List of requests
     std::map<std::string , PRequest> nameToRequest_;
-    PGraph mainGraph_;
+    PGraph instGraph_;
 
     // Constructor and Destructor
     Instance(std::string &name, int nbVehicles, std::vector<PVehicle> &vehicles, int nbRequests, PGraph &mainGraph);
+//    Instance(std::string &name, const PInstance &mainInst, int epoch, int lastRecRequests);
+    Instance(const Instance &mainInst);
 
     virtual ~Instance();
 
@@ -48,6 +51,12 @@ public:
 
     // Display function
     std::string toString();
+
+    // function to set the data of the partial instance based on the epoch
+    void buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests);
+
+    // function to add requests from previous epochs to the current partial instance
+    void addRequest(PRequest request, int epoch);
 };
 
 
