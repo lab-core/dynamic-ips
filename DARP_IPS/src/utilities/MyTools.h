@@ -41,6 +41,8 @@ class Route;
 typedef std::shared_ptr<Route> PRoute;
 class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
+class ComplementPro;
+typedef std::shared_ptr<ComplementPro> PComplementPro;
 
 static const int DECIMALS = 3;          // precision when printing floats
 // the constant 275 calculated by excel just to convert distance in mile to travel time in sec
@@ -122,7 +124,7 @@ namespace Tools {
     double calcDistance(double lat1, double long1, double lat2, double long2);
 
     // function to calculate travel time between two coordinate
-    float calcTravelTime(double lat1, double long1, double lat2, double long2);
+    double calcTravelTime(double lat1, double long1, double lat2, double long2);
 
     // function to create node ID based on request ID
     std::string createNodeID(int requestID, NodeType type);
