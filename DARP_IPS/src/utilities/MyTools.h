@@ -46,7 +46,7 @@ typedef std::shared_ptr<ComplementPro> PComplementPro;
 
 static const int DECIMALS = 3;          // precision when printing floats
 // the constant 275 calculated by excel just to convert distance in mile to travel time in sec
-static const float TimePerMile = 15;   // travel time per mile distance
+static const float TimePerMile = 5;   // travel time per mile distance
 static const float alphaParam = 1.5;
 static const float betaParam = 240;
 static const float deltaPram = 420;

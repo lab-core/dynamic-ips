@@ -66,7 +66,7 @@ void Vehicle::updateStatus(int epoch) {
         solutionRoute_->addNode(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
     }
     if (currentRoute_->routeSize_ > 2) {
-        if (departTime_ <= epoch * epochLength) {
+        if (departTime_ <= (epoch+1) * epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_-1; ++i) {
@@ -85,7 +85,7 @@ void Vehicle::updateStatus(int epoch) {
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF)
                     (*currentRoute_->routeNodes_[i]->related_Request_)->requestStatus_ = COMPLETED;
 
-                if (currentRoute_->plannedReachTime_[i] >= epoch * epochLength ){
+                if (currentRoute_->plannedReachTime_[i] >= (epoch+1) * epochLength ){
 
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;

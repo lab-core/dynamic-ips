@@ -55,6 +55,9 @@ public:
 
     // Display function
     std::string toString() const;
+
+    // this function initialized the model and define empty set of constraints
+    void ResetCPModel();
 };
 
 

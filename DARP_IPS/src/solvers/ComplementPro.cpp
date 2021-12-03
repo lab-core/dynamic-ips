@@ -57,6 +57,7 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
 // this function build the model at each iteration
 void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     // model initialization (defining empty set of constraints and adding objective)
+    ResetCPModel();
     initializeCPModel(pInst);
 
     // adding solution route columns
@@ -72,11 +73,13 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         addRouteVar(routeIncVar_, routesToAdd_[r], POSITIVE);
 
     // adding z columns
+    for (int i = 0; i < zSolution.size(); ++i) {
+        addZVar(zSolVar_, zSolution[i], NEGATIVE);
+    }
     for (int i = 0; i < pInst->nbRequests_; ++i) {
         int flagAdd =0;
         for (int j = 0; j < zSolution.size(); ++j) {
             if (pInst->requests_[i] == zSolution[j]) {
-                addZVar(zSolVar_, zSolution[j], NEGATIVE);
                 flagAdd = 1;
                 break;
             }
@@ -210,6 +213,42 @@ std::string ComplementPro::toString() const {
     repStr << "# COMPLEMENTARY PROBLEM SOLVED: " << std::endl;
     repStr << MasterModeler::toString();
     return repStr.str();
+}
+
+void ComplementPro::ResetCPModel() {
+    try {
+        int modelExist = 0;
+        for (int r = routeSolVar_.getSize()-1; r >= 0; --r) {
+            routeSolVar_[r].end();
+            routeSolVar_.remove(r,1);
+            modelExist = 1;
+        }
+        for (int i = zSolVar_.getSize()-1; i >= 0; --i) {
+            zSolVar_[i].end();
+            zSolVar_.remove(i,1);
+            modelExist = 1;
+        }
+        for (int r = routeIncVar_.getSize()-1; r >= 0; --r) {
+            routeIncVar_[r].end();
+            routeIncVar_.remove(r,1);
+            modelExist = 1;
+        }
+        for (int i = zIncVar_.getSize()-1; i >= 0; --i) {
+            zIncVar_[i].end();
+            zIncVar_.remove(i,1);
+            modelExist = 1;
+        }
+        if (modelExist == 1) {
+            Model_.remove(requestConst_);
+            Model_.remove(vehicleConst_);
+            Model_.remove(normalConst_);
+        }
+
+    }
+    catch (IloException& e) {
+        std::cout << e << std::endl;
+    }
+
 }
 
 

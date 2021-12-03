@@ -51,7 +51,7 @@ int main() {
         subProTime->stop();
         isudObj->initialization(EpochInst);
         std::cout << "# NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
-        std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbRequests_ << std::endl;
+        std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         // solving the reduced problem at the start of each epoch
         int flagImprove = 0;
@@ -74,7 +74,7 @@ int main() {
                                             isudObj->ReducedPro_->requestToOrder_);
                 subProblem->SolveCPLEX();
                 std::cout << subProblem->toString() << std::endl;
-                if (subProblem->SubProbCplex_.getObjValue() >= -0.00001) {
+                if (subProblem->SubProbCplex_.getObjValue() >= -0.0001) {
                     flagImprove ++;
                 }
                 else

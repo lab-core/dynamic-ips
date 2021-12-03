@@ -130,8 +130,8 @@ void ISUDAlgorithm::calcIncMatrix() {
         }
     }
 
-    /*std::cout << "Incompatibility Matrix:" << std::endl;
-    std::cout << incMatrix_ << std::endl;*/
+    std::cout << "Incompatibility Matrix rows:" << incMatrix_.rows() << std::endl;
+    std::cout << "Incompatibility Matrix cols:" << incMatrix_.cols() << std::endl;
 }
 
 // function to calculate incompatibility degree of a route
@@ -142,6 +142,7 @@ void ISUDAlgorithm::calcIncompatibility(PRoute &route) {
     }
     /*std::cout << "Route Pattern: " << std::endl;
     std::cout << pattern << std::endl;*/
+
     Eigen::MatrixXd multiplication = incMatrix_ * pattern;
 
     /*std::cout << "multiplication: " << std::endl;
@@ -176,7 +177,7 @@ void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
     for (int r = availableRoutes_[vehicleID].size()-1; r >= 0; --r) {
         availableRoutes_[vehicleID][r]->updateReducedCost(ReducedPro_->requestDuals_, ReducedPro_->vehicleDuals_,
                                                ReducedPro_->requestToOrder_);
-        if (availableRoutes_[vehicleID][r]->reducedCost_ >= -0.00001)
+        if (availableRoutes_[vehicleID][r]->reducedCost_ >= -0.0001)
             availableRoutes_[vehicleID].erase(availableRoutes_[vehicleID].begin()+r);
     }
 }
@@ -320,9 +321,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch) {
                 improveFlag = 1;
                 improveIter_++;
                 // test the reduced cost
-                ReducedPro_->routesToAdd_.clear();
+                /*ReducedPro_->routesToAdd_.clear();
                 ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
-                ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
+                ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);*/
 
             }
         }
@@ -356,6 +357,7 @@ std::string ISUDAlgorithm::toString() const {
 }
 
 void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
+    std::cout << "Calculate inc matrix for " << compDegree << std::endl;
     calcIncMatrix();
     for (int v = 0; v < pInst->nbVehicles_; ++v) {
         updateReducedCosts(pInst->vehicles_[v]->vehicleID_);
