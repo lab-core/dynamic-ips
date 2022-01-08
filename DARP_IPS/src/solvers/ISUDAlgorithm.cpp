@@ -89,7 +89,7 @@ void ISUDAlgorithm::calcIncMatrix() {
         return lhs->routeRequests.size() < rhs->routeRequests.size();});
     if (routeSolution_.back()->routeRequests.size() <= 1) {
 
-        for (int i = 0; i < routeSolution_.size(); ++i) {
+        /*for (int i = 0; i < routeSolution_.size(); ++i) {
             incRequestToOrder_[routeSolution_[i]->routeRequests[0]] = orderCount;
             orderCount ++;
         }
@@ -97,12 +97,13 @@ void ISUDAlgorithm::calcIncMatrix() {
             incRequestToOrder_[zSolution_[i]->getRequestId()] = orderCount;
             orderCount++;
         }
-        incMatrix_ = Eigen::MatrixXd::Zero(1,orderCount);
+        incMatrix_ = Eigen::MatrixXd::Zero(1,orderCount);*/
+        incMatrix_ = Eigen::MatrixXd::Zero(0,0);
     }
     else {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
         for (int r = 0; r < routeSolution_.size(); ++r) {
-            if (routeSolution_[r]->routeRequests.size() >= 1) {
+            if (routeSolution_[r]->routeRequests.size() > 1) {
                 for (int i = 0; i < routeSolution_[r]->routeRequests.size(); ++i) {
                     incRequestToOrder_[routeSolution_[r]->routeRequests[i]] = orderCount;
                     orderCount++;
@@ -122,37 +123,44 @@ void ISUDAlgorithm::calcIncMatrix() {
                 }
             }
         }
-        incMatrix_.conservativeResize(incMatrix_.rows() , incMatrix_.cols()+zSolution_.size());
+        /*incMatrix_.conservativeResize(incMatrix_.rows() , incMatrix_.cols()+zSolution_.size());
         incMatrix_.topRightCorner(incMatrix_.rows(), zSolution_.size()) = Eigen::MatrixXd::Zero(incMatrix_.rows(), zSolution_.size());
         for (int i = 0; i < zSolution_.size(); ++i) {
             incRequestToOrder_[zSolution_[i]->getRequestId()] = orderCount;
             orderCount ++;
-        }
+        }*/
     }
 
-    std::cout << "Incompatibility Matrix rows:" << incMatrix_.rows() << std::endl;
-    std::cout << "Incompatibility Matrix cols:" << incMatrix_.cols() << std::endl;
+    /*std::cout << "Incompatibility Matrix rows:" << incMatrix_.rows() << std::endl;
+    std::cout << "Incompatibility Matrix cols:" << incMatrix_.cols() << std::endl;*/
 }
 
 // function to calculate incompatibility degree of a route
 void ISUDAlgorithm::calcIncompatibility(PRoute &route) {
-    Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero(incRequestToOrder_.size(),1);
-    for (int i = 0; i < route->routeRequests.size(); ++i) {
-        pattern(incRequestToOrder_[route->routeRequests[i]],0) = 1;
+    if (incMatrix_.rows() > 0) {
+        Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero(incRequestToOrder_.size(),1);
+
+        for (int i = 0; i < route->routeRequests.size(); ++i) {
+            if (incRequestToOrder_.count(route->routeRequests[i])>0)
+                pattern(incRequestToOrder_[route->routeRequests[i]],0) = 1;
+        }
+        /*std::cout << "Route Pattern: " << std::endl;
+        std::cout << pattern << std::endl;*/
+
+        Eigen::MatrixXd multiplication = incMatrix_ * pattern;
+
+        /*std::cout << "multiplication: " << std::endl;
+        std::cout << multiplication << std::endl;*/
+
+        route->incompatibilityDegree = 0;
+        for (int i = 0; i < multiplication.rows(); ++i) {
+            if (multiplication(i,0) != 0)
+                route->incompatibilityDegree ++;
+        }
     }
-    /*std::cout << "Route Pattern: " << std::endl;
-    std::cout << pattern << std::endl;*/
+    else
+        route->incompatibilityDegree = 0;
 
-    Eigen::MatrixXd multiplication = incMatrix_ * pattern;
-
-    /*std::cout << "multiplication: " << std::endl;
-    std::cout << multiplication << std::endl;*/
-
-    route->incompatibilityDegree = 0;
-    for (int i = 0; i < multiplication.rows(); ++i) {
-        if (multiplication(i,0) != 0)
-            route->incompatibilityDegree ++;
-    }
     /*std::cout << "incompatibility degree: " << std::endl;
     std::cout << route->incompatibilityDegree << std::endl;*/
 }
@@ -217,10 +225,10 @@ void ISUDAlgorithm::reduceProImprove(PInstance &pInst) {
                 ReducedPro_->routesToAdd_.push_back(availableRoutes_[pInst->vehicles_[v]->vehicleID_][0]);
                 ReducedPro_->updateModel(pInst, routeSolution_);
                 ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-                std::cout << "Solution Result after RP improve:" << std::endl;
+                /*std::cout << "Solution Result after RP improve:" << std::endl;
                 for (int r = 0; r < routeSolution_.size(); ++r) {
                     std::cout << routeSolution_[r]->toString();
-                }
+                }*/
 
             }
         }
@@ -249,10 +257,10 @@ void ISUDAlgorithm::CPImprove(PInstance &pInst) {
     if (CompPro_->routesToAdd_.size() > 2) {
         CompPro_->buildModel(pInst, zSolution_, routeSolution_);
         CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-        std::cout << "Solution Result after CP improve:" << std::endl;
+        /*std::cout << "Solution Result after CP improve:" << std::endl;
         for (int r = 0; r < routeSolution_.size(); ++r) {
             std::cout << routeSolution_[r]->toString();
-        }
+        }*/
     }
 }
 
@@ -309,15 +317,15 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch) {
             CompPro_->buildModel(pInst, zSolution_, routeSolution_);
             CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
             if (CompPro_->status_ == FRACTIONAL) {
-                std::cout << "The Algorithm needs modification fo find integer direction" << std::endl;
+                std::cout << "# The Algorithm needs modification fo find integer direction" << std::endl;
                 break;
             }
             else if (CompPro_->status_ == POSITIVE_VALUE) {
-                std::cout << "The Algorithm can not find further direction of descent and terminated" << std::endl;
+                std::cout << "# The Algorithm can not find further direction of descent and terminated" << std::endl;
                 break;
             }
             else {
-                std::cout << "The Complementary Problems solved and find integer direction. " << std::endl;
+                std::cout << "# The Complementary Problems solved and find integer direction. " << std::endl;
                 improveFlag = 1;
                 improveIter_++;
                 // test the reduced cost
@@ -357,7 +365,7 @@ std::string ISUDAlgorithm::toString() const {
 }
 
 void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
-    std::cout << "Calculate inc matrix for " << compDegree << std::endl;
+//    std::cout << "Calculate inc matrix for " << compDegree << std::endl;
     calcIncMatrix();
     for (int v = 0; v < pInst->nbVehicles_; ++v) {
         updateReducedCosts(pInst->vehicles_[v]->vehicleID_);
