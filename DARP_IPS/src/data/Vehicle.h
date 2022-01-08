@@ -29,6 +29,7 @@ public:
     PRoute currentRoute_;
     PRoute solutionRoute_;
     PRoute emptyRoute_;
+    double dual_;
 
 
     // Constructor and Destructor
