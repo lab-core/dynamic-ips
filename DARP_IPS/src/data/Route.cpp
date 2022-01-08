@@ -56,8 +56,10 @@ void Route::addNode(PNode node, float departTime, int departPassengers) {
     else
     {
         plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-        double reachTime = plannedReachTime_.back()+ routeNodes_.back()->deltaTime_ +
-                          calcTravelTime(routeNodes_.back(), node);
+        /*double reachTime = plannedReachTime_.back()+ routeNodes_.back()->deltaTime_ +
+                          queryTravelTime(routeNodes_.back(), node);*/
+        float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
+                travelMat->queryTravelTime(routeNodes_.back(), node);
         if ((node->type_ == PICKUP) || ((node->type_ == DROPOFF)&&(node->nodeStatus_ == PLANNED))) {
             routeRequests.push_back((*node->related_Request_)->getRequestId());
             // a request can not be picked up before its early pick time
@@ -96,12 +98,12 @@ void Route::removeNode(int nodeIndex) {
 // Display function
 std::string Route::toString() const {
     std::stringstream repStr;
-    repStr << "==========================================================================" << std::endl;
+
     repStr << "#" << std::left << std::endl;
     repStr << "#\t" << std::setw(24) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << routeSize_-2 << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_DELAY (seconds)" << " : " << totalDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
     repStr << "#" << std::endl;
 //    repStr << "#" << std::endl;
 
@@ -138,6 +140,7 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(11) << routeNodes_.back()->nodeID_;
     repStr << std::right << std::setw(11) << plannedReachTime_.back() << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_.back() << std::endl;
+    repStr << "==========================================================================" << std::endl;
 //    repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
