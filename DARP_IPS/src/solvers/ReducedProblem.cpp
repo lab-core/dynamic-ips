@@ -134,14 +134,15 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
         vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
-        std::cout << "REDUCED DUALS:" << std::endl;
+//        std::cout << "REDUCED DUALS:" << std::endl;
         for (int r = 0; r < pInst->nbRequests_; ++r) {
             requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
-            std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+//            std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
         }
         for (int v = 0; v < pInst->nbVehicles_; ++v) {
             vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
-            std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
+            pInst->vehicles_[v]->dual_ = vehicleDuals_[v];
+//            std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
         }
 
         // printing solution status
@@ -157,8 +158,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
-        env_.out() << routeVal << std::endl;
-        env_.out() << zVal << std::endl;
+        /*env_.out() << routeVal << std::endl;
+        env_.out() << zVal << std::endl;*/
 
         for (int r = routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
