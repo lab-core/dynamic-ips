@@ -3,7 +3,7 @@
 //
 
 #include "ReadWrite.h"
-
+extern PTravelTime travelMat;
 
 //-----------------------------------------------------------------------------
 //  ReadWrite class
@@ -51,14 +51,15 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
             file >> nbRequests;
 
         // read the source coordination
-        else if (strEndWith(title, "SOURCE_LONGITUDE "))
-            file >> sourceLongitude;
         else if (strEndWith(title, "SOURCE_LATITUDE "))
             file >> sourceLatitude;
-        else if (strEndWith(title, "SINK_LONGITUDE "))
-            file >> sinkLongitude;
+        else if (strEndWith(title, "SOURCE_LONGITUDE "))
+            file >> sourceLongitude;
+
         else if (strEndWith(title, "SINK_LATITUDE "))
             file >> sinkLatitude;
+        else if (strEndWith(title, "SINK_LONGITUDE "))
+            file >> sinkLongitude;
 
         // read vehicles specifications
         else if (strEndWith(title, "VEHICLES_INFO")) {
@@ -112,11 +113,11 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
                         earlyPick = -1, minDist = -1, minTravelTime = -1, deltaTime = -1;
 
                 file >> nbPassengers;
-                file >> minDist;
-                file >> pickUpLongitude;
+            //    file >> minDist;
                 file >> pickUpLatitude;
-                file >> dropOffLongitude;
+                file >> pickUpLongitude;
                 file >> dropOffLatitude;
+                file >> dropOffLongitude;
                 file >> earlyPick;
 
                 // the starting time of the instance is 16pm
@@ -125,7 +126,8 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
                 minDist = Tools::calcDistance(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
                 deltaTime = nbPassengers * TimePerPassenger;
 
-                minTravelTime = Tools::calcTravelTime(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
+//                minTravelTime = Tools::queryTravelTime(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
+                minTravelTime = 0;
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude,
                                                                             pickUpLongitude, dropOffLatitude,
                                                                             dropOffLongitude,
@@ -138,10 +140,6 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
 
     // define an empty route for each vehicle and set it as the current route for the initialization
     pInstance->instGraph_->addNewRequests(pInstance->requests_);
-    for (int v = 0; v < pInstance->nbVehicles_; ++v) {
-        pInstance->vehicles_[v]->setEmptyRoute(pInstance);
-        pInstance->vehicles_[v]->setCurrentRoute(pInstance->vehicles_[v]->emptyRoute_);
-    }
 }
 
 
