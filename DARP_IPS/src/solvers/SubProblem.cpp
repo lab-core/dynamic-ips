@@ -35,10 +35,14 @@ void SubProblem::initSubGraph(PInstance &pInst) {
     // adding available nodes based on the penalty
     for (int r = 0; r < pInst->nbRequests_; ++r) {
         if ((pInst->requests_[r]->requestStatus_ == NO_ACTION)&&(pInst->requests_[r]->subStatus_ == NOTSELECTED)) {
-            double minWait = (*Vehicle_)->departTime_ +
-                            calcTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
+            /*double minWait = (*Vehicle_)->departTime_ +
+                            queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
                                            pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
-                            - pInst->requests_[r]->earlyPick_;
+                            - pInst->requests_[r]->earlyPick_;*/
+            float minWait = (*Vehicle_)->departTime_ +
+                             travelMat->queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
+                                             pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
+                             - pInst->requests_[r]->earlyPick_;
             if (minWait <= pInst->requests_[r]->penalty_) {
                 subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)]);
                 subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), DROPOFF)]);
@@ -163,13 +167,16 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         SubProModel_.add(expr11 >=t);
     }
 
+    // add this constraint to control the length of generated routes in subproblems
     IloExpr exprT(env_);
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
-        for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-            exprT += X[i][j];
+        if (subGraph_->nodes_[subGraph_->intToNodeID_[i]]->type_ == PICKUP) {
+            for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+                exprT += X[i][j];
+            }
         }
     }
-    SubProModel_.add(exprT <= 7);
+    SubProModel_.add(exprT <= 3);
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         // constraints 2c -------------------
@@ -191,8 +198,12 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
 
             // constraints 7c -------------------
             IloExpr expr7(env_);
+            /*expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
+                    + queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
+                                                 subGraph_->nodes_[subGraph_->intToNodeID_[j]])
+                    - U[j] - 7200 * (1 - X[i][j]);*/
             expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
-                    + calcTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
+                    + travelMat->queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
                                      subGraph_->nodes_[subGraph_->intToNodeID_[j]])
                     - U[j] - 7200 * (1 - X[i][j]);
             SubProModel_.add(expr7 <= 0);
@@ -206,26 +217,6 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         // constraints 14c -------------------
         SubProModel_.add(W[i] <= (*Vehicle_)->capacity_);
 
-        /*if (subGraph_->nodes_[subGraph_->intToNodeID_[i]]->nodeStatus_ == PLANNED) {
-            std::string onboardID = subGraph_->intToNodeID_[i];
-            std::string pickNodeID = subGraph_->nodes_[onboardID]->pairNodeID_;
-
-            // constraints 6c -------------------
-            IloExpr expr6(env_);
-            for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-                expr6 += X[j][subGraph_->nodeIDToInt_[onboardID]];
-            }
-            SubProModel_.add(expr6 == 1);
-
-            // constraints 12c -------------------
-            IloExpr expr12(env_);
-            expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[pickNodeID]->reachTime_
-                     - subGraph_->nodes_[pickNodeID]->deltaTime_;
-
-            float t = calcTravelTime(subGraph_->nodes_[onboardID],
-                                     subGraph_->nodes_[pickNodeID]);
-            SubProModel_.add(t <= expr12 <= std::max(alphaParam * t, betaParam + t));
-        }*/
     }
     for (int i = 0; i < (*Vehicle_)->onboards_.size(); ++i) {
         std::string onboardID = subGraph_->nodes_[(*Vehicle_)->onboards_[i]]->nodeID_;
