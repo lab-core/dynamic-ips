@@ -134,11 +134,12 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
             std::cout << "COMPLEMENTARY DUALS:" << std::endl;
             for (int r = 0; r < pInst->nbRequests_; ++r) {
                 requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
-                std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+//                std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
             }
             for (int v = 0; v < pInst->nbVehicles_; ++v) {
                 vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
-                std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
+                pInst->vehicles_[v]->dual_ = vehicleDuals_[v];
+//                std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
             }
 
             // remove outgoing variable
@@ -167,9 +168,9 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
             }
             std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
                       << " are selected to served." << std::endl;
-            for (int r = 0; r < routeSolution.size(); ++r) {
+            /*for (int r = 0; r < routeSolution.size(); ++r) {
                 std::cout << routeSolution[r]->toString();
-            }
+            }*/
         }
         else {
             status_ = FRACTIONAL;
