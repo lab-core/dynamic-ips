@@ -109,6 +109,7 @@ namespace Tools {
         return ANS;
     }
 
+
     Timer::Timer() : isInit_(0), isStarted_(0), isStopped_(0) {
         this->init();
     }
@@ -190,6 +191,91 @@ namespace Tools {
         }
         return cpuSinceStart_;
     } //end dSinceStart
+
+    // function for reading data from url
+    int writer(char *data, size_t size, size_t nmemb, std::string *writerData) {
+        if (writerData == NULL)
+            return 0;
+
+        writerData->append(data, size*nmemb);
+
+        return size * nmemb;
+    }
+
+
+    // function to query the fastest route between coordinates
+    float queryTravelTime(double lat1, double long1, double lat2, double long2) {
+        float duration = 0;
+        const std::string url = "http://206.12.92.28/ny/route/v1/driving/" +
+                                std::to_string(long1) + "," + std::to_string(lat1) + ";" +
+                                std::to_string(long2) + "," + std::to_string(lat2) +
+                                "?overview=false&generate_hints=false";
+
+        std::string content = queryHTTPData(url);
+        Json::Value jsonData;
+        Json::CharReaderBuilder builder;
+        JSONCPP_STRING errs;
+
+        const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+        // parse the results and return duration time
+        bool parsingSuccessful = reader->parse(content.c_str(), content.c_str() + content.size(), &jsonData,
+                                               &errs);
+        if (parsingSuccessful) {
+            // check the route code
+            if (jsonData["code"] == "Ok") {
+
+                duration = jsonData["routes"][0]["duration"].asDouble();
+            }
+            else if (jsonData["code"] == "NoRoute")
+                std::cout << "No route found between input locations" << std::endl;
+            else if (jsonData["code"] == "TooBig")
+                std::cout << "Too many coordinates" << std::endl;
+        }
+        return duration;
+
+    }
+
+    // function to get data from a http url
+    std::string queryHTTPData(const std::string &url) {
+        CURL *curl = curl_easy_init();
+        std::string content;
+
+        // Set remote URL.
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Don't bother trying IPv6, which would increase DNS resolution time.
+        curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+
+        // Don't wait forever, time out after 10 seconds.
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+
+        // Follow HTTP redirects if necessary.
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        // Response information.
+        int httpCode(0);
+
+        // Hook up data handling function.
+//        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+
+        // Hook up data container (will be passed as the last parameter to the
+        // callback handling function).  Can be any pointer type, since it will
+        // internally be passed as a void pointer.
+//        curl_easy_setopt(curl, CURLOPT_WRITEDATA, httpData.get());
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
+
+        // Run our HTTP GET command, capture the HTTP response code, and clean up.
+        curl_easy_perform(curl);
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        curl_easy_cleanup(curl);
+
+        return content;
+    }
+
+
+
+
 
 } // end namespace
 

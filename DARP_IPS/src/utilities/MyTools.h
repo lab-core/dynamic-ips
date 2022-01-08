@@ -5,6 +5,8 @@
 #ifndef _MYTOOLS_H
 #define _MYTOOLS_H
 
+#define NOMINMAX
+
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -15,7 +17,10 @@
 #include <limits.h>
 #include <chrono>
 #include <iomanip>
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <json/json.h>
+#include <curl/curl.h>
 
 
 
@@ -43,10 +48,15 @@ class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
 class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
+class TravelTime;
+typedef std::shared_ptr<TravelTime> PTravelTime;
+extern PTravelTime travelMat;
+
+#define INFINITY 9999999
 
 static const int DECIMALS = 3;          // precision when printing floats
 // the constant 275 calculated by excel just to convert distance in mile to travel time in sec
-static const float TimePerMile = 5;   // travel time per mile distance
+static const float TimePerMile = 10;   // travel time per mile distance
 static const float alphaParam = 1.5;
 static const float betaParam = 240;
 static const float deltaPram = 420;
@@ -161,8 +171,17 @@ namespace Tools {
         const std::chrono::duration<double> dSinceStart();
     };
 
-}; // Tools namespace
+    // function for reading data from url
+    static int writer(char *data, size_t size, size_t nmemb, std::string *writerData);
 
+    // function to query the fastest route between coordinates
+    float queryTravelTime(double lat1, double long1, double lat2, double long2);
+
+    // function to get data from a http url
+    std::string queryHTTPData(const std::string &url);
+
+
+}; // Tools namespace
 
 
 #endif //_MYTOOLS_H
