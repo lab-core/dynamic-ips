@@ -105,3 +105,10 @@ double calcTravelTime(PNode startNode, PNode endNode) {
                                       endNode->locLatitude_, endNode->locLongitude_);
     return dist * TimePerMile;
 }
+
+// function to calculate travel time of the fastest route between two node
+float queryTravelTime(PNode startNode, PNode endNode) {
+    double travelTime = Tools::queryTravelTime(startNode->locLatitude_, startNode->locLongitude_,
+                                      endNode->locLatitude_, endNode->locLongitude_);
+    return travelTime;
+}

@@ -16,9 +16,9 @@
 
 
 // Different node status and their names
-enum NodeStatus { DEFINED = 0, PLANNED = 1, COMMITTED = 2 };
+enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 };
 static const std::vector<std::string> nodeStatusName = {
-        "NO_ACTION", "PLANNED  ", "COMMITTED"
+        "NO_ACTION", "PLANNED  ", "DONE"
 };
 
 
@@ -81,5 +81,9 @@ typedef std::shared_ptr<Graph> PGraph;
 
 // function to calculate travel time between two node
 double calcTravelTime(PNode startNode, PNode endNode);
+
+// function to calculate travel time of the fastest route between two node
+float queryTravelTime(PNode startNode, PNode endNode);
+
 
 #endif //_GRAPH_H
