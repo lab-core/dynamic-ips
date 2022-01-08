@@ -9,6 +9,7 @@
 #include "data/Vehicle.h"
 #include "data/Request.h"
 #include "data/Graph.h"
+#include "data/TravelTime.h"
 
 //-----------------------------------------------------------------------------
 //  Instance class
@@ -52,11 +53,20 @@ public:
     // Display function
     std::string toString();
 
+    std::string solutionToString();
+
     // function to set the data of the partial instance based on the epoch
     void buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests);
 
     // function to add requests from previous epochs to the current partial instance
     void addRequest(PRequest request, int epoch);
+
+    void updateMinTravelTimes();
+
+    // print solutions in csv files
+    void saveSolutionRoutes(string saveDir);
+    void saveRequestsResults(string saveDir);
+
 };
 
 
