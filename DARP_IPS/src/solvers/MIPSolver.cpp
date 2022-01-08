@@ -118,8 +118,10 @@ void MIPSolver(PInstance& PInst)
             // constraints 12a -------------------
             IloExpr expr12(env);
             expr12 = U[v][dropIndex] - U[v][pickIndex] - PInst->requests_[i]->deltaTime_;
-            float t = calcTravelTime(PInst->instGraph_->nodes_[pickID],
-                                     PInst->instGraph_->nodes_[dropID]);
+            /*float t = queryTravelTime(PInst->instGraph_->nodes_[pickID],
+                                     PInst->instGraph_->nodes_[dropID]);*/
+            float t = travelMat->queryTravelTime(PInst->instGraph_->nodes_[pickID],
+                                      PInst->instGraph_->nodes_[dropID]);
             MIPModel.add(t <= expr12 <= std::max(alphaParam * t, betaParam + t));
 
         }
@@ -145,9 +147,13 @@ void MIPSolver(PInstance& PInst)
 
                 // constraints 8a -------------------
                 IloExpr expr8(env);
-                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
-                        + calcTravelTime(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
+                /*expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
+                        + queryTravelTime(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
                                          PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]])
+                        - U[v][j] - 7200 * (1 - X[v][i][j]);*/
+                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
+                        + travelMat->queryTravelTime(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
+                                          PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]])
                         - U[v][j] - 7200 * (1 - X[v][i][j]);
                 MIPModel.add(expr8 <= 0);
 
