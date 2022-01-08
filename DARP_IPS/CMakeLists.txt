@@ -38,6 +38,16 @@ set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
 set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
+######## Curl Dependency
+SET(LIBCURL_DIR "C:/ProgramData/chocolatey/lib/curl/tools/curl-7.80.0-win64-mingw")
+set(LIBCURL_INCLUDE_DIR ${LIBCURL_DIR}/include)
+INCLUDE_DIRECTORIES(${LIBCURL_INCLUDE_DIR})
+
+######## JSON Dependency
+SET(JSON_DIR "C:/src/vcpkg/installed/x64-windows")
+SET(JSON_INCLUDE_DIR ${JSON_DIR}/include)
+INCLUDE_DIRECTORIES(${JSON_INCLUDE_DIR})
+
 ######## Compiler message
 set(CMAKE_BUILD_TYPE Debug)
 message(STATUS "System: ${CMAKE_SYSTEM}")
@@ -52,10 +62,17 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
 
+
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
 
 #add_executable(static_DARP src/staticMain.cpp)
 add_executable(dynamic_DARP src/dynamicMain.cpp)
+
+
+
 #target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
+
+target_link_libraries(dynamic_DARP ${LIBCURL_DIR}/lib/libcurl.dll.a)
+target_link_libraries(dynamic_DARP ${JSON_DIR}/lib/jsoncpp.lib)
 target_link_libraries(dynamic_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
