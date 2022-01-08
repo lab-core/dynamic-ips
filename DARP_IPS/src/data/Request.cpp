@@ -27,6 +27,8 @@ Request::Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatit
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
     subStatus_ = NOTSELECTED;
+    pickTime_ = INFINITY;
+    dropTime_ = INFINITY;
 }
 
 Request::~Request() {}
@@ -37,6 +39,9 @@ void Request::setPenalty(int epoch) {
 
 }
 const unsigned int Request::getRequestId() const {return requestID_;}
+void Request::setMinTravelTime(float minTravelTime) {
+    minTravelTime_ = minTravelTime;
+}
 
 // Display function
 std::string Request::toString() const {
@@ -49,6 +54,8 @@ std::string Request::toString() const {
     repStr << "#" << std::endl;
     return repStr.str();
 }
+
+
 
 
 
