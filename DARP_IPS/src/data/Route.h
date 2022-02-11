@@ -29,14 +29,12 @@ public:
     std::vector<unsigned int> routeRequests;    // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
-    float reducedCost_;
+    double reducedCost_;
     float incompatibilityDegree;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
 
     // Constructor and Destructor
     Route(int vehicleId);
-
-
     virtual ~Route();
 
     // Getters and Setters
@@ -44,7 +42,9 @@ public:
     const unsigned int getRouteId() const;
     void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual, std::map<int, int>& requestToOrder);
 
-    // this function is used to add nodes to the routes
+    // these functions are used to add nodes to the routes
+    void addSource(PNode node, float departTime, int departPassengers);
+    void addNode(PNode node);
     void addNode(PNode node, float departTime, int departPassengers);
 
     // this function is used to remove completed nodes from the routes
@@ -52,8 +52,6 @@ public:
 
     // Display function
     std::string toString() const;
-
-
 
 };
 
