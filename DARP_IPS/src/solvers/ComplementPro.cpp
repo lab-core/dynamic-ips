@@ -132,15 +132,33 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
             vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
             std::cout << "COMPLEMENTARY DUALS:" << std::endl;
-            for (int r = 0; r < pInst->nbRequests_; ++r) {
-                requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
-//                std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+            for (auto & requestObj : pInst->requests_) {
+                if (requestObj->requestStatus_ == NO_ACTION) {
+                    int rowIndex = requestToOrder_[requestObj->getRequestId()];
+                    requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                    requestObj->dual_ = requestDuals_[rowIndex];
+                    std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
+                              << std::endl;
+                }
+
             }
-            for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            /*for (int r = 0; r < pInst->nbRequests_; ++r) {
+                requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
+                std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+            }*/
+
+            std::cout << "VEHICLE DUALS:" << std::endl;
+            for (auto & vehicleObj : pInst->vehicles_) {
+                vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+                vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ <<"]: " << vehicleObj->dual_ << std::endl;
+            }
+
+            /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
                 vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
                 pInst->vehicles_[v]->dual_ = vehicleDuals_[v];
-//                std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
-            }
+                std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
+            }*/
 
             // remove outgoing variable
             for (int r = routeSolVar_.getSize()-1; r >= 0; --r) {
@@ -166,7 +184,12 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                     zSolution.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                 }
             }
-            std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+            int nbRequests = 0;
+            for (auto & requestObj: pInst->requests_) {
+                if (requestObj->requestStatus_ == NO_ACTION)
+                    nbRequests++;
+            }
+            std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
                       << " are selected to served." << std::endl;
             /*for (int r = 0; r < routeSolution.size(); ++r) {
                 std::cout << routeSolution[r]->toString();
