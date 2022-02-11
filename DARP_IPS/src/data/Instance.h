@@ -66,7 +66,8 @@ public:
     // print solutions in csv files
     void saveSolutionRoutes(string saveDir);
     void saveRequestsResults(string saveDir);
-
+    void saveEpochRoutes(string finalSolutionDir , int epoch);
+    void saveISUDRoutes(string isudSolutionDir, int epoch, int isudIter);
 };
 
 
