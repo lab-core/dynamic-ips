@@ -7,6 +7,7 @@
 
 #include "utilities/MyTools.h"
 #include "data/Instance.h"
+#include "solvers/LabelingSubProblem.h"
 
 
 //-----------------------------------------------------------------------------
@@ -29,8 +30,10 @@ public:
     string nodeID_;                 // node ID
     PRequest* related_Request_;     // pointer to its request
     string pairNodeID_;             // related pickup/  drop off
-    float locLatitude_;             // node location latitude
-    float locLongitude_;            // node location longitude
+    PNode * pairNode_;
+    /*float locLatitude_;             // node location latitude
+    float locLongitude_;            // node location longitude*/
+    int locationID_;                // node location ID
     NodeType type_;                 // node type: pick up, drop off, source, sink
     float reachTime_;               // the time that vehicle reach to the node
     int nbPassengers_;              // number of passengers to pick up or drop off
@@ -38,10 +41,12 @@ public:
     NodeStatus nodeStatus_;         // status of the node: no action, planned, completed
     float requestTime_;             // earliest possible pick up time for the request (request time)
 //    float penalty_;               // penalty of not serving the related request at current period
+    std::vector<PLabel> activeLabels_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
-    Node(float locLatitude, float locLongitude, NodeType type);
+//    Node(float locLatitude, float locLongitude, NodeType type);
+    Node(int locationID, NodeType type);
 
     virtual ~Node();
 
@@ -49,8 +54,9 @@ public:
     void setPairNodeId(const string &pairNodeId);
 
     void setType(NodeType type);
-
-//    void setPenalty(int epoch);
+    // this function return the index in of the first label in the active labels of the node whose reduced cost
+    // is grater than the newLabel
+    int getLabelListIndex(PLabel newLabel);
 };
 
 
@@ -80,10 +86,10 @@ public:
 typedef std::shared_ptr<Graph> PGraph;
 
 // function to calculate travel time between two node
-double calcTravelTime(PNode startNode, PNode endNode);
+//double calcTravelTime(PNode startNode, PNode endNode);
 
 // function to calculate travel time of the fastest route between two node
-float queryTravelTime(PNode startNode, PNode endNode);
+//float queryTravelTime(PNode startNode, PNode endNode);
 
 
 #endif //_GRAPH_H
