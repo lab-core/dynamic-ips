@@ -34,6 +34,7 @@ public:
     std::map<int, int> incRequestToOrder_;                  // order of requests in incompatibility matrix
 
     int improveIter_;
+    int isudIter_;
     double objValue_;
     Tools::Timer *isudTime_;
 
@@ -44,6 +45,9 @@ public:
     ISUDAlgorithm();
 
     virtual ~ISUDAlgorithm();
+
+    // Getters and Setters
+    void setObjValue();
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
@@ -74,7 +78,7 @@ public:
     // improve the solution through solving Complementary problem
     void CPImprove(PInstance &pInst);
 
-    void solveISUD(PInstance &pInst, int epoch);
+    void solveISUD(PInstance &pInst, int epoch, string isudSolutionDir);
 
     // Display function
     std::string toString() const;
