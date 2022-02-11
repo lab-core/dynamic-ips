@@ -25,9 +25,17 @@ MasterModeler::~MasterModeler() {
 void MasterModeler::updateRequestOrder(PInstance &pInst) {
     orderToRequest_.clear();
     requestToOrder_.clear();
-    for (int i = 0; i < pInst->nbRequests_; ++i) {
+    /*for (int i = 0; i < pInst->nbRequests_; ++i) {
         orderToRequest_.push_back(pInst->requests_[i]->getRequestId());
         requestToOrder_[pInst->requests_[i]->getRequestId()] = i;
+    }*/
+    int orderCounter = 0;
+    for (auto & requestObj : pInst->requests_){
+        if (requestObj->requestStatus_ == NO_ACTION) {
+            requestToOrder_[requestObj->getRequestId()] = orderCounter;
+            orderToRequest_.push_back(requestObj->getRequestId());
+            orderCounter++;
+        }
     }
 }
 
@@ -102,7 +110,8 @@ void MasterModeler::initializeModel(PInstance &pInst, int rhs) {
     // define and add objective
 
 
-    createIloNumArray (requestRHS_, pInst->nbRequests_, rhs);
+//    createIloNumArray (requestRHS_, pInst->nbRequests_, rhs);
+    createIloNumArray (requestRHS_, orderToRequest_.size(), rhs);
     createIloNumArray (vehicleRHS_, pInst->nbVehicles_, rhs);
 
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);

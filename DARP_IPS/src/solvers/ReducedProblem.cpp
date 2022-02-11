@@ -97,7 +97,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     }
 
     // adding solution columns
-    for (int r = 0; r < routeSolution.size(); ++r) {
+    /*for (int r = 0; r < routeSolution.size(); ++r) {
         addRouteVar(routeSolution[r]);
 //        env_.out() << Model_;
 
@@ -106,7 +106,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
             addZVar(*routeSolution[r]->routeNodes_[1]->related_Request_);
 //            env_.out() << Model_;
         }
-    }
+    }*/
 
     //adding new route variables
     for (int r = 0; r < routesToAdd_.size(); ++r) {
@@ -134,16 +134,32 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
         vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
-//        std::cout << "REDUCED DUALS:" << std::endl;
-        for (int r = 0; r < pInst->nbRequests_; ++r) {
-            requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
-//            std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+        std::cout << "REDUCED DUALS:" << std::endl;
+        for (auto & requestObj : pInst->requests_) {
+            if (requestObj->requestStatus_ == NO_ACTION) {
+                int rowIndex = requestToOrder_[requestObj->getRequestId()];
+                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                requestObj->dual_ = requestDuals_[rowIndex];
+                std::cout << "requestDuals[" << requestObj->getRequestId() <<"]: " << requestObj->dual_ << std::endl;
+            }
         }
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+
+        /*for (int r = 0; r < pInst->nbRequests_; ++r) {
+            requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
+            std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
+        }*/
+
+        std::cout << "VEHICLE DUALS:" << std::endl;
+        for (auto & vehicleObj : pInst->vehicles_) {
+            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ <<"]: " << vehicleObj->dual_ << std::endl;
+        }
+        /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
             vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
             pInst->vehicles_[v]->dual_ = vehicleDuals_[v];
-//            std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
-        }
+            std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
+        }*/
 
         // printing solution status
         std::cout << MasterModeler::toString();
@@ -158,11 +174,12 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
-        /*env_.out() << routeVal << std::endl;
-        env_.out() << zVal << std::endl;*/
+//        env_.out() << routeVal << std::endl;
+//        env_.out() << zVal << std::endl;
 
         for (int r = routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
+ //               std::cout << routeVar_[r].getName() << " HI " << std::endl;
                 routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
                 pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(generatedRoutes[routeVar_[r].getName()]);
             }
@@ -180,7 +197,12 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
                 zVar_.remove(i,1);
             }
         }
-        std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+        int nbRequests = 0;
+        for (auto & requestObj: pInst->requests_) {
+            if (requestObj->requestStatus_ == NO_ACTION)
+                nbRequests++;
+        }
+        std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
         << " are selected to served." << std::endl;
     }
     catch (IloException& e) {
