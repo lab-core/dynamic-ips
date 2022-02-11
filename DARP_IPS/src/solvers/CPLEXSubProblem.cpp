@@ -2,26 +2,26 @@
 // Created by Ella on 2021-10-13.
 //
 
-#include "SubProblem.h"
+#include "CPLEXSubProblem.h"
 
 //-----------------------------------------------------------------------------
-//  SubProblem class
+//  CPLEXSubProblem class
 //  Algorithms for solving the sub problems and getting results
 //-----------------------------------------------------------------------------
 
 // Constructor and Destructor
-SubProblem::SubProblem(PVehicle &vehicle) : Vehicle_(&vehicle){
+CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : Vehicle_(&vehicle){
     subGraph_ = std::make_shared<Graph>();
     /*numRoutes_ = 0;
     bestReducedCost_ = 0;*/
     SubProModel_ = IloModel(env_);
 }
-SubProblem::~SubProblem() {
+CPLEXSubProblem::~CPLEXSubProblem() {
     env_.end();
 }
 
 // calculation of penalties and initialization of the subgraph
-void SubProblem::initSubGraph(PInstance &pInst) {
+void CPLEXSubProblem::initSubGraph(PInstance &pInst, SubSolveStatus status) {
 
     // create graph with source and sink
     subGraph_ = std::make_shared<Graph>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
@@ -33,22 +33,28 @@ void SubProblem::initSubGraph(PInstance &pInst) {
     }
 
     // adding available nodes based on the penalty
-    for (int r = 0; r < pInst->nbRequests_; ++r) {
-        if ((pInst->requests_[r]->requestStatus_ == NO_ACTION)&&(pInst->requests_[r]->subStatus_ == NOTSELECTED)) {
+    for (auto & requestObj : pInst->requests_) {
+        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->subStatus_ == NOTSELECTED)) {
             /*double minWait = (*Vehicle_)->departTime_ +
                             queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
                                            pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
                             - pInst->requests_[r]->earlyPick_;*/
-            float minWait = (*Vehicle_)->departTime_ +
+            /*float minWait = (*Vehicle_)->departTime_ +
                              travelMat->queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                                             pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
-                             - pInst->requests_[r]->earlyPick_;
-            if (minWait <= pInst->requests_[r]->penalty_) {
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)]);
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), DROPOFF)]);
+                                             pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)])
+                             - requestObj->earlyPick_;*/
+
+            float minWait = (*Vehicle_)->departTime_ +
+                    durationMatrix_[pInst->instGraph_->nodes_[(*Vehicle_)->departID_]->locationID_]
+                    [pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
+                            - requestObj->earlyPick_;
+
+            if (minWait <= requestObj->penalty_) {
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]);
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), DROPOFF)]);
 
                 // adding available requests
-                subRequests_.push_back(pInst->requests_[r]);
+                subRequests_.push_back(requestObj);
             }
         }
     }
@@ -58,7 +64,8 @@ void SubProblem::initSubGraph(PInstance &pInst) {
 // Build the SUb Problem model with CPLEX
 //************************************************************************
 
-void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual, std::map<int, int>& requestToOrder)
+void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual, std::map<int, int>& requestToOrder,
+                                      int maxPickUp)
 {
     // Definition of variables
     X = IloNumVar2D(env_, subGraph_->nbNodes_);
@@ -75,11 +82,15 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
         objExpr += (U[nodeIndex] - subRequests_[i]->earlyPick_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-            objExpr -= (X[nodeIndex][j] * requestDuals[requestToOrder[subRequests_[i]->getRequestId()]]);
+            /*std::cout << "REQUEST ID: " << subRequests_[i]->getRequestId() << std::endl;
+            std::cout << requestDuals[requestToOrder[subRequests_[i]->getRequestId()]] << std::endl;*/
+//            objExpr -= (X[nodeIndex][j] * requestDuals[requestToOrder[subRequests_[i]->getRequestId()]]);
+            objExpr -= (X[nodeIndex][j] * subRequests_[i]->dual_);
         }
     }
 
-    objExpr -= vehicleDual;
+//    objExpr -= vehicleDual;
+    objExpr -= (*Vehicle_)->dual_;
     SubProModel_.add(IloMinimize(env_, objExpr));
 
     // -----------------------------------------
@@ -152,7 +163,7 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         SubProModel_.add(expr5 == 0);
 
         // without following constraints some drop off points are before their pickups
- //       SubProModel_.add(U[pickIndex] - U[dropIndex] <= 0);
+        //       SubProModel_.add(U[pickIndex] - U[dropIndex] <= 0);
 
         // constraints 10c -------------------
         SubProModel_.add(U[pickIndex] >= subRequests_[i]->earlyPick_);
@@ -160,14 +171,17 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
         // constraints 11c -------------------
         IloExpr expr11(env_);
         expr11 = U[dropIndex] - U[pickIndex] - subRequests_[i]->deltaTime_;
-    //    float t = calcTravelTime(subGraph_->nodes_[pickID], subGraph_->nodes_[dropID]);
-        float t = subRequests_[i]->minTravelTime_;
+        //    float t = calcTravelTime(subGraph_->nodes_[pickID], subGraph_->nodes_[dropID]);
+        /*float t = subRequests_[i]->minTravelTime_;
 
-        SubProModel_.add(expr11 <= std::max(alphaParam * t, betaParam + t));
-        SubProModel_.add(expr11 >=t);
+        SubProModel_.add(expr11 <= std::max(alphaParam * t, betaParam + t));*/
+        SubProModel_.add(expr11 <= subRequests_[i]->maxTravelTime_);
+        SubProModel_.add(expr11 >= subRequests_[i]->minTravelTime_);
+//        SubProModel_.add(expr11 >= t);
     }
 
     // add this constraint to control the length of generated routes in subproblems
+    // this constraint is added only at the start of iteration
     IloExpr exprT(env_);
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         if (subGraph_->nodes_[subGraph_->intToNodeID_[i]]->type_ == PICKUP) {
@@ -176,7 +190,8 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
             }
         }
     }
-    SubProModel_.add(exprT <= 3);
+    SubProModel_.add(exprT <= maxPickUp);
+
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         // constraints 2c -------------------
@@ -202,10 +217,13 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
                     + queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
                                                  subGraph_->nodes_[subGraph_->intToNodeID_[j]])
                     - U[j] - 7200 * (1 - X[i][j]);*/
-            expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
+            /*expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
                     + travelMat->queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
-                                     subGraph_->nodes_[subGraph_->intToNodeID_[j]])
-                    - U[j] - 7200 * (1 - X[i][j]);
+                                     subGraph_->nodes_[subGraph_->intToNodeID_[j]]) - U[j] - 7200 * (1 - X[i][j]);*/
+            expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
+                    + durationMatrix_[subGraph_->nodes_[subGraph_->intToNodeID_[i]]->locationID_]
+                    [subGraph_->nodes_[subGraph_->intToNodeID_[j]]->locationID_]- U[j] - 7200 * (1 - X[i][j]);
+
             SubProModel_.add(expr7 <= 0);
 
             // constraints 13c -------------------
@@ -235,15 +253,17 @@ void SubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual,
                  - (*subGraph_->nodes_[onboardID]->related_Request_)->deltaTime_;
 
         float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
-        SubProModel_.add(expr12 <= std::max(alphaParam * t, betaParam + t));
-        SubProModel_.add(expr12 >= t);
+        SubProModel_.add(expr12 <= (*subGraph_->nodes_[onboardID]->related_Request_)->maxTravelTime_);
+        SubProModel_.add(expr12 >= (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_);
+        /*SubProModel_.add(expr12 <= std::max(alphaParam * t, betaParam + t));
+        SubProModel_.add(expr12 >= t);*/
     }
 }
 
 //************************************************************************
 // Solve the SUb Problem model with CPLEX
 //************************************************************************
-void SubProblem::SolveCPLEX() {
+void CPLEXSubProblem::SolveCPLEX() {
     try {
         SubProbCplex_ = IloCplex(SubProModel_);
         SubProbCplex_.setOut(env_.getNullStream());
@@ -254,10 +274,10 @@ void SubProblem::SolveCPLEX() {
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.05);
     SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 3);
-        SubProbCplex_.setParam(IloCplex::TiLim, 100);
+        SubProbCplex_.setParam(IloCplex::TiLim, 300);
         SubProbCplex_.solve();
-        if (SubProbCplex_.getObjValue() <= -0.00001) {
-            SubProbCplex_.setParam(IloCplex::TiLim, 50);
+        if (SubProbCplex_.getObjValue() <= -0.0001) {
+            SubProbCplex_.setParam(IloCplex::TiLim, 200);
             SubProbCplex_.populate();
         }
 
@@ -275,15 +295,16 @@ void SubProblem::SolveCPLEX() {
 }
 
 // function to convert solution to routes and save them in vehicle object
-void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map<std::string , PRoute> &generatedRoutes) {
+void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map<std::string , PRoute> &generatedRoutes) {
     try {
-        int repeatFlag = 0;
-        availableRoutes.clear();
+
+//        availableRoutes.clear();
         for (int s = 0; s < SubProbCplex_.getSolnPoolNsolns(); ++s) {
+            bool isRepeated = false;
 
             // extracting the value of variables in each solution
             if (SubProbCplex_.getObjValue(s) < 0) {
-                repeatFlag = 0;
+                isRepeated = 0;
                 IloNumArray uVal(env_);
                 IloNumArray wVal(env_);
                 IloNum2D xVal(env_, subGraph_->nbNodes_);
@@ -295,6 +316,48 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
                     xVal[i] = IloNumArray(env_);
                     SubProbCplex_.getValues(xVal[i], X[i], s);
                 }
+                /*std::cout << "--------------------------" << std::endl;
+                std::cout << "Solution: " << s << std::endl;
+                std::cout << "--------------------------" << std::endl;
+
+                for (int i = 0; i < subGraph_->nbNodes_; ++i) {
+                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+                        if (xVal[i][j] > 0)
+                            std::cout << "X[" << subGraph_->intToNodeID_[i] <<"][" << subGraph_->intToNodeID_[j] <<"]: " << xVal[i][j] << std::endl;
+                    }
+                }
+                for (int i = 0; i < subGraph_->nbNodes_; ++i) {
+                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+                        if (xVal[i][j] > 0) {
+                            std::cout << "W[" << subGraph_->intToNodeID_[i] <<"]: " << wVal[i] << std::endl;
+                            std::cout << "U[" << subGraph_->intToNodeID_[i] <<"]: " << uVal[i] << std::endl;
+                        }
+                    }
+                }
+
+                double newObj = 0;
+
+                for (int i = 0; i < subRequests_.size(); ++i) {
+                    int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
+                    newObj += (uVal[nodeIndex] - subRequests_[i]->earlyPick_);
+                    std::cout << "Request U: " << subRequests_[i]->getRequestId() << " :: ";
+                    std::cout << uVal[nodeIndex] << "--" << subRequests_[i]->earlyPick_ << std::endl;
+                }
+                std::cout << "new object delay: " << newObj << std::endl;
+                for (int i = 0; i < subRequests_.size(); ++i) {
+                    int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
+                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
+                        newObj -= (xVal[nodeIndex][j] * subRequests_[i]->dual_);
+                        if (xVal[nodeIndex][j] > 0) {
+                            std::cout << "Request U: " << subRequests_[i]->getRequestId() << " :: ";
+                            std::cout << subRequests_[i]->dual_ << std::endl;
+                        }
+                    }
+                }
+                std::cout << "new object after request dual: " << newObj << std::endl;
+                newObj -= (*Vehicle_)->dual_;
+                std::cout << "new object final: " << newObj << std::endl;*/
+
 
                 // creating the route
                 int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
@@ -307,19 +370,21 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
                 (*Vehicle_)->generatedRoutes_.back()->addNode(subGraph_->nodes_[(*Vehicle_)->departID_],
                                                               (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);*/
                 newRoute->reducedCost_ = SubProbCplex_.getObjValue(s);
-                newRoute->addNode(subGraph_->nodes_[(*Vehicle_)->departID_],
+                newRoute->addSource(subGraph_->nodes_[(*Vehicle_)->departID_],
                                                               (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);
 
                 int currentNodeIndex = sourceIndex;
                 while (currentNodeIndex != sinkIndex) {
                     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
                         if (xVal[currentNodeIndex][i] > 0.9) {
-                            newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
-                                                                          uVal[i], wVal[i]);
-                            /*(*Vehicle_)->generatedRoutes_.back()->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
-                                                                          uVal[i], wVal[i]);*/
-                            if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
-                                (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;
+                            if (i != sinkIndex) {
+     //                           newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]], uVal[i], wVal[i]);
+                                newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]]);
+                                if (s == 0)
+                                    (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;
+                            }
+                            /*if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
+                                (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;*/
                             currentNodeIndex = i;
                             break;
                         }
@@ -327,11 +392,11 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
                 }
                 for (int r = 0; r < availableRoutes.size(); ++r) {
                     if (newRoute == availableRoutes[r]) {
-                        repeatFlag = 1;
+                        isRepeated = true;
                         break;
                     }
                 }
-                if (repeatFlag == 0) {
+                if (!isRepeated) {
                     availableRoutes.push_back(newRoute);
                     generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
                 }
@@ -347,9 +412,9 @@ void SubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map
 //************************************************************************
 // Display function
 //************************************************************************
-std::string SubProblem::toString() const {
+std::string CPLEXSubProblem::toString() const {
     std::stringstream repStr;
-    repStr << std::endl;
+    repStr << "#" << std::endl;
     repStr << "# ------------------------------------------------------------" << std::endl;
     repStr << "# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: " << (*Vehicle_)->vehicleID_ << std::endl;
     repStr << "#" << std::endl;
