@@ -120,8 +120,9 @@ void MIPSolver(PInstance& PInst)
             expr12 = U[v][dropIndex] - U[v][pickIndex] - PInst->requests_[i]->deltaTime_;
             /*float t = queryTravelTime(PInst->instGraph_->nodes_[pickID],
                                      PInst->instGraph_->nodes_[dropID]);*/
-            float t = travelMat->queryTravelTime(PInst->instGraph_->nodes_[pickID],
-                                      PInst->instGraph_->nodes_[dropID]);
+            /*float t = travelMat->queryTravelTime(PInst->instGraph_->nodes_[pickID],
+                                      PInst->instGraph_->nodes_[dropID]);*/
+            float t = durationMatrix_[PInst->instGraph_->nodes_[pickID]->locationID_][PInst->instGraph_->nodes_[dropID]->locationID_];
             MIPModel.add(t <= expr12 <= std::max(alphaParam * t, betaParam + t));
 
         }
@@ -151,16 +152,21 @@ void MIPSolver(PInstance& PInst)
                         + queryTravelTime(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
                                          PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]])
                         - U[v][j] - 7200 * (1 - X[v][i][j]);*/
-                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
+                /*expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
                         + travelMat->queryTravelTime(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
                                           PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]])
-                        - U[v][j] - 7200 * (1 - X[v][i][j]);
+                        - U[v][j] - 7200 * (1 - X[v][i][j]);*/
+
+                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
+                        + durationMatrix_[PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->locationID_]
+                        [PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->locationID_]
+                        - U[v][j] - 1500 * (1 - X[v][i][j]);
                 MIPModel.add(expr8 <= 0);
 
                 // constraints 14a -------------------
                 IloExpr expr14(env);
                 expr14 = W[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->nbPassengers_
-                         - W[v][j] - 100 * (1 - X[v][i][j]);
+                         - W[v][j] - 20 * (1 - X[v][i][j]);
                 MIPModel.add(expr14 <= 0);
 
             }
@@ -193,7 +199,7 @@ void MIPSolver(PInstance& PInst)
     }
 
     IloCplex MIPCplex(MIPModel);
-    MIPCplex.setParam(IloCplex::TiLim, 1000);
+//    MIPCplex.setParam(IloCplex::TiLim, 1000);
 
     try {
         MIPCplex.solve();
@@ -219,15 +225,16 @@ void MIPSolver(PInstance& PInst)
             int sinkIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->sinkID_];
             PRoute newRoute = std::make_shared<Route>(PInst->vehicles_[v]->vehicleID_);
 
-            newRoute->addNode(PInst->instGraph_->nodes_[PInst->vehicles_[v]->departID_],
+            newRoute->addSource(PInst->instGraph_->nodes_[PInst->vehicles_[v]->departID_],
                               PInst->vehicles_[v]->departTime_, PInst->vehicles_[v]->numPassengers_);
 
             int currentNodeIndex = sourceIndex;
             while (currentNodeIndex != sinkIndex) {
                 for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
                     if (xVal[currentNodeIndex][i] > 0.9) {
-                        newRoute->addNode(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
-                                          uVal[i], wVal[i]);
+                        /*newRoute->addNode(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]],
+                                          uVal[i], wVal[i]);*/
+                        newRoute->addNode(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]);
                         currentNodeIndex = i;
                         break;
                     }
