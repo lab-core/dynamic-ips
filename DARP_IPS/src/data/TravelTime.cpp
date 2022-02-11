@@ -15,7 +15,7 @@ void TravelTime::setNodeIdToInt(const std::map<std::string, int> &nodeIdToInt) {
     nodeIDToInt_ = nodeIdToInt;
 }
 
-void TravelTime::setDurationMat(PGraph &graph) {
+/*void TravelTime::setDurationMat(PGraph &graph) {
     durationValues_.resize(graph->nbNodes_);
     for (int i = 0; i < graph->nbNodes_; ++i)
         durationValues_[i].resize(graph->nbNodes_);
@@ -30,22 +30,23 @@ void TravelTime::setDurationMat(PGraph &graph) {
 
     vector<std::string> source;
     int Index = 0;
+    int splitter = 100;
 
     // it is possible to just query the data for 100 locations from OSRM with table service
-    int rounds = (graph->nbNodes_ / 100);
+    int rounds = (graph->nbNodes_ / splitter);
 
     for (int j = 0; j < rounds; ++j) {
-        Index = 100 * j;
+        Index = splitter * j;
         source.push_back("");
-        for (int i = Index; i < Index+100; ++i) {
+        for (int i = Index; i < Index+splitter; ++i) {
             source[j] += std::to_string(i);
-            if (i != Index + 99)
+            if (i != Index + splitter-1)
                 source[j] += ";";
         }
     }
 
     source.push_back("");
-    for (int i = (100 * rounds); i < graph->nbNodes_; ++i) {
+    for (int i = (splitter * rounds); i < graph->nbNodes_; ++i) {
         source.back() += std::to_string(i);
         if (i != graph->nbNodes_ - 1)
             source.back() += ";";
@@ -68,7 +69,7 @@ void TravelTime::setDurationMat(PGraph &graph) {
                 if (jsonData["code"] == "Ok") {
                     for (int i = 0; i < jsonData["durations"].size(); ++i) {
                         for (int j = 0; j < jsonData["durations"][i].size(); ++j) {
-                            durationValues_[(s*100) + i][(d*100) + j] = jsonData["durations"][i][j].asDouble()/15;
+                            durationValues_[(s*splitter) + i][(d*splitter) + j] = jsonData["durations"][i][j].asDouble();
                         }
                     }
                 }
@@ -82,7 +83,7 @@ void TravelTime::setDurationMat(PGraph &graph) {
         }
 
     }
-}
+}*/
 
 float TravelTime::queryTravelTime(PNode startNode, PNode endNode) {
     float travelTime = durationValues_[nodeIDToInt_[startNode->nodeID_]][nodeIDToInt_[endNode->nodeID_]];

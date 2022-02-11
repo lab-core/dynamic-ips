@@ -23,7 +23,7 @@ public:
     virtual ~TravelTime();
 
     // Setters
-    void setDurationMat(PGraph &graph);
+//    void setDurationMat(PGraph &graph);
     void setNodeIdToInt(const std::map<std::string, int> &nodeIdToInt);
 
     // function to return travel duration between two nodes
