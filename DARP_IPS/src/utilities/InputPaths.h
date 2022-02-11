@@ -18,6 +18,7 @@ protected:
     std::string instanceName_;
     std::string tripData_;
     std::string instanceData_;
+    std::string durationData_;
     double timeOUt = 3600;
 
 public:
@@ -30,6 +31,8 @@ public:
     const std::string &getInstanceName() const;
     const std::string &getTripData() const;
     const std::string &getInstanceData() const;
+    const std::string &getDurationData() const;
+
     double getTimeOUt() const;
 
     // setters
