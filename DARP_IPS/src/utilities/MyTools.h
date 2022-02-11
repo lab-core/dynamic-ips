@@ -50,21 +50,37 @@ class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
 class TravelTime;
 typedef std::shared_ptr<TravelTime> PTravelTime;
-extern PTravelTime travelMat;
+class Label;
+typedef std::shared_ptr<Label> PLabel;
+// extern PTravelTime travelMat;
 
-#define INFINITY 9999999
+
+// SubProblem solution status
+enum SubSolveStatus { FULL = 0, RESTRICTED = 1, EXACT = 2, H1 = 3, H2 = 4, H1H2 = 5};
+
+#define MAXReachTime 9999999
 
 static const int DECIMALS = 3;          // precision when printing floats
 // the constant 275 calculated by excel just to convert distance in mile to travel time in sec
 static const float TimePerMile = 10;   // travel time per mile distance
 static const float alphaParam = 1.5;
-static const float betaParam = 240;
-static const float deltaPram = 420;
-static const int epochLength = 30;
+static const float betaParam = 440;
+static const float deltaPram = 820;
+static const int epochLength = 50;
+static const int sentenceSize = 45;
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
 template<class T> using vector3D = std::vector<vector2D<T>>;
+extern vector2D<float> durationMatrix_;
+
+class PCompare {
+public:
+    template<typename T>
+    bool operator () (std::shared_ptr<T> a, std::shared_ptr<T> b) {
+        return (*a) < (*b);
+    }
+};
 
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
