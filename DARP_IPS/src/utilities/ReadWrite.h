@@ -28,6 +28,9 @@ public:
     // Read the trip requests file
     static void readTripRequests(std::string strTripsFile, PInstance pInstance);
 
+    // Read duration data file
+    static void readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations);
+
     // Parsing functions
     // Read a file stream until meeting the separating character
     // (the characters that are read until the separating char are stored in pReadStr

@@ -3,7 +3,7 @@
 //
 
 #include "ReadWrite.h"
-extern PTravelTime travelMat;
+//extern PTravelTime travelMat;
 
 //-----------------------------------------------------------------------------
 //  ReadWrite class
@@ -31,8 +31,10 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     string title;
     std::string name;
     int nbVehicles = -1, nbRequests = -1;
-    float sourceLatitude = -1, sourceLongitude = -1;
-    float sinkLatitude = -1, sinkLongitude = -1;
+    /*float sourceLatitude = -1, sourceLongitude = -1;
+    float sinkLatitude = -1, sinkLongitude = -1;*/
+    int sourceID = -1, sinkID = -1;
+//    float sinkLatitude = -1, sinkLongitude = -1;
     std::vector<PVehicle> vehicles;
 
     while (file.good()) {
@@ -51,7 +53,7 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
             file >> nbRequests;
 
         // read the source coordination
-        else if (strEndWith(title, "SOURCE_LATITUDE "))
+        /*else if (strEndWith(title, "SOURCE_LATITUDE "))
             file >> sourceLatitude;
         else if (strEndWith(title, "SOURCE_LONGITUDE "))
             file >> sourceLongitude;
@@ -59,11 +61,15 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
         else if (strEndWith(title, "SINK_LATITUDE "))
             file >> sinkLatitude;
         else if (strEndWith(title, "SINK_LONGITUDE "))
-            file >> sinkLongitude;
+            file >> sinkLongitude;*/
+        else if (strEndWith(title, "SOURCE_ID "))
+            file >> sourceID;
+        else if (strEndWith(title, "SINK_ID "))
+            file >> sinkID;
 
         // read vehicles specifications
         else if (strEndWith(title, "VEHICLES_INFO")) {
-            for (int v = 0; v < nbVehicles; ++v) {
+            /*for (int v = 0; v < nbVehicles; ++v) {
                 int vehicleID, capacity, startTime, endTime;
                 file >> vehicleID;
                 file >> capacity;
@@ -71,13 +77,24 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
                 file >> endTime;
 
                 vehicles.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, startTime, endTime));
+            }*/
+            int vehicleID, capacity;
+            float startTime, endTime;
+            file >> vehicleID;
+            file >> capacity;
+            file >> startTime;
+            file >> endTime;
+            for (int v = 0; v < nbVehicles; ++v) {
+                vehicles.emplace_back(std::make_shared<Vehicle>(v, capacity, startTime, endTime));
             }
         }
     }
 
     // main graph initialization with source and sink
-    PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, SOURCE),
-            std::make_shared<Node>(sinkLatitude, sinkLongitude, SINK));
+    /*PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, SOURCE),
+            std::make_shared<Node>(sinkLatitude, sinkLongitude, SINK));*/
+    PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceID, SOURCE),
+                                               std::make_shared<Node>(sinkID, SINK));
 
     return std::make_shared<Instance>(name, nbVehicles, vehicles, nbRequests, mainGraph);
 }
@@ -109,30 +126,38 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
             for (int r = 0; r < pInstance->nbRequests_; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
-                float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
-                        earlyPick = -1, minDist = -1, minTravelTime = -1, deltaTime = -1;
+                /*float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
+                        earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;*/
+                float pickUpID = -1, dropOffID = -1, earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;
 
                 file >> nbPassengers;
-            //    file >> minDist;
-                file >> pickUpLatitude;
+            //    file >> minReach;
+                /*file >> pickUpLatitude;
                 file >> pickUpLongitude;
                 file >> dropOffLatitude;
-                file >> dropOffLongitude;
+                file >> dropOffLongitude;*/
+                file >> pickUpID;
+                file >> dropOffID;
+
                 file >> earlyPick;
 
                 // the starting time of the instance is 16pm
                 earlyPick -= 57600;
 
-                minDist = Tools::calcDistance(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
+//                minReach = Tools::calcDistance(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
+                minReach = 0;
                 deltaTime = nbPassengers * TimePerPassenger;
 
 //                minTravelTime = Tools::queryTravelTime(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
                 minTravelTime = 0;
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude,
+                /*pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude,
                                                                             pickUpLongitude, dropOffLatitude,
-                                                                            dropOffLongitude,
-                                                                            earlyPick, nbPassengers, deltaTime, minDist,
-                                                                            minTravelTime));
+                                                                            dropOffLongitude, earlyPick,
+                                                                            nbPassengers, deltaTime,
+                                                                            minReach, minTravelTime));*/
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+                                                                            nbPassengers, deltaTime,
+                                                                            minReach, minTravelTime));
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
             }
         }
@@ -142,6 +167,43 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
     pInstance->instGraph_->addNewRequests(pInstance->requests_);
 }
 
+// Read duration data file
+void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strDurFile << " >>" << std::endl;
+    file.open(strDurFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strDurFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw Tools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    durationMat.clear();
+    durationMat.resize(nbLocations);
+    for (int i = 0; i < nbLocations; ++i)
+        durationMat[i].resize(nbLocations);
+    string title;
+
+    while (file.good()) {
+        readUntilChar(file, '\n', title);
+        if (strEndWith(title, "DURATION_INFO")) {
+
+            for (int l = 0; l < nbLocations*nbLocations; ++l) {
+                // attributes for reading trip requests file
+                int startID = -1, endID = -1;
+                float duration = -1;
+
+                file >> startID;
+                file >> endID;
+                file >> duration;
+                durationMat[startID][endID] = duration/4;
+            }
+        }
+    }
+}
 
 // Parsing functions
 // Useful for reading a file stream until meeting the separating character
@@ -199,6 +261,7 @@ bool ReadWrite::strEndWith(std::string sentence, std::string word) {
         return (!strcmp(word.c_str(), endOfSentence.c_str()));
     }
 }
+
 
 
 
