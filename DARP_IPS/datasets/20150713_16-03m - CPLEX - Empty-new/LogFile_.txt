@@ -1,0 +1,3891 @@
+# INITIALIZE OF THE MAIN INSTANCE
+Reading << datasets/20150713_16-03m/INSTANCE_20150713_16-03m.txt >>
+Instance created!
+Reading << datasets/20150713_16-03m/TRIP_20150713_16-03m.txt >>
+Reading << datasets/20150713_16-03m/DURATION_20150713_16-03m.txt >>
+
+
+***************************************************************************
+**                             Instance Info                             **
+***************************************************************************
+# 
+# INSTANCE_NAME       	= 20150713_16-03m
+# NUMBER_OF_VEHICLES  	= 6
+# NUMBER_OF_REQUESTS  	= 30
+# 
+--------------------- REQUESTS_INFO (Max 3 records) ---------------------
+# REQUEST ( 0 )
+#	- NUMBER_OF_PASSENGERS   : 1
+#
+# REQUEST ( 1 )
+#	- NUMBER_OF_PASSENGERS   : 1
+#
+# REQUEST ( 2 )
+#	- NUMBER_OF_PASSENGERS   : 3
+#
+--------------------- VEHICLES_INFO (Max 3 records) ---------------------
+# VEHICLE ( 0 )
+#	- VEHICLE_CAPACITY       : 4
+#	- START_TIME (seconds)   : 0
+#	- DEPART_TIME (seconds)  : 100
+#	- END_TIME (seconds)     : 10000
+#	- NUMBER_OF_ONBOARDS     : 0
+#	- DEPART_NODE_ID         : SO_0
+#
+# VEHICLE ( 1 )
+#	- VEHICLE_CAPACITY       : 4
+#	- START_TIME (seconds)   : 0
+#	- DEPART_TIME (seconds)  : 100
+#	- END_TIME (seconds)     : 10000
+#	- NUMBER_OF_ONBOARDS     : 0
+#	- DEPART_NODE_ID         : SO_0
+#
+# VEHICLE ( 2 )
+#	- VEHICLE_CAPACITY       : 4
+#	- START_TIME (seconds)   : 0
+#	- DEPART_TIME (seconds)  : 100
+#	- END_TIME (seconds)     : 10000
+#	- NUMBER_OF_ONBOARDS     : 0
+#	- DEPART_NODE_ID         : SO_0
+#
+ *****************************  epoch   1  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 0 rows and 6 columns.
+Reduced LP has 13 rows, 49 columns, and 91 nonzeros.
+Presolve time = 0.00 sec. (0.03 ticks)
+Symmetry aggregator did 40 additional substitutions.
+
+Iteration log . . .
+Iteration:     1   Dual objective     =           156.225006
+
+Dual crossover.
+  Dual:  Fixing 1 variable.
+        0 DMoves:  Infeasibility  0.00000000e+00  Objective  1.59463271e+03
+  Dual:  Pushed 0, exchanged 1.
+  Primal:  Fixing 25 variables.
+       24 PMoves:  Infeasibility  0.00000000e+00  Objective  1.59463271e+03
+        0 PMoves:  Infeasibility  0.00000000e+00  Objective  1.59463271e+03
+  Primal:  Pushed 18, exchanged 7.
+REDUCED DUALS:
+requestDuals[0]: 772.683
+requestDuals[1]: 813.208
+requestDuals[2]: 729.508
+requestDuals[3]: 771.983
+requestDuals[4]: 749.783
+requestDuals[5]: 716.308
+requestDuals[6]: 739.908
+VEHICLE DUALS:
+vehicleDuals[0]: -616.458
+vehicleDuals[1]: -616.458
+vehicleDuals[2]: -616.458
+vehicleDuals[3]: -616.458
+vehicleDuals[4]: -616.458
+vehicleDuals[5]: -616.458
+#
+# Solution status = Optimal
+# Incumbent objective value = 1594.63
+# from 7 request, 6 are selected to served.
+# Time spent on ISUD initialization    = 0.0043027 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 7
+# TOTAL NUMBER OF RECEIVED REQUESTS: 7
+# Vehicle Routes after initialization: 7
+#
+#	- ROUTE_NUMBER           : 30
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 155.525
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 3     PI_3           195.525 (s)        1
+#   3  (SINK   ) return           DR_3           235.375 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 25
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 113.05
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 2     PI_2            137.05 (s)        3
+#   3  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 50
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 123.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 6     PI_6            171.45 (s)        2
+#   3  (SINK   ) return           DR_6             244.3 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 39
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 133.325
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 4     PI_4           175.325 (s)        1
+#   3  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 16
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 156.225
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 0     PI_0           156.225 (s)        1
+#   3  (SINK   ) return           DR_0             214.2 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 47
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 99.85
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 5     PI_5            143.85 (s)        1
+#   3  (SINK   ) return           DR_5           225.625 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -1220.92
+# The solution pool contains = 20 solutions.
+# 17 solutions were replaced in the solution pool 
+# In total, 37 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -590.608
+# The solution pool contains = 20 solutions.
+# 11 solutions were replaced in the solution pool 
+# In total, 31 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -444.433
+# The solution pool contains = 6 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 6 solutions were generated.
+# The solution pool contains = 6 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 616.458
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 616.458
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 616.458
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 8.15974 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 5 rows and 12 columns.
+Aggregator did 4 substitutions.
+Reduced LP has 4 rows, 6 columns, and 10 nonzeros.
+Presolve time = 0.00 sec. (0.01 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          1162.200012
+REDUCED DUALS:
+requestDuals[0]: -120.683
+requestDuals[1]: 813.208
+requestDuals[2]: 793.167
+requestDuals[3]: 0
+requestDuals[4]: 133.325
+requestDuals[5]: 99.85
+requestDuals[6]: 412.358
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: -680.117
+vehicleDuals[2]: -288.908
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1162.2
+# from 7 request, 7 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 13 rows and 15 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[0]: 878.744
+requestDuals[1]: 524.3
+requestDuals[2]: 793.167
+requestDuals[3]: 0
+requestDuals[4]: 773.619
+requestDuals[5]: 0
+requestDuals[6]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: -487.219
+vehicleDuals[1]: -680.117
+vehicleDuals[2]: 0
+vehicleDuals[3]: -640.294
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1162.2
+# from 7 request, 7 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 7 rows and 20 columns.
+Aggregator did 7 substitutions.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.02 ticks)
+#
+# Solution status = Optimal
+# Incumbent objective value = 238.371
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.0046594 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 5
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 4
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 39
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 133.325
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 4     PI_4           175.325 (s)        1
+#   3  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 25
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 113.05
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 2     PI_2            137.05 (s)        3
+#   3  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 94
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 524.3
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 3     PI_3           195.525 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1           374.775 (s)        2
+#   4  (DROPOFF) Request_ID 3     DR_3           525.375 (s)        1
+#   5  (SINK   ) return           DR_1           561.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 54
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 391.525
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 5     PI_5            143.85 (s)        1
+#   3  (PICKUP ) Request_ID 0     PI_0           156.225 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6            183.45 (s)        4
+#   5  (DROPOFF) Request_ID 5     DR_5           264.475 (s)        3
+#   6  (DROPOFF) Request_ID 0     DR_0            306.85 (s)        2
+#   7  (SINK   ) return           DR_6           361.425 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = -2003.96
+# The solution pool contains = 20 solutions.
+# 18 solutions were replaced in the solution pool 
+# In total, 38 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 680.117
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 640.294
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 487.219
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 26.5308 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 9 rows and 32 columns.
+Aggregator did 5 substitutions.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.02 ticks)
+#
+# Solution status = Optimal
+# Incumbent objective value = 332.88
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.001858 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 5
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 4
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 39
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 133.325
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 4     PI_4           175.325 (s)        1
+#   3  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 25
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 113.05
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 2     PI_2            137.05 (s)        3
+#   3  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 94
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 524.3
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 3     PI_3           195.525 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1           374.775 (s)        2
+#   4  (DROPOFF) Request_ID 3     DR_3           525.375 (s)        1
+#   5  (SINK   ) return           DR_1           561.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 54
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 391.525
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 5     PI_5            143.85 (s)        1
+#   3  (PICKUP ) Request_ID 0     PI_0           156.225 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6            183.45 (s)        4
+#   5  (DROPOFF) Request_ID 5     DR_5           264.475 (s)        3
+#   6  (DROPOFF) Request_ID 0     DR_0            306.85 (s)        2
+#   7  (SINK   ) return           DR_6           361.425 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 1 : 
+#
+# Total waiting time plus the penalty    = 1162.2
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0108518 (seconds)
+#
+#	- ROUTE_NUMBER           : 5
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 4
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 39
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 133.325
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 4     PI_4           175.325 (s)        1
+#   3  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 25
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 113.05
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 2     PI_2            137.05 (s)        3
+#   3  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 94
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 524.3
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 3     PI_3           195.525 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1           374.775 (s)        2
+#   4  (DROPOFF) Request_ID 3     DR_3           525.375 (s)        1
+#   5  (SINK   ) return           DR_1           561.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 54
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 391.525
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 5     PI_5            143.85 (s)        1
+#   3  (PICKUP ) Request_ID 0     PI_0           156.225 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6            183.45 (s)        4
+#   5  (DROPOFF) Request_ID 5     DR_5           264.475 (s)        3
+#   6  (DROPOFF) Request_ID 0     DR_0            306.85 (s)        2
+#   7  (SINK   ) return           DR_6           361.425 (s)        0
+==========================================================================
+ *****************************  epoch   2  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.00 ticks)
+REDUCED DUALS:
+requestDuals[6]: 822.277
+requestDuals[1]: 871.574
+requestDuals[7]: 756.649
+requestDuals[8]: 754.554
+requestDuals[9]: 748.304
+requestDuals[10]: 742.105
+requestDuals[11]: 733.921
+requestDuals[12]: 723.816
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 6153.2
+# from 8 request, 0 are selected to served.
+# Time spent on ISUD initialization    = 0.0119787 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 6
+# TOTAL NUMBER OF RECEIVED REQUESTS: 13
+# Vehicle Routes after initialization: 13
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 5     DR_5             234.1 (s)        1
+#   3  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 121
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   1  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 122
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (SINK   ) return           DR_3           235.375 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 4
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 5
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   1  (SINK   ) return           SO_0               100 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = -1924.73
+# The solution pool contains = 20 solutions.
+# 37 solutions were replaced in the solution pool 
+# In total, 57 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -1339.65
+# The solution pool contains = 20 solutions.
+# 4 solutions were replaced in the solution pool 
+# In total, 24 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -963.97
+# The solution pool contains = 11 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 11 solutions were generated.
+# The solution pool contains = 11 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -447.449
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 7.83522 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 24 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[6]: 822.277
+requestDuals[1]: 871.574
+requestDuals[7]: 756.649
+requestDuals[8]: 754.554
+requestDuals[9]: 748.304
+requestDuals[10]: 742.105
+requestDuals[11]: 733.921
+requestDuals[12]: 723.816
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: -963.97
+vehicleDuals[2]: 0
+vehicleDuals[3]: -447.449
+vehicleDuals[4]: -1924.73
+vehicleDuals[5]: -1339.65
+#
+# Solution status = Optimal
+# Incumbent objective value = 1477.4
+# from 8 request, 8 are selected to served.
+# Time spent on ISUD iteration  = 0.002933 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 122
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (SINK   ) return           DR_3           235.375 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 5     DR_5             234.1 (s)        1
+#   3  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 175
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 309.2
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (DROPOFF) Request_ID 4     DR_4             306.6 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7             367.2 (s)        4
+#   4  (SINK   ) return           DR_7             428.9 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 144
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 274.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 10    PI_10          144.975 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1            207.05 (s)        2
+#   4  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   5  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 164
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 508.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 9     PI_9            283.95 (s)        1
+#   3  (PICKUP ) Request_ID 12    PI_12            380.2 (s)        2
+#   4  (DROPOFF) Request_ID 12    DR_12            518.3 (s)        1
+#   5  (SINK   ) return           DR_9             631.5 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 124
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 386.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 8     PI_8             164.1 (s)        1
+#   3  (PICKUP ) Request_ID 11    PI_11          181.025 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6             228.9 (s)        4
+#   5  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   6  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   7  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Feasible
+# Incumbent objective value = -2781.95
+# The solution pool contains = 20 solutions.
+# 47 solutions were replaced in the solution pool 
+# In total, 67 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -493.524
+# The solution pool contains = 2 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 2 solutions were generated.
+# The solution pool contains = 2 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 447.449
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 1339.65
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 963.97
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 1924.73
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 302.835 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 15 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[6]: 0
+requestDuals[1]: 274.025
+requestDuals[7]: 309.2
+requestDuals[8]: 1832.42
+requestDuals[9]: 508.15
+requestDuals[10]: 0
+requestDuals[11]: 0
+requestDuals[12]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: -46.075
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: -1446.4
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1431.33
+# from 8 request, 8 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 8 rows and 22 columns.
+Aggregator did 7 substitutions.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.02 ticks)
+#
+# Solution status = Optimal
+# Incumbent objective value = 481.985
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.005251 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 122
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (SINK   ) return           DR_3           235.375 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 196
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 263.125
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0             214.2 (s)        1
+#   3  (DROPOFF) Request_ID 5     DR_5            262.05 (s)        0
+#   4  (PICKUP ) Request_ID 7     PI_7           321.125 (s)        4
+#   5  (SINK   ) return           DR_7           382.825 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 144
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 274.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 10    PI_10          144.975 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1            207.05 (s)        2
+#   4  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   5  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 164
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 508.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 9     PI_9            283.95 (s)        1
+#   3  (PICKUP ) Request_ID 12    PI_12            380.2 (s)        2
+#   4  (DROPOFF) Request_ID 12    DR_12            518.3 (s)        1
+#   5  (SINK   ) return           DR_9             631.5 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 124
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 386.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 8     PI_8             164.1 (s)        1
+#   3  (PICKUP ) Request_ID 11    PI_11          181.025 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6             228.9 (s)        4
+#   5  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   6  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   7  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -1920.8
+# The solution pool contains = 20 solutions.
+# 16 solutions were replaced in the solution pool 
+# In total, 36 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -97.45
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -77.275
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 46.075
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 1446.4
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 93.6227 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[6]: 0
+requestDuals[1]: 274.025
+requestDuals[7]: 263.125
+requestDuals[8]: 386.025
+requestDuals[9]: 508.15
+requestDuals[10]: 0
+requestDuals[11]: 0
+requestDuals[12]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: -51.375
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1379.95
+# from 8 request, 8 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 8 rows and 32 columns.
+Aggregator did 7 substitutions.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.02 ticks)
+#
+# Solution status = Optimal
+# Incumbent objective value = 332.415
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.005729 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 5     DR_5             234.1 (s)        1
+#   3  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 218
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 211.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (DROPOFF) Request_ID 3     DR_3           235.375 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7            269.75 (s)        4
+#   4  (SINK   ) return           DR_7            331.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 144
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 274.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 10    PI_10          144.975 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1            207.05 (s)        2
+#   4  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   5  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 164
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 508.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 9     PI_9            283.95 (s)        1
+#   3  (PICKUP ) Request_ID 12    PI_12            380.2 (s)        2
+#   4  (DROPOFF) Request_ID 12    DR_12            518.3 (s)        1
+#   5  (SINK   ) return           DR_9             631.5 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 124
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 386.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 8     PI_8             164.1 (s)        1
+#   3  (PICKUP ) Request_ID 11    PI_11          181.025 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6             228.9 (s)        4
+#   5  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   6  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   7  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -474.4
+# The solution pool contains = 20 solutions.
+# 8 solutions were replaced in the solution pool 
+# In total, 28 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -2.67029e-05
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -7.6294e-06
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -114.375
+# The solution pool contains = 2 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 2 solutions were generated.
+# The solution pool contains = 2 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -30.975
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 157.482 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[6]: 0
+requestDuals[1]: 337.025
+requestDuals[7]: 211.75
+requestDuals[8]: 386.025
+requestDuals[9]: 508.15
+requestDuals[10]: 0
+requestDuals[11]: 0
+requestDuals[12]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: -63
+#
+# Solution status = Optimal
+# Incumbent objective value = 1379.95
+# from 8 request, 8 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 5 rows and 21 columns.
+Aggregator did 6 substitutions.
+Reduced LP has 4 rows, 10 columns, and 26 nonzeros.
+Presolve time = 0.00 sec. (0.02 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual objective     =           183.683220
+#
+# Solution status = Optimal
+# Incumbent objective value = 183.683
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.0040969 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 5     DR_5             234.1 (s)        1
+#   3  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 218
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 211.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (DROPOFF) Request_ID 3     DR_3           235.375 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7            269.75 (s)        4
+#   4  (SINK   ) return           DR_7            331.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 144
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 274.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 10    PI_10          144.975 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1            207.05 (s)        2
+#   4  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   5  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 164
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 508.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 9     PI_9            283.95 (s)        1
+#   3  (PICKUP ) Request_ID 12    PI_12            380.2 (s)        2
+#   4  (DROPOFF) Request_ID 12    DR_12            518.3 (s)        1
+#   5  (SINK   ) return           DR_9             631.5 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 124
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 386.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 8     PI_8             164.1 (s)        1
+#   3  (PICKUP ) Request_ID 11    PI_11          181.025 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6             228.9 (s)        4
+#   5  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   6  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   7  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 2 : 
+#
+# Total waiting time plus the penalty    = 1379.95
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0300761 (seconds)
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_0           156.225 (s)        2
+#   2  (DROPOFF) Request_ID 5     DR_5             234.1 (s)        1
+#   3  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_4           175.325 (s)        1
+#   2  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 218
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 211.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_3           195.525 (s)        1
+#   2  (DROPOFF) Request_ID 3     DR_3           235.375 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7            269.75 (s)        4
+#   4  (SINK   ) return           DR_7            331.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 144
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 274.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 10    PI_10          144.975 (s)        1
+#   3  (PICKUP ) Request_ID 1     PI_1            207.05 (s)        2
+#   4  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   5  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 164
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 508.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 9     PI_9            283.95 (s)        1
+#   3  (PICKUP ) Request_ID 12    PI_12            380.2 (s)        2
+#   4  (DROPOFF) Request_ID 12    DR_12            518.3 (s)        1
+#   5  (SINK   ) return           DR_9             631.5 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 124
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 386.025
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 8     PI_8             164.1 (s)        1
+#   3  (PICKUP ) Request_ID 11    PI_11          181.025 (s)        2
+#   4  (PICKUP ) Request_ID 6     PI_6             228.9 (s)        4
+#   5  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   6  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   7  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+ *****************************  epoch   3  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.00 ticks)
+REDUCED DUALS:
+requestDuals[12]: 775.767
+requestDuals[9]: 802.012
+requestDuals[7]: 810.956
+requestDuals[13]: 705.978
+requestDuals[14]: 704.024
+requestDuals[15]: 694.331
+requestDuals[16]: 680.985
+requestDuals[17]: 669.751
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 5843.8
+# from 8 request, 0 are selected to served.
+# Time spent on ISUD initialization    = 0.0317336 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 5
+# TOTAL NUMBER OF RECEIVED REQUESTS: 18
+# Vehicle Routes after initialization: 18
+#
+#	- ROUTE_NUMBER           : 120
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_5             234.1 (s)        1
+#   2  (SINK   ) return           DR_0           276.475 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 121
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   1  (SINK   ) return           DR_2           213.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 243
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_3           235.375 (s)        0
+#   1  (SINK   ) return           DR_3           235.375 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   1  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_6             228.9 (s)        4
+#   2  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   3  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   4  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_1            207.05 (s)        2
+#   2  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   3  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -1718.83
+# The solution pool contains = 20 solutions.
+# 21 solutions were replaced in the solution pool 
+# In total, 41 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -1082.74
+# The solution pool contains = 20 solutions.
+# 6 solutions were replaced in the solution pool 
+# In total, 26 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -824.605
+# The solution pool contains = 12 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 12 solutions were generated.
+# The solution pool contains = 12 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -472.053
+# The solution pool contains = 3 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 3 solutions were generated.
+# The solution pool contains = 3 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 8.13791 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 24 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[12]: 775.767
+requestDuals[9]: 802.012
+requestDuals[7]: 810.956
+requestDuals[13]: 705.978
+requestDuals[14]: 704.024
+requestDuals[15]: 694.331
+requestDuals[16]: 680.985
+requestDuals[17]: 669.751
+VEHICLE DUALS:
+vehicleDuals[0]: -472.053
+vehicleDuals[1]: -1718.83
+vehicleDuals[2]: -1082.74
+vehicleDuals[3]: -824.605
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1745.57
+# from 8 request, 8 are selected to served.
+# Time spent on ISUD iteration  = 0.0036375 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_1            207.05 (s)        2
+#   2  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   3  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_6             228.9 (s)        4
+#   2  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   3  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   4  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 298
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 233.925
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_5             234.1 (s)        1
+#   2  (PICKUP ) Request_ID 13    PI_13          341.925 (s)        2
+#   3  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   4  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 286
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 690.375
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 7     PI_7             367.2 (s)        4
+#   3  (DROPOFF) Request_ID 7     DR_7             428.9 (s)        0
+#   4  (PICKUP ) Request_ID 14    PI_14          491.175 (s)        1
+#   5  (SINK   ) return           DR_14          516.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 266
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 362.775
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_3           235.375 (s)        0
+#   2  (PICKUP ) Request_ID 12    PI_12          258.175 (s)        1
+#   3  (PICKUP ) Request_ID 17    PI_17            340.6 (s)        2
+#   4  (DROPOFF) Request_ID 17    DR_17          393.925 (s)        1
+#   5  (SINK   ) return           DR_12            502.3 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 246
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 458.5
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 16    PI_16            229.7 (s)        1
+#   3  (PICKUP ) Request_ID 15    PI_15            236.4 (s)        3
+#   4  (DROPOFF) Request_ID 15    DR_15          253.425 (s)        1
+#   5  (PICKUP ) Request_ID 9     PI_9             312.4 (s)        2
+#   6  (DROPOFF) Request_ID 9     DR_9           422.375 (s)        1
+#   7  (SINK   ) return           DR_16           550.45 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Feasible
+# Incumbent objective value = -2867.22
+# The solution pool contains = 20 solutions.
+# 30 solutions were replaced in the solution pool 
+# In total, 50 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = -402.281
+# The solution pool contains = 6 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 6 solutions were generated.
+# The solution pool contains = 6 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 472.053
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 1082.74
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 824.605
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 1718.83
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 305.388 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 14 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[12]: 362.775
+requestDuals[9]: 0
+requestDuals[7]: 0
+requestDuals[13]: 233.925
+requestDuals[14]: 690.375
+requestDuals[15]: 0
+requestDuals[16]: 458.5
+requestDuals[17]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 1745.57
+# from 8 request, 8 are selected to served.
+# Time spent on ISUD iteration  = 0.0019977 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_1            207.05 (s)        2
+#   2  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   3  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_6             228.9 (s)        4
+#   2  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   3  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   4  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 298
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 233.925
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_5             234.1 (s)        1
+#   2  (PICKUP ) Request_ID 13    PI_13          341.925 (s)        2
+#   3  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   4  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 286
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 690.375
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 7     PI_7             367.2 (s)        4
+#   3  (DROPOFF) Request_ID 7     DR_7             428.9 (s)        0
+#   4  (PICKUP ) Request_ID 14    PI_14          491.175 (s)        1
+#   5  (SINK   ) return           DR_14          516.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 266
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 362.775
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_3           235.375 (s)        0
+#   2  (PICKUP ) Request_ID 12    PI_12          258.175 (s)        1
+#   3  (PICKUP ) Request_ID 17    PI_17            340.6 (s)        2
+#   4  (DROPOFF) Request_ID 17    DR_17          393.925 (s)        1
+#   5  (SINK   ) return           DR_12            502.3 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 246
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 458.5
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 16    PI_16            229.7 (s)        1
+#   3  (PICKUP ) Request_ID 15    PI_15            236.4 (s)        3
+#   4  (DROPOFF) Request_ID 15    DR_15          253.425 (s)        1
+#   5  (PICKUP ) Request_ID 9     PI_9             312.4 (s)        2
+#   6  (DROPOFF) Request_ID 9     DR_9           422.375 (s)        1
+#   7  (SINK   ) return           DR_16           550.45 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 3 : 
+#
+# Total waiting time plus the penalty    = 1745.57
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0374251 (seconds)
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_1            207.05 (s)        2
+#   2  (DROPOFF) Request_ID 1     DR_1           339.725 (s)        1
+#   3  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_6             228.9 (s)        4
+#   2  (DROPOFF) Request_ID 11    DR_11          300.325 (s)        3
+#   3  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   4  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 298
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 233.925
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_5             234.1 (s)        1
+#   2  (PICKUP ) Request_ID 13    PI_13          341.925 (s)        2
+#   3  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   4  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 286
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 690.375
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 7     PI_7             367.2 (s)        4
+#   3  (DROPOFF) Request_ID 7     DR_7             428.9 (s)        0
+#   4  (PICKUP ) Request_ID 14    PI_14          491.175 (s)        1
+#   5  (SINK   ) return           DR_14          516.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 266
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 5
+#	- TOTAL_WAITING (seconds) : 362.775
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_3           235.375 (s)        0
+#   2  (PICKUP ) Request_ID 12    PI_12          258.175 (s)        1
+#   3  (PICKUP ) Request_ID 17    PI_17            340.6 (s)        2
+#   4  (DROPOFF) Request_ID 17    DR_17          393.925 (s)        1
+#   5  (SINK   ) return           DR_12            502.3 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 246
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 458.5
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_2           213.525 (s)        0
+#   2  (PICKUP ) Request_ID 16    PI_16            229.7 (s)        1
+#   3  (PICKUP ) Request_ID 15    PI_15            236.4 (s)        3
+#   4  (DROPOFF) Request_ID 15    DR_15          253.425 (s)        1
+#   5  (PICKUP ) Request_ID 9     PI_9             312.4 (s)        2
+#   6  (DROPOFF) Request_ID 9     DR_9           422.375 (s)        1
+#   7  (SINK   ) return           DR_16           550.45 (s)        0
+==========================================================================
+ *****************************  epoch   4  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 15 rows and 15 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.00 ticks)
+REDUCED DUALS:
+requestDuals[9]: 859.575
+requestDuals[17]: 717.821
+requestDuals[7]: 869.161
+requestDuals[14]: 754.554
+requestDuals[18]: 660.53
+requestDuals[19]: 647.834
+requestDuals[20]: 640.689
+requestDuals[21]: 624.899
+requestDuals[22]: 621.444
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 6396.51
+# from 9 request, 0 are selected to served.
+# Time spent on ISUD initialization    = 0.0391736 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 5
+# TOTAL NUMBER OF RECEIVED REQUESTS: 23
+# Vehicle Routes after initialization: 23
+#
+#	- ROUTE_NUMBER           : 327
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   3  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 328
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_15          253.425 (s)        1
+#   2  (SINK   ) return           DR_16            286.7 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 329
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_12          258.175 (s)        1
+#   2  (SINK   ) return           DR_12          396.275 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   1  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   3  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -1429.07
+# The solution pool contains = 20 solutions.
+# 21 solutions were replaced in the solution pool 
+# In total, 41 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -1496.87
+# The solution pool contains = 20 solutions.
+# 13 solutions were replaced in the solution pool 
+# In total, 33 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -891.629
+# The solution pool contains = 20 solutions.
+# 5 solutions were replaced in the solution pool 
+# In total, 25 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -286.436
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 1 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 11.1874 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 15 rows and 25 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[9]: 859.575
+requestDuals[17]: 717.821
+requestDuals[7]: 869.161
+requestDuals[14]: 754.554
+requestDuals[18]: 660.53
+requestDuals[19]: 647.834
+requestDuals[20]: 640.689
+requestDuals[21]: 624.899
+requestDuals[22]: 621.444
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: -1496.87
+vehicleDuals[2]: -891.629
+vehicleDuals[3]: -1429.07
+vehicleDuals[4]: 0
+vehicleDuals[5]: -286.436
+#
+# Solution status = Optimal
+# Incumbent objective value = 2292.5
+# from 9 request, 9 are selected to served.
+# Time spent on ISUD iteration  = 0.0052102 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   3  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 327
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   3  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 390
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 582.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (DROPOFF) Request_ID 10    DR_10          484.675 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7           640.725 (s)        4
+#   4  (SINK   ) return           DR_7           702.425 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 370
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 6
+#	- TOTAL_WAITING (seconds) : 393.8
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_12          258.175 (s)        1
+#   2  (PICKUP ) Request_ID 18    PI_18            296.5 (s)        2
+#   3  (PICKUP ) Request_ID 21    PI_21            449.3 (s)        3
+#   4  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   5  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   6  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 330
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 350
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 490.225
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_15          253.425 (s)        1
+#   2  (PICKUP ) Request_ID 17    PI_17          296.325 (s)        2
+#   3  (PICKUP ) Request_ID 22    PI_22          337.425 (s)        4
+#   4  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   5  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16          484.325 (s)        3
+#   7  (DROPOFF) Request_ID 19    DR_19           590.25 (s)        2
+#   8  (SINK   ) return           DR_22          644.425 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Feasible
+# Incumbent objective value = -2159.48
+# The solution pool contains = 20 solutions.
+# 45 solutions were replaced in the solution pool 
+# In total, 65 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -366.249
+# The solution pool contains = 8 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 8 solutions were generated.
+# The solution pool contains = 8 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 286.436
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 891.629
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 1429.07
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 1496.87
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 303.022 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 15 rows and 14 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[9]: 0
+requestDuals[17]: 490.225
+requestDuals[7]: 582.725
+requestDuals[14]: 1926.75
+requestDuals[18]: 393.8
+requestDuals[19]: 0
+requestDuals[20]: 0
+requestDuals[21]: 0
+requestDuals[22]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: -1101
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 2292.5
+# from 9 request, 9 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 7 rows and 20 columns.
+Aggregator did 6 substitutions.
+Reduced LP has 3 rows, 7 columns, and 15 nonzeros.
+Presolve time = 0.00 sec. (0.02 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual objective     =           227.595917
+#
+# Solution status = Optimal
+# Incumbent objective value = 286.436
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.0044593 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   3  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 327
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   3  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 390
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 582.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (DROPOFF) Request_ID 10    DR_10          484.675 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7           640.725 (s)        4
+#   4  (SINK   ) return           DR_7           702.425 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 370
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 6
+#	- TOTAL_WAITING (seconds) : 393.8
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_12          258.175 (s)        1
+#   2  (PICKUP ) Request_ID 18    PI_18            296.5 (s)        2
+#   3  (PICKUP ) Request_ID 21    PI_21            449.3 (s)        3
+#   4  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   5  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   6  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 330
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 350
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 490.225
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_15          253.425 (s)        1
+#   2  (PICKUP ) Request_ID 17    PI_17          296.325 (s)        2
+#   3  (PICKUP ) Request_ID 22    PI_22          337.425 (s)        4
+#   4  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   5  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16          484.325 (s)        3
+#   7  (DROPOFF) Request_ID 19    DR_19           590.25 (s)        2
+#   8  (SINK   ) return           DR_22          644.425 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 4 : 
+#
+# Total waiting time plus the penalty    = 2292.5
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0489116 (seconds)
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   3  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 327
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   3  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 390
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 582.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (DROPOFF) Request_ID 10    DR_10          484.675 (s)        0
+#   3  (PICKUP ) Request_ID 7     PI_7           640.725 (s)        4
+#   4  (SINK   ) return           DR_7           702.425 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 370
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 6
+#	- TOTAL_WAITING (seconds) : 393.8
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_12          258.175 (s)        1
+#   2  (PICKUP ) Request_ID 18    PI_18            296.5 (s)        2
+#   3  (PICKUP ) Request_ID 21    PI_21            449.3 (s)        3
+#   4  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   5  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   6  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 330
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 350
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 490.225
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_15          253.425 (s)        1
+#   2  (PICKUP ) Request_ID 17    PI_17          296.325 (s)        2
+#   3  (PICKUP ) Request_ID 22    PI_22          337.425 (s)        4
+#   4  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   5  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16          484.325 (s)        3
+#   7  (DROPOFF) Request_ID 19    DR_19           590.25 (s)        2
+#   8  (SINK   ) return           DR_22          644.425 (s)        0
+==========================================================================
+ *****************************  epoch   5  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 16 rows and 16 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.00 ticks)
+REDUCED DUALS:
+requestDuals[19]: 694.331
+requestDuals[9]: 921.27
+requestDuals[20]: 686.673
+requestDuals[14]: 808.711
+requestDuals[7]: 931.544
+requestDuals[23]: 614.59
+requestDuals[24]: 604.45
+requestDuals[25]: 591.191
+requestDuals[26]: 589.554
+requestDuals[27]: 584.671
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 7026.98
+# from 10 request, 0 are selected to served.
+# Time spent on ISUD initialization    = 0.0508965 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 5
+# TOTAL NUMBER OF RECEIVED REQUESTS: 28
+# Vehicle Routes after initialization: 28
+#
+#	- ROUTE_NUMBER           : 327
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (DROPOFF) Request_ID 0     DR_0           435.075 (s)        1
+#   3  (SINK   ) return           DR_13          492.575 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 419
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_22          337.425 (s)        4
+#   2  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   3  (DROPOFF) Request_ID 16    DR_16          452.775 (s)        2
+#   4  (SINK   ) return           DR_22          546.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 123
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 1
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   1  (SINK   ) return           DR_4             306.6 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 244
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 8     DR_8            352.85 (s)        2
+#   3  (SINK   ) return           DR_6           408.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 245
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 2
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (SINK   ) return           DR_10          484.675 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = -1590.9
+# The solution pool contains = 20 solutions.
+# 7 solutions were replaced in the solution pool 
+# In total, 27 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -1176.93
+# The solution pool contains = 20 solutions.
+# 12 solutions were replaced in the solution pool 
+# In total, 32 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = -888.419
+# The solution pool contains = 20 solutions.
+# 15 solutions were replaced in the solution pool 
+# In total, 35 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -557.81
+# The solution pool contains = 19 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 19 solutions were generated.
+# The solution pool contains = 19 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 14.2899 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 16 rows and 26 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[19]: 694.331
+requestDuals[9]: 921.27
+requestDuals[20]: 686.673
+requestDuals[14]: 808.711
+requestDuals[7]: 931.544
+requestDuals[23]: 614.59
+requestDuals[24]: 604.45
+requestDuals[25]: 591.191
+requestDuals[26]: 589.554
+requestDuals[27]: 584.671
+VEHICLE DUALS:
+vehicleDuals[0]: -557.81
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: -1590.9
+vehicleDuals[4]: -888.419
+vehicleDuals[5]: -1176.93
+#
+# Solution status = Optimal
+# Incumbent objective value = 2812.92
+# from 10 request, 10 are selected to served.
+# Time spent on ISUD iteration  = 0.0050557 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 419
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_22          337.425 (s)        4
+#   2  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   3  (DROPOFF) Request_ID 16    DR_16          452.775 (s)        2
+#   4  (SINK   ) return           DR_22          546.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 461
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 647.575
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 6     DR_6             349.2 (s)        1
+#   3  (PICKUP ) Request_ID 24    PI_24           390.25 (s)        4
+#   4  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   5  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   6  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   7  (SINK   ) return           DR_7           597.025 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 481
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 641.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (PICKUP ) Request_ID 23    PI_23           404.85 (s)        4
+#   3  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   4  (PICKUP ) Request_ID 27    PI_27            688.6 (s)        4
+#   5  (DROPOFF) Request_ID 13    DR_13           836.25 (s)        3
+#   6  (DROPOFF) Request_ID 23    DR_23          928.175 (s)        1
+#   7  (SINK   ) return           DR_27          1046.32 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 441
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 698.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (PICKUP ) Request_ID 25    PI_25           375.65 (s)        4
+#   3  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   4  (PICKUP ) Request_ID 19    PI_19            436.6 (s)        2
+#   5  (PICKUP ) Request_ID 26    PI_26            529.9 (s)        3
+#   6  (DROPOFF) Request_ID 10    DR_10            607.6 (s)        2
+#   7  (DROPOFF) Request_ID 26    DR_26          678.125 (s)        1
+#   8  (SINK   ) return           DR_19          809.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 421
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Feasible
+# Incumbent objective value = -2095.36
+# The solution pool contains = 20 solutions.
+# 32 solutions were replaced in the solution pool 
+# In total, 52 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = -482.602
+# The solution pool contains = 20 solutions.
+# 13 solutions were replaced in the solution pool 
+# In total, 33 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 454.219
+# The solution pool contains = 2 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 2 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 1102.7
+# The solution pool contains = 2 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 2 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 220.335
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 714.526
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 304.787 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 6 rows and 44 columns.
+Aggregator did 6 substitutions.
+Reduced LP has 5 rows, 18 columns, and 52 nonzeros.
+Presolve time = 0.00 sec. (0.05 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =             0.000000
+Iteration:     2   Dual objective     =          -124.712524
+#
+# Solution status = Optimal
+# Incumbent objective value = 124.132
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.0033051 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 419
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_22          337.425 (s)        4
+#   2  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   3  (DROPOFF) Request_ID 16    DR_16          452.775 (s)        2
+#   4  (SINK   ) return           DR_22          546.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 461
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 647.575
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 6     DR_6             349.2 (s)        1
+#   3  (PICKUP ) Request_ID 24    PI_24           390.25 (s)        4
+#   4  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   5  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   6  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   7  (SINK   ) return           DR_7           597.025 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 481
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 641.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (PICKUP ) Request_ID 23    PI_23           404.85 (s)        4
+#   3  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   4  (PICKUP ) Request_ID 27    PI_27            688.6 (s)        4
+#   5  (DROPOFF) Request_ID 13    DR_13           836.25 (s)        3
+#   6  (DROPOFF) Request_ID 23    DR_23          928.175 (s)        1
+#   7  (SINK   ) return           DR_27          1046.32 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 441
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 698.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (PICKUP ) Request_ID 25    PI_25           375.65 (s)        4
+#   3  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   4  (PICKUP ) Request_ID 19    PI_19            436.6 (s)        2
+#   5  (PICKUP ) Request_ID 26    PI_26            529.9 (s)        3
+#   6  (DROPOFF) Request_ID 10    DR_10            607.6 (s)        2
+#   7  (DROPOFF) Request_ID 26    DR_26          678.125 (s)        1
+#   8  (SINK   ) return           DR_19          809.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 421
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 5 : 
+#
+# Total waiting time plus the penalty    = 2812.92
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0593038 (seconds)
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 419
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_22          337.425 (s)        4
+#   2  (DROPOFF) Request_ID 17    DR_17          357.325 (s)        3
+#   3  (DROPOFF) Request_ID 16    DR_16          452.775 (s)        2
+#   4  (SINK   ) return           DR_22          546.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 461
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 647.575
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_11          300.325 (s)        3
+#   2  (DROPOFF) Request_ID 6     DR_6             349.2 (s)        1
+#   3  (PICKUP ) Request_ID 24    PI_24           390.25 (s)        4
+#   4  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   5  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   6  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   7  (SINK   ) return           DR_7           597.025 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 481
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 641.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_13          341.925 (s)        2
+#   2  (PICKUP ) Request_ID 23    PI_23           404.85 (s)        4
+#   3  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   4  (PICKUP ) Request_ID 27    PI_27            688.6 (s)        4
+#   5  (DROPOFF) Request_ID 13    DR_13           836.25 (s)        3
+#   6  (DROPOFF) Request_ID 23    DR_23          928.175 (s)        1
+#   7  (SINK   ) return           DR_27          1046.32 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 441
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 8
+#	- TOTAL_WAITING (seconds) : 698.15
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_1           339.725 (s)        1
+#   2  (PICKUP ) Request_ID 25    PI_25           375.65 (s)        4
+#   3  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   4  (PICKUP ) Request_ID 19    PI_19            436.6 (s)        2
+#   5  (PICKUP ) Request_ID 26    PI_26            529.9 (s)        3
+#   6  (DROPOFF) Request_ID 10    DR_10            607.6 (s)        2
+#   7  (DROPOFF) Request_ID 26    DR_26          678.125 (s)        1
+#   8  (SINK   ) return           DR_19          809.675 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 421
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 825.75
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_4             306.6 (s)        0
+#   2  (PICKUP ) Request_ID 20    PI_20          344.225 (s)        2
+#   3  (PICKUP ) Request_ID 14    PI_14           393.65 (s)        3
+#   4  (PICKUP ) Request_ID 9     PI_9           441.875 (s)        4
+#   5  (DROPOFF) Request_ID 9     DR_9            551.85 (s)        3
+#   6  (DROPOFF) Request_ID 20    DR_20          642.175 (s)        1
+#   7  (SINK   ) return           DR_14           668.45 (s)        0
+==========================================================================
+ *****************************  epoch   6  *****************************
+# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 13 rows and 13 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.00 ticks)
+REDUCED DUALS:
+requestDuals[27]: 626.634
+requestDuals[9]: 987.393
+requestDuals[7]: 998.404
+requestDuals[26]: 631.868
+requestDuals[19]: 744.166
+requestDuals[28]: 570.262
+requestDuals[29]: 556.208
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 5114.93
+# from 7 request, 0 are selected to served.
+# Time spent on ISUD initialization    = 0.061288 (seconds)
+# NUMBER OF RECEIVED REQUESTS: 2
+# TOTAL NUMBER OF RECEIVED REQUESTS: 30
+# Vehicle Routes after initialization: 30
+#
+#	- ROUTE_NUMBER           : 540
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_23           404.85 (s)        4
+#   2  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   3  (DROPOFF) Request_ID 13    DR_13          566.325 (s)        2
+#   4  (SINK   ) return           DR_23           658.25 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 419
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_17          357.325 (s)        3
+#   2  (DROPOFF) Request_ID 16    DR_16          452.775 (s)        2
+#   3  (SINK   ) return           DR_22          546.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 541
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_14           393.65 (s)        3
+#   2  (DROPOFF) Request_ID 20    DR_20          416.525 (s)        1
+#   3  (SINK   ) return           DR_14            442.8 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 542
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_24           390.25 (s)        4
+#   2  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   3  (SINK   ) return           DR_24          438.175 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 543
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_25           375.65 (s)        4
+#   2  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   3  (SINK   ) return           DR_10          551.825 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = -1423.7
+# The solution pool contains = 20 solutions.
+# 18 solutions were replaced in the solution pool 
+# In total, 38 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = -742.019
+# The solution pool contains = 20 solutions.
+# 6 solutions were replaced in the solution pool 
+# In total, 26 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = -648.863
+# The solution pool contains = 10 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 10 solutions were generated.
+# The solution pool contains = 10 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 8.62168 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 13 rows and 22 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[27]: 626.634
+requestDuals[9]: 987.393
+requestDuals[7]: 998.404
+requestDuals[26]: 631.868
+requestDuals[19]: 744.166
+requestDuals[28]: 570.262
+requestDuals[29]: 556.208
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: -1423.7
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: -648.863
+vehicleDuals[5]: -742.019
+#
+# Solution status = Optimal
+# Incumbent objective value = 2300.35
+# from 7 request, 7 are selected to served.
+# Time spent on ISUD iteration  = 0.0046977 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 541
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_14           393.65 (s)        3
+#   2  (DROPOFF) Request_ID 20    DR_20          416.525 (s)        1
+#   3  (SINK   ) return           DR_14            442.8 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 540
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_23           404.85 (s)        4
+#   2  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   3  (DROPOFF) Request_ID 13    DR_13          566.325 (s)        2
+#   4  (SINK   ) return           DR_23           658.25 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 564
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 384.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_25           375.65 (s)        4
+#   2  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   3  (PICKUP ) Request_ID 29    PI_29           436.95 (s)        3
+#   4  (PICKUP ) Request_ID 28    PI_28            489.5 (s)        4
+#   5  (DROPOFF) Request_ID 10    DR_10              633 (s)        3
+#   6  (DROPOFF) Request_ID 28    DR_28          703.975 (s)        2
+#   7  (SINK   ) return           DR_29            840.9 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 584
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 976.175
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_24           390.25 (s)        4
+#   2  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   3  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   4  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   5  (DROPOFF) Request_ID 7     DR_7           597.025 (s)        0
+#   6  (PICKUP ) Request_ID 27    PI_27           742.85 (s)        1
+#   7  (SINK   ) return           DR_27          869.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 544
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 9
+#	- TOTAL_WAITING (seconds) : 939.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_17          357.325 (s)        3
+#   2  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   3  (DROPOFF) Request_ID 22    DR_22          409.025 (s)        2
+#   4  (PICKUP ) Request_ID 9     PI_9           500.475 (s)        3
+#   5  (PICKUP ) Request_ID 26    PI_26          540.775 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16            584.2 (s)        3
+#   7  (DROPOFF) Request_ID 26    DR_26          625.675 (s)        2
+#   8  (DROPOFF) Request_ID 9     DR_9           722.825 (s)        1
+#   9  (SINK   ) return           DR_19          791.025 (s)        0
+==========================================================================
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 3
+#
+# Solution status = Feasible
+# Incumbent objective value = -1589.36
+# The solution pool contains = 20 solutions.
+# 22 solutions were replaced in the solution pool 
+# In total, 42 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = -395.171
+# The solution pool contains = 20 solutions.
+# 10 solutions were replaced in the solution pool 
+# In total, 30 solutions were generated.
+# The solution pool contains = 20 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 2
+#
+# Solution status = Optimal
+# Incumbent objective value = 0
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 5
+#
+# Solution status = Optimal
+# Incumbent objective value = 742.019
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 4
+#
+# Solution status = Optimal
+# Incumbent objective value = 648.863
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+#
+# ------------------------------------------------------------
+# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: 1
+#
+# Solution status = Optimal
+# Incumbent objective value = 1423.7
+# The solution pool contains = 1 solutions.
+# 0 solutions were replaced in the solution pool 
+# In total, 1 solutions were generated.
+# The solution pool contains = 0 solutions with negative reduced cost.
+# ============================================================
+# Time spent on solving subproblems:  = 303.669 (seconds)
+# ============================================================
+#
+# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 13 rows and 13 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.01 ticks)
+REDUCED DUALS:
+requestDuals[27]: 976.175
+requestDuals[9]: 939.725
+requestDuals[7]: 0
+requestDuals[26]: 0
+requestDuals[19]: 0
+requestDuals[28]: 384.45
+requestDuals[29]: 0
+VEHICLE DUALS:
+vehicleDuals[0]: 0
+vehicleDuals[1]: 0
+vehicleDuals[2]: 0
+vehicleDuals[3]: 0
+vehicleDuals[4]: 0
+vehicleDuals[5]: 0
+#
+# Solution status = Optimal
+# Incumbent objective value = 2300.35
+# from 7 request, 7 are selected to served.
+# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM
+Version identifier: 20.1.0.0 | 2020-11-10 | 9bedb6d68
+Tried aggregator 1 time.
+LP Presolve eliminated 7 rows and 41 columns.
+Aggregator did 7 substitutions.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.02 ticks)
+#
+# Solution status = Optimal
+# Incumbent objective value = 225.791
+# The Algorithm can not find further direction of descent and terminated
+# Time spent on ISUD iteration  = 0.0065267 (seconds)
+# Solution Result after ISUD:
+#
+#	- ROUTE_NUMBER           : 541
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_14           393.65 (s)        3
+#   2  (DROPOFF) Request_ID 20    DR_20          416.525 (s)        1
+#   3  (SINK   ) return           DR_14            442.8 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 540
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_23           404.85 (s)        4
+#   2  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   3  (DROPOFF) Request_ID 13    DR_13          566.325 (s)        2
+#   4  (SINK   ) return           DR_23           658.25 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 564
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 384.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_25           375.65 (s)        4
+#   2  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   3  (PICKUP ) Request_ID 29    PI_29           436.95 (s)        3
+#   4  (PICKUP ) Request_ID 28    PI_28            489.5 (s)        4
+#   5  (DROPOFF) Request_ID 10    DR_10              633 (s)        3
+#   6  (DROPOFF) Request_ID 28    DR_28          703.975 (s)        2
+#   7  (SINK   ) return           DR_29            840.9 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 584
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 976.175
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_24           390.25 (s)        4
+#   2  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   3  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   4  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   5  (DROPOFF) Request_ID 7     DR_7           597.025 (s)        0
+#   6  (PICKUP ) Request_ID 27    PI_27           742.85 (s)        1
+#   7  (SINK   ) return           DR_27          869.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 544
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 9
+#	- TOTAL_WAITING (seconds) : 939.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_17          357.325 (s)        3
+#   2  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   3  (DROPOFF) Request_ID 22    DR_22          409.025 (s)        2
+#   4  (PICKUP ) Request_ID 9     PI_9           500.475 (s)        3
+#   5  (PICKUP ) Request_ID 26    PI_26          540.775 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16            584.2 (s)        3
+#   7  (DROPOFF) Request_ID 26    DR_26          625.675 (s)        2
+#   8  (DROPOFF) Request_ID 9     DR_9           722.825 (s)        1
+#   9  (SINK   ) return           DR_19          791.025 (s)        0
+==========================================================================
+# Solution of ISUD after epoch 6 : 
+#
+# Total waiting time plus the penalty    = 2300.35
+# Number of requests that are not served = 0
+# Time spent on ISUD improvement         = 0.0725601 (seconds)
+#
+#	- ROUTE_NUMBER           : 541
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 3
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_14           393.65 (s)        3
+#   2  (DROPOFF) Request_ID 20    DR_20          416.525 (s)        1
+#   3  (SINK   ) return           DR_14            442.8 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 420
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_21            449.3 (s)        3
+#   2  (DROPOFF) Request_ID 18    DR_18          571.625 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            656.3 (s)        1
+#   4  (SINK   ) return           DR_12          756.325 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 540
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 4
+#	- TOTAL_WAITING (seconds) : 0
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_23           404.85 (s)        4
+#   2  (DROPOFF) Request_ID 0     DR_0           508.825 (s)        3
+#   3  (DROPOFF) Request_ID 13    DR_13          566.325 (s)        2
+#   4  (SINK   ) return           DR_23           658.25 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 564
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 384.45
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_25           375.65 (s)        4
+#   2  (DROPOFF) Request_ID 25    DR_25            423.1 (s)        1
+#   3  (PICKUP ) Request_ID 29    PI_29           436.95 (s)        3
+#   4  (PICKUP ) Request_ID 28    PI_28            489.5 (s)        4
+#   5  (DROPOFF) Request_ID 10    DR_10              633 (s)        3
+#   6  (DROPOFF) Request_ID 28    DR_28          703.975 (s)        2
+#   7  (SINK   ) return           DR_29            840.9 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 584
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 7
+#	- TOTAL_WAITING (seconds) : 976.175
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        PI_24           390.25 (s)        4
+#   2  (DROPOFF) Request_ID 8     DR_8           405.575 (s)        3
+#   3  (DROPOFF) Request_ID 24    DR_24          438.175 (s)        0
+#   4  (PICKUP ) Request_ID 7     PI_7           535.325 (s)        4
+#   5  (DROPOFF) Request_ID 7     DR_7           597.025 (s)        0
+#   6  (PICKUP ) Request_ID 27    PI_27           742.85 (s)        1
+#   7  (SINK   ) return           DR_27          869.525 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 544
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 9
+#	- TOTAL_WAITING (seconds) : 939.725
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        DR_17          357.325 (s)        3
+#   2  (PICKUP ) Request_ID 19    PI_19          372.475 (s)        4
+#   3  (DROPOFF) Request_ID 22    DR_22          409.025 (s)        2
+#   4  (PICKUP ) Request_ID 9     PI_9           500.475 (s)        3
+#   5  (PICKUP ) Request_ID 26    PI_26          540.775 (s)        4
+#   6  (DROPOFF) Request_ID 16    DR_16            584.2 (s)        3
+#   7  (DROPOFF) Request_ID 26    DR_26          625.675 (s)        2
+#   8  (DROPOFF) Request_ID 9     DR_9           722.825 (s)        1
+#   9  (SINK   ) return           DR_19          791.025 (s)        0
+==========================================================================
+
+
