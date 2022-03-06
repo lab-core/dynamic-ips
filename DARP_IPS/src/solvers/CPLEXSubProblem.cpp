@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 
 // Constructor and Destructor
-CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : Vehicle_(&vehicle){
+CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : SubproModeler(vehicle){
     subGraph_ = std::make_shared<Graph>();
     /*numRoutes_ = 0;
     bestReducedCost_ = 0;*/
@@ -20,52 +20,11 @@ CPLEXSubProblem::~CPLEXSubProblem() {
     env_.end();
 }
 
-// calculation of penalties and initialization of the subgraph
-void CPLEXSubProblem::initSubGraph(PInstance &pInst, SubSolveStatus status) {
-
-    // create graph with source and sink
-    subGraph_ = std::make_shared<Graph>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                                        pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
-
-    // adding onboard nodes to the graph
-    for (int i = 0; i < (*Vehicle_)->onboards_.size(); ++i) {
-        subGraph_->addNewNode(pInst->instGraph_->nodes_[(*Vehicle_)->onboards_[i]]);
-    }
-
-    // adding available nodes based on the penalty
-    for (auto & requestObj : pInst->requests_) {
-        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->subStatus_ == NOTSELECTED)) {
-            /*double minWait = (*Vehicle_)->departTime_ +
-                            queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                                           pInst->instGraph_->nodes_[Tools::createNodeID(pInst->requests_[r]->getRequestId(), PICKUP)])
-                            - pInst->requests_[r]->earlyPick_;*/
-            /*float minWait = (*Vehicle_)->departTime_ +
-                             travelMat->queryTravelTime(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                                             pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)])
-                             - requestObj->earlyPick_;*/
-
-            float minWait = (*Vehicle_)->departTime_ +
-                    durationMatrix_[pInst->instGraph_->nodes_[(*Vehicle_)->departID_]->locationID_]
-                    [pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
-                            - requestObj->earlyPick_;
-
-            if (minWait <= requestObj->penalty_) {
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]);
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), DROPOFF)]);
-
-                // adding available requests
-                subRequests_.push_back(requestObj);
-            }
-        }
-    }
-}
-
 //************************************************************************
 // Build the SUb Problem model with CPLEX
 //************************************************************************
 
-void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicleDual, std::map<int, int>& requestToOrder,
-                                      int maxPickUp)
+void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrder, int maxPickUp)
 {
     // Definition of variables
     X = IloNumVar2D(env_, subGraph_->nbNodes_);
@@ -89,7 +48,6 @@ void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicle
         }
     }
 
-//    objExpr -= vehicleDual;
     objExpr -= (*Vehicle_)->dual_;
     SubProModel_.add(IloMinimize(env_, objExpr));
 
@@ -171,13 +129,9 @@ void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicle
         // constraints 11c -------------------
         IloExpr expr11(env_);
         expr11 = U[dropIndex] - U[pickIndex] - subRequests_[i]->deltaTime_;
-        //    float t = calcTravelTime(subGraph_->nodes_[pickID], subGraph_->nodes_[dropID]);
-        /*float t = subRequests_[i]->minTravelTime_;
 
-        SubProModel_.add(expr11 <= std::max(alphaParam * t, betaParam + t));*/
         SubProModel_.add(expr11 <= subRequests_[i]->maxTravelTime_);
         SubProModel_.add(expr11 >= subRequests_[i]->minTravelTime_);
-//        SubProModel_.add(expr11 >= t);
     }
 
     // add this constraint to control the length of generated routes in subproblems
@@ -213,13 +167,7 @@ void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicle
 
             // constraints 7c -------------------
             IloExpr expr7(env_);
-            /*expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
-                    + queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
-                                                 subGraph_->nodes_[subGraph_->intToNodeID_[j]])
-                    - U[j] - 7200 * (1 - X[i][j]);*/
-            /*expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
-                    + travelMat->queryTravelTime(subGraph_->nodes_[subGraph_->intToNodeID_[i]],
-                                     subGraph_->nodes_[subGraph_->intToNodeID_[j]]) - U[j] - 7200 * (1 - X[i][j]);*/
+
             expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
                     + durationMatrix_[subGraph_->nodes_[subGraph_->intToNodeID_[i]]->locationID_]
                     [subGraph_->nodes_[subGraph_->intToNodeID_[j]]->locationID_]- U[j] - 7200 * (1 - X[i][j]);
@@ -252,10 +200,10 @@ void CPLEXSubProblem::BuildModelCPLEX(IloNumArray& requestDuals, IloNum& vehicle
         expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - (*subGraph_->nodes_[onboardID]->related_Request_)->pickTime_
                  - (*subGraph_->nodes_[onboardID]->related_Request_)->deltaTime_;
 
-        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
+//        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
         SubProModel_.add(expr12 <= (*subGraph_->nodes_[onboardID]->related_Request_)->maxTravelTime_);
         SubProModel_.add(expr12 >= (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_);
-        /*SubProModel_.add(expr12 <= std::max(alphaParam * t, betaParam + t));
+        /*SubProModel_.add(expr12 <= std::max(alphaParam_ * t, betaParam + t));
         SubProModel_.add(expr12 >= t);*/
     }
 }
@@ -268,7 +216,7 @@ void CPLEXSubProblem::SolveCPLEX() {
         SubProbCplex_ = IloCplex(SubProModel_);
         SubProbCplex_.setOut(env_.getNullStream());
 
-        // set the parameters
+        // set the Parameters
         SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Replace, 2);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.05);
@@ -295,7 +243,7 @@ void CPLEXSubProblem::SolveCPLEX() {
 }
 
 // function to convert solution to routes and save them in vehicle object
-void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::map<std::string , PRoute> &generatedRoutes) {
+void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes) {
     try {
 
 //        availableRoutes.clear();
@@ -381,10 +329,10 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
      //                           newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]], uVal[i], wVal[i]);
                                 newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]]);
                                 if (s == 0)
-                                    (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;
+                                    (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;
                             }
                             /*if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
-                                (*newRoute->routeNodes_.back()->related_Request_)->subStatus_ = SELECTED;*/
+                                (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;*/
                             currentNodeIndex = i;
                             break;
                         }

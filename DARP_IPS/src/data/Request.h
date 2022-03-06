@@ -16,7 +16,7 @@ enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
 static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
 
-enum SubProStatus {NOTSELECTED = 0, SELECTED = 1};
+enum SubSelectionStatus {NOTSELECTED = 0, SELECTED = 1};
 
 
 
@@ -26,10 +26,10 @@ private:
 public:
     static unsigned int requestCount_;  // Counter the number of requests
     const char* name_;
-    /*float PickUpLatitude_;              // pick up location latitude
+    float PickUpLatitude_;              // pick up location latitude
     float PickUpLongitude_;             // pick up location longitude
     float DropOffLatitude_;             // Drop off location latitude
-    float DropOffLongitude_;            // Drop off location longitude*/
+    float DropOffLongitude_;            // Drop off location longitude
     int PickUpID_;                      // pick up location ID
     int DropOffID_;                     // Drop off location ID
     float earlyPick_;                   // earliest possible pick up time for the request
@@ -43,25 +43,23 @@ public:
     float penalty_;                     // penalty of not serving at current period
     int readEpoch_;
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
-    SubProStatus subStatus_;            // status of the request based on previous solution of sub problems
+    SubSelectionStatus selectStatus_;            // status of the request based on previous solution of sub problems
     double dual_;
     int vehicleID_;                     // the vehicle that serve the request
 
     // Constructor and Destructor
-    /*Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude,
-            float dropOffLongitude, float earlyPick, int nbPassengers, float deltaTime, float minReachTime,
-            float minTravelTime);*/
-    Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, float minReachTime,
+    Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude,
+            float dropOffLongitude, int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, float minReachTime,
             float minTravelTime);
 
     virtual ~Request();
 
     // Getters and Setters
-    void setPenalty(int epoch);
+    void setPenalty(int epoch, PParameters &parameters);
     const unsigned int getRequestId() const;
     void setMinTravelTime(float minTravelTime);
     void setMinReachTime(float minReachTime);
-    void setMaxTravelTime();
+    void setMaxTravelTime(float &alphaParam, float &betaParam);
 
     // Display function
     std::string toString() const;

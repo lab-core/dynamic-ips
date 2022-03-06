@@ -7,12 +7,13 @@
 
 #include "data/Instance.h"
 #include "solvers/CPLEXModeler.h"
+#include "utilities/InputPaths.h"
 
 //-----------------------------------------------------------------------------
 //  Contains MIP formulation to solve with Cplex
 //  This is just for testing the results and comparison
 //-----------------------------------------------------------------------------
 
-void MIPSolver(PInstance& PInst);
+void MIPSolver(PInstance& PInst, InputPaths &filePaths);
 
 #endif //_MIPSOLVER_H

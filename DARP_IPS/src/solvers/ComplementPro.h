@@ -5,17 +5,14 @@
 #ifndef _COMPLEMENTPRO_H
 #define _COMPLEMENTPRO_H
 
-#include "solvers/CPLEXModeler.h"
-#include "data/Route.h"
 #include "solvers/MasterModeler.h"
-#include "Eigen/Dense"
 
 //---------------------------------------------------------------------------------------------
 //  Complementary Problem class
 //  Build and solve the Complementary problem of the ISUD
 //---------------------------------------------------------------------------------------------
 
-enum SolutionStatus { NEGATIVE_VALUE = 0, POSITIVE_VALUE = 1, FRACTIONAL = 2 };
+enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
 
 class ComplementPro : public MasterModeler{
 public:
@@ -24,6 +21,9 @@ public:
     IloNumVarArray zIncVar_;
     IloNumVarArray routeSolVar_;
     IloNumVarArray zSolVar_;
+
+    std::vector<PRoute> fractionalRoutes_;
+    std::vector<PRequest> fractionalZ_;
 
     // set of constraints
     IloRangeArray normalConst_;
@@ -47,11 +47,11 @@ public:
 
     // this function solve the model
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::map<std::string , PRoute> &generatedRoutes);
+                    std::unordered_map<std::string , PRoute> &generatedRoutes);
 
     // this function check the situation of the CP solution to be column disjoint
     bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults,
-                          std::map<int, int>& requestToOrder);
+                          std::unordered_map<int, int>& requestToOrder, int nbVehicle);
 
     // Display function
     std::string toString() const;

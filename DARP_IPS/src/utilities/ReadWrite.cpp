@@ -23,7 +23,6 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     {
         std::cout << "While trying to read the file " << strInstanceFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
-
         throw Tools::myException("The input file was not opened properly!", __LINE__);
     }
 
@@ -31,10 +30,9 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     string title;
     std::string name;
     int nbVehicles = -1, nbRequests = -1;
-    /*float sourceLatitude = -1, sourceLongitude = -1;
-    float sinkLatitude = -1, sinkLongitude = -1;*/
+    float sourceLatitude = -1, sourceLongitude = -1;
+    float sinkLatitude = -1, sinkLongitude = -1;
     int sourceID = -1, sinkID = -1;
-//    float sinkLatitude = -1, sinkLongitude = -1;
     std::vector<PVehicle> vehicles;
 
     while (file.good()) {
@@ -53,15 +51,14 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
             file >> nbRequests;
 
         // read the source coordination
-        /*else if (strEndWith(title, "SOURCE_LATITUDE "))
+        else if (strEndWith(title, "SOURCE_LATITUDE "))
             file >> sourceLatitude;
         else if (strEndWith(title, "SOURCE_LONGITUDE "))
             file >> sourceLongitude;
-
         else if (strEndWith(title, "SINK_LATITUDE "))
             file >> sinkLatitude;
         else if (strEndWith(title, "SINK_LONGITUDE "))
-            file >> sinkLongitude;*/
+            file >> sinkLongitude;
         else if (strEndWith(title, "SOURCE_ID "))
             file >> sourceID;
         else if (strEndWith(title, "SINK_ID "))
@@ -69,15 +66,6 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
 
         // read vehicles specifications
         else if (strEndWith(title, "VEHICLES_INFO")) {
-            /*for (int v = 0; v < nbVehicles; ++v) {
-                int vehicleID, capacity, startTime, endTime;
-                file >> vehicleID;
-                file >> capacity;
-                file >> startTime;
-                file >> endTime;
-
-                vehicles.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, startTime, endTime));
-            }*/
             int vehicleID, capacity;
             float startTime, endTime;
             file >> vehicleID;
@@ -91,10 +79,8 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     }
 
     // main graph initialization with source and sink
-    /*PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, SOURCE),
-            std::make_shared<Node>(sinkLatitude, sinkLongitude, SINK));*/
-    PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceID, SOURCE),
-                                               std::make_shared<Node>(sinkID, SINK));
+    PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, sourceID, SOURCE),
+                                               std::make_shared<Node>(sinkLatitude, sinkLongitude, sinkID, SINK));
 
     return std::make_shared<Instance>(name, nbVehicles, vehicles, nbRequests, mainGraph);
 }
@@ -126,37 +112,26 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
             for (int r = 0; r < pInstance->nbRequests_; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
-                /*float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
-                        earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;*/
-                float pickUpID = -1, dropOffID = -1, earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;
+                float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
+                pickUpID = -1, dropOffID = -1, earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;
 
                 file >> nbPassengers;
-            //    file >> minReach;
-                /*file >> pickUpLatitude;
-                file >> pickUpLongitude;
-                file >> dropOffLatitude;
-                file >> dropOffLongitude;*/
                 file >> pickUpID;
                 file >> dropOffID;
-
                 file >> earlyPick;
+                file >> pickUpLatitude;
+                file >> pickUpLongitude;
+                file >> dropOffLatitude;
+                file >> dropOffLongitude;
 
                 // the starting time of the instance is 16pm
                 earlyPick -= 57600;
-
-//                minReach = Tools::calcDistance(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
                 minReach = 0;
                 deltaTime = nbPassengers * TimePerPassenger;
-
-//                minTravelTime = Tools::queryTravelTime(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude);
                 minTravelTime = 0;
-                /*pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude,
-                                                                            pickUpLongitude, dropOffLatitude,
-                                                                            dropOffLongitude, earlyPick,
-                                                                            nbPassengers, deltaTime,
-                                                                            minReach, minTravelTime));*/
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
-                                                                            nbPassengers, deltaTime,
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude, pickUpLongitude,
+                                                                            dropOffLatitude, dropOffLongitude, pickUpID,
+                                                                            dropOffID, earlyPick, nbPassengers, deltaTime,
                                                                             minReach, minTravelTime));
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
             }
@@ -164,10 +139,13 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
     }
 
     // define an empty route for each vehicle and set it as the current route for the initialization
-    pInstance->instGraph_->addNewRequests(pInstance->requests_);
+    pInstance->instGraph_->addNewRequests(pInstance->requests_, pInstance->parameters_);
 }
 
-// Read duration data file
+//************************************************************************
+// Read the duration data file
+//************************************************************************
+
 void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations) {
 // open the file
     std::fstream file;
@@ -205,13 +183,112 @@ void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationM
     }
 }
 
+//************************************************************************
+// Read the parameters datafile
+//************************************************************************
+void ReadWrite::readParameters(std::string strParamFile, PInstance pInstance) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strParamFile << " >>" << std::endl;
+    file.open(strParamFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strParamFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw Tools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+
+    float alphaParam = -1, betaParam = -1, deltaPram = -1;
+    int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
+    bool isTruncated = 0, isSuccessorsLimited = 0, isDominanceReleased = 0,  sameDepot = 0, emptyStart = 0;
+    int subAlgorithm = 0, subproSolveStartState = 0;
+    int strategy = 0;
+
+    while (file.good()) {
+        readUntilOneOfTwoChar(file, '=','\n', title);
+
+        if (strEndWith(title, "alphaParam "))
+            file >> alphaParam;
+
+        else if (strEndWith(title, "betaParam "))
+            file >> betaParam;
+
+        else if (strEndWith(title, "deltaPram "))
+            file >> deltaPram;
+
+        else if (strEndWith(title, "epochLength "))
+            file >> epochLength;
+
+        else if (strEndWith(title, "emptyStart "))
+            file >> emptyStart;
+
+        else if (strEndWith(title, "sameDepot "))
+            file >> sameDepot;
+
+        else if (strEndWith(title, "isTruncated "))
+            file >> isTruncated;
+
+        else if (strEndWith(title, "MaxLabel "))
+            file >> maxLabel;
+
+        else if (strEndWith(title, "isDominanceReleased "))
+            file >> isDominanceReleased;
+
+        else if (strEndWith(title, "isSuccessorsLimited "))
+            file >> isSuccessorsLimited;
+
+        else if (strEndWith(title, "SubproSolveStartState "))
+            file >> subproSolveStartState;
+
+        else if (strEndWith(title, "LabelingStrategy "))
+            file >> strategy;
+
+        else if (strEndWith(title, "solutionAlgorithm "))
+            file >> subAlgorithm;
+
+        else if (strEndWith(title, "BigM "))
+            file >> bigM;
+
+        else if (strEndWith(title, "solveTimeLimit "))
+            file >> solveTimeLimit;
+
+        else if (strEndWith(title, "populateTimeLimit "))
+            file >> populateTimeLimit;
+    }
+    pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength, emptyStart,
+                                                          sameDepot, isTruncated, maxLabel,
+                                                          isSuccessorsLimited, isDominanceReleased,
+                                                          static_cast<SubProSolveStart>(subproSolveStartState),
+                                                          static_cast<LabelingStrategy>(strategy),
+                                                          static_cast<solutionAlgorithm>(subAlgorithm),
+                                                          bigM, solveTimeLimit, populateTimeLimit);
+}
+
+// function that open all input files and create the main instance
+PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
+    PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+    ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+    ReadWrite::readTripRequests(inputPaths.getInputTripData(), mainInst);
+
+    // write the parameters in file
+    std::ofstream myFile;
+    myFile.open (inputPaths.getOutputParameters());
+    myFile << mainInst->parameters_->toString();
+    myFile.close();
+
+    return mainInst;
+}
+
+
 // Parsing functions
 // Useful for reading a file stream until meeting the separating character
 // (the characters that are read until the separating char are stored in ReadStr
 bool ReadWrite::readUntilChar(std::fstream &pFile, char separator, std::string &pReadStr) {
 
     char cTmp = 'A';
-
     // empty ReadStr if it is not
     if (!pReadStr.empty())
         pReadStr.erase();
@@ -261,6 +338,7 @@ bool ReadWrite::strEndWith(std::string sentence, std::string word) {
         return (!strcmp(word.c_str(), endOfSentence.c_str()));
     }
 }
+
 
 
 

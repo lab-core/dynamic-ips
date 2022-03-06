@@ -5,10 +5,8 @@
 #ifndef _GRAPH_H
 #define _GRAPH_H
 
-#include "utilities/MyTools.h"
 #include "data/Instance.h"
-#include "solvers/LabelingSubProblem.h"
-
+#include "data/Label.h"
 
 //-----------------------------------------------------------------------------
 //  Node class
@@ -31,8 +29,8 @@ public:
     PRequest* related_Request_;     // pointer to its request
     string pairNodeID_;             // related pickup/  drop off
     PNode * pairNode_;
-    /*float locLatitude_;             // node location latitude
-    float locLongitude_;            // node location longitude*/
+    float locLatitude_;             // node location latitude
+    float locLongitude_;            // node location longitude
     int locationID_;                // node location ID
     NodeType type_;                 // node type: pick up, drop off, source, sink
     float reachTime_;               // the time that vehicle reach to the node
@@ -40,13 +38,20 @@ public:
     float deltaTime_;               // time to perform pick up or drop off
     NodeStatus nodeStatus_;         // status of the node: no action, planned, completed
     float requestTime_;             // earliest possible pick up time for the request (request time)
-//    float penalty_;               // penalty of not serving the related request at current period
+    double bestLabelReduceCost_;     // smallest reduced cost af active vehicles
+    int nbActiveLabels_;
+    std::vector<PNode> successors_;
+    float travelTimeFromNode_;
+
+
     std::vector<PLabel> activeLabels_;
+//    std::priority_queue<PLabel, vector<PLabel> , std::greater<PLabel>> unextendedLabels_;
+    // generatedLabels_ save the labels based on the number of completed requests in different spaces
+    std::map<int, std::vector<PLabel>> generatedLabels_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
-//    Node(float locLatitude, float locLongitude, NodeType type);
-    Node(int locationID, NodeType type);
+    Node(float locLatitude, float locLongitude, int locationID, NodeType type);
 
     virtual ~Node();
 
@@ -67,9 +72,9 @@ public:
 class Graph {
 public:
     int nbNodes_;
-    std::map<std::string,PNode> nodes_;
+    std::unordered_map<std::string,PNode> nodes_;
 //    std::vector<PNode> nodes_;
-    std::map<std::string, int> nodeIDToInt_;
+    std::unordered_map<std::string, int> nodeIDToInt_;
     std::vector<std::string> intToNodeID_;
 
 
@@ -81,7 +86,7 @@ public:
     void addNewNode(PNode node);
 
     // function for updating the graph and adding new request
-    void addNewRequests(std::vector<PRequest> &newRequests);
+    void addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters);
 };
 typedef std::shared_ptr<Graph> PGraph;
 

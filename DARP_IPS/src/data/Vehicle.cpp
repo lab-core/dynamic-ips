@@ -13,11 +13,12 @@
 Vehicle::Vehicle(int vehicleId, int capacity, float startTime, float endTime) : vehicleID_(
         vehicleId), capacity_(capacity), startTime_(startTime), endTime_(endTime) {
     numPassengers_ = 0;
-    departTime_ = 2 * epochLength;
+//    departTime_ = 2 * epochLength;
+//    departTime_ = 100;
     departID_ = Tools::createNodeID(0, SOURCE);
     sinkID_ = Tools::createNodeID(0, SINK);
     dual_=0;
-//    currentRoute_ = &(std::make_shared<Route>(vehicleID_));
+    bestReducedCost_ = 9999;
 }
 
 Vehicle::~Vehicle() {}
@@ -31,22 +32,12 @@ void Vehicle::setDepartTime(float departTime) {
 void Vehicle::setEmptyRoute(PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);
-    /*if (pInst->instGraph_->nodes_[departID_]->related_Request_ != nullptr) {
-        std::string pairID = pInst->instGraph_->nodes_[departID_]->pairNodeID_;
-        if (pInst->instGraph_->nodes_[pairID]->nodeStatus_ == PLANNED) {
-            newRoute->addNode(pInst->instGraph_->nodes_[pairID], departTime_,
-                              numPassengers_ + pInst->instGraph_->nodes_[pairID]->nbPassengers_);
-        }
-    }*/
+
     if (onboards_.size() > 0) {
         for (auto &nodeID: onboards_) {
-            /*newRoute->addNode(pInst->instGraph_->nodes_[nodeID], departTime_,
-                              numPassengers_ + pInst->instGraph_->nodes_[nodeID]->nbPassengers_);*/
             newRoute->addNode(pInst->instGraph_->nodes_[nodeID]);
         }
     }
-    /*else
-        newRoute->addNode(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);*/
 //    newRoute->addNode(pInst->instGraph_->nodes_[sinkID_], departTime_, numPassengers_);
 
     emptyRoute_ = newRoute;
@@ -78,7 +69,7 @@ std::string Vehicle::toString() const {
 // function to update vehicle depart time at each time and
 // update the situation of nodes and ride requests
 
-void Vehicle::updateStatus(int epoch) {
+void Vehicle::updateState(int epoch, int &epochLength) {
     if (epoch == 1) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
@@ -91,9 +82,6 @@ void Vehicle::updateStatus(int epoch) {
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-
-                /*solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i],
-                                        currentRoute_->plannedPassengers_[i]);*/
                 solutionRoute_->addNode(currentRoute_->routeNodes_[i]);
 
                 // set request status
@@ -122,7 +110,7 @@ void Vehicle::updateStatus(int epoch) {
                 }
             }
 
-  //          for (int i = breakIndex + 1; i < currentRoute_->routeSize_-1; ++i) {
+            //          for (int i = breakIndex + 1; i < currentRoute_->routeSize_-1; ++i) {
             for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
                 if ((*currentRoute_->routeNodes_[i]->related_Request_)->requestStatus_ == ON_BOARD) {
                     currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
@@ -135,7 +123,3 @@ void Vehicle::updateStatus(int epoch) {
             emptyRoute_ = currentRoute_;
     }
 }
-
-
-
-

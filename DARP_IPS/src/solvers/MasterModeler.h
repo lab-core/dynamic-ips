@@ -5,9 +5,10 @@
 #ifndef _MASTERMODELER_H
 #define _MASTERMODELER_H
 
-#include "utilities/MyTools.h"
+
 #include "solvers/CPLEXModeler.h"
 #include "data/Instance.h"
+#include "data/Route.h"
 
 //-----------------------------------------------------------------------------
 // General class for modeling and solving the ISUD components
@@ -37,7 +38,7 @@ public:
     IloRangeArray vehicleConst_;
 
     vector<int> orderToRequest_;
-    std::map<int, int> requestToOrder_;
+    std::unordered_map<int, int> requestToOrder_;
 
     std::vector<PRoute> routesToAdd_;
 

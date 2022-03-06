@@ -5,7 +5,6 @@
 #ifndef _CPLEXMODELER_H
 #define _CPLEXMODELER_H
 
-#include <ilcplex/ilocplex.h>
 #include "data/Route.h"
 
 //-----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ static void createIloNumArray (IloNumArray& numArray, int size, int elementValue
 }
 
 // function to create pattern from routes
-static void createPattern (IloNumArray& pattern, PRoute route, std::map<int, int>& requestToOrder) {
+static void createPattern (IloNumArray& pattern, PRoute route, std::unordered_map<int, int>& requestToOrder) {
     for (int i = 0; i < route->routeRequests.size(); ++i) {
         pattern[requestToOrder[route->routeRequests[i]]] = 1;
     }

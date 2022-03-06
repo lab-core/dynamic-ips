@@ -109,6 +109,9 @@ namespace Tools {
         return ANS;
     }
 
+    //************************************************************************
+    //                     FUNCTIONS FOR TIMER CLASS
+    //************************************************************************
 
     Timer::Timer() : isInit_(0), isStarted_(0), isStopped_(0) {
         this->init();
@@ -192,6 +195,10 @@ namespace Tools {
         return cpuSinceStart_;
     } //end dSinceStart
 
+    //************************************************************************
+    //                FUNCTIONS RELATED TO QUERY INFO FROM A URL
+    //************************************************************************
+
     // function for reading data from url
     int writer(char *data, size_t size, size_t nmemb, std::string *writerData) {
         if (writerData == NULL)
@@ -256,13 +263,11 @@ namespace Tools {
         int httpCode(0);
 
         // Hook up data handling function.
-//        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
 
         // Hook up data container (will be passed as the last parameter to the
         // callback handling function).  Can be any pointer type, since it will
         // internally be passed as a void pointer.
-//        curl_easy_setopt(curl, CURLOPT_WRITEDATA, httpData.get());
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
 
         // Run our HTTP GET command, capture the HTTP response code, and clean up.
@@ -272,10 +277,99 @@ namespace Tools {
 
         return content;
     }
-
-
-
-
-
 } // end namespace
+
+//************************************************************************
+//                     FUNCTIONS FOR PARAMETERS CLASS
+//************************************************************************
+
+// Constructor and Destructor
+Parameters::Parameters() {}
+
+Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
+                       bool sameDepot,bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
+                       solutionAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
+                       alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
+                       emptyStart_(emptyStart), sameDepot_(sameDepot), isTruncated_(isTruncated), MaxLabel_(maxLebel),
+                       isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
+                       SubproSolveStartState_(subproSolveStartState), LabelingStrategy_(LabelingStrategy),
+                       subAlgorithm_(subAlgorithm), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+                       populateTimeLimit_(populateTimeLimit) {
+}
+
+Parameters::~Parameters() {}
+
+// Display function
+std::string Parameters::toString() const {
+    std::stringstream repStr;
+    repStr << "# MODEL PARAMETERS" << std::endl;
+    repStr << "#" << std::endl;
+    int setwLength = 30;
+    repStr << std::left << std::fixed << std::setprecision(1) << std::boolalpha;
+    repStr << std::setw(setwLength) << "# alpha Parameter " << " = " << alphaParam_ << std::endl;
+    repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
+    repStr << std::setw(setwLength) << "# delta Parameter" << " = " << deltaPram_ << std::endl;
+    repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << std::endl;
+    repStr << std::setw(setwLength) << "# start from same depot " << " = " << sameDepot_ << std::endl;
+    repStr << std::setw(setwLength) << "# empty route at each epoch " << " = " << emptyStart_ << std::endl;
+    repStr << std::endl;
+
+    repStr << "# LABEL SETTING STRATEGIES" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
+    repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
+    repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
+    repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
+    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubproSolveStartState_ << std::endl;
+    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
+    repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << solutionAlgorithmName[subAlgorithm_] << std::endl;
+    repStr << std::endl;
+
+    repStr << "# CPLEX PARAMETERS" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::left << std::fixed << std::setprecision(0);
+    repStr << std::setw(setwLength) << "# BigM value " << " = " << bigM_ << std::endl;
+    repStr << std::setw(setwLength) << "# solve Time Limit " << " = " << solveTimeLimit_ << std::endl;
+    repStr << std::setw(setwLength) << "# populate Time Limit " << " = " << populateTimeLimit_ << std::endl;
+
+    return repStr.str();
+
+}
+
+
+//-----------------------------------------------------------------------------
+//  Solver Option Struct
+//-----------------------------------------------------------------------------
+
+solverOption::solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
+                           bool isSuccessorsLimited, LabelingStrategy labelingStrategy) : maxReachTime_(maxReachTime),
+                           maxPickup_(maxPickup), isTruncated_(isTruncated), MaxLabel_(maxLabel),
+                           isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
+                           LabelingStrategy_(labelingStrategy) {}
+
+solverOption::~solverOption() {}
+
+void solverOption::disableHeuristics() {
+    isTruncated_ = false;
+    isDominanceReleased_ = false;
+    isSuccessorsLimited_ = false;
+}
+
+solverOption::solverOption(float maxReachTime, int maxPickup, const PParameters MainParams): maxReachTime_(maxReachTime),
+                                                                                             maxPickup_(maxPickup) {
+    isTruncated_ = MainParams->isTruncated_;
+    MaxLabel_ = MainParams->MaxLabel_;
+    isDominanceReleased_ = MainParams->isDominanceReleased_;
+    LabelingStrategy_ = MainParams->LabelingStrategy_;
+    isSuccessorsLimited_ = MainParams->isSuccessorsLimited_;
+}
+
+bool solverOption::areHeuristicsDisabled() {
+    if (isTruncated_ || isDominanceReleased_||isSuccessorsLimited_)
+        return false;
+    else
+        return true;
+}
+
 

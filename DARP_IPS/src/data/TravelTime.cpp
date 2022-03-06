@@ -11,11 +11,11 @@
 TravelTime::TravelTime(){}
 TravelTime::~TravelTime() {}
 
-void TravelTime::setNodeIdToInt(const std::map<std::string, int> &nodeIdToInt) {
+void TravelTime::setNodeIdToInt(const std::unordered_map<std::string, int> &nodeIdToInt) {
     nodeIDToInt_ = nodeIdToInt;
 }
 
-/*void TravelTime::setDurationMat(PGraph &graph) {
+void TravelTime::setDurationMat(PGraph &graph) {
     durationValues_.resize(graph->nbNodes_);
     for (int i = 0; i < graph->nbNodes_; ++i)
         durationValues_[i].resize(graph->nbNodes_);
@@ -83,7 +83,7 @@ void TravelTime::setNodeIdToInt(const std::map<std::string, int> &nodeIdToInt) {
         }
 
     }
-}*/
+}
 
 float TravelTime::queryTravelTime(PNode startNode, PNode endNode) {
     float travelTime = durationValues_[nodeIDToInt_[startNode->nodeID_]][nodeIDToInt_[endNode->nodeID_]];

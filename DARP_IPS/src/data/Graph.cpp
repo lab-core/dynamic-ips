@@ -40,41 +40,30 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
     requestTime_ = relatedRequest->earlyPick_;
 
     if (type == PICKUP){
-        /*locLatitude_ = relatedRequest->PickUpLatitude_;
-        locLongitude_ = relatedRequest->PickUpLongitude_;*/
+        locLatitude_ = relatedRequest->PickUpLatitude_;
+        locLongitude_ = relatedRequest->PickUpLongitude_;
         locationID_ = relatedRequest->PickUpID_;
         nbPassengers_ = relatedRequest->nbPassengers_;
     }
     else if (type == DROPOFF){
-        /*locLatitude_ = relatedRequest->DropOffLatitude_;
-        locLongitude_ = relatedRequest->DropOffLongitude_;*/
+        locLatitude_ = relatedRequest->DropOffLatitude_;
+        locLongitude_ = relatedRequest->DropOffLongitude_;
         locationID_ = relatedRequest->DropOffID_;
         nbPassengers_ = (-1) * relatedRequest->nbPassengers_;
     }
+    bestLabelReduceCost_ = INFINITY;
 }
 
-/*Node::Node(float locLatitude, float locLongitude, NodeType type) : locLatitude_(locLatitude),
-                                                                   locLongitude_(locLongitude),
-                                                                   type_(type) {
+Node::Node(float locLatitude, float locLongitude, int locationID, NodeType type) : locLatitude_(locLatitude),
+                                                                                   locLongitude_(locLongitude),
+                                                                                   locationID_(locationID), type_(type) {
     related_Request_ = nullptr;
     reachTime_ = 0;
     nbPassengers_ = 0;
     deltaTime_ = 0;
     requestTime_ = 0;
     nodeStatus_ = DEFINED;
-
-    if (type == SOURCE)
-        nodeID_ = Tools::createNodeID(0, SOURCE);
-    else if (type == SINK)
-        nodeID_ = Tools::createNodeID(0, SINK);
-}*/
-Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type) {
-    related_Request_ = nullptr;
-    reachTime_ = 0;
-    nbPassengers_ = 0;
-    deltaTime_ = 0;
-    requestTime_ = 0;
-    nodeStatus_ = DEFINED;
+    bestLabelReduceCost_ = INFINITY;
 
     if (type == SOURCE)
         nodeID_ = Tools::createNodeID(0, SOURCE);
@@ -135,10 +124,10 @@ void Graph::addNewNode(PNode node) {
     nbNodes_++;
 }
 // function for updating the graph and adding new request
-void Graph::addNewRequests(std::vector<PRequest> &newRequests) {
+void Graph::addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters) {
     for (int r = 0; r < newRequests.size(); ++r) {
         // create pickup node and drop off nodes
-        newRequests[r]->setPenalty(0);
+        newRequests[r]->setPenalty(0, parameters);
 
         std::string pickID = Tools::createNodeID(newRequests[r]->getRequestId(), PICKUP);
         std::string dropID = Tools::createNodeID(newRequests[r]->getRequestId(), DROPOFF);

@@ -7,6 +7,8 @@ set(SOURCE_FILES
         ReducedProblem.cpp
         ComplementPro.cpp
         MasterModeler.cpp
-        LabelingSubProblem.cpp)
+        LabelingSubProblem.cpp
+        SubproModeler.cpp
+        ZoomReducedProblem.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})

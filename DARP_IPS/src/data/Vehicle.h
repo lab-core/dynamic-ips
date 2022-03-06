@@ -5,7 +5,6 @@
 #ifndef _VEHICLE_H
 #define _VEHICLE_H
 
-#include "utilities/MyTools.h"
 #include "data/Route.h"
 
 
@@ -30,6 +29,7 @@ public:
     PRoute solutionRoute_;
     PRoute emptyRoute_;
     double dual_;
+    double bestReducedCost_;
 
 
     // Constructor and Destructor
@@ -49,7 +49,8 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateStatus(int epoch);
+
+    void updateState(int epoch, int &epochLength);
 };
 
 

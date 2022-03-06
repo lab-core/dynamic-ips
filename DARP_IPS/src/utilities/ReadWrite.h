@@ -7,10 +7,7 @@
 
 
 #include "data/Instance.h"
-#include "utilities/MyTools.h"
 #include "utilities/InputPaths.h"
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -30,6 +27,12 @@ public:
 
     // Read duration data file
     static void readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations);
+
+    // Read the parameters datafile
+    static void readParameters(std::string strParamFile, PInstance pInstance);
+
+    // function that open all input files and create the main instance
+    static PInstance createMainInstance(InputPaths &inputPaths);
 
     // Parsing functions
     // Read a file stream until meeting the separating character

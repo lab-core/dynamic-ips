@@ -6,7 +6,6 @@
 #define _ROUTE_H
 
 #include "data/Graph.h"
-#include "utilities/MyTools.h"
 #include <ilcplex/ilocplex.h>
 
 
@@ -24,7 +23,7 @@ public:
     static unsigned int routeCount_;            // Counter the number of routes generated
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
-    double totalDelay_;                          // sum of waiting times of the requests served by the route
+    double totalDelay_;                         // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
     std::vector<unsigned int> routeRequests;    // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
@@ -40,7 +39,7 @@ public:
     // Getters and Setters
     void setIncompatibilityDegree(float incompatibilityDegree);
     const unsigned int getRouteId() const;
-    void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual, std::map<int, int>& requestToOrder);
+    void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual, std::unordered_map<int, int>& requestToOrder);
 
     // these functions are used to add nodes to the routes
     void addSource(PNode node, float departTime, int departPassengers);
@@ -57,8 +56,9 @@ public:
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
     return (
-            ((lhs->totalDelay_ == rhs->totalDelay_) &&
-            (lhs->routeSize_ == rhs->routeSize_))
+            ((lhs->totalDelay_ == rhs->totalDelay_) && (lhs->routeSize_ == rhs->routeSize_)&&
+                    (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&
+                    (lhs->vehicleID_ == rhs->vehicleID_ ))
             );
 };
 

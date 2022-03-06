@@ -13,6 +13,8 @@
 #include <fstream>
 #include <memory>
 #include <map>
+#include <unordered_map>
+#include <map>
 #include <string>
 #include <limits.h>
 #include <chrono>
@@ -21,8 +23,10 @@
 #include <stdio.h>
 #include <json/json.h>
 #include <curl/curl.h>
-
-
+#include "Eigen/Dense"
+#include <set>
+#include <queue>
+#include <algorithm>
 
 using std::string;
 using std::vector;
@@ -48,39 +52,31 @@ class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
 class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
+class ZoomReducedProblem;
+typedef std::shared_ptr<ZoomReducedProblem> PZoomReducedProblem;
 class TravelTime;
 typedef std::shared_ptr<TravelTime> PTravelTime;
 class Label;
 typedef std::shared_ptr<Label> PLabel;
+struct Parameters;
+typedef std::shared_ptr<Parameters> PParameters;
+struct solverOption;
+typedef std::shared_ptr<solverOption> PSolverOption;
 // extern PTravelTime travelMat;
 
 
 // SubProblem solution status
-enum SubSolveStatus { FULL = 0, RESTRICTED = 1, EXACT = 2, H1 = 3, H2 = 4, H1H2 = 5};
+enum SubProSolveStart {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
+enum LabelingStrategy { PUSHING = 0, PULLING = 1};
+enum solutionAlgorithm { CPLEX = 0, LABELSETTING = 1};
+static const std::vector<std::string> LabelingStrategyName = {
+        "PUSHING",
+        "PULLING" };
 
-#define MAXReachTime 9999999
+static const std::vector<std::string> solutionAlgorithmName = {
+        "CPLEX        ",
+        "LABEL_SETTING" };
 
-static const int DECIMALS = 3;          // precision when printing floats
-// the constant 275 calculated by excel just to convert distance in mile to travel time in sec
-static const float TimePerMile = 10;   // travel time per mile distance
-static const float alphaParam = 1.5;
-static const float betaParam = 440;
-static const float deltaPram = 820;
-static const int epochLength = 50;
-static const int sentenceSize = 45;
-
-// Definition of useful types
-template<class T> using vector2D = std::vector<std::vector<T>>;
-template<class T> using vector3D = std::vector<vector2D<T>>;
-extern vector2D<float> durationMatrix_;
-
-class PCompare {
-public:
-    template<typename T>
-    bool operator () (std::shared_ptr<T> a, std::shared_ptr<T> b) {
-        return (*a) < (*b);
-    }
-};
 
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
@@ -96,6 +92,31 @@ static const char *NodeTypeStr[] = {
         "PICKUP ",
         "DROPOFF"
 };
+
+#define MAXReachTime 9999999
+
+static const int DECIMALS = 3;          // precision when printing floats
+static const float TimePerMile = 10;   // travel time per mile distance
+static const int sentenceSize = 45;
+
+/*static const float alphaParam_ = 1.5;
+static const float betaParam = 440;
+static const float deltaPram = 820;
+static const int epochLength = 50;*/
+
+// Definition of useful types
+template<class T> using vector2D = std::vector<std::vector<T>>;
+template<class T> using vector3D = std::vector<vector2D<T>>;
+extern vector2D<float> durationMatrix_;
+
+class PCompare {
+public:
+    template<typename T>
+    bool operator () (std::shared_ptr<T> a, std::shared_ptr<T> b) {
+        return (*a) < (*b);
+    }
+};
+
 
 namespace Tools {
     // class for defining exception errors
@@ -155,6 +176,7 @@ namespace Tools {
     // function to create node ID based on request ID
     std::string createNodeID(int requestID, NodeType type);
 
+
     // Appends the values of v2 vector to at the end of v1 vector
     template <typename T>
     std::vector<T> appendVectors(std::vector<T> & v1, std::vector<T> & V2);
@@ -196,8 +218,68 @@ namespace Tools {
     // function to get data from a http url
     std::string queryHTTPData(const std::string &url);
 
-
 }; // Tools namespace
 
+struct Parameters {
+public:
+    // model Parameters
+    float alphaParam_;
+    float betaParam_;
+    float deltaPram_;
+    int epochLength_;
 
+    bool emptyStart_;
+    bool sameDepot_;
+
+    // label setting strategies
+    bool isTruncated_;
+    int MaxLabel_;
+    bool isDominanceReleased_;
+    bool isSuccessorsLimited_;
+    SubProSolveStart SubproSolveStartState_;
+    LabelingStrategy LabelingStrategy_;
+    solutionAlgorithm subAlgorithm_;
+
+    //CPLEX Parameters
+    int bigM_;
+    int solveTimeLimit_;
+    int populateTimeLimit_;
+
+    // Constructor and Destructor
+    Parameters();
+    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart, bool sameDepot,
+               bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
+               SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
+               solutionAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
+
+    virtual ~Parameters();
+
+    // Display function
+    std::string toString() const;
+};
+
+
+//-----------------------------------------------------------------------------
+//  Solver Option Struct
+//-----------------------------------------------------------------------------
+struct solverOption {
+    float maxReachTime_;
+    int maxPickup_;
+
+    bool isTruncated_;
+    bool isDominanceReleased_;
+    bool isSuccessorsLimited_;
+    LabelingStrategy LabelingStrategy_;
+    int MaxLabel_;
+
+    // Constructor and Destructor
+    solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
+                 bool isSuccessorsLimited, LabelingStrategy labelingStrategy);
+
+    solverOption(float maxReachTime, int maxPickup, const PParameters MainParams);
+
+    virtual ~solverOption();
+    void disableHeuristics();
+    bool areHeuristicsDisabled();
+};
 #endif //_MYTOOLS_H

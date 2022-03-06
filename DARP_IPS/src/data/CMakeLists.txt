@@ -5,6 +5,7 @@ set(SOURCE_FILES
         Request.cpp
         Graph.cpp
         Route.cpp
-        TravelTime.cpp)
+        TravelTime.cpp
+        Label.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})

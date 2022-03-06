@@ -9,20 +9,14 @@ ComplementPro::ComplementPro() : MasterModeler() {
     zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
     routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
     zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
+    status_ = NOT_SOLVED;
 }
 
 // this function initialized the model and define empty set of constraints
 void ComplementPro::initializeCPModel(PInstance &pInst) {
     int rhs = 0;
     initializeModel(pInst, rhs);
-
-    // defining constraints
-    /*requestRHS_ = IloNumArray(env_, pInst->nbRequests_, 0);
-    vehicleRHS_ = IloNumArray(env_, pInst->nbVehicles_, 0);
-*/
-
     normalConst_ = IloRangeArray(env_,1,1.0,1.0);
-
     Model_.add(normalConst_);
 }
 
@@ -61,25 +55,21 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
     initializeCPModel(pInst);
 
     // adding solution route columns
-    for (int r = 0; r < routeSolution.size(); ++r)
-        addRouteVar(routeSolVar_, routeSolution[r], NEGATIVE);
-
-    /*// adding solution z columns
-    for (int i = 0; i < zSolution.size(); ++i)
-        addZVar(zSolVar_, zSolution[i], NEGATIVE);*/
+    for (auto & routeSol: routeSolution)
+        addRouteVar(routeSolVar_, routeSol, NEGATIVE);
 
     // adding incompatible route columns
-    for (int r = 0; r < routesToAdd_.size(); ++r)
-        addRouteVar(routeIncVar_, routesToAdd_[r], POSITIVE);
+    for (auto & routeAdd: routesToAdd_)
+        addRouteVar(routeIncVar_, routeAdd, POSITIVE);
 
     // adding z columns
-    for (int i = 0; i < zSolution.size(); ++i) {
-        addZVar(zSolVar_, zSolution[i], NEGATIVE);
+    for (auto & zSol: zSolution) {
+        addZVar(zSolVar_, zSol, NEGATIVE);
     }
     for (int i = 0; i < pInst->nbRequests_; ++i) {
         int flagAdd =0;
-        for (int j = 0; j < zSolution.size(); ++j) {
-            if (pInst->requests_[i] == zSolution[j]) {
+        for (auto & zSol: zSolution) {
+            if (pInst->requests_[i] == zSol) {
                 flagAdd = 1;
                 break;
             }
@@ -87,137 +77,136 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         if (flagAdd == 0)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
     }
-    /*std::cout << "# number of route IncColumns after build: " << routeIncVar_.getSize() << std::endl;
-    std::cout << "# number of z IncColumns after build: " << zIncVar_.getSize() << std::endl;
-    std::cout << "# number of route SolColumns after build: " << routeSolVar_.getSize() << std::endl;
-    std::cout << "# number of z SolColumns after build: " << zSolVar_.getSize() << std::endl;*/
 }
 
 // this function solve the model
 void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                               std::map<std::string, PRoute> &generatedRoutes) {
-    int optimalFlag = 0;
+                               std::unordered_map<std::string, PRoute> &generatedRoutes) {
     Cplex_ = IloCplex(Model_);
-//    env_.out() << Model_;
-    Cplex_.solve();
+    if ( !Cplex_.solve() ) {
+        status_ = INFEASIBLE;
+        std::cout << "Failed to optimize the problem" << std::endl;
+//        throw Tools::myException("the Complementary model is infeasible!!!", __LINE__);
+    }
 
-    // printing solution status
-    std::cout << MasterModeler::toString();
+    else {
 
-    // saving the result and remove out of base variables
-    if (Cplex_.getObjValue() < 0) {
-        status_ = NEGATIVE_VALUE;
-        // check the solution to be column disjoint
-        vector<PRequest> zResult;
-        vector<PRoute> routeResult;
+        // printing solution status
+        std::cout << MasterModeler::toString();
 
-        for (int r = 0; r < routeIncVar_.getSize(); ++r) {
-            if (Cplex_.getValue(routeIncVar_[r]) > 0) {
-                routeResult.push_back(generatedRoutes[routeIncVar_[r].getName()]);
-            }
-        }
-        for (int i = 0; i < zIncVar_.getSize(); ++i) {
-            if (Cplex_.getValue(zIncVar_[i]) > 0) {
-                zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
-            }
-        }
-        if (isColumnDisjoint(zResult, routeResult, requestToOrder_)) {
-            optimalFlag = 1;
-            // getting dual values
-            requestDuals_.clear();
-            vehicleDuals_.clear();
+        // saving the result and remove out of base variables
+        if (Cplex_.getObjValue() < 0) {
+            status_ = NEGATIVE_VALUE;
+            // check the solution to be column disjoint
+            vector<PRequest> zResult;
+            vector<PRoute> routeResult;
 
-            // define dual container size
-            requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-            vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
-
-            std::cout << "COMPLEMENTARY DUALS:" << std::endl;
-            for (auto & requestObj : pInst->requests_) {
-                if (requestObj->requestStatus_ == NO_ACTION) {
-                    int rowIndex = requestToOrder_[requestObj->getRequestId()];
-                    requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-                    requestObj->dual_ = requestDuals_[rowIndex];
-                    std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
-                              << std::endl;
-                }
-
-            }
-            /*for (int r = 0; r < pInst->nbRequests_; ++r) {
-                requestDuals_[r] = Cplex_.getDual(requestConst_[r]);
-                std::cout << "requestDuals[" << r <<"]: " << requestDuals_[r] << std::endl;
-            }*/
-
-            std::cout << "VEHICLE DUALS:" << std::endl;
-            for (auto & vehicleObj : pInst->vehicles_) {
-                vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ <<"]: " << vehicleObj->dual_ << std::endl;
-            }
-
-            /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
-                vehicleDuals_[v] = Cplex_.getDual(vehicleConst_[v]);
-                pInst->vehicles_[v]->dual_ = vehicleDuals_[v];
-                std::cout << "vehicleDuals[" << v <<"]: " << vehicleDuals_[v] << std::endl;
-            }*/
-
-            // remove outgoing variable
-            for (int r = routeSolVar_.getSize()-1; r >= 0; --r) {
-                if  (Cplex_.getValue(routeSolVar_[r]) > 0) {
-                    routeSolution.erase(routeSolution.begin()+r);
-                }
-            }
-            for (int i = zSolVar_.getSize()-1; i >=0; --i) {
-                if (Cplex_.getValue(zSolVar_[i]) > 0) {
-                    zSolution.erase(zSolution.begin()+i);
-                }
-            }
-
-            // add incoming variables
             for (int r = 0; r < routeIncVar_.getSize(); ++r) {
                 if (Cplex_.getValue(routeIncVar_[r]) > 0) {
-                    routeSolution.push_back(generatedRoutes[routeIncVar_[r].getName()]);
-                    pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->vehicleID_]->setCurrentRoute(generatedRoutes[routeIncVar_[r].getName()]);
+                    routeResult.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                 }
             }
             for (int i = 0; i < zIncVar_.getSize(); ++i) {
                 if (Cplex_.getValue(zIncVar_[i]) > 0) {
-                    zSolution.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
+                    zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                 }
             }
-            int nbRequests = 0;
-            for (auto & requestObj: pInst->requests_) {
-                if (requestObj->requestStatus_ == NO_ACTION)
-                    nbRequests++;
+            if (isColumnDisjoint(zResult, routeResult, requestToOrder_, pInst->nbVehicles_)) {
+                // getting dual values
+                requestDuals_.clear();
+                vehicleDuals_.clear();
+
+                // define dual container size
+                requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+                vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+                std::cout << "COMPLEMENTARY DUALS:" << std::endl;
+                for (auto &requestObj: pInst->requests_) {
+                    if (requestObj->requestStatus_ == NO_ACTION) {
+                        int rowIndex = requestToOrder_[requestObj->getRequestId()];
+                        requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                        requestObj->dual_ = requestDuals_[rowIndex];
+                        std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
+                                  << std::endl;
+                    }
+
+                }
+
+                std::cout << "VEHICLE DUALS:" << std::endl;
+                for (auto &vehicleObj: pInst->vehicles_) {
+                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
+                }
+
+                // remove outgoing variable
+                for (int r = routeSolVar_.getSize() - 1; r >= 0; --r) {
+                    if (Cplex_.getValue(routeSolVar_[r]) > 0) {
+                        routeSolution.erase(routeSolution.begin() + r);
+                    }
+                }
+                for (int i = zSolVar_.getSize() - 1; i >= 0; --i) {
+                    if (Cplex_.getValue(zSolVar_[i]) > 0) {
+                        zSolution.erase(zSolution.begin() + i);
+                    }
+                }
+
+                // add incoming variables
+                for (int r = 0; r < routeIncVar_.getSize(); ++r) {
+                    if (Cplex_.getValue(routeIncVar_[r]) > 0) {
+                        routeSolution.push_back(generatedRoutes[routeIncVar_[r].getName()]);
+                        pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->vehicleID_]->setCurrentRoute(
+                                generatedRoutes[routeIncVar_[r].getName()]);
+                    }
+                }
+                for (int i = 0; i < zIncVar_.getSize(); ++i) {
+                    if (Cplex_.getValue(zIncVar_[i]) > 0) {
+                        zSolution.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
+                    }
+                }
+                int nbRequests = 0;
+                for (auto &requestObj: pInst->requests_) {
+                    if (requestObj->requestStatus_ == NO_ACTION)
+                        nbRequests++;
+                }
+                std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+                          << " are selected to served." << std::endl;
+            } else {
+                status_ = FRACTIONAL;
+                std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
+                fractionalRoutes_.clear();
+                fractionalZ_.clear();
+                // add incoming variables
+                for (int r = 0; r < routeIncVar_.getSize(); ++r) {
+                    if (Cplex_.getValue(routeIncVar_[r]) > 0) {
+                        fractionalRoutes_.push_back(generatedRoutes[routeIncVar_[r].getName()]);
+                    }
+                }
+                for (int i = 0; i < zIncVar_.getSize(); ++i) {
+                    if (Cplex_.getValue(zIncVar_[i]) > 0) {
+                        fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
+                    }
+                }
             }
-            std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-                      << " are selected to served." << std::endl;
-            /*for (int r = 0; r < routeSolution.size(); ++r) {
-                std::cout << routeSolution[r]->toString();
-            }*/
-        }
-        else {
-            status_ = FRACTIONAL;
-            std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
-        }
+        } else
+            status_ = POSITIVE_VALUE;
     }
-    else
-        status_ = POSITIVE_VALUE;
 }
 
 // this function check the situation of the CP solution to be column disjoint
 bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> &routeResults,
-                                     std::map<int, int>& requestToOrder) {
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(requestToOrder.size(), zResults.size()+routeResults.size());
+                                     std::unordered_map<int, int>& requestToOrder, int nbVehicle) {
+    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(requestToOrder.size()+ nbVehicle, zResults.size()+routeResults.size());
     for (int r = 0; r < routeResults.size(); ++r) {
         for (int i = 0; i < routeResults[r]->routeRequests.size(); ++i)
             A(requestToOrder[routeResults[r]->routeRequests[i]],r) = 1;
+        A(requestToOrder.size()+routeResults[r]->vehicleID_,r) = 1;
     }
     for (int i = 0; i < zResults.size(); ++i) {
         A(requestToOrder[zResults[i]->getRequestId()],routeResults.size()+i) = 1;
     }
 
     Eigen::MatrixXd ATA = A.transpose()*A;
-
     // setting diagonal elements to zero
     for (int i = 0; i < ATA.rows(); ++i) {
         ATA(i,i) = 0;

@@ -5,10 +5,6 @@
 #ifndef DARP_IPS_REDUCEDPROBLEM_H
 #define DARP_IPS_REDUCEDPROBLEM_H
 
-#include "utilities/MyTools.h"
-#include "solvers/CPLEXModeler.h"
-#include "data/Route.h"
-#include "data/Instance.h"
 #include "solvers/MasterModeler.h"
 
 //---------------------------------------------------------------------------------------------
@@ -40,11 +36,17 @@ public:
     void updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution);
 
     // this function build the model at the start of each epoch
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, bool emptyStart);
 
     // this function solve the model and remove all columns except than the current base
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::map<std::string , PRoute> &generatedRoutes);
+                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+
+    // function to check whether two routes are column disjoint or not
+    bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<int, int>& requestToOrder);
+
+    // function to check whether the route is repeated before
+    bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<int, int>& requestToOrder);
 
     // Display function
     std::string toString() const;

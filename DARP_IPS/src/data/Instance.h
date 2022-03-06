@@ -16,17 +16,11 @@
 //  contains the instance data including vehicle info and requests
 //-----------------------------------------------------------------------------
 
-
+enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3};
 
 
 // I consider 10 seconds for each passenger to pickup or drop off
 #define TimePerPassenger 0         			// service time (time to pickup or drop off) per passenger
-/*static const float alphaParam = 1.5;
-static const float betaParam = 240;
-static const float deltaPram = 420;
-static const int epochLength = 30;*/
-
-
 
 class Instance {
 public:
@@ -38,34 +32,39 @@ public:
     int nbRequests_;                            // Number of requests
     int nbNewRequests_;                         // Number of requests added after each epoch
     std::vector<PRequest> requests_;            // List of requests
-    std::map<std::string , PRequest> nameToRequest_;
+    std::unordered_map<std::string , PRequest> nameToRequest_;
     PGraph instGraph_;
+    PParameters parameters_;
 
     // Constructor and Destructor
     Instance(std::string &name, int nbVehicles, std::vector<PVehicle> &vehicles, int nbRequests, PGraph &mainGraph);
-//    Instance(std::string &name, const PInstance &mainInst, int epoch, int lastRecRequests);
     Instance(const Instance &mainInst);
-
     virtual ~Instance();
 
-    // Getters and Setters
 
     // Display function
     std::string toString();
-
     std::string solutionToString();
 
     // function to set the data of the partial instance based on the epoch
     void buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests);
 
     // function to add requests from previous epochs to the current partial instance
-    void addRequest(PRequest request, int epoch);
+    void addRequest(PRequest request, int epoch, PParameters &parameters);
 
-    void updateMinTravelTimes();
+    // setting min travel times of requests based on the distance matrix
+    // initializing vehicles empty route and current route
+    // initialize the departure time of the vehicle (2 * epochLength)
+    void setInitialTimes();
+
+    // function to sort vehicles based on ID
+    void restVehicleOrder();
+    void sortVehicles(SortVehicle sortBase);
+    void resetRequestsSelectStatus();
 
     // print solutions in csv files
-    void saveSolutionRoutes(string saveDir);
-    void saveRequestsResults(string saveDir);
+    void saveSolutionRoutes(string routeResultDir);
+    void saveRequestsResults(string requestResultDir);
     void saveEpochRoutes(string finalSolutionDir , int epoch);
     void saveISUDRoutes(string isudSolutionDir, int epoch, int isudIter);
 };
