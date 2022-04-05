@@ -28,6 +28,11 @@ protected:
     std::string input_durationData_;
     std::string input_MIPStart_;
     std::string input_paramFile_;
+    std::string input_vehicleFile_;
+    std::string input_onboardsFile_;
+    std::string input_waitRequests_;
+
+
 
     // output data addresses
     std::string output_epochISUD_;
@@ -39,6 +44,8 @@ protected:
     std::string output_MIPStart_;
     std::string output_offlineRoutes_;
     std::string output_paramFile_;
+    std::string output_onboards_;
+    std::string output_waitRequests_;
 
     double timeOUt = 3600;
 
@@ -55,6 +62,9 @@ public:
     const std::string &getInputDurationData() const;
     const std::string &getInputMipStart() const;
     const std::string &getInputParamFile() const;
+    const std::string &getInputVehicleFile() const;
+    const std::string &getInputOnboardsFile() const;
+    const std::string &getInputWaitRequests() const;
 
     const std::string &getOutputEpochIsud() const;
     const std::string &getOutputEpochFinal() const;
@@ -65,6 +75,9 @@ public:
     const std::string &getOutputMipStart() const;
     const std::string &getOutputOfflineRoutes() const;
     const std::string &getOutputParameters() const;
+    const std::string &getOutputParamFile() const;
+    const std::string &getOutputOnboards() const;
+    const std::string &getOutputWaitRequests() const;
 
 
     double getTimeOUt() const;

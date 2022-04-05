@@ -36,6 +36,9 @@ InputPaths::InputPaths(std::string datadir, std::string instanceName, double tim
     input_durationData_ = instanceDir + "DURATION_" + instanceName + ".txt";
     input_MIPStart_ = instanceDir + "MIPStart_" + instanceName;
     input_paramFile_ = instanceDir + "Parameters" + ".txt";
+    input_vehicleFile_ = instanceDir + "VEHICLES_" + instanceName + ".txt";
+    input_onboardsFile_ = instanceDir + "ONBOARDS_" + instanceName + ".txt";
+    input_waitRequests_ = instanceDir + "WaitingRequests" + instanceName + ".txt";
 
     //initialize the file names for saving outputs
     output_epochISUD_ = outputDir + "epochSolution_" + instanceName + ".csv";
@@ -47,6 +50,8 @@ InputPaths::InputPaths(std::string datadir, std::string instanceName, double tim
     output_finalRequests_ = outputDir + "Requests_" + instanceName + ".csv";
     output_MIPStart_ = outputDir + "MIPStart_" + instanceName;
     output_paramFile_ = outputDir + "Parameters" + ".txt";
+    output_onboards_ = outputDir + "ONBOARDS_" + instanceName + ".txt";
+    output_waitRequests_ = outputDir + "WaitingRequests" + instanceName + ".txt";
 
     // create output files for epoch results
     std::ofstream myFile;
@@ -65,6 +70,10 @@ const std::string &InputPaths::getInputInstanceData() const {return input_Instan
 const std::string &InputPaths::getInputDurationData() const {return input_durationData_; }
 const std::string &InputPaths::getInputMipStart() const { return input_MIPStart_; }
 const std::string &InputPaths::getInputParamFile() const { return input_paramFile_; }
+const std::string &InputPaths::getInputVehicleFile() const {return input_vehicleFile_;}
+const std::string &InputPaths::getInputOnboardsFile() const {return input_onboardsFile_;}
+const std::string &InputPaths::getInputWaitRequests() const { return input_waitRequests_;}
+
 
 const std::string &InputPaths::getOutputEpochIsud() const { return output_epochISUD_;}
 const std::string &InputPaths::getOutputEpochFinal() const { return output_epochFinal_; }
@@ -74,7 +83,10 @@ const std::string &InputPaths::getOutputFinalRoutes() const { return output_fina
 const std::string &InputPaths::getOutputFinalRequests() const { return output_finalRequests_; }
 const std::string &InputPaths::getOutputMipStart() const { return output_MIPStart_; }
 const std::string &InputPaths::getOutputOfflineRoutes() const { return output_offlineRoutes_; }
-const std::string &InputPaths::getOutputParameters() const { return output_paramFile_;}
+const std::string &InputPaths::getOutputParamFile() const { return output_paramFile_;}
+const std::string &InputPaths::getOutputOnboards() const { return output_onboards_;}
+const std::string &InputPaths::getOutputWaitRequests() const { return output_waitRequests_;}
+
 
 double InputPaths::getTimeOUt() const {return timeOUt; }
 
@@ -94,6 +106,13 @@ void InputPaths::setInstanceData(const std::string &instanceData) {
 void InputPaths::setTimeOUt(double timeOUt) {
     InputPaths::timeOUt = timeOUt;
 }
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,176 @@
+*************************************************************************************
+*********************** FINAL VEHICLE ROUTES AFTER 7   EPOCHS *********************** 
+*************************************************************************************
+
+
+#
+#	- ROUTE_NUMBER           : 6
+#	- VEHICLE_ID             : 0
+#	- NUMBER_OF_STOPS        : 11
+#	- TOTAL_WAITING (seconds) : 885.6
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (SOURCE ) Request_ID 3     PI_3           195.525 (s)        1
+#   3  (SOURCE ) Request_ID 3     DR_3           235.375 (s)        0
+#   4  (SOURCE ) Request_ID 7     PI_7            269.75 (s)        4
+#   5  (SOURCE ) Request_ID 7     DR_7            331.45 (s)        0
+#   6  (PICKUP ) Request_ID 20    PI_20            344.3 (s)        2
+#   7  (SOURCE ) Request_ID 19    PI_19          371.075 (s)        3
+#   8  (PICKUP ) Request_ID 28    PI_28           412.95 (s)        4
+#   9  (DROPOFF) Request_ID 19    DR_19          488.775 (s)        3
+#  10  (DROPOFF) Request_ID 20    DR_20          569.075 (s)        1
+#  11  (DROPOFF) Request_ID 28    DR_28           604.15 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 7
+#	- VEHICLE_ID             : 1
+#	- NUMBER_OF_STOPS        : 11
+#	- TOTAL_WAITING (seconds) : 734
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (SOURCE ) Request_ID 1     PI_1            202.75 (s)        1
+#   3  (PICKUP ) Request_ID 16    PI_16            226.9 (s)        2
+#   4  (PICKUP ) Request_ID 15    PI_15            233.6 (s)        4
+#   5  (SOURCE ) Request_ID 15    DR_15          250.625 (s)        2
+#   6  (PICKUP ) Request_ID 17    PI_17          293.525 (s)        3
+#   7  (SOURCE ) Request_ID 16    DR_16          367.675 (s)        2
+#   8  (PICKUP ) Request_ID 23    PI_23          391.225 (s)        4
+#   9  (DROPOFF) Request_ID 17    DR_17          462.225 (s)        3
+#  10  (DROPOFF) Request_ID 1     DR_1            478.55 (s)        2
+#  11  (DROPOFF) Request_ID 23    DR_23            542.7 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 8
+#	- VEHICLE_ID             : 2
+#	- NUMBER_OF_STOPS        : 11
+#	- TOTAL_WAITING (seconds) : 713.075
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (SOURCE ) Request_ID 6     PI_6            171.45 (s)        2
+#   3  (SOURCE ) Request_ID 12    PI_12          219.725 (s)        3
+#   4  (SOURCE ) Request_ID 6     DR_6           260.325 (s)        1
+#   5  (SOURCE ) Request_ID 22    PI_22           307.25 (s)        3
+#   6  (DROPOFF) Request_ID 22    DR_22          348.425 (s)        1
+#   7  (SOURCE ) Request_ID 25    PI_25           377.55 (s)        4
+#   8  (DROPOFF) Request_ID 25    DR_25              425 (s)        1
+#   9  (PICKUP ) Request_ID 24    PI_24            431.1 (s)        4
+#  10  (DROPOFF) Request_ID 12    DR_12          532.375 (s)        3
+#  11  (DROPOFF) Request_ID 24    DR_24            628.1 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 9
+#	- VEHICLE_ID             : 3
+#	- NUMBER_OF_STOPS        : 11
+#	- TOTAL_WAITING (seconds) : 778.575
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (SOURCE ) Request_ID 4     PI_4           175.325 (s)        1
+#   3  (SOURCE ) Request_ID 9     PI_9             217.7 (s)        2
+#   4  (SOURCE ) Request_ID 14    PI_14          254.175 (s)        3
+#   5  (PICKUP ) Request_ID 13    PI_13           295.75 (s)        4
+#   6  (SOURCE ) Request_ID 14    DR_14            354.9 (s)        3
+#   7  (PICKUP ) Request_ID 26    PI_26          399.625 (s)        4
+#   8  (DROPOFF) Request_ID 26    DR_26            450.2 (s)        3
+#   9  (DROPOFF) Request_ID 13    DR_13          530.825 (s)        2
+#  10  (DROPOFF) Request_ID 9     DR_9            570.05 (s)        1
+#  11  (DROPOFF) Request_ID 4     DR_4               597 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 10
+#	- VEHICLE_ID             : 4
+#	- NUMBER_OF_STOPS        : 9
+#	- TOTAL_WAITING (seconds) : 534.925
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 2     PI_2            137.05 (s)        3
+#   3  (SOURCE ) Request_ID 2     DR_2           213.525 (s)        0
+#   4  (SOURCE ) Request_ID 10    PI_10           258.65 (s)        1
+#   5  (SOURCE ) Request_ID 21    PI_21            302.7 (s)        2
+#   6  (SOURCE ) Request_ID 27    PI_27          372.525 (s)        3
+#   7  (DROPOFF) Request_ID 10    DR_10            438.2 (s)        2
+#   8  (DROPOFF) Request_ID 21    DR_21            558.2 (s)        1
+#   9  (DROPOFF) Request_ID 27    DR_27            632.4 (s)        0
+==========================================================================
+#
+#	- ROUTE_NUMBER           : 11
+#	- VEHICLE_ID             : 5
+#	- NUMBER_OF_STOPS        : 13
+#	- TOTAL_WAITING (seconds) : 792.2
+#
+# ------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID     REACH_TIME (s)  #PASSENGERS
+# ------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0               100 (s)        0
+#   2  (PICKUP ) Request_ID 5     PI_5            143.85 (s)        1
+#   3  (SOURCE ) Request_ID 0     PI_0           156.225 (s)        2
+#   4  (SOURCE ) Request_ID 8     PI_8           215.475 (s)        3
+#   5  (PICKUP ) Request_ID 11    PI_11            232.4 (s)        4
+#   6  (SOURCE ) Request_ID 0     DR_0             252.9 (s)        3
+#   7  (PICKUP ) Request_ID 18    PI_18           266.65 (s)        4
+#   8  (SOURCE ) Request_ID 5     DR_5             306.3 (s)        3
+#   9  (SOURCE ) Request_ID 18    DR_18          352.525 (s)        2
+#  10  (PICKUP ) Request_ID 29    PI_29            397.6 (s)        4
+#  11  (DROPOFF) Request_ID 29    DR_29          463.275 (s)        2
+#  12  (DROPOFF) Request_ID 11    DR_11           541.75 (s)        1
+#  13  (DROPOFF) Request_ID 8     DR_8           594.275 (s)        0
+==========================================================================
+#
+#
+# ---------------------------------------------------------------------------------------------------
+#   REQUEST_ID   REQUEST_TIME (s)   PICK_TIME (s)   WAIT_TIME (s)   TRIP_DELAY (s)   #PASSENGERS
+# ---------------------------------------------------------------------------------------------------
+#        0               0.00 (s)      156.23 (s)      156.23 (s)        38.70 (s)        1
+#        1               6.00 (s)      202.75 (s)      196.75 (s)       143.12 (s)        1
+#        2              24.00 (s)      137.05 (s)      113.05 (s)        -0.00 (s)        3
+#        3              40.00 (s)      195.52 (s)      155.52 (s)         0.00 (s)        1
+#        4              42.00 (s)      175.32 (s)      133.32 (s)       290.40 (s)        1
+#        5              44.00 (s)      143.85 (s)       99.85 (s)        80.68 (s)        1
+#        6              48.00 (s)      171.45 (s)      123.45 (s)        16.03 (s)        2
+#        7              58.00 (s)      269.75 (s)      211.75 (s)         0.00 (s)        4
+#        8              60.00 (s)      215.48 (s)      155.48 (s)       324.15 (s)        1
+#        9              66.00 (s)      217.70 (s)      151.70 (s)       242.37 (s)        1
+#       10              72.00 (s)      258.65 (s)      186.65 (s)       122.15 (s)        1
+#       11              80.00 (s)      232.40 (s)      152.40 (s)       249.62 (s)        1
+#       12              90.00 (s)      219.73 (s)      129.73 (s)       174.55 (s)        1
+#       13             108.00 (s)      295.75 (s)      187.75 (s)       130.08 (s)        1
+#       14             110.00 (s)      254.17 (s)      144.17 (s)        75.38 (s)        1
+#       15             120.00 (s)      233.60 (s)      113.60 (s)        -0.00 (s)        2
+#       16             134.00 (s)      226.90 (s)       92.90 (s)        84.75 (s)        1
+#       17             146.00 (s)      293.52 (s)      147.52 (s)       115.37 (s)        1
+#       18             156.00 (s)      266.65 (s)      110.65 (s)        57.05 (s)        1
+#       19             170.00 (s)      371.08 (s)      201.08 (s)        64.55 (s)        1
+#       20             178.00 (s)      344.30 (s)      166.30 (s)       176.27 (s)        2
+#       21             196.00 (s)      302.70 (s)      106.70 (s)       166.25 (s)        1
+#       22             200.00 (s)      307.25 (s)      107.25 (s)        -0.00 (s)        2
+#       23             208.00 (s)      391.22 (s)      183.22 (s)        28.80 (s)        2
+#       24             220.00 (s)      431.10 (s)      211.10 (s)       149.07 (s)        3
+#       25             236.00 (s)      377.55 (s)      141.55 (s)         0.00 (s)        3
+#       26             238.00 (s)      399.62 (s)      161.62 (s)         0.00 (s)        1
+#       27             244.00 (s)      372.52 (s)      128.52 (s)       133.20 (s)        1
+#       28             262.00 (s)      412.95 (s)      150.95 (s)        75.65 (s)        1
+#       29             280.00 (s)      397.60 (s)      117.60 (s)        -0.00 (s)        2
+# ---------------------------------------------------------------------------------------------------
+# Total waiting time before pickup            = 4438.38 (s)
+# Total trip delay                            = 2938.20 (s)
+# Average wait time per request               = 147.95 (s)
+# Average trip delay per request              = 97.94 (s)
+# Number of served requests                   = 30
+# Total number of requests                    = 30
+# Final Objective Value                       = 4438.38
+# TORAL TIME SPENT ON ISUD IMPROVEMENT        = 0.87 (s)
+# TOTAL TIME SPENT ON SOLVING SUBPROBLEMS     = 36.51 (s)
