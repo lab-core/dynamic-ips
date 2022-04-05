@@ -47,7 +47,7 @@ int main() {
         mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
 
- //   MIPSolver(mainInst, inputPaths);
+//    MIPSolver(mainInst, inputPaths);
 
 
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
@@ -58,6 +58,7 @@ int main() {
         subProTime->start();
         for (auto & vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch, mainInst->parameters_->epochLength_);
+            isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
 
         // creating a subInstance
@@ -91,7 +92,7 @@ int main() {
             EpochInst->resetRequestsSelectStatus();
             if (subStartStatus != NOT_RESTRICTED) {
                 if (subStartStatus == NUM_PICK_RESTRICTED)
-                    maxPick = floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_) + 1;
+                    maxPick = floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_) + 2;
                 if (subStartStatus == TIME_RESTRICTED)
                     maxReachTime = 4 * EpochInst->parameters_->epochLength_;
             }
@@ -125,11 +126,11 @@ int main() {
                     subProblem->solveDynamic(epoch);
                     for (auto &vehicleObj: EpochInst->vehicles_) {
                         vehicleObj->bestReducedCost_ = EpochInst->vehicles_[0]->bestReducedCost_ + EpochInst->vehicles_[0]->dual_ - vehicleObj->dual_;
-                        isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
+//                        isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
                         subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
                                                      isudObj->generatedRoutes_);
                     }
-       //             EpochInst->parameters_->sameDepot_ = false;
+                    EpochInst->parameters_->sameDepot_ = false;
                 }
 
                 else {
@@ -211,7 +212,7 @@ int main() {
     }
     std::cout << std::endl << std::endl;
 
-//    fclose (stdout);
+ //   fclose (stdout);
     freopen (inputPaths.getOutputFinalLog().c_str(),"w",stdout);
 
 

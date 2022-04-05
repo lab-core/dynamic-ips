@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Eigen/Dense"
 #include "solvers/ISUDAlgorithm.h"
-#include "solvers/SubProblem.h"
+#include "solvers/CPLEXSubProblem.h"
 #include "solvers/MIPSolver.h"
 
 
@@ -67,3 +67,6 @@ int main() {
     std::cout << isudObj->toString();
 
 }
+
+
+
