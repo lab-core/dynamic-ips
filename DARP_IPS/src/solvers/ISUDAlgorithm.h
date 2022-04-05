@@ -28,8 +28,9 @@ public:
     std::vector<PRequest> zSolution_;
 
 
-    Eigen::MatrixXd incMatrix_;                             // incompatibility matrix
-    std::unordered_map<int, int> incRequestToOrder_;                  // order of requests in incompatibility matrix
+    Eigen::MatrixXd incMatrix_;                                     // incompatibility matrix
+    std::unordered_map<int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
+    std::unordered_map<int, int> incVehicleToOrder_;
 
     int improveIter_;
     int isudIter_;
@@ -53,12 +54,15 @@ public:
 
     // function to create M2 matrix for each column in the current solution
     Eigen::MatrixXd calcM2Matrix(PRoute solColumn);
+    Eigen::MatrixXd calcM2Matrix(int nbRows);
 
     // function to calculate incompatibility matrix
     void calcIncMatrix();
+    void calcIncMatrixFull();
 
     // function to calculate incompatibility degree of a route
     void calcIncompatibility(PRoute &route);
+    void calcIncompatibilityFull(PRoute &route);
 
     // this function update the incompatibility degree of availableRoutes and
     // order them based on the incompatibility degree and reduced cost
@@ -68,6 +72,7 @@ public:
     void updateReducedCosts(int &vehicleID);
 
     void solveISUD(PInstance &pInst, int epoch, string isudSolutionDir);
+    void solveISUDMIP(PInstance &pInst, int epoch, string isudSolutionDir);
 
     // Display function
     std::string toString() const;
