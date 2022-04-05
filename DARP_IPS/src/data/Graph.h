@@ -41,6 +41,7 @@ public:
     double bestLabelReduceCost_;     // smallest reduced cost af active vehicles
     int nbActiveLabels_;
     std::vector<PNode> successors_;
+    std::set<PNode> predecessor_;
     float travelTimeFromNode_;
 
 
@@ -86,7 +87,7 @@ public:
     void addNewNode(PNode node);
 
     // function for updating the graph and adding new request
-    void addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters);
+    void addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters, float simulationStart);
 };
 typedef std::shared_ptr<Graph> PGraph;
 

@@ -124,10 +124,10 @@ void Graph::addNewNode(PNode node) {
     nbNodes_++;
 }
 // function for updating the graph and adding new request
-void Graph::addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters) {
+void Graph::addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters, float simulationStart) {
     for (int r = 0; r < newRequests.size(); ++r) {
         // create pickup node and drop off nodes
-        newRequests[r]->setPenalty(0, parameters);
+        newRequests[r]->setPenalty(0, parameters, simulationStart);
 
         std::string pickID = Tools::createNodeID(newRequests[r]->getRequestId(), PICKUP);
         std::string dropID = Tools::createNodeID(newRequests[r]->getRequestId(), DROPOFF);
