@@ -76,7 +76,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     }
     else if (currentRoute_->routeSize_ > 1) {
         // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < (epoch+1) * epochLength) {
+        if (departTime_ < startTime_ + (epoch+1) * epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -96,12 +96,12 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     (*currentRoute_->routeNodes_[i]->related_Request_)->dropTime_ = currentRoute_->plannedReachTime_[i];
                 }
 
-                if ((currentRoute_->plannedReachTime_[i] >= (epoch+1) * epochLength)||(i == currentRoute_->routeSize_-1)){
+                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + (epoch+1) * epochLength)||(i == currentRoute_->routeSize_-1)){
 
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
-                    if (departTime_ < (epoch+1) * epochLength)
-                        departTime_ = (epoch+1) * epochLength;
+                    if (departTime_ < startTime_ + (epoch+1) * epochLength)
+                        departTime_ = startTime_ + (epoch+1) * epochLength;
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
                     departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
                     currentRoute_->routeNodes_[i]->type_ = SOURCE;
