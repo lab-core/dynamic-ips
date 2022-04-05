@@ -29,9 +29,10 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     // attributes to read data file and initialize instance
     string title;
     std::string name;
-    int nbVehicles = -1, nbRequests = -1;
+    int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1;
     float sourceLatitude = -1, sourceLongitude = -1;
     float sinkLatitude = -1, sinkLongitude = -1;
+    float simulationStart = -1;
     int sourceID = -1, sinkID = -1;
     std::vector<PVehicle> vehicles;
 
@@ -42,9 +43,21 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
         if (strEndWith(title, "INSTANCE "))
             file >> name;
 
+        // read simulation start time
+        else if (strEndWith(title, "SIMULATION_START "))
+            file >> simulationStart;
+
         // read number of vehicles
         else if (strEndWith(title, "NUM_VEHICLES "))
             file >> nbVehicles;
+
+        // read number of onboards
+        else if (strEndWith(title, "NUM_ONBOARDS "))
+            file >> nbOnboards;
+
+        // read number of requests remained from previous epochs
+        else if (strEndWith(title, "NUM_RECEIVED "))
+            file >> nbReceived;
 
         // read number of requests
         else if (strEndWith(title, "NUM_REQUESTS "))
@@ -63,33 +76,109 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
             file >> sourceID;
         else if (strEndWith(title, "SINK_ID "))
             file >> sinkID;
-
-        // read vehicles specifications
-        else if (strEndWith(title, "VEHICLES_INFO")) {
-            int vehicleID, capacity;
-            float startTime, endTime;
-            file >> vehicleID;
-            file >> capacity;
-            file >> startTime;
-            file >> endTime;
-            for (int v = 0; v < nbVehicles; ++v) {
-                vehicles.emplace_back(std::make_shared<Vehicle>(v, capacity, startTime, endTime));
-            }
-        }
     }
 
     // main graph initialization with source and sink
     PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, sourceID, SOURCE),
                                                std::make_shared<Node>(sinkLatitude, sinkLongitude, sinkID, SINK));
 
-    return std::make_shared<Instance>(name, nbVehicles, vehicles, nbRequests, mainGraph);
+    return std::make_shared<Instance>(name, simulationStart, nbVehicles, nbOnboards, nbReceived, vehicles, nbRequests,
+                                      mainGraph);
+}
+
+//************************************************************************
+// Read the vehicle file
+//************************************************************************
+void ReadWrite::readVehiclesData(std::string strTripsFile, PInstance &pInstance) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
+    file.open(strTripsFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strTripsFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw Tools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+    std::vector<PVehicle> vehicles;
+    int vehicleID = -1, capacity = -1;
+    float startTime = -1, endTime = -1;
+
+    while (file.good()) {
+        readUntilChar(file, '\n', title);
+        if (strEndWith(title, "VEHICLES_INFO")) {
+            file >> vehicleID;
+            file >> capacity;
+            file >> startTime;
+            file >> endTime;
+            for (int v = 0; v < pInstance->nbVehicles_; ++v) {
+                pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(v, capacity, startTime, endTime));
+            }
+        }
+    }
+}
+
+//************************************************************************
+// Read the onboard file
+//************************************************************************
+void ReadWrite::readOnboardRequests(std::string strTripsFile, PInstance &pInstance) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
+    file.open(strTripsFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strTripsFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw Tools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+
+    while (file.good()) {
+        readUntilChar(file, '\n', title);
+        if (strEndWith(title, "REQUESTS_INFO")) {
+
+            for (int r = 0; r < pInstance->nbOnboards_; ++r) {
+                // attributes for reading trip requests file
+                int nbPassengers = -1, vehicleID = -1;
+                float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
+                float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, deltaTime = -1;
+
+                file >> nbPassengers;
+                file >> pickUpID;
+                file >> dropOffID;
+                file >> earlyPick;
+                file >> pickTime;
+                file >> pickUpLatitude;
+                file >> pickUpLongitude;
+                file >> dropOffLatitude;
+                file >> dropOffLongitude;
+                file >> vehicleID;
+
+                // the starting time of the instance is 16pm
+                deltaTime = nbPassengers * TimePerPassenger;
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude, pickUpLongitude,
+                                                                            dropOffLatitude, dropOffLongitude, pickUpID,
+                                                                            dropOffID, earlyPick, nbPassengers, deltaTime));
+                pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
+            }
+        }
+    }
+
+    // define an empty route for each vehicle and set it as the current route for the initialization
+    pInstance->instGraph_->addNewRequests(pInstance->requests_, pInstance->parameters_, pInstance->simulationStartTime_);
 }
 
 //************************************************************************
 // Read the trip requests file
 //************************************************************************
 
-void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) {
+void ReadWrite::readTripRequests(std::string strTripsFile, PInstance &pInstance, int nbRequest) {
     // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -102,18 +191,17 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
         throw Tools::myException("The input file was not opened properly!", __LINE__);
     }
 
-    std::vector<PRequest> requests;
     string title;
 
     while (file.good()) {
         readUntilChar(file, '\n', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
 
-            for (int r = 0; r < pInstance->nbRequests_; ++r) {
+            for (int r = 0; r < nbRequest; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
                 float pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
-                pickUpID = -1, dropOffID = -1, earlyPick = -1, minReach = -1, minTravelTime = -1, deltaTime = -1;
+                pickUpID = -1, dropOffID = -1, earlyPick = -1, deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -125,22 +213,20 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance pInstance) 
                 file >> dropOffLongitude;
 
                 // the starting time of the instance is 16pm
-                earlyPick -= 57600;
-                minReach = 0;
+//                earlyPick -= 57600;
                 deltaTime = nbPassengers * TimePerPassenger;
-                minTravelTime = 0;
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpLatitude, pickUpLongitude,
                                                                             dropOffLatitude, dropOffLongitude, pickUpID,
-                                                                            dropOffID, earlyPick, nbPassengers, deltaTime,
-                                                                            minReach, minTravelTime));
+                                                                            dropOffID, earlyPick, nbPassengers, deltaTime));
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
             }
         }
     }
 
     // define an empty route for each vehicle and set it as the current route for the initialization
-    pInstance->instGraph_->addNewRequests(pInstance->requests_, pInstance->parameters_);
+    pInstance->instGraph_->addNewRequests(pInstance->requests_, pInstance->parameters_, pInstance->simulationStartTime_);
 }
+
 
 //************************************************************************
 // Read the duration data file
@@ -186,7 +272,7 @@ void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationM
 //************************************************************************
 // Read the parameters datafile
 //************************************************************************
-void ReadWrite::readParameters(std::string strParamFile, PInstance pInstance) {
+void ReadWrite::readParameters(std::string strParamFile, PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strParamFile << " >>" << std::endl;
@@ -270,12 +356,15 @@ void ReadWrite::readParameters(std::string strParamFile, PInstance pInstance) {
 // function that open all input files and create the main instance
 PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+    ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), mainInst);
     ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-    ReadWrite::readTripRequests(inputPaths.getInputTripData(), mainInst);
+    if (mainInst->nbWaiting_ > 0)
+        ReadWrite::readTripRequests(inputPaths.getInputWaitRequests(), mainInst, mainInst->nbWaiting_);
+    ReadWrite::readTripRequests(inputPaths.getInputTripData(), mainInst, mainInst->nbRequests_);
 
     // write the parameters in file
     std::ofstream myFile;
-    myFile.open (inputPaths.getOutputParameters());
+    myFile.open (inputPaths.getOutputParamFile());
     myFile << mainInst->parameters_->toString();
     myFile.close();
 
@@ -338,6 +427,9 @@ bool ReadWrite::strEndWith(std::string sentence, std::string word) {
         return (!strcmp(word.c_str(), endOfSentence.c_str()));
     }
 }
+
+
+
 
 
 

@@ -22,14 +22,20 @@ public:
     // Read the instance file and store content in an instance object
     static PInstance readInstance(std::string strInstanceFile);
 
+    // Read the vehicle file
+    static void readVehiclesData(std::string strTripsFile, PInstance &pInstance);
+
+    // Read the onboard file
+    static void readOnboardRequests(std::string strTripsFile, PInstance &pInstance);
+
     // Read the trip requests file
-    static void readTripRequests(std::string strTripsFile, PInstance pInstance);
+    static void readTripRequests(std::string strTripsFile, PInstance &pInstance, int nbRequest);
 
     // Read duration data file
     static void readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations);
 
     // Read the parameters datafile
-    static void readParameters(std::string strParamFile, PInstance pInstance);
+    static void readParameters(std::string strParamFile, PInstance &pInstance);
 
     // function that open all input files and create the main instance
     static PInstance createMainInstance(InputPaths &inputPaths);
