@@ -176,12 +176,12 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             }
         }
     }
-
     IloCplex MIPCplex(MIPModel);
+//    MIPCplex.addMIPStart(startVar, startVal);
     MIPCplex.readMIPStarts(filePaths.getInputMipStart().c_str());
     MIPCplex.setParam(IloCplex::Param::MIP::Limits::RepairTries, 10);
-    MIPCplex.setParam(IloCplex::Param::MIP::PolishAfter::Time, 100);
-    MIPCplex.setParam(IloCplex::TiLim, 300);
+    MIPCplex.setParam(IloCplex::Param::MIP::PolishAfter::Time, 300);
+    MIPCplex.setParam(IloCplex::TiLim, 800);
     MIPCplex.setParam(IloCplex::Param::Emphasis::MIP, 2);
 //    MIPCplex.setParam(IloCplex::Param::Threads, 6);
 //    MIPCplex.addMIPStart(startVar, startVal);
