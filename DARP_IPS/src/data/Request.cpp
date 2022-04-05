@@ -14,30 +14,30 @@ unsigned int Request::requestCount_ = 0;
 
 // Constructor and Destructor
 Request::Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude, float dropOffLongitude,
-                 int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, float minReachTime,
-                 float minTravelTime) : requestID_(requestCount_++), PickUpLatitude_(pickUpLatitude),
-                                        PickUpLongitude_(pickUpLongitude), DropOffLatitude_(dropOffLatitude),
-                                        DropOffLongitude_(dropOffLongitude), PickUpID_(pickUpID), DropOffID_(dropOffID),
-                                        earlyPick_(earlyPick), nbPassengers_(nbPassengers), deltaTime_(deltaTime),
-                                        minReachTime_(minReachTime), minTravelTime_(minTravelTime) {
+                 int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
+                 requestID_(requestCount_++), PickUpLatitude_(pickUpLatitude), PickUpLongitude_(pickUpLongitude),
+                 DropOffLatitude_(dropOffLatitude), DropOffLongitude_(dropOffLongitude), PickUpID_(pickUpID),
+                 DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), deltaTime_(deltaTime) {
 
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
     readEpoch_ = 0;
-    char* name2 = new char[255];
+    char *name2 = new char[255];
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
     selectStatus_ = NOTSELECTED;
     pickTime_ = MAXReachTime;
     dropTime_ = MAXReachTime;
     dual_ = 0;
+    minReachTime_ = 0;
+    minTravelTime_ = 0;
 }
 
 Request::~Request() {}
 
 // Getters and Setters
-void Request::setPenalty(int epoch, PParameters &parameters) {
-    penalty_ = parameters->deltaPram_ * pow(2, ((parameters->epochLength_ * epoch) - earlyPick_) / (10 * parameters->epochLength_));
+void Request::setPenalty(int epoch, PParameters &parameters, float simulationStart) {
+    penalty_ = parameters->deltaPram_ * pow(2, ((parameters->epochLength_ * epoch) - (earlyPick_-simulationStart)) / (10 * parameters->epochLength_));
 }
 const unsigned int Request::getRequestId() const {return requestID_;}
 void Request::setMinTravelTime(float minTravelTime) {
