@@ -49,13 +49,12 @@ public:
 
     // Constructor and Destructor
     Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude,
-            float dropOffLongitude, int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, float minReachTime,
-            float minTravelTime);
+            float dropOffLongitude, int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);
 
     virtual ~Request();
 
     // Getters and Setters
-    void setPenalty(int epoch, PParameters &parameters);
+    void setPenalty(int epoch, PParameters &parameters, float simulationStart);
     const unsigned int getRequestId() const;
     void setMinTravelTime(float minTravelTime);
     void setMinReachTime(float minReachTime);
