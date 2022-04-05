@@ -22,6 +22,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, const PSolverOption &s
 void LabelingSubProblem::sortNodes() {
     subGraph_->nodeIDToInt_.clear();
     subGraph_->intToNodeID_.clear();
+    nodesOrder_.clear();
 
     // sorting requests based on their dual values
     sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
@@ -54,10 +55,13 @@ void LabelingSubProblem::sortNodes() {
     // adding sink node
     subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_] = subGraph_->intToNodeID_.size();
     subGraph_->intToNodeID_.push_back((*Vehicle_)->sinkID_);
-    nodesOrder_.push_back(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
+//    nodesOrder_.push_back(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
 }
 
 void LabelingSubProblem::sortSuccessors() {
+    for (auto & nodeObj: subGraph_->nodes_) {
+        nodeObj.second->predecessor_.clear();
+    }
     for (auto & nodeObj: subGraph_->nodes_){
         if (nodeObj.second->type_ != SINK){
             nodeObj.second->successors_.clear();
@@ -78,10 +82,14 @@ void LabelingSubProblem::sortSuccessors() {
             sort(nodeObj.second->successors_.begin(),nodeObj.second->successors_.end(),[](const PNode &lhs, const PNode &rhs){
                 return lhs->travelTimeFromNode_ < rhs->travelTimeFromNode_;});
             if (solverOptions_->isSuccessorsLimited_) {
-                int location = floor(5*nodeObj.second->successors_.size()/6) + 1;
+                int location = floor(1*nodeObj.second->successors_.size()/2) + 1;
                 nodeObj.second->successors_.erase(nodeObj.second->successors_.begin()+location, nodeObj.second->successors_.end());
             }
-            nodeObj.second->successors_.push_back(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
+            if (nodeObj.second->type_ == PICKUP) {
+                for (auto &succNode: nodeObj.second->successors_)
+                    succNode->predecessor_.insert(nodeObj.second);
+            }
+//            nodeObj.second->successors_.push_back(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
         }
     }
 }
@@ -215,30 +223,22 @@ void LabelingSubProblem::solveDynamic_pushing(int epoch) {
                         currentNode->nbActiveLabels_--;
                         nbActivated_--;
                         selectedLabel->status_ = INACTIVE;
-                        if (selectedLabel->nbPickUp_ == solverOptions_->maxPickup_) {
-                            // only drop onboards
-                            if (selectedLabel->openNodes_.empty())
-                                labelExtend(selectedLabel, subGraph_->nodes_[(*Vehicle_)->sinkID_], activeNodes_);
-                            else {
-                                std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
-                                                            selectedLabel->openNodes_.end());
-                                for (auto &neighbourNode: outNodes) {
-                                    labelExtend(selectedLabel, neighbourNode, activeNodes_);
-                                }
+                        // terminate to sink
+                        if (selectedLabel->openNodes_.empty())
+                            labelExtend(selectedLabel, subGraph_->nodes_[(*Vehicle_)->sinkID_], activeNodes_);
+                        // drop onboards
+                        else {
+                            std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
+                                                        selectedLabel->openNodes_.end());
+                            for (auto &neighbourNode: outNodes) {
+                                labelExtend(selectedLabel, neighbourNode, activeNodes_);
                             }
-                        } else {
+                        }
+                        if (selectedLabel->nbPickUp_ != solverOptions_->maxPickup_) {
                             // push to pickup points
  //                           for (auto &neighbourNode: nodesOrder_) {
                             for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
                                 if (selectedLabel->isExtendFeasible(neighbourNode, solverOptions_->maxPickup_)) {
-                                    labelExtend(selectedLabel, neighbourNode, activeNodes_);
-                                }
-                            }
-                            // push to drop off points
-                            if (!selectedLabel->openNodes_.empty()) {
-                                std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
-                                                            selectedLabel->openNodes_.end());
-                                for (auto &neighbourNode: outNodes) {
                                     labelExtend(selectedLabel, neighbourNode, activeNodes_);
                                 }
                             }
@@ -305,7 +305,7 @@ void LabelingSubProblem::solveDynamic_pulling(int epoch) {
                                                 labelExtend(selectedLabel, onboardNode, activeNodes_);
                                             selectedLabel->isDropped_ = true;
                                         }
-                                        // push to the sink
+                                            // push to the sink
                                         else if (selectedLabel->openNodes_.empty()) {
                                             labelExtend(selectedLabel, subGraph_->nodes_[(*Vehicle_)->sinkID_],
                                                         activeNodes_);
@@ -320,7 +320,7 @@ void LabelingSubProblem::solveDynamic_pulling(int epoch) {
                                         activeNodes_[j]->activeLabels_.erase(
                                                 activeNodes_[j]->activeLabels_.begin() + l);
                                     }
-                                    // pull all labels to the current node
+                                        // pull all labels to the current node
                                     else if (selectedLabel->isExtendFeasible(currentNode, solverOptions_->maxPickup_)) {
                                         labelExtend(selectedLabel, currentNode, activeNodes_);
                                     }
