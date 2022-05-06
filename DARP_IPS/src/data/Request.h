@@ -26,10 +26,10 @@ private:
 public:
     static unsigned int requestCount_;  // Counter the number of requests
     const char* name_;
-    float PickUpLatitude_;              // pick up location latitude
-    float PickUpLongitude_;             // pick up location longitude
-    float DropOffLatitude_;             // Drop off location latitude
-    float DropOffLongitude_;            // Drop off location longitude
+    /*double PickUpLatitude_;              // pick up location latitude
+    double PickUpLongitude_;             // pick up location longitude
+    double DropOffLatitude_;             // Drop off location latitude
+    double DropOffLongitude_;            // Drop off location longitude*/
     int PickUpID_;                      // pick up location ID
     int DropOffID_;                     // Drop off location ID
     float earlyPick_;                   // earliest possible pick up time for the request
@@ -48,8 +48,7 @@ public:
     int vehicleID_;                     // the vehicle that serve the request
 
     // Constructor and Destructor
-    Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude,
-            float dropOffLongitude, int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);
+    Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);
 
     virtual ~Request();
 

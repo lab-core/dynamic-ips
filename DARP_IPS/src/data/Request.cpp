@@ -13,10 +13,8 @@
 unsigned int Request::requestCount_ = 0;
 
 // Constructor and Destructor
-Request::Request(float pickUpLatitude, float pickUpLongitude, float dropOffLatitude, float dropOffLongitude,
-                 int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
-                 requestID_(requestCount_++), PickUpLatitude_(pickUpLatitude), PickUpLongitude_(pickUpLongitude),
-                 DropOffLatitude_(dropOffLatitude), DropOffLongitude_(dropOffLongitude), PickUpID_(pickUpID),
+Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
+                 requestID_(requestCount_++), PickUpID_(pickUpID),
                  DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), deltaTime_(deltaTime) {
 
     requestStatus_ = NO_ACTION;
@@ -56,8 +54,8 @@ std::string Request::toString() const {
     std::stringstream repStr;
     repStr << std::left;
     repStr << "# REQUEST ( " << requestID_ << " )" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- PICKUP_COORDINATE" << " : " << "(" << PickUpLatitude_ << " , " << PickUpLongitude_ << ")" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DROPOFF_COORDINATE" << " : " << "(" << DropOffLatitude_ << " , " << DropOffLongitude_ << ")" << std::endl;
+//    repStr << "#\t" << std::setw(24) << "- PICKUP_COORDINATE" << " : " << "(" << PickUpLatitude_ << " , " << PickUpLongitude_ << ")" << std::endl;
+//    repStr << "#\t" << std::setw(24) << "- DROPOFF_COORDINATE" << " : " << "(" << DropOffLatitude_ << " , " << DropOffLongitude_ << ")" << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_PASSENGERS" << " : " << nbPassengers_ << std::endl;
     repStr << "#" << std::endl;
     return repStr.str();
