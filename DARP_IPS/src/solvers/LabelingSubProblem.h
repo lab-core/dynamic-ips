@@ -23,6 +23,7 @@ public:
     int nbGenerated_;
     int nbActivated_;
     PSolverOption solverOptions_;
+    std::unordered_map<int, int> requestIDToInt_;
 
 
     std::vector<PNode> nodesOrder_;
@@ -38,12 +39,14 @@ public:
     void initialization();
     // main function of the dynamic programming
     void labelExtend(PLabel &parentLabel, PNode &outNode, std::vector<PNode> &activeNodeList);
+    void labelDrop(PLabel &parentLabel, std::vector<PNode> &activeNodeList);
     bool isLabelAdded(PLabel &newLabel, PNode &outNode);
     void solveDynamic_pushing(int epoch);
     void solveDynamic_pulling(int epoch);
+    void solveDynamic_pulling1(int epoch);
     void solveDynamic(int epoch);
-    // function to convert solution to routes and save them in vehicle object
 
+    // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes);
     // Display function
     std::string toString() const;
