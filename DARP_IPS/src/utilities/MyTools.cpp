@@ -80,22 +80,35 @@ namespace Tools {
         return dist * TimePerMile;
     }
 
-    // function to create node ID based on request ID
+    // functions to create node IDs
     std::string createNodeID(int requestID, NodeType type) {
         std::string ID;
         switch(type) {
             case SOURCE :
                 ID = "SO_" + std::to_string(requestID);
-                break; //optional
+                break;
             case SINK :
                 ID = "SI_" + std::to_string(requestID);
-                break; //optional
+                break;
             case PICKUP :
                 ID = "PI_" + std::to_string(requestID);
-                break; //optional
+                break;
             case DROPOFF :
                 ID = "DR_" + std::to_string(requestID);
-                break; //optional
+                break;
+        }
+        return ID;
+    }
+
+    std::string createSourceID(int vehicleID, NodeType type) {
+        std::string ID;
+        switch(type) {
+            case SOURCE :
+                ID = "SO_" + std::to_string(vehicleID);
+                break;
+            case SINK :
+                ID = "SI_" + std::to_string(vehicleID);
+                break;
         }
         return ID;
     }
@@ -287,15 +300,15 @@ namespace Tools {
 Parameters::Parameters() {}
 
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
-                       bool sameDepot,bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       MainAlgorithm mainAlgorithm, bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
                        SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-                       solutionAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
+                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
                        alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
-                       emptyStart_(emptyStart), sameDepot_(sameDepot), isTruncated_(isTruncated), MaxLabel_(maxLebel),
-                       isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
-                       SubproSolveStartState_(subproSolveStartState), LabelingStrategy_(LabelingStrategy),
-                       subAlgorithm_(subAlgorithm), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-                       populateTimeLimit_(populateTimeLimit) {
+                       emptyStart_(emptyStart), mainAlgorithm_(mainAlgorithm), isTruncated_(isTruncated),
+                       MaxLabel_(maxLebel), isSuccessorsLimited_(isSuccessorsLimited),
+                       isDominanceReleased_(isDominanceReleased), SubproSolveStartState_(subproSolveStartState),
+                       LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),
+                        solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit) {
 }
 
 Parameters::~Parameters() {}
@@ -311,8 +324,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# delta Parameter" << " = " << deltaPram_ << std::endl;
     repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << std::endl;
-    repStr << std::setw(setwLength) << "# start from same depot " << " = " << sameDepot_ << std::endl;
     repStr << std::setw(setwLength) << "# empty route at each epoch " << " = " << emptyStart_ << std::endl;
+    repStr << std::setw(setwLength) << "# Main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;
@@ -323,7 +336,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubproSolveStartState_ << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
-    repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << solutionAlgorithmName[subAlgorithm_] << std::endl;
+    repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;

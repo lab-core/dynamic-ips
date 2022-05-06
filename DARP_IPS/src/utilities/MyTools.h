@@ -68,16 +68,21 @@ typedef std::shared_ptr<solverOption> PSolverOption;
 // SubProblem solution status
 enum SubProSolveStart {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
-enum solutionAlgorithm { CPLEX = 0, LABELSETTING = 1};
+enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
+enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3};
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",
         "PULLING" };
 
-static const std::vector<std::string> solutionAlgorithmName = {
+static const std::vector<std::string> subAlgorithmName = {
         "CPLEX        ",
         "LABEL_SETTING" };
 
-
+static const std::vector<std::string> mainAlgorithmName = {
+        "GREEDY    ",
+        "MIP_CPLEX ",
+        "CG_CPLEX  ",
+        "CG_ISUD   "};
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
 /*static const std::vector<std::string> nodeTypeName = {
@@ -173,8 +178,9 @@ namespace Tools {
     // function to calculate travel time between two coordinate
     double calcTravelTime(double lat1, double long1, double lat2, double long2);
 
-    // function to create node ID based on request ID
+    // functions to create node IDs
     std::string createNodeID(int requestID, NodeType type);
+    std::string createSourceID(int vehicleID, NodeType type);
 
 
     // Appends the values of v2 vector to at the end of v1 vector
@@ -229,7 +235,8 @@ public:
     int epochLength_;
 
     bool emptyStart_;
-    bool sameDepot_;
+
+    MainAlgorithm mainAlgorithm_;
 
     // label setting strategies
     bool isTruncated_;
@@ -238,7 +245,8 @@ public:
     bool isSuccessorsLimited_;
     SubProSolveStart SubproSolveStartState_;
     LabelingStrategy LabelingStrategy_;
-    solutionAlgorithm subAlgorithm_;
+    subproblemAlgorithm subAlgorithm_;
+
 
     //CPLEX Parameters
     int bigM_;
@@ -247,10 +255,10 @@ public:
 
     // Constructor and Destructor
     Parameters();
-    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart, bool sameDepot,
-               bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
+    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
+               MainAlgorithm mainAlgorithm, bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
                SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-               solutionAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
+               subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
 
     virtual ~Parameters();
 
