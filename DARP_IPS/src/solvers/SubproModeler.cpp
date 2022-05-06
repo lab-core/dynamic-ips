@@ -20,7 +20,7 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
     // adding onboard nodes to the graph
     for (auto & nodeID: (*Vehicle_)->onboards_) {
         subGraph_->addNewNode(pInst->instGraph_->nodes_[nodeID]);
-        onboardRequests_.insert(*pInst->instGraph_->nodes_[nodeID]->related_Request_);
+        onboardRequests_.insert(pInst->instGraph_->nodes_[nodeID]->related_Request_);
     }
 
     // adding available nodes based on the penalty
