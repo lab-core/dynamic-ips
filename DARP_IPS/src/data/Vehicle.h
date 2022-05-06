@@ -33,7 +33,7 @@ public:
 
 
     // Constructor and Destructor
-    Vehicle(int vehicleId, int capacity, float startTime, float endTime);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID, std::string sinkID);
 
     virtual ~Vehicle();
 
@@ -51,6 +51,7 @@ public:
     // update the situation of nodes and ride requests
 
     void updateState(int epoch, int &epochLength);
+    void updateStateTime(float stopTime);
 };
 
 
