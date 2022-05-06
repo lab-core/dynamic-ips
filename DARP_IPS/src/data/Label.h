@@ -22,7 +22,10 @@ public:
     PLabel parent_;                                        // a pointer to the parent of the label
     std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
     std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
-    std::set<PRequest> completedRequests_;                  // set of completed requests
+//    std::set<PRequest> completedRequests_;                  // set of completed requests
+    std::vector<int> completedRequest_;
+    std::vector<int> openRequests_;
+    std::unordered_map<int, int> requestIDToInt_;
     vector<PNode> pathNodes_;                               // list of nodes in the path of the vehicle
     double reducedCost_;
     PNode currentNode_;

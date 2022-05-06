@@ -17,9 +17,10 @@ Label::Label(PVehicle *vehicle, double reducedCost, PNode source) : labelID_(lab
     reducedCost_ = 0;
     totalDelay_ = 0;
     status_ = ACTIVE;
-//    openRequests_.clear();
     openNodes_.clear();
-    completedRequests_.clear();
+    openRequests_.clear();
+ //   completedRequests_.clear();
+    completedRequest_.clear();
     currentNode_ = pathNodes_[0];
     nbPickUp_ = 0;
 //    extendCheck_.insert(source->nodeID_);
@@ -42,9 +43,11 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     reducedCost_ = label.reducedCost_;
     currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
-//    openRequests_ = label.openRequests_;
     openNodes_ = label.openNodes_;
-    completedRequests_ = label.completedRequests_;
+    openRequests_ = label.openRequests_;
+ //   completedRequests_ = label.completedRequests_;
+    completedRequest_ = label.completedRequest_;
+    requestIDToInt_ = label.requestIDToInt_;
     nbPickUp_ = label.nbPickUp_;
     for (auto & nodeObj:label.pathNodes_) {
         if (nodeObj->type_ == PICKUP)
@@ -71,21 +74,20 @@ void Label:: extend(PNode &outNode) {
         item.second -= travelTime;
     }
     if (outNode->type_ == DROPOFF) {
-//        openReachTime_.erase((*outNode->pairNode_)->nodeID_);
-//        openReachTime_.erase(outNode->nodeID_);
         travelResource_.erase(outNode->nodeID_);
-//        openRequests_.erase(*outNode->related_Request_);
         openNodes_.erase(outNode);
+        openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 0;
         passedTime_ = reachTime;
 
     }
     else if (outNode->type_ == PICKUP){
-//        openRequests_.insert(*outNode->related_Request_);
         extendCheck_.insert(outNode->nodeID_);
         openNodes_.insert(*outNode->pairNode_);
-        completedRequests_.insert(*outNode->related_Request_);
+ //       completedRequests_.insert(outNode->related_Request_);
+        completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
+        openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
         nbPickUp_ ++;
-        reducedCost_ -= (*outNode->related_Request_)->dual_;
+        reducedCost_ -= (outNode->related_Request_)->dual_;
 
         if (reachTime < outNode->requestTime_){
             passedTime_ = outNode->requestTime_;
@@ -98,7 +100,7 @@ void Label:: extend(PNode &outNode) {
             totalDelay_ += (reachTime - outNode->requestTime_);
             reducedCost_ += (reachTime - outNode->requestTime_);
         }
-        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, (*outNode->related_Request_)->maxTravelTime_));
+        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_));
     }
     else if (outNode->type_ == SINK){
         passedTime_ = reachTime;
@@ -117,17 +119,25 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ == maxPickUp)
             return false;
-        if (completedRequests_.count(*outNode->related_Request_))
+ //       if (completedRequests_.count(outNode->related_Request_))
+        if (completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)
             return false;
     }
     if (outNode->type_ == DROPOFF) {
-//        if (openRequests_.find(*outNode->related_Request_) == openRequests_.end())
-        if (openNodes_.find(outNode) == openNodes_.end())
+        if (openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 0)
+ //       if (openNodes_.find(outNode) == openNodes_.end())
             return false;
     }
     if (outNode->type_ == SINK) {
 //        if (openRequests_.size() > 0)
         if (openNodes_.size() > 0)
+            return false;
+    }
+
+    for (auto & nodeObj: openNodes_) {
+        float travelToDrop = currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][outNode->locationID_] +
+                outNode->deltaTime_ + durationMatrix_[outNode->locationID_][nodeObj->locationID_];
+        if (travelResource_[nodeObj->nodeID_] <  travelToDrop)
             return false;
     }
 
@@ -144,7 +154,8 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
     if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
-        if (this->completedRequests_ == otherLabel->completedRequests_) {
+//        if (this->completedRequests_ == otherLabel->completedRequests_) {
+        if (this->completedRequest_ == otherLabel->completedRequest_) {
             if (this->reducedCost_ == otherLabel->reducedCost_) {
                 if (this->passedTime_ >= otherLabel->passedTime_)
                     return true;
@@ -160,15 +171,17 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
     else {
         if (this->passedTime_ >= otherLabel->passedTime_) {
             if (this->reducedCost_ >= otherLabel->reducedCost_) {
-                if (this->openNodes_ == otherLabel->openNodes_) {
+                if (this->openRequests_ == otherLabel->openRequests_) {
+ //               if (this->openNodes_ == otherLabel->openNodes_) {
                     if (solverOption->isDominanceReleased_) {
                         return true;
                         /*if (this->completedRequests_.size() >= otherLabel->completedRequests_.size())
                             return true;*/
                     }
                     else {
-                        if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
-                                          otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))
+                        if (this->completedRequest_ >= otherLabel->completedRequest_)
+                        /*if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
+                                          otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))*/
                             return true;
                     }
 
@@ -269,15 +282,15 @@ std::string Label::toString() const {
         repStr << requestObj->getRequestId() << "  ";
     }*/
     for (auto & nodeObj : openNodes_) {
-        repStr << (*nodeObj->related_Request_)->getRequestId() << "  ";
+        repStr << nodeObj->related_Request_->getRequestId() << "  ";
     }
     repStr << std::endl;
 
-    repStr << "#\t" << std::setw(24) << "- COMPLETE_REQUESTS" << " : " ;
+    /*repStr << "#\t" << std::setw(24) << "- COMPLETE_REQUESTS" << " : " ;
 
     for (auto & requestObj : completedRequests_) {
         repStr << requestObj->getRequestId() << "   ";
-    }
+    }*/
     repStr << std::endl;
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
