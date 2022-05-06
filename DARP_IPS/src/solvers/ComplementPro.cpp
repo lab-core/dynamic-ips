@@ -94,6 +94,34 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         // printing solution status
         std::cout << MasterModeler::toString();
 
+        // getting dual values
+        requestDuals_.clear();
+        vehicleDuals_.clear();
+
+        // define dual container size
+        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+        std::cout << "COMPLEMENTARY DUALS:" << std::endl;
+        for (auto &requestObj: pInst->requests_) {
+            if (requestObj->requestStatus_ == NO_ACTION) {
+                int rowIndex = requestToOrder_[requestObj->getRequestId()];
+                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                requestObj->dual_ = requestDuals_[rowIndex];
+                std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
+                          << std::endl;
+            }
+
+        }
+
+        std::cout << "VEHICLE DUALS:" << std::endl;
+        for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
+        }
+
+
         // saving the result and remove out of base variables
         if (Cplex_.getObjValue() < 0) {
             status_ = NEGATIVE_VALUE;
@@ -111,33 +139,9 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                     zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                 }
             }
+
             if (isColumnDisjoint(zResult, routeResult, requestToOrder_, pInst->nbVehicles_)) {
-                // getting dual values
-                requestDuals_.clear();
-                vehicleDuals_.clear();
 
-                // define dual container size
-                requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-                vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
-
-                std::cout << "COMPLEMENTARY DUALS:" << std::endl;
-                for (auto &requestObj: pInst->requests_) {
-                    if (requestObj->requestStatus_ == NO_ACTION) {
-                        int rowIndex = requestToOrder_[requestObj->getRequestId()];
-                        requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-                        requestObj->dual_ = requestDuals_[rowIndex];
-                        std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
-                                  << std::endl;
-                    }
-
-                }
-
-                std::cout << "VEHICLE DUALS:" << std::endl;
-                for (auto &vehicleObj: pInst->vehicles_) {
-                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
-                }
 
                 // remove outgoing variable
                 for (int r = routeSolVar_.getSize() - 1; r >= 0; --r) {
@@ -171,7 +175,9 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                 }
                 std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
                           << " are selected to served." << std::endl;
-            } else {
+            }
+            else
+            {
                 status_ = FRACTIONAL;
                 std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
                 fractionalRoutes_.clear();
@@ -179,11 +185,13 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                 // add incoming variables
                 for (int r = 0; r < routeIncVar_.getSize(); ++r) {
                     if (Cplex_.getValue(routeIncVar_[r]) > 0) {
+ //                       std::cout << routeIncVar_[r].getName() << " : " << Cplex_.getValue(routeIncVar_[r]) << std::endl;
                         fractionalRoutes_.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                     }
                 }
                 for (int i = 0; i < zIncVar_.getSize(); ++i) {
                     if (Cplex_.getValue(zIncVar_[i]) > 0) {
+//                        std::cout << zIncVar_[i].getName() << " : " << Cplex_.getValue(zIncVar_[i]) << std::endl;
                         fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                     }
                 }
