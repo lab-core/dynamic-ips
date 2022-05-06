@@ -10,6 +10,7 @@
 #include "data/Request.h"
 #include "data/Graph.h"
 #include "data/TravelTime.h"
+#include "utilities/InputPaths.h"
 
 //-----------------------------------------------------------------------------
 //  Instance class
@@ -66,12 +67,14 @@ public:
     void sortVehicles(SortVehicle sortBase);
     void resetRequestsSelectStatus();
 
-    // print solutions in csv files
+    // print solution in csv files
     void saveSolutionRoutes(std::string routeResultDir);
     void saveRequestsResults(std::string requestResultDir);
+    // save the solution route of the vehicles (current solutoin of IUSD)
     void saveEpochRoutes(std::string finalSolutionDir , int epoch);
+    // save the current route of the vehicles (current solutoin of IUSD)
     void saveISUDRoutes(std::string isudSolutionDir, int epoch, int isudIter);
-    void saveStatus(std::string onboardsDir, std::string waitRequestsDir);
+    void saveStatus(InputPaths &inputPaths, float simulationStart);
 };
 
 
