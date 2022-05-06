@@ -32,8 +32,6 @@ protected:
     std::string input_onboardsFile_;
     std::string input_waitRequests_;
 
-
-
     // output data addresses
     std::string output_epochISUD_;
     std::string output_epochFinal_;
@@ -46,6 +44,8 @@ protected:
     std::string output_paramFile_;
     std::string output_onboards_;
     std::string output_waitRequests_;
+    std::string output_vehicles_;
+    std::string output_instance_;
 
     double timeOUt = 3600;
 
@@ -78,7 +78,8 @@ public:
     const std::string &getOutputParamFile() const;
     const std::string &getOutputOnboards() const;
     const std::string &getOutputWaitRequests() const;
-
+    const std::string &getOutputVehicles() const;
+    const std::string &getOutputInstance() const;
 
     double getTimeOUt() const;
 

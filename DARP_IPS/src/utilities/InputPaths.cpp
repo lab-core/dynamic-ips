@@ -35,10 +35,10 @@ InputPaths::InputPaths(std::string datadir, std::string instanceName, double tim
     input_InstanceData_ = instanceDir + "INSTANCE_" + instanceName + ".txt";
     input_durationData_ = instanceDir + "DURATION_" + instanceName + ".txt";
     input_MIPStart_ = instanceDir + "MIPStart_" + instanceName;
-    input_paramFile_ = instanceDir + "Parameters" + ".txt";
+    input_paramFile_ = datadir + "Parameters.txt";
     input_vehicleFile_ = instanceDir + "VEHICLES_" + instanceName + ".txt";
     input_onboardsFile_ = instanceDir + "ONBOARDS_" + instanceName + ".txt";
-    input_waitRequests_ = instanceDir + "WaitingRequests" + instanceName + ".txt";
+    input_waitRequests_ = instanceDir + "WaitRequests_" + instanceName + ".txt";
 
     //initialize the file names for saving outputs
     output_epochISUD_ = outputDir + "epochSolution_" + instanceName + ".csv";
@@ -49,17 +49,21 @@ InputPaths::InputPaths(std::string datadir, std::string instanceName, double tim
     output_offlineRoutes_ = outputDir + "OfflineRoutes_" + instanceName + ".csv";
     output_finalRequests_ = outputDir + "Requests_" + instanceName + ".csv";
     output_MIPStart_ = outputDir + "MIPStart_" + instanceName;
-    output_paramFile_ = outputDir + "Parameters" + ".txt";
+    output_paramFile_ = outputDir + "Parameters.txt";
     output_onboards_ = outputDir + "ONBOARDS_" + instanceName + ".txt";
-    output_waitRequests_ = outputDir + "WaitingRequests" + instanceName + ".txt";
+    output_waitRequests_ = outputDir + "WaitRequests_" + instanceName + ".txt";
+    output_vehicles_ = outputDir + "VEHICLES_" + instanceName + ".txt";
+    output_instance_ = outputDir + "INSTANCE_" + instanceName + ".txt";
 
     // create output files for epoch results
     std::ofstream myFile;
     myFile.open(output_epochISUD_);
-    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
+//    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
+    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID" << std::endl;
     myFile.close();
     myFile.open(output_epochFinal_);
-    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
+//    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
+    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
     myFile.close();
 }
 
@@ -86,6 +90,8 @@ const std::string &InputPaths::getOutputOfflineRoutes() const { return output_of
 const std::string &InputPaths::getOutputParamFile() const { return output_paramFile_;}
 const std::string &InputPaths::getOutputOnboards() const { return output_onboards_;}
 const std::string &InputPaths::getOutputWaitRequests() const { return output_waitRequests_;}
+const std::string &InputPaths::getOutputVehicles() const { return output_vehicles_;}
+const std::string &InputPaths::getOutputInstance() const { return output_instance_;}
 
 
 double InputPaths::getTimeOUt() const {return timeOUt; }
@@ -106,6 +112,8 @@ void InputPaths::setInstanceData(const std::string &instanceData) {
 void InputPaths::setTimeOUt(double timeOUt) {
     InputPaths::timeOUt = timeOUt;
 }
+
+
 
 
 
