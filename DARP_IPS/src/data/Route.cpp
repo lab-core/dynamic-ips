@@ -44,6 +44,7 @@ void Route::addSource(PNode node, float departTime, int departPassengers) {
         routeNodes_.push_back(node);
         plannedReachTime_.push_back(departTime);
         plannedPassengers_.push_back(departPassengers);
+        node->reachTime_ = departTime;
     }
 }
 void Route::addNode(PNode node) {
@@ -54,7 +55,7 @@ void Route::addNode(PNode node) {
     float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
             durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     if (node->type_ == PICKUP) {
-        routeRequests.push_back((*node->related_Request_)->getRequestId());
+        routeRequests.push_back(node->related_Request_->getRequestId());
         if (reachTime < node->requestTime_)
             plannedReachTime_.push_back(node->requestTime_);
         else {
@@ -83,7 +84,7 @@ void Route::addNode(PNode node, float departTime, int departPassengers) {
                           durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
 
         if (node->type_ == PICKUP) {
-            routeRequests.push_back((*node->related_Request_)->getRequestId());
+            routeRequests.push_back(node->related_Request_->getRequestId());
             plannedReachTime_.push_back(std::max(node->requestTime_,reachTime));
             totalDelay_ += (plannedReachTime_.back() - node->requestTime_);
 
@@ -104,7 +105,7 @@ void Route::removeNode(int nodeIndex) {
     totalDelay_ = 0;
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->type_ == PICKUP) {
-            routeRequests.push_back((*routeNodes_[i]->related_Request_)->getRequestId());
+            routeRequests.push_back(routeNodes_[i]->related_Request_->getRequestId());
             totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
         }
 
@@ -145,7 +146,7 @@ std::string Route::toString() const {
             repStr << std::left << std::setw(27) << "(SINK   ) return";
         else {
             repStr << "(" << NodeTypeStr[routeNodes_[i]->type_] << ") Request_ID ";
-            repStr << std::left << std::setw(6) << (*routeNodes_[i]->related_Request_)->getRequestId();
+            repStr << std::left << std::setw(6) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
         repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
