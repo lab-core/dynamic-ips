@@ -78,7 +78,7 @@ public:
     std::string toString() const;
 
     // function to evaluate available routes and find proper ones to be added to the models
-    void updateRoutesToAdd(int compDegree, PInstance &pInst, bool iterStart);
+    void updateRoutesToAdd(int compDegree, PInstance &pInst);
     void updateRoutesToAddZoom(PInstance &pInst);
     bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<int, int> &requestToOrder);
 
