@@ -16,9 +16,9 @@
 
 // Different node status and their names
 enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 };
-static const std::vector<std::string> nodeStatusName = {
+/*static const std::vector<std::string> nodeStatusName = {
         "NO_ACTION", "PLANNED  ", "DONE"
-};
+};*/
 
 
 
@@ -26,11 +26,11 @@ static const std::vector<std::string> nodeStatusName = {
 class Node {
 public:
     string nodeID_;                 // node ID
-    PRequest* related_Request_;     // pointer to its request
+    PRequest related_Request_;     // pointer to its request
     string pairNodeID_;             // related pickup/  drop off
     PNode * pairNode_;
-    float locLatitude_;             // node location latitude
-    float locLongitude_;            // node location longitude
+    /*double locLatitude_;             // node location latitude
+    double locLongitude_;            // node location longitude*/
     int locationID_;                // node location ID
     NodeType type_;                 // node type: pick up, drop off, source, sink
     float reachTime_;               // the time that vehicle reach to the node
@@ -46,13 +46,13 @@ public:
 
 
     std::vector<PLabel> activeLabels_;
-//    std::priority_queue<PLabel, vector<PLabel> , std::greater<PLabel>> unextendedLabels_;
     // generatedLabels_ save the labels based on the number of completed requests in different spaces
     std::map<int, std::vector<PLabel>> generatedLabels_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
-    Node(float locLatitude, float locLongitude, int locationID, NodeType type);
+    Node(int locationID, NodeType type);
+    Node(int locationID, NodeType type, int vehicleID);
 
     virtual ~Node();
 
@@ -87,7 +87,9 @@ public:
     void addNewNode(PNode node);
 
     // function for updating the graph and adding new request
-    void addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters, float simulationStart);
+    void addRequestsToGraph(PInstance &pInstance);
+    void addRequestToGraph(PRequest &newRequest);
+    void addNewRequestToGraph(PInstance &pInstance);
 };
 typedef std::shared_ptr<Graph> PGraph;
 

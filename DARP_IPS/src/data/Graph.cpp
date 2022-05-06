@@ -12,27 +12,8 @@
 using std::to_string;
 // Constructor and Destructor
 
-/*Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID) : nodeID_(nodeId),
-            related_Request_(&relatedRequest), type_(type), pairNodeID_(pairNodeID) {
-    reachTime_ = 0;
-    deltaTime_ = relatedRequest->deltaTime_;
-    nodeStatus_ = DEFINED;
-    requestTime_ = relatedRequest->earlyPick_;
-
-    if (type == PICKUP){
-        locLatitude_ = relatedRequest->PickUpLatitude_;
-        locLongitude_ = relatedRequest->PickUpLongitude_;
-        nbPassengers_ = relatedRequest->nbPassengers_;
-    }
-    else if (type == DROPOFF){
-        locLatitude_ = relatedRequest->DropOffLatitude_;
-        locLongitude_ = relatedRequest->DropOffLongitude_;
-        nbPassengers_ = (-1) * relatedRequest->nbPassengers_;
-    }
-}*/
-
 Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID) : nodeID_(nodeId),
-                                                                                        related_Request_(&relatedRequest),
+                                                                                        related_Request_(relatedRequest),
                                                                                         type_(type), pairNodeID_(pairNodeID) {
     reachTime_ = 0;
     deltaTime_ = relatedRequest->deltaTime_;
@@ -40,23 +21,21 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
     requestTime_ = relatedRequest->earlyPick_;
 
     if (type == PICKUP){
-        locLatitude_ = relatedRequest->PickUpLatitude_;
-        locLongitude_ = relatedRequest->PickUpLongitude_;
+        /*locLatitude_ = relatedRequest->PickUpLatitude_;
+        locLongitude_ = relatedRequest->PickUpLongitude_;*/
         locationID_ = relatedRequest->PickUpID_;
         nbPassengers_ = relatedRequest->nbPassengers_;
     }
     else if (type == DROPOFF){
-        locLatitude_ = relatedRequest->DropOffLatitude_;
-        locLongitude_ = relatedRequest->DropOffLongitude_;
+        /*locLatitude_ = relatedRequest->DropOffLatitude_;
+        locLongitude_ = relatedRequest->DropOffLongitude_;*/
         locationID_ = relatedRequest->DropOffID_;
         nbPassengers_ = (-1) * relatedRequest->nbPassengers_;
     }
     bestLabelReduceCost_ = INFINITY;
 }
 
-Node::Node(float locLatitude, float locLongitude, int locationID, NodeType type) : locLatitude_(locLatitude),
-                                                                                   locLongitude_(locLongitude),
-                                                                                   locationID_(locationID), type_(type) {
+Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type) {
     related_Request_ = nullptr;
     reachTime_ = 0;
     nbPassengers_ = 0;
@@ -70,6 +49,23 @@ Node::Node(float locLatitude, float locLongitude, int locationID, NodeType type)
     else if (type == SINK)
         nodeID_ = Tools::createNodeID(0, SINK);
 }
+
+Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationID), type_(type) {
+
+    related_Request_ = nullptr;
+    reachTime_ = 0;
+    nbPassengers_ = 0;
+    deltaTime_ = 0;
+    requestTime_ = 0;
+    nodeStatus_ = DEFINED;
+    bestLabelReduceCost_ = INFINITY;
+
+    if (type == SOURCE)
+        nodeID_ = Tools::createSourceID(vehicleID, SOURCE);
+    else if (type == SINK)
+        nodeID_ = Tools::createSourceID(vehicleID, SINK);
+}
+
 
 void Node::setPairNodeId(const string &pairNodeId) {
     pairNodeID_ = pairNodeId;
@@ -93,6 +89,7 @@ int Node::getLabelListIndex(PLabel newLabel) {
         return activeLabels_.size();
     }
 }
+
 
 
 Node::~Node() = default;
@@ -124,21 +121,44 @@ void Graph::addNewNode(PNode node) {
     nbNodes_++;
 }
 // function for updating the graph and adding new request
-void Graph::addNewRequests(std::vector<PRequest> &newRequests, PParameters &parameters, float simulationStart) {
-    for (int r = 0; r < newRequests.size(); ++r) {
+void Graph::addRequestsToGraph(PInstance &pInstance) {
+    for (auto & requestObj : pInstance->requests_) {
         // create pickup node and drop off nodes
-        newRequests[r]->setPenalty(0, parameters, simulationStart);
+        requestObj->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
 
-        std::string pickID = Tools::createNodeID(newRequests[r]->getRequestId(), PICKUP);
-        std::string dropID = Tools::createNodeID(newRequests[r]->getRequestId(), DROPOFF);
+        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
-        addNewNode(std::make_shared<Node>(pickID, newRequests[r], PICKUP, dropID));
-        addNewNode(std::make_shared<Node>(dropID, newRequests[r], DROPOFF, pickID));
+        addNewNode(std::make_shared<Node>(pickID, requestObj, PICKUP, dropID));
+        addNewNode(std::make_shared<Node>(dropID, requestObj, DROPOFF, pickID));
         nodes_[pickID]->pairNode_ = & nodes_[dropID];
         nodes_[dropID]->pairNode_ = & nodes_[pickID];
     }
 }
 
+void Graph::addRequestToGraph(PRequest &newRequest) {
+    // create pickup node and drop off nodes
+
+    std::string pickID = Tools::createNodeID(newRequest->getRequestId(), PICKUP);
+    std::string dropID = Tools::createNodeID(newRequest->getRequestId(), DROPOFF);
+
+    addNewNode(std::make_shared<Node>(pickID, newRequest, PICKUP, dropID));
+    addNewNode(std::make_shared<Node>(dropID, newRequest, DROPOFF, pickID));
+    nodes_[pickID]->pairNode_ = & nodes_[dropID];
+    nodes_[dropID]->pairNode_ = & nodes_[pickID];
+}
+
+void Graph::addNewRequestToGraph(PInstance &pInstance) {
+// create pickup node and drop off nodes
+
+    std::string pickID = Tools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+    std::string dropID = Tools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+
+    addNewNode(std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP, dropID));
+    addNewNode(std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF, pickID));
+    nodes_[pickID]->pairNode_ = & nodes_[dropID];
+    nodes_[dropID]->pairNode_ = & nodes_[pickID];
+}
 
 /*double calcTravelTime(PNode startNode, PNode endNode) {
     double dist = Tools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
