@@ -68,11 +68,11 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
 
     // add compatible z variables
     // just z variables related to requests that are served in routes with one request are compatible
-    for (int r = 0; r < routeSolution.size(); ++r) {
+    /*for (int r = 0; r < routeSolution.size(); ++r) {
         if (routeSolution[r]->routeRequests.size() == 1) {
-            addZVar(*routeSolution[r]->routeNodes_[1]->related_Request_);
+            addZVar(routeSolution[r]->routeNodes_[1]->related_Request_);
         }
-    }
+    }*/
 }
 
 
@@ -97,15 +97,15 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         if (emptyStart) {
             for (auto nodeObj : routeSol->routeNodes_) {
                 if (nodeObj->type_ == PICKUP)
-                    addZVar(*nodeObj->related_Request_);
+                    addZVar(nodeObj->related_Request_);
             }
         }
         else {
             addRouteVar(routeSol);
             // add related compatible z variables
-            if (routeSol->routeRequests.size() == 1) {
+            /*if (routeSol->routeRequests.size() == 1) {
                 addZVar(*routeSol->routeNodes_[1]->related_Request_);
-            }
+            }*/
         }
     }
 
@@ -121,7 +121,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     try {
 
         Cplex_ = IloCplex(Model_);
- //       env_.out() << Model_;
+//        env_.out() << Model_;
         Cplex_.solve();
 
         // getting dual values
@@ -167,8 +167,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 //        env_.out() << zVal << std::endl;
 
         for (int r = routeVal.getSize()-1; r >= 0; --r) {
-            /*if (routeVal[r] > 0)
-                std::cout << routeVal[r] << std::endl;*/
+            if (routeVal[r] > 0)
+//               std::cout << routeVal[r] << std::endl;
 
             if (routeVal[r] > 0.1) {
                 routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
@@ -181,10 +181,12 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
 //        std::cout << "------------" << std::endl;
         for (int i = zVal.getSize()-1; i >= 0; --i) {
-            /*if (zVal[i] > 0)
-                std::cout << zVal[i] << std::endl;*/
-            if (zVal[i] > 0.9)
+            if (zVal[i] > 0)
+ //               std::cout << zVal[i] << std::endl;
+            if (zVal[i] > 0.9) {
+//                std::cout << zVar_[i].getName() << std::endl;
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+            }
             else {
                 zVar_[i].end();
                 zVar_.remove(i,1);
