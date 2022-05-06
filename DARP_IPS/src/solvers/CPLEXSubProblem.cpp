@@ -31,6 +31,9 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
     U = IloNumVarArray(env_, subGraph_->nbNodes_, 0, IloInfinity, ILOFLOAT);
     W = IloNumVarArray(env_, subGraph_->nbNodes_, 0, IloInfinity, ILOFLOAT);
 
+    int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
+    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];
+
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         X[i] = IloNumVarArray(env_, subGraph_->nbNodes_, 0.0, 1.0, ILOBOOL);
     }
@@ -47,7 +50,7 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
             objExpr -= (X[nodeIndex][j] * subRequests_[i]->dual_);
         }
     }
-
+//    objExpr += U[sinkIndex];
     objExpr -= (*Vehicle_)->dual_;
     SubProModel_.add(IloMinimize(env_, objExpr));
 
@@ -55,8 +58,7 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
     // defining constraints
     // -----------------------------------------
 
-    int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
-    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];
+
 
     // add this constraint to be sure that each request is served at most once
     for (int i = 0; i < subRequests_.size(); ++i) {
@@ -170,7 +172,7 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
 
             expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
                     + durationMatrix_[subGraph_->nodes_[subGraph_->intToNodeID_[i]]->locationID_]
-                    [subGraph_->nodes_[subGraph_->intToNodeID_[j]]->locationID_]- U[j] - 7200 * (1 - X[i][j]);
+                    [subGraph_->nodes_[subGraph_->intToNodeID_[j]]->locationID_]- U[j] - 27000 * (1 - X[i][j]);
 
             SubProModel_.add(expr7 <= 0);
 
@@ -197,12 +199,12 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
 
         // constraints 12c -------------------
         IloExpr expr12(env_);
-        expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - (*subGraph_->nodes_[onboardID]->related_Request_)->pickTime_
-                 - (*subGraph_->nodes_[onboardID]->related_Request_)->deltaTime_;
+        expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
+                 - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
 
 //        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
-        SubProModel_.add(expr12 <= (*subGraph_->nodes_[onboardID]->related_Request_)->maxTravelTime_);
-        SubProModel_.add(expr12 >= (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_);
+        SubProModel_.add(expr12 <= subGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
+        SubProModel_.add(expr12 >= subGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
         /*SubProModel_.add(expr12 <= std::max(alphaParam_ * t, betaParam + t));
         SubProModel_.add(expr12 >= t);*/
     }
@@ -218,16 +220,23 @@ void CPLEXSubProblem::SolveCPLEX() {
 
         // set the Parameters
         SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);
+        SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
+//    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 3);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Replace, 2);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.05);
-    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
-//    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 3);
         SubProbCplex_.setParam(IloCplex::TiLim, 300);
-        SubProbCplex_.solve();
-        if (SubProbCplex_.getObjValue() <= -0.0001) {
-            SubProbCplex_.setParam(IloCplex::TiLim, 200);
-            SubProbCplex_.populate();
+        if ( !SubProbCplex_.solve()) {
+            std::cout << "Failed to optimize the subproblem" << std::endl;
         }
+//        SubProbCplex_.solve();
+        else {
+            if (SubProbCplex_.getObjValue() <= -0.0001) {
+                bestReducedCost_ = SubProbCplex_.getObjValue();
+                SubProbCplex_.setParam(IloCplex::TiLim, 200);
+                SubProbCplex_.populate();
+            }
+        }
+
 
         /*if (SubProbCplex_.getObjValue() < 0) {
             std::cout << "# Incumbent objective value = " << SubProbCplex_.getObjValue() << std::endl;
@@ -329,7 +338,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
      //                           newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]], uVal[i], wVal[i]);
                                 newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]]);
                                 if (s == 0)
-                                    (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;
+                                    newRoute->routeNodes_.back()->related_Request_->selectStatus_ = SELECTED;
                             }
                             /*if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
                                 (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;*/
@@ -338,7 +347,9 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
                         }
                     }
                 }
-                for (int r = 0; r < availableRoutes.size(); ++r) {
+                availableRoutes.push_back(newRoute);
+                generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
+                /*for (int r = 0; r < availableRoutes.size(); ++r) {
                     if (newRoute == availableRoutes[r]) {
                         isRepeated = true;
                         break;
@@ -347,8 +358,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
                 if (!isRepeated) {
                     availableRoutes.push_back(newRoute);
                     generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
-                }
-
+                }*/
             }
         }
     }
