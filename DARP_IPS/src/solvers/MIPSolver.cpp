@@ -14,7 +14,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     IloModel MIPModel(env);
 
     // Definition of variables
-//    IloNumVarArray Z(env, PInst->nbRequests_, 0.0, 1.0, ILOBOOL);
+    IloNumVarArray Z(env, PInst->nbRequests_, 0.0, 1.0, ILOBOOL);
     IloNumVar3D X(env, PInst->nbVehicles_);
     IloNumVar2D U(env, PInst->nbVehicles_);
     IloNumVar2D W(env, PInst->nbVehicles_);
@@ -31,7 +31,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     // define objective function
     IloExpr objExpr(env);
     for (int i = 0; i < PInst->nbRequests_; ++i) {
-//        objExpr += Z[i] * PInst->requests_[i]->penalty_;
+        objExpr += Z[i] * PInst->requests_[i]->penalty_;
         for (int v = 0; v < PInst->nbVehicles_; ++v) {
             int nodeIndex = PInst->instGraph_->nodeIDToInt_[Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP)];
             objExpr += (U[v][nodeIndex] - PInst->requests_[i]->earlyPick_);
@@ -43,13 +43,14 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     // defining constraints
     // -----------------------------------------
 
+
     // constraints 2a -------------------
     for (int i = 0; i < PInst->nbRequests_; ++i) {
         std::string nodeID = Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
         int nodeIndex = PInst->instGraph_->nodeIDToInt_[nodeID];
 
         IloExpr expr2(env);
-//        expr2 += Z[i];
+        expr2 += Z[i];
         for (int v = 0; v < PInst->nbVehicles_; ++v) {
             for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
                 if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ != SOURCE)
@@ -59,20 +60,43 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
         MIPModel.add(expr2 == 1);
     }
 
-    for (int v = 0; v < PInst->nbVehicles_; ++v) {
-        // add these constraints for just solving the extraction problem of variables
-        IloExpr exprP(env);
-        for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
-            exprP += X[v][j][0] + X[v][1][j] + X[v][j][j];
+    for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
+        if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ == SOURCE) {
+            IloExpr exprS(env);
+            for (int v = 0; v < PInst->nbVehicles_; ++v) {
+                for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i)
+                    exprS += X[v][j][i];
+            }
+            MIPModel.add(exprS <= 1);
         }
-        MIPModel.add(exprP == 0);
+    }
+
+
+    for (int v = 0; v < PInst->nbVehicles_; ++v) {
+        int sourceIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->departID_];
+        int sinkIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->sinkID_];
+        // add these constraints for just solving the extraction problem of variables
+        /*IloExpr exprP(env);
+        for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
+            exprP += X[v][j][j];
+            if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ == SOURCE) {
+                for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i){
+                    exprP += X[v][i][j];
+                }
+            }
+            else if  (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ == SINK) {
+                for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i)
+                    exprP += X[v][j][i];
+            }
+        }
+        MIPModel.add(exprP == 0);*/
 
 
         // constraints 4a -------------------
         IloExpr expr4(env);
         for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
             if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ != SOURCE)
-                expr4 += X[v][0][j];
+                expr4 += X[v][sourceIndex][j];
         }
         MIPModel.add(expr4 == 1);
 
@@ -80,16 +104,19 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
         IloExpr expr5(env);
         for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
             if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->type_ != SINK)
-                expr5 += X[v][j][1];
+                expr5 += X[v][j][sinkIndex];
         }
         MIPModel.add(expr5 == 1);
 
+        // add this constraint for re-optimization when the vehicle is not idle
+        // at the start and have some passengers onboard
+        MIPModel.add(W[v][sourceIndex] >= PInst->vehicles_[v]->numPassengers_);
+
         // constraints 9a -------------------
-        MIPModel.add(U[v][0] >= PInst->vehicles_[v]->departTime_);
+        MIPModel.add(U[v][sourceIndex] >= PInst->vehicles_[v]->departTime_);
 
         // constraints 10a -------------------
-        MIPModel.add(U[v][1] <= PInst->vehicles_[v]->endTime_);
-
+        MIPModel.add(U[v][sinkIndex] <= PInst->vehicles_[v]->endTime_);
 
         for (auto & requestObj: PInst->requests_) {
             std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
@@ -118,7 +145,6 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
         }
 
         for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
-
             // constraints 3a -------------------
             IloExpr expr3(env);
             if ((PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->type_ == PICKUP) ||
@@ -140,48 +166,161 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
                 expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
                         + durationMatrix_[PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->locationID_]
                         [PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->locationID_]*X[v][i][j]
-                        - U[v][j] - 1000 * (1 - X[v][i][j]);
+                        - U[v][j] - 27000 * (1 - X[v][i][j]);
                 MIPModel.add(expr8 <= 0);
 
                 // constraints 14a -------------------
                 IloExpr expr14(env);
                 expr14 = W[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->nbPassengers_*X[v][i][j]
-                         - W[v][j] - 4 * (1 - X[v][i][j]);
+                         - W[v][j] - 100 * (1 - X[v][i][j]);
                 MIPModel.add(expr14 <= 0);
 
             }
 
             // constraints 15a -------------------
             MIPModel.add(W[v][i] <= PInst->vehicles_[v]->capacity_);
+        }
 
+        for (int i = 0; i < PInst->vehicles_[v]->onboards_.size(); ++i) {
+            std::string onboardID = PInst->vehicles_[v]->onboards_[i];
 
-            if (PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->nodeStatus_ == PLANNED) {
-                std::string onboardID = PInst->instGraph_->intToNodeID_[i];
-                std::string pickNodeID = PInst->instGraph_->nodes_[onboardID]->pairNodeID_;
-
-                // constraints 7a -------------------
-                IloExpr expr7(env);
-                for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
-                    expr7 += X[v][j][PInst->instGraph_->nodeIDToInt_[onboardID]];
-                }
-                MIPModel.add(expr7 == 1);
-
-                // constraints 13a -------------------
-                IloExpr expr13(env);
-                expr13 = U[v][PInst->instGraph_->nodeIDToInt_[onboardID]] - PInst->instGraph_->nodes_[pickNodeID]->reachTime_
-                         - PInst->instGraph_->nodes_[pickNodeID]->deltaTime_;
-
-                MIPModel.add(expr13 <= (*PInst->instGraph_->nodes_[onboardID]->related_Request_)->maxTravelTime_);
-                MIPModel.add(expr13 >= (*PInst->instGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_);
+            // constraints 7a -------------------
+            IloExpr expr7(env);
+            for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
+                expr7 += X[v][j][PInst->instGraph_->nodeIDToInt_[onboardID]];
             }
+            MIPModel.add(expr7 == 1);
+
+            // constraints 13a -------------------
+            IloExpr expr13(env);
+            expr13 = U[v][PInst->instGraph_->nodeIDToInt_[onboardID]] - PInst->instGraph_->nodes_[onboardID]->related_Request_->pickTime_
+                     - PInst->instGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
+            MIPModel.add(expr13 <= PInst->instGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
+            MIPModel.add(expr13 >= PInst->instGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
         }
     }
+
+
+
     IloCplex MIPCplex(MIPModel);
-//    MIPCplex.addMIPStart(startVar, startVal);
-    MIPCplex.readMIPStarts(filePaths.getInputMipStart().c_str());
+    IloNumVarArray startVar(env);
+    IloNumArray startVal(env);
+    startVar.add(X[0][0][57]);
+    startVar.add(X[0][57][35]);
+    startVar.add(X[0][35][12]);
+    startVar.add(X[0][12][13]);
+    startVar.add(X[0][13][36]);
+    startVar.add(X[0][36][58]);
+    startVar.add(X[0][58][1]);
+    startVar.add(X[1][2][14]);
+    startVar.add(X[1][14][41]);
+    startVar.add(X[1][41][51]);
+    startVar.add(X[1][51][25]);
+    startVar.add(X[1][25][15]);
+    startVar.add(X[1][15][42]);
+    startVar.add(X[1][42][52]);
+    startVar.add(X[1][52][26]);
+    startVar.add(X[1][26][3]);
+    startVar.add(X[2][4][16]);
+    startVar.add(X[2][16][17]);
+    startVar.add(X[2][17][29]);
+    startVar.add(X[2][29][30]);
+    startVar.add(X[2][30][55]);
+    startVar.add(X[2][55][27]);
+    startVar.add(X[2][27][18]);
+    startVar.add(X[2][18][56]);
+    startVar.add(X[2][56][28]);
+    startVar.add(X[2][28][5]);
+    startVar.add(X[3][6][31]);
+    startVar.add(X[3][31][45]);
+    startVar.add(X[3][45][49]);
+    startVar.add(X[3][49][19]);
+    startVar.add(X[3][19][37]);
+    startVar.add(X[3][37][38]);
+    startVar.add(X[3][38][50]);
+    startVar.add(X[3][50][46]);
+    startVar.add(X[3][46][32]);
+    startVar.add(X[3][32][7]);
+    startVar.add(X[4][8][39]);
+    startVar.add(X[4][39][22]);
+    startVar.add(X[4][22][40]);
+    startVar.add(X[4][40][59]);
+    startVar.add(X[4][59][43]);
+    startVar.add(X[4][43][21]);
+    startVar.add(X[4][21][53]);
+    startVar.add(X[4][53][20]);
+    startVar.add(X[4][20][44]);
+    startVar.add(X[4][44][54]);
+    startVar.add(X[4][54][60]);
+    startVar.add(X[4][60][9]);
+    startVar.add(X[5][10][33]);
+    startVar.add(X[5][33][23]);
+    startVar.add(X[5][23][47]);
+    startVar.add(X[5][47][48]);
+    startVar.add(X[5][48][24]);
+    startVar.add(X[5][24][34]);
+    startVar.add(X[5][34][11]);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+    startVal.add(1);
+
+    MIPCplex.addMIPStart(startVar, startVal);
+//    MIPCplex.readMIPStarts(filePaths.getInputMipStart().c_str());
     MIPCplex.setParam(IloCplex::Param::MIP::Limits::RepairTries, 10);
-    MIPCplex.setParam(IloCplex::Param::MIP::PolishAfter::Time, 300);
-    MIPCplex.setParam(IloCplex::TiLim, 800);
+    MIPCplex.setParam(IloCplex::Param::MIP::PolishAfter::Time, 100);
+    MIPCplex.setParam(IloCplex::TiLim, 300);
     MIPCplex.setParam(IloCplex::Param::Emphasis::MIP, 2);
 //    MIPCplex.setParam(IloCplex::Param::Threads, 6);
 //    MIPCplex.addMIPStart(startVar, startVal);
@@ -202,7 +341,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             float Zval = MIPCplex.getValue(Z[i]);
             if (Zval > 0)
                 std::cout << "Z[" << i <<"]: " << Zval << std::endl;
-        }*//*
+        }
         for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
             for (int v = 0; v < PInst->nbVehicles_; ++v) {
                 float Uval = MIPCplex.getValue(U[v][i]);
@@ -251,10 +390,11 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
                     }
                 }
             }
-            std::cout << newRoute->toString() << std::endl;
-            PInst->vehicles_[v]->solutionRoute_ = newRoute;
+//            std::cout << newRoute->toString() << std::endl;
+            PInst->vehicles_[v]->currentRoute_ = newRoute;
+//            PInst->vehicles_[v]->solutionRoute_ = newRoute;
         }
-        PInst->saveSolutionRoutes(filePaths.getOutputOfflineRoutes());
+//        PInst->saveSolutionRoutes(filePaths.getOutputOfflineRoutes());
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
