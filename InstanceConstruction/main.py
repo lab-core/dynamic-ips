@@ -12,6 +12,8 @@ import datetime as dt
 
 
 # Importing trip record data and polygon points of desired area
+nbVehices = 10
+capacity = 4
 
 trip_filename = "yellow_tripdata_2015-07.csv"
 polygon_filename = "Manhattan_polygon_neigh1-6.csv"
@@ -35,7 +37,7 @@ fs.show_data_situation(df_dataset)
 print()
 
 fileName = period_start.strftime("%Y%m%d")+"_"+period_start.strftime("%H")+"-"+str(int((period_end-period_start).seconds/60))+"m"
-fs.printData(fileName, df_dataset, df_locations, 2000, 6, 0, 7200)
+fs.printData(fileName, df_dataset, df_locations, nbVehices, capacity, 0, 7200)
 
 #query duration data
 df_duration_data = fs.calculate_durations(df_locations)
