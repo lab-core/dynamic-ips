@@ -82,6 +82,8 @@ public:
     void updateRoutesToAddZoom(PInstance &pInst);
     bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<int, int> &requestToOrder);
 
+    void restGeneratedRoutes(PInstance &pInst);
+
 };
 
 

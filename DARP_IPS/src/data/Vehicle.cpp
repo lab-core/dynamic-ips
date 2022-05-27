@@ -37,7 +37,7 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
             newRoute->addNode(pInst->instGraph_->nodes_[nodeID]);
         }
     }
-//    newRoute->addNode(pInst->instGraph_->nodes_[sinkID_], departTime_, numPassengers_);
+//    newRoute->addNode(pInst->instGraph_->nodes_[sinkID_], departTime_, nbPassengers_);
 
     emptyRoute_ = newRoute;
 }
@@ -72,6 +72,10 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
+        if (departTime_ < startTime_ + (epoch+1) * epochLength) {
+            departTime_ = startTime_ + (epoch + 1) * epochLength;
+            currentRoute_ = solutionRoute_;
+        }
     }
     else {
         if (currentRoute_->routeSize_ > 1) {
@@ -124,10 +128,13 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         }
         else if (departTime_ < startTime_ + (epoch+1) * epochLength){
             departTime_ = startTime_ + (epoch+1) * epochLength;
-            if (solutionRoute_->routeSize_ == 1) {
+            currentRoute_->plannedReachTime_[0] = departTime_;
+            solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
+            solutionRoute_->plannedReachTime_.back() = departTime_;
+            /*if (solutionRoute_->routeSize_ == 1) {
                 solutionRoute_->routeNodes_[0]->reachTime_ = departTime_;
                 solutionRoute_->plannedReachTime_[0] = departTime_;
-            }
+            }*/
         }
     }
 }

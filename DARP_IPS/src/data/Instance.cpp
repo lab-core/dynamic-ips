@@ -26,10 +26,13 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     simulationStartTime_ = mainInst.simulationStartTime_;
     nbRequests_ = 0;
     nbNewRequests_ = 0;
+    nbWaiting_ = 0;
     instGraph_ = std::make_shared<Graph>();
     nbOnboards_ = mainInst.nbOnboards_;
 }
-Instance::~Instance() {}
+Instance::~Instance() {
+    instGraph_.reset();
+}
 
 // Display function
 std::string Instance::toString() {
@@ -69,6 +72,7 @@ std::string Instance::solutionToString() {
     double totalTripDelay = 0;
     double totalMinWaiting = 0;
     double penalty = 0;
+
 
     std::stringstream repStr;
 
@@ -134,36 +138,31 @@ std::string Instance::solutionToString() {
 
 // function to set the data of the partial instance based on the epoch
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests) {
-    /*instGraph_->addNewNode(mainInst->instGraph_->nodes_[Tools::createNodeID(0, SOURCE)]);
-    instGraph_->addNewNode(mainInst->instGraph_->nodes_[Tools::createNodeID(0, SINK)]);*/
 
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
     }
     nbNewRequests_ = 0;
-
-//    if (epoch > 0) {
-        for (auto & vehicleObj : mainInst->vehicles_) {
-//            instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
-            if (vehicleObj->currentRoute_->routeSize_ > 1) {
-                for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                    instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-                    if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP)
-                        addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_, epoch, mainInst->parameters_, simulationStartTime_);
-                }
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ > 1) {
+            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP)
+                    addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_, epoch, mainInst->parameters_, simulationStartTime_);
             }
         }
+    }
 
-        for (auto & requestObj: penaltyRequests) {
-            addRequest(requestObj, epoch, mainInst->parameters_, simulationStartTime_);
+    for (auto & requestObj: penaltyRequests) {
+        addRequest(requestObj, epoch, mainInst->parameters_, simulationStartTime_);
 
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
-        }
-//    }
+        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+    }
+
 
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
         if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + (epoch) * mainInst->parameters_->epochLength_ ) {
@@ -177,6 +176,32 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
         else
             break;
+    }
+}
+
+void Instance::buildStaticData(const PInstance &mainInst) {
+    for (auto & vehicleObj : mainInst->vehicles_){
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+    }
+    nbNewRequests_ = 0;
+    // add drop off onboards to the graph
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ > 1) {
+            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i)
+                instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+        }
+    }
+
+    for (auto & requestObj : mainInst->requests_) {
+        if (requestObj->requestStatus_ == NO_ACTION) {
+            nbNewRequests_++;
+            addRequest(requestObj, 0, mainInst->parameters_, simulationStartTime_);
+            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+        }
     }
 }
 
@@ -244,7 +269,6 @@ void Instance::resetRequestsSelectStatus() {
 void Instance::saveSolutionRoutes(std::string routeResultDir) {
     std::ofstream myFile;
     myFile.open (routeResultDir);
-//    myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
     myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
     for (auto & vehicleObj : vehicles_) {
         for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
@@ -253,8 +277,6 @@ void Instance::saveSolutionRoutes(std::string routeResultDir) {
             myFile << nodeObj->requestTime_ << ",";
             myFile << nodeObj->reachTime_ << ",";
             myFile << nodeObj->type_ << ",";
-            /*myFile << nodeObj->locLatitude_ << ",";
-            myFile << nodeObj->locLongitude_ << ",";*/
             myFile << nodeObj->locationID_ << "\n";
 
         }
@@ -265,18 +287,12 @@ void Instance::saveSolutionRoutes(std::string routeResultDir) {
 void Instance::saveRequestsResults(std::string requestResultDir) {
     std::ofstream myFile;
     myFile.open (requestResultDir);
-    /*myFile << "RequestID,nbPassengers,PickLatitude,PickLongitude,DropLatitude,DropLongitude, PickupID,DropOffID,RequestTime,PickTime,"
-              "DropTime, VehicleID" << std::endl;*/
     myFile << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
               "DropTime, VehicleID" << std::endl;
 
     for (auto & requestObj : requests_) {
         myFile << requestObj->getRequestId() << ",";
         myFile << requestObj->nbPassengers_ << ",";
-        /*myFile << requestObj->PickUpLatitude_ << ",";
-        myFile << requestObj->PickUpLongitude_ << ",";
-        myFile << requestObj->DropOffLatitude_ << ",";
-        myFile << requestObj->DropOffLongitude_ << ",";*/
         myFile << requestObj->PickUpID_ << ",";
         myFile << requestObj->DropOffID_ << ",";
         myFile << requestObj->earlyPick_ << ",";
@@ -403,6 +419,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "NUM_REQUESTS = " << nbRequests << std::endl;
     myFile.close();
 }
+
+
 
 
 

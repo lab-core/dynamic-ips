@@ -102,16 +102,13 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
         else {
             addRouteVar(routeSol);
-            // add related compatible z variables
-            /*if (routeSol->routeRequests.size() == 1) {
-                addZVar(*routeSol->routeNodes_[1]->related_Request_);
-            }*/
         }
     }
 
     //adding new route variables
     for (auto & routeObj : routesToAdd_)
         addRouteVar(routeObj);
+//    env_.out() << Model_;
 }
 
 // this function solve the model and remove all columns except than the current base

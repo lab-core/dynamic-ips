@@ -7,6 +7,7 @@
 
 
 void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractionalZ) {
+//    env_.out() << Model_;
     if (routesToAdd_.size() == 0) {
         std::cout << "There is no route to be added" << std::endl;
         throw Tools::myException("The input route is empty, No new column is passed to be added", __LINE__);
@@ -29,7 +30,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 
         env_.out() << routeVar_[0].getType();
         Cplex_ = IloCplex(Model_);
-        //       env_.out() << Model_;
+//        env_.out() << Model_;
         Cplex_.solve();
 
         // printing solution status
@@ -46,8 +47,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
 
- //       env_.out() << routeVal << std::endl;
- //       env_.out() << zVal << std::endl;
+//        env_.out() << routeVal << std::endl;
+//        env_.out() << zVal << std::endl;
 
         for (int r = routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
@@ -57,8 +58,10 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         }
 
         for (int i = zVal.getSize()-1; i >= 0; --i) {
-            if (zVal[i] > 0.9)
+            if (zVal[i] > 0.9){
+ //               std::cout << zVar_[i].getName() << std::endl;
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+            }
         }
         int nbRequests = 0;
         for (auto & requestObj: pInst->requests_) {

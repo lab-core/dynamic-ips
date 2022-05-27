@@ -30,6 +30,7 @@ public:
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, const PSolverOption &solverOptions);
+    virtual ~LabelingSubProblem();
 
     // this function sort the list of nodes based of their dual values
     void sortNodes();

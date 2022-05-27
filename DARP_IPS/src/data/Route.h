@@ -52,9 +52,18 @@ public:
     // Display function
     std::string toString() const;
 
+    bool equal (Route const &routeObj) {
+        if ((this->totalDelay_ == routeObj.totalDelay_)&& (this->routeSize_ == routeObj.routeSize_) &&
+                (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))
+            return true;
+        else
+            return false;
+    }
+
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
+    std::cout << "comparing";
     return (
             ((lhs->totalDelay_ == rhs->totalDelay_) && (lhs->routeSize_ == rhs->routeSize_)&&
                     (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&

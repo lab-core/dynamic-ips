@@ -38,7 +38,7 @@ public:
 
 
     // Constructor and Destructor
-    Label(PVehicle *vehicle, double reducedCost, PNode source);
+    Label(PVehicle *vehicle, PNode source);
     Label(const Label &label);
     virtual ~Label();
     // Getters and Setters

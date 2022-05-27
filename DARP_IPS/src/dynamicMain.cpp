@@ -16,18 +16,18 @@ vector2D<float> durationMatrix_;
 int main() {
 
     // definition of the solution Parameters
-    double previousObj = 0;
+    double previousObj;
     SubProSolveStart subStartStatus;
-    int nbReceivedRequest = 0;
+    int nbReceivedRequest;
     int epoch = 0;
-    float saveTime = 550;
-    bool middleSave = true;
+    float saveTime = 3600;
+    bool middleSave = false;
     bool showLog = true;
 
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150713_07-62m";
+    std::string instanceName = "20150706_12-120m";
 
     // build the path of input files
     // create output files for epoch results
@@ -38,8 +38,8 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
-//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 1605);
+//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 1549 + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
 
@@ -52,8 +52,10 @@ int main() {
     nbReceivedRequest = mainInst->nbOnboards_;
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
     while (nbReceivedRequest < mainInst->nbRequests_) {
+        label:
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
+        isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -74,6 +76,10 @@ int main() {
         if ((epoch*EpochInst->parameters_->epochLength_ >= saveTime) && middleSave ) {
             EpochInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + epoch * EpochInst->parameters_->epochLength_);
             break;
+        }
+        if (epoch == 0 && nbReceivedRequest == 0) {
+            epoch++;
+            goto label;
         }
 
         switch(EpochInst->parameters_->mainAlgorithm_) {
@@ -111,7 +117,8 @@ int main() {
                     EpochInst->resetRequestsSelectStatus();
                     if (subStartStatus != NOT_RESTRICTED) {
                         if (subStartStatus == NUM_PICK_RESTRICTED)
-                            maxPick = floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_) + 2;
+                 //           maxPick = EpochInst->nbRequests_;
+                            maxPick = floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_) + 3;
                         if (subStartStatus == TIME_RESTRICTED)
                             maxReachTime = 4 * EpochInst->parameters_->epochLength_;
                     }
@@ -134,6 +141,7 @@ int main() {
                                 }
                                 else
                                     subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_], isudObj->generatedRoutes_);
+                                subProblem.reset();
                             }
 
                             //*************************************************************//
@@ -144,6 +152,8 @@ int main() {
                                 EpochInst->resetRequestsSelectStatus();
                                 PSolverOption subProOptions = std::make_shared<solverOption>(maxReachTime, maxPick,
                                                                                              EpochInst->parameters_);
+                                if (isudObj->isudIter_> 1)
+                                    subProOptions->disableHeuristics();
                                 PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                                 subProblem->initSubGraph(EpochInst);
                                 subProblem->solveDynamic(epoch);
@@ -153,6 +163,8 @@ int main() {
                                 else
                                     subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
                                                                  isudObj->generatedRoutes_);
+                                subProOptions.reset();
+                                subProblem.reset();
                             }
 //                    subStartStatus = NOT_RESTRICTED;
                     }
@@ -196,6 +208,7 @@ int main() {
         }
 
         EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
+        EpochInst.reset();
         epoch++;
     }
 
@@ -240,8 +253,8 @@ int main() {
     std::cout << "#" << std::endl;
     std::cout << mainInst->solutionToString();
     std::cout << std::left << std::fixed << std::setprecision(2);
-    std::cout << std::setw(sentenceSize) << "# TORAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUBPROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
 
 
     // save vehicle solutions in csv file

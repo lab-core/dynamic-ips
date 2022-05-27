@@ -17,6 +17,9 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, const PSolverOption &s
     nbEliminated_ = 0;
     nbGenerated_ = 0;
 }
+LabelingSubProblem::~LabelingSubProblem() {
+    solverOptions_.reset();
+}
 
 // this function sort the list of nodes based of their dual values
 void LabelingSubProblem::sortNodes() {
@@ -104,9 +107,13 @@ void LabelingSubProblem::initialization() {
 
     nbActivated_ = 0;
     activeNodes_.clear();
+    for (auto lableObj: dominatedLabels_)
+        lableObj.reset();
     dominatedLabels_.clear();
     // clear active lists
     for (auto &nodeID: subGraph_->intToNodeID_) {
+        for (auto lableObj: subGraph_->nodes_[nodeID]->activeLabels_)
+            lableObj.reset();
         subGraph_->nodes_[nodeID]->activeLabels_.clear();
         subGraph_->nodes_[nodeID]->bestLabelReduceCost_ = INFINITY;
         subGraph_->nodes_[nodeID]->nbActiveLabels_ = 0;
@@ -117,8 +124,7 @@ void LabelingSubProblem::initialization() {
     sortSuccessors();
 
     // create the initial label at the source and add the source to the list active nodes
-    PLabel initialLabel = std::make_shared<Label>(Vehicle_, -(*Vehicle_)->dual_,
-                                                  subGraph_->nodes_[(*Vehicle_)->departID_]);
+    PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->nodes_[(*Vehicle_)->departID_]);
     for (int i = 0; i < requestIDToInt_.size(); ++i) {
         initialLabel->completedRequest_.push_back(0);
     }
@@ -130,7 +136,8 @@ void LabelingSubProblem::initialization() {
  //       initialLabel->completedRequests_.insert(subGraph_->nodes_[nodeID]->related_Request_);
         initialLabel->completedRequest_[requestIDToInt_[subGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
         float remaindTime = subGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
-                (*Vehicle_)->departTime_ + subGraph_->nodes_[nodeID]->related_Request_->pickTime_;
+                (*Vehicle_)->departTime_ + subGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
+                subGraph_->nodes_[nodeID]->related_Request_->deltaTime_;
         initialLabel->travelResource_.insert(std::pair<std::string, float>(nodeID, remaindTime));
     }
     initialLabel->openRequests_ = initialLabel->completedRequest_;
@@ -212,6 +219,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, PNode &outNode) {
         if (it->first <= newLabel->nbPickUp_) {
             for (auto labelObj: it->second) {
                 if (newLabel->isDominated(labelObj, this->solverOptions_)){
+                    newLabel.reset();
                     return false;
                 }
             }
@@ -250,6 +258,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, PNode &outNode) {
 
 void LabelingSubProblem::solveDynamic_pulling1(int epoch) {
     // create initial label
+    int nbActive = 0;
     while(true) {
         // create initial label
         initialization();
@@ -259,49 +268,71 @@ void LabelingSubProblem::solveDynamic_pulling1(int epoch) {
             // select a node to pull other labels to it
             for (auto &currentNode: nodesOrder_) {
                 sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                    return lhs->nbActiveLabels_ > rhs->nbActiveLabels_;});
-                for (int j = 0; j < activeNodes_.size(); j++) {
-                    for (int l=activeNodes_[j]->activeLabels_.size()-1; l >= 0; l--){
-                        if (activeNodes_[j]->activeLabels_[l]->status_ != ACTIVE)
-                            activeNodes_[j]->activeLabels_.erase(activeNodes_[j]->activeLabels_.begin() + l);
-                        else {
-                            if ((!solverOptions_->areHeuristicsDisabled())||(!activeNodes_[j]->activeLabels_[l]->haveDominatedParent())) {
-                                PLabel selectedLabel = activeNodes_[j]->activeLabels_[l];
-                                // push to drop onboards
-                                if (selectedLabel->isDropped_ == false) {
-                                    if (!selectedLabel->openNodes_.empty()) {
-                                        std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
-                                                                    selectedLabel->openNodes_.end());
-                                        for (auto &onboardNode: outNodes)
-                                            labelExtend(selectedLabel, onboardNode, activeNodes_);
-                                        selectedLabel->isDropped_ = true;
+                    return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
+                for (int j = activeNodes_.size()-1; j >= 0; j--) {
+                    if (activeNodes_[j]->nbActiveLabels_ == 0)
+                        activeNodes_.erase(activeNodes_.begin() + j);
+                    else {
+                        for (int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
+                            if (activeNodes_[j]->activeLabels_[l]->status_ != ACTIVE)
+                                activeNodes_[j]->activeLabels_.erase(activeNodes_[j]->activeLabels_.begin() + l);
+                            else {
+                                if ((!solverOptions_->areHeuristicsDisabled()) ||
+                                    (!activeNodes_[j]->activeLabels_[l]->haveDominatedParent())) {
+                                    PLabel selectedLabel = activeNodes_[j]->activeLabels_[l];
+                                    // push to drop onboards
+                                    if (selectedLabel->isDropped_ == false) {
+                                        if (!selectedLabel->openNodes_.empty()) {
+                                            std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
+                                                                        selectedLabel->openNodes_.end());
+                                            for (auto &onboardNode: outNodes) {
+                                            //    nbActive = onboardNode->nbActiveLabels_;
+                                                labelExtend(selectedLabel, onboardNode, activeNodes_);
+                                                /*if ((onboardNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                                    activeNodes_.push_back(onboardNode);
+                                                }*/
+                                            }
+                                            selectedLabel->isDropped_ = true;
+                                        }
+                                            // push to the sink
+                                        else if (selectedLabel->openNodes_.empty()) {
+                                            labelExtend(selectedLabel, subGraph_->nodes_[(*Vehicle_)->sinkID_],
+                                                        activeNodes_);
+                                            selectedLabel->isDropped_ = true;
+                                        }
                                     }
-                                        // push to the sink
-                                    else if (selectedLabel->openNodes_.empty()) {
-                                        labelExtend(selectedLabel, subGraph_->nodes_[(*Vehicle_)->sinkID_],
-                                                    activeNodes_);
-                                        selectedLabel->isDropped_ = true;
+                                    if (selectedLabel->extendCheck_.size() == nodesOrder_.size() ||
+                                        selectedLabel->nbPickUp_ == solverOptions_->maxPickup_) {
+                                        selectedLabel->status_ = INACTIVE;
+                                        activeNodes_[j]->nbActiveLabels_--;
+                                        nbActivated_--;
+                                        activeNodes_[j]->activeLabels_.erase(
+                                                activeNodes_[j]->activeLabels_.begin() + l);
+                                        if (activeNodes_[j]->nbActiveLabels_ == 0) {
+                                            activeNodes_.erase(activeNodes_.begin() + j);
+                                            break;
+                                        }
                                     }
-                                }
-                                if (selectedLabel->extendCheck_.size() == nodesOrder_.size() ||
-                                    selectedLabel->nbPickUp_ == solverOptions_->maxPickup_) {
-                                    selectedLabel->status_ = INACTIVE;
+                                        // pull all labels to the current node
+                                    else if ((activeNodes_[j]->nodeID_ != currentNode->nodeID_) &&
+                                             (selectedLabel->isExtendFeasible(currentNode,
+                                                                              solverOptions_->maxPickup_))) {
+                                 //       nbActive = currentNode->nbActiveLabels_;
+                                        labelExtend(selectedLabel, currentNode, activeNodes_);
+                                        /*if ((currentNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                            activeNodes_.push_back(currentNode);
+                                        }*/
+                                    }
+                                } else {
+                                    activeNodes_[j]->activeLabels_[l]->status_ = DOMINATED;
                                     activeNodes_[j]->nbActiveLabels_--;
                                     nbActivated_--;
-                                    activeNodes_[j]->activeLabels_.erase(
-                                            activeNodes_[j]->activeLabels_.begin() + l);
+                                    activeNodes_[j]->activeLabels_.erase(activeNodes_[j]->activeLabels_.begin() + l);
+                                    if (activeNodes_[j]->nbActiveLabels_ == 0) {
+                                        activeNodes_.erase(activeNodes_.begin() + j);
+                                        break;
+                                    }
                                 }
-                                    // pull all labels to the current node
-                                else if ((activeNodes_[j]->nodeID_ != currentNode->nodeID_)&&
-                                         (selectedLabel->isExtendFeasible(currentNode, solverOptions_->maxPickup_))) {
-                                    labelExtend(selectedLabel, currentNode, activeNodes_);
-                                }
-                            }
-                            else {
-                                activeNodes_[j]->activeLabels_[l]->status_ = DOMINATED;
-                                activeNodes_[j]->nbActiveLabels_--;
-                                nbActivated_--;
-                                activeNodes_[j]->activeLabels_.erase(activeNodes_[j]->activeLabels_.begin() + l);
                             }
                         }
                     }
@@ -339,6 +370,7 @@ void LabelingSubProblem::solveDynamic_pulling1(int epoch) {
 //***************************************************************************************//
 void LabelingSubProblem::solveDynamic_pushing(int epoch) {
     // create initial label
+    int nbActive = 0;
     while(true) {
         // create initial label
         initialization();
@@ -376,7 +408,11 @@ void LabelingSubProblem::solveDynamic_pushing(int epoch) {
                             std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
                                                         selectedLabel->openNodes_.end());
                             for (auto &neighbourNode: outNodes) {
+                           //     nbActive = neighbourNode->nbActiveLabels_;
                                 labelExtend(selectedLabel, neighbourNode, activeNodes_);
+                                /*if ((neighbourNode->nbActiveLabels_ == 1)&&(nbActive == 0)) {
+                                    activeNodes_.push_back(neighbourNode);
+                                }*/
                             }
                         }
                         if (selectedLabel->nbPickUp_ != solverOptions_->maxPickup_) {
@@ -384,7 +420,11 @@ void LabelingSubProblem::solveDynamic_pushing(int epoch) {
  //                           for (auto &neighbourNode: nodesOrder_) {
                             for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
                                 if (selectedLabel->isExtendFeasible(neighbourNode, solverOptions_->maxPickup_)) {
+                         //           nbActive = neighbourNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, neighbourNode, activeNodes_);
+                                    /*if ((neighbourNode->nbActiveLabels_ == 1)&&(nbActive == 0)) {
+                                        activeNodes_.push_back(neighbourNode);
+                                    }*/
                                 }
                             }
                         }
@@ -495,10 +535,11 @@ void LabelingSubProblem::solveDynamic_pulling(int epoch) {
 }
 
 void LabelingSubProblem::solveDynamic(int epoch) {
-    if (solverOptions_->LabelingStrategy_ == PULLING)
-        this->solveDynamic_pulling1(epoch);
-    else if (solverOptions_->LabelingStrategy_ == PUSHING)
+    if ((solverOptions_->LabelingStrategy_ == PUSHING)||(subRequests_.empty()))
         this->solveDynamic_pushing(epoch);
+    else if (solverOptions_->LabelingStrategy_ == PULLING)
+        this->solveDynamic_pulling1(epoch);
+
     if (!subGraph_->nodes_[(*Vehicle_)->sinkID_]->activeLabels_.empty()) {
         bestReducedCost_ = subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_;
         (*Vehicle_)->bestReducedCost_ = bestReducedCost_;

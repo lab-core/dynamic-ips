@@ -5,11 +5,13 @@
 #include "SubproModeler.h"
 
 SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&vehicle) {
-    subGraph_ = std::make_shared<Graph>();
+//    subGraph_ = std::make_shared<Graph>();
     bestReducedCost_ = 9999;
 }
 
-SubproModeler::~SubproModeler() {}
+SubproModeler::~SubproModeler() {
+    subGraph_.reset();
+}
 
 // calculation of penalties and initialization of the subgraph
 void SubproModeler::initSubGraph(PInstance &pInst) {

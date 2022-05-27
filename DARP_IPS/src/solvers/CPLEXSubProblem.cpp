@@ -11,7 +11,7 @@
 
 // Constructor and Destructor
 CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : SubproModeler(vehicle){
-    subGraph_ = std::make_shared<Graph>();
+ //   subGraph_ = std::make_shared<Graph>();
     /*numRoutes_ = 0;
     bestReducedCost_ = 0;*/
     SubProModel_ = IloModel(env_);
@@ -325,7 +325,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
                 // adding the source node of the route
                 /*(*Vehicle_)->generatedRoutes_.back()->reducedCost_ = SubProbCplex_.getObjValue(s);
                 (*Vehicle_)->generatedRoutes_.back()->addNode(subGraph_->nodes_[(*Vehicle_)->departID_],
-                                                              (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);*/
+                                                              (*Vehicle_)->departTime_, (*Vehicle_)->nbPassengers_);*/
                 newRoute->reducedCost_ = SubProbCplex_.getObjValue(s);
                 newRoute->addSource(subGraph_->nodes_[(*Vehicle_)->departID_],
                                                               (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);

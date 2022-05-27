@@ -264,7 +264,7 @@ void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationM
                 file >> startID;
                 file >> endID;
                 file >> duration;
-                durationMat[startID][endID] = duration/4;
+                durationMat[startID][endID] = duration;
             }
         }
     }

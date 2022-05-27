@@ -53,6 +53,7 @@ public:
 
     // function to set the data of the partial instance based on the epoch
     void buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests);
+    void buildStaticData(const PInstance &mainInst);
 
     // function to add requests from previous epochs to the current partial instance
     void addRequest(PRequest request, int epoch, PParameters &parameters, float simulationStart);

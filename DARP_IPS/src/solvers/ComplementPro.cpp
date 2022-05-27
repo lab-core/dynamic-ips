@@ -123,7 +123,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
 
         // saving the result and remove out of base variables
-        if (Cplex_.getObjValue() < 0) {
+        if (Cplex_.getObjValue() < -0.01) {
             status_ = NEGATIVE_VALUE;
             // check the solution to be column disjoint
             vector<PRequest> zResult;

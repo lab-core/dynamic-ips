@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(PVehicle *vehicle, double reducedCost, PNode source) : labelID_(labelCount_++), vehicle_(vehicle), reducedCost_(reducedCost) {
+Label::Label(PVehicle *vehicle, PNode source) : labelID_(labelCount_++), vehicle_(vehicle) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -67,7 +67,6 @@ bool Label::operator () (const Label &rhs) const {
 
 void Label:: extend(PNode &outNode) {
     load_ += outNode->nbPassengers_;
-//    float reachTime = passedTime_ + travelMat->queryTravelTime((*currentNode_), outNode) + (*currentNode_)->deltaTime_;
     float travelTime =  durationMatrix_[currentNode_->locationID_][outNode->locationID_]+ currentNode_->deltaTime_;
     float reachTime = passedTime_ + travelTime;
     for (auto & item: travelResource_) {
@@ -100,7 +99,7 @@ void Label:: extend(PNode &outNode) {
             totalDelay_ += (reachTime - outNode->requestTime_);
             reducedCost_ += (reachTime - outNode->requestTime_);
         }
-        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_));
+        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_));
     }
     else if (outNode->type_ == SINK){
         passedTime_ = reachTime;

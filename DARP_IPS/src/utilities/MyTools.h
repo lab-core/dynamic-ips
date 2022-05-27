@@ -62,6 +62,12 @@ struct Parameters;
 typedef std::shared_ptr<Parameters> PParameters;
 struct solverOption;
 typedef std::shared_ptr<solverOption> PSolverOption;
+class GreedyLabel;
+typedef std::shared_ptr<GreedyLabel> PGreedyLabel;
+class LinkedGreedyLabels;
+typedef std::shared_ptr<LinkedGreedyLabels> PLinkedGreedyLabels;
+class GreedyModeler;
+typedef std::shared_ptr<GreedyModeler> PGreedyModeler;
 // extern PTravelTime travelMat;
 
 

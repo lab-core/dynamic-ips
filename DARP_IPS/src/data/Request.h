@@ -26,10 +26,6 @@ private:
 public:
     static unsigned int requestCount_;  // Counter the number of requests
     const char* name_;
-    /*double PickUpLatitude_;              // pick up location latitude
-    double PickUpLongitude_;             // pick up location longitude
-    double DropOffLatitude_;             // Drop off location latitude
-    double DropOffLongitude_;            // Drop off location longitude*/
     int PickUpID_;                      // pick up location ID
     int DropOffID_;                     // Drop off location ID
     float earlyPick_;                   // earliest possible pick up time for the request

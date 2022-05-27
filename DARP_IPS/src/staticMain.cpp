@@ -10,6 +10,7 @@
 #include "data/Instance.h"
 #include "solvers/MIPSolver.h"
 #include "solvers/GreedySolver.h"
+#include "solvers/GreedyModeler.h"
 
 
 using namespace std::chrono;
@@ -20,16 +21,15 @@ int main() {
     // definition of the solution Parameters
     double previousObj = 0;
     SubProSolveStart subStartStatus;
-    int nbReceivedRequest = 0;
     int epoch = 0;
-    float saveTime = 400;
-    bool middleSave = true;
+    float saveTime = 1250;
+    bool middleSave = false;
     bool showLog = true;
 
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150713_07-62m";
+    std::string instanceName = "20150706_12-120m";
 
     // build the path of input files
     // create output files for epoch results
@@ -40,8 +40,8 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
-//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 1605);
+//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 802 + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
 
@@ -50,9 +50,6 @@ int main() {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
         mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
-
-    nbReceivedRequest = mainInst->nbOnboards_;
-
     subStartStatus = mainInst->parameters_->SubproSolveStartState_;
 
     // initialize vehicle routes at source
@@ -62,65 +59,72 @@ int main() {
     }
 
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
-    switch(mainInst->parameters_->mainAlgorithm_) {
+    PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
+    // creating a solvable Instance
+    PInstance StaticInst = std::make_shared<Instance>(*mainInst);
+    StaticInst->buildStaticData(mainInst);
+
+    switch(StaticInst->parameters_->mainAlgorithm_) {
         case MIP_CPLEX :
-            MIPSolver(mainInst, inputPaths);
+            MIPSolver(StaticInst, inputPaths);
             std::cout << "# FINAL SOLUTION OF MIP solution : " << std::endl;
-            for (int v = 0; v < mainInst->nbVehicles_; ++v)
-                std::cout << mainInst->vehicles_[v]->currentRoute_->toString();
+            for (int v = 0; v < StaticInst->nbVehicles_; ++v)
+                std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();
             break;
         case GREEDY:
-            GreedySolver(mainInst);
+            GreedyModel->initialization(StaticInst);
+            GreedyModel->solve(StaticInst);
+            GreedyModel->solutionToRoute(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
-            for (int v = 0; v < mainInst->nbVehicles_; ++v)
-                std::cout << mainInst->vehicles_[v]->currentRoute_->toString();
+            for (int v = 0; v < StaticInst->nbVehicles_; ++v)
+                std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();
             if (middleSave) {
-                for (auto & vehicleObj: mainInst->vehicles_)
+                for (auto & vehicleObj: StaticInst->vehicles_)
                     vehicleObj->updateStateTime(saveTime);
-                mainInst->saveStatus(inputPaths, mainInst->simulationStartTime_ + saveTime);
+                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime);
             }
             break;
         default: // CG_CPLEX and CG_ISUD (Column generation approaches)
 
-            isudObj->initialization(mainInst, mainInst->parameters_->emptyStart_);
+            isudObj->initialization(StaticInst, StaticInst->parameters_->emptyStart_);
             // save initial solution
-            mainInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
+            StaticInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
             isudObj->isudIter_ ++;
 
             std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
-            for (auto & vehicleObj : mainInst->vehicles_) {
+            for (auto & vehicleObj : StaticInst->vehicles_) {
                 std::cout << vehicleObj->currentRoute_->toString();
             }
             while (true) {
                 int nbNegativeNotFound = 0;
-                int maxPick = mainInst->nbRequests_;
+                int maxPick = StaticInst->nbRequests_;
                 float maxReachTime = MAXReachTime;
                 previousObj = isudObj->objValue_;
                 // sort the list of vehicles
-                sort(mainInst->vehicles_.begin(), mainInst->vehicles_.end(),
+                sort(StaticInst->vehicles_.begin(), StaticInst->vehicles_.end(),
                      [](const PVehicle &lhs, const PVehicle &rhs) {
                          return std::tie(lhs->currentRoute_->routeSize_, lhs->departTime_) <
                                 std::tie(rhs->currentRoute_->routeSize_, rhs->departTime_);
                      });
                 // start the time
                 subProTime->start();
-                mainInst->resetRequestsSelectStatus();
+                StaticInst->resetRequestsSelectStatus();
                 if (subStartStatus != NOT_RESTRICTED) {
                     if (subStartStatus == NUM_PICK_RESTRICTED)
-                        maxPick = floor(mainInst->nbRequests_ / mainInst->nbVehicles_) + 2;
+                        maxPick = floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_ + 2);
                     if (subStartStatus == TIME_RESTRICTED)
-                        maxReachTime = 4 * mainInst->parameters_->epochLength_;
+                        maxReachTime = 4 * StaticInst->parameters_->epochLength_;
                 }
 
-                switch (mainInst->parameters_->subAlgorithm_) {
+                switch (StaticInst->parameters_->subAlgorithm_) {
                     //*************************************************************//
                     //                    C P L E X   M E T H O D
                     //*************************************************************//
                     case CPLEX:
-                        for (auto &vehicleObj: mainInst->vehicles_) {
-                            mainInst->resetRequestsSelectStatus();
+                        for (auto &vehicleObj: StaticInst->vehicles_) {
+                            StaticInst->resetRequestsSelectStatus();
                             PCPLEXsubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
-                            subProblem->initSubGraph(mainInst);
+                            subProblem->initSubGraph(StaticInst);
                             subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
                             subProblem->SolveCPLEX();
                             std::cout << subProblem->toString();
@@ -136,12 +140,14 @@ int main() {
                         //         L A B E L S E T T IN G    M E T H O D
                         //*************************************************************//
                     case LABEL_SETTING:
-                        for (auto &vehicleObj: mainInst->vehicles_) {
-                            mainInst->resetRequestsSelectStatus();
+                        for (auto &vehicleObj: StaticInst->vehicles_) {
+                            StaticInst->resetRequestsSelectStatus();
                             PSolverOption subProOptions = std::make_shared<solverOption>(maxReachTime, maxPick,
-                                                                                         mainInst->parameters_);
+                                                                                         StaticInst->parameters_);
+                            if (isudObj->isudIter_> 1)
+                                subProOptions->disableHeuristics();
                             PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
-                            subProblem->initSubGraph(mainInst);
+                            subProblem->initSubGraph(StaticInst);
                             subProblem->solveDynamic(epoch);
                             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
                             if (subProblem->bestReducedCost_ > 0)
@@ -159,19 +165,19 @@ int main() {
                 std::cout << "# ============================================================" << std::endl;
                 std::cout << "#" << std::endl;
                 subProTime->stop();
-                mainInst->restVehicleOrder();
+                StaticInst->restVehicleOrder();
 
-                if (nbNegativeNotFound == mainInst->nbVehicles_) {
+                if (nbNegativeNotFound == StaticInst->nbVehicles_) {
                     std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
                     break;
                 }
                 else {
-                    if (mainInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                        isudObj->solveISUDMIP(mainInst, epoch, inputPaths.getOutputEpochIsud());
-                        break;
+                    if (StaticInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
+                        isudObj->solveISUDMIP(StaticInst, epoch, inputPaths.getOutputEpochIsud());
+ //                       break;
                     }
-                    else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                        isudObj->solveISUD(mainInst, epoch, inputPaths.getOutputEpochIsud());
+                    else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD){
+                        isudObj->solveISUD(StaticInst, epoch, inputPaths.getOutputEpochIsud());
                         std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
                         for (auto &routeObj: isudObj->routeSolution_)
                             std::cout << routeObj->toString();
@@ -183,7 +189,7 @@ int main() {
                 }
             }  // end of CG while
             for (auto & routeObj : isudObj->routeSolution_) {
-                mainInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+                StaticInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
             }
             isudObj->setObjValue();
             std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch << " : " << std::endl;
@@ -191,10 +197,10 @@ int main() {
             break;
     }
 
-    mainInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
+    StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
 
     if (!middleSave) {
-        for (auto &vehicleObj: mainInst->vehicles_) {
+        for (auto &vehicleObj: StaticInst->vehicles_) {
             if (vehicleObj->solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
                 for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
@@ -213,7 +219,7 @@ int main() {
                     }
                 }
             } else
-                vehicleObj->solutionRoute_->addNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+                vehicleObj->solutionRoute_->addNode(StaticInst->instGraph_->nodes_[vehicleObj->sinkID_]);
 
         }
     }
