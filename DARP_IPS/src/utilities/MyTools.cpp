@@ -113,6 +113,12 @@ namespace Tools {
         return ID;
     }
 
+    // function to compare two valarray
+    bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs) {
+        std::valarray<bool> result = rhs <= lhs;
+        return std::all_of(begin(result), end(result), [](bool v) { return v; });
+    }
+
     // Appends the values of v2 vector to at the end of v1 vector
     template<typename T>
     vector<T> appendVectors(vector<T> &v1, vector<T> &v2) {
@@ -290,6 +296,8 @@ namespace Tools {
 
         return content;
     }
+
+
 } // end namespace
 
 //************************************************************************

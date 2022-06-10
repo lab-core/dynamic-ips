@@ -27,6 +27,7 @@
 #include <set>
 #include <queue>
 #include <algorithm>
+#include <valarray>
 
 using std::string;
 using std::vector;
@@ -187,6 +188,10 @@ namespace Tools {
     // functions to create node IDs
     std::string createNodeID(int requestID, NodeType type);
     std::string createSourceID(int vehicleID, NodeType type);
+
+    // function to compare two valarray
+    bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs);
+
 
 
     // Appends the values of v2 vector to at the end of v1 vector
