@@ -15,12 +15,18 @@ ISUDAlgorithm::ISUDAlgorithm() {
     ZoomPro_ = std::make_shared<ZoomReducedProblem>();
     objValue_ = 0;
     isudTime_ = new Tools::Timer(); isudTime_->init();
+    RPTime_ = new Tools::Timer(); RPTime_->init();
+    CPTime_ = new Tools::Timer(); CPTime_->init();
+    ZOOMTime_ = new Tools::Timer(); ZOOMTime_->init();
     improveIter_ = 0;
     isudIter_ = 0;
 }
 
 ISUDAlgorithm::~ISUDAlgorithm() {
     delete isudTime_;
+    delete RPTime_;
+    delete CPTime_;
+    delete ZOOMTime_;
 }
 
 
@@ -84,11 +90,12 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
     }
     std::cout << "# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------" << std::endl;
     isudTime_->start();
+    RPTime_->start();
     ReducedPro_->buildModel(pInst, zSolution_, routeSolution_, emptyStart);
     ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
     setObjValue();
 
-
+    RPTime_->stop();
     isudTime_->stop();
     std::cout << std::left;
     std::cout << std::setw(sentenceSize) << "# TIME SPENT ON ISUD INITIALIZATION " << "=" << isudTime_->dSinceInit().count() << " (seconds)" << std::endl;
@@ -272,12 +279,13 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
         // when the CP find integer the whole loop is repeated
         restartAlgorithm = false;
         reducedImproved = true;
+
         while (reducedImproved) {
+            RPTime_->start();
             ReducedPro_->routesToAdd_.clear();
             // if RP improve the solution another iteration is done and reducedImproved stay true
             reducedImproved = false;
             updateRoutesToAdd(0, pInst);
-
             if (ReducedPro_->routesToAdd_.size() > 0) {
                 iterationStart = false;
                 std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
@@ -288,7 +296,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 // SOLVE BY MIP
                 ZoomPro_->routesToAdd_.clear();
                 ZoomPro_->routesToAdd_ = ReducedPro_->routesToAdd_;
-                ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
+                ZoomPro_->buildModel(pInst, zSolution_, routeSolution_, false);
 
                 /*CompPro_->fractionalZ_.clear();
                 ZoomPro_->updateModel(pInst, CompPro_->fractionalZ_);*/
@@ -299,7 +307,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 setObjValue();
                 if (previousObj != objValue_) {
                     pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
-                    isudIter_ ++;
+                    isudIter_++;
                     reducedImproved = true;
                     previousObj = objValue_;
                     std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;;
@@ -311,13 +319,20 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                     }*/
                 }
             }
+            RPTime_->stop();
         }
+
+
         // improve the solution by solving complementary Problem
+        CPTime_->start();
         CP: CompPro_->routesToAdd_.clear();
 
-        updateRoutesToAdd(2*pInst->nbRequests_, pInst);
+ //       updateRoutesToAdd(2*pInst->nbRequests_, pInst);
+        updateRoutesToAdd(3, pInst);
         std::cout << "sizeeeee: " << CompPro_->routesToAdd_.size() << std::endl;
+
         if (CompPro_->routesToAdd_.size() > 0) {
+
             std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
             iterationStart = false;
             /*for (int v = 0; v < pInst->nbVehicles_; ++v)
@@ -340,13 +355,15 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 else
                     vehicleObj->bestReducedCost_ = 9999;
             }
+
             if (CompPro_->status_ == FRACTIONAL) {
+                ZOOMTime_->start();
                 std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
                 ZoomPro_->routesToAdd_.clear();
                 ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
                 for (auto & routeObj : pInst->vehicles_) {
                     for (auto & routeObj : availableRoutes_[routeObj->vehicleID_]) {
-          //              if (routeObj->reducedCost_ < -0.001)
+                        if (routeObj->incompatibilityDegree < 3)
                             ZoomPro_->routesToAdd_.push_back(routeObj);
                     }
                 }
@@ -354,7 +371,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 ZoomPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 setObjValue();
                 std::cout << "Objective Value after the Zoom improve: " << objValue_ << std::endl;;
-
+                ZOOMTime_->stop();
                 /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 std::cout << "+        Solution Result after Zoom Improve:       +" << std::endl;
                 std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -379,6 +396,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                     ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);*/
                     restartAlgorithm = false;
                 }
+
+//                restartAlgorithm = false;
+
             }
             else if (CompPro_->status_ == POSITIVE_VALUE) {
                 std::cout << "# The Algorithm can not find further direction of descent and terminated" << std::endl;
@@ -407,7 +427,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                     std::cout << routeSolution_[r]->toString();
                 }*/
             }
+
         }
+        CPTime_->stop();
     }
 
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
@@ -422,6 +444,9 @@ std::string ISUDAlgorithm::toString() const {
     repStr << "# Total waiting time plus the penalty    = " << objValue_ << std::endl;
     repStr << "# Number of requests that are not served = " << zSolution_.size() << std::endl;
     repStr << "# Time spent on ISUD improvement         = " << isudTime_->dSinceInit().count() << " (seconds)" << std::endl;
+    repStr << "# Time spent on RP improvement         = " << RPTime_->dSinceInit().count() << " (seconds)" << std::endl;
+    repStr << "# Time spent on CP improvement         = " << CPTime_->dSinceInit().count() << " (seconds)" << std::endl;
+    repStr << "# Time spent on ZOOM improvement         = " << ZOOMTime_->dSinceInit().count() << " (seconds)" << std::endl;
     for (int r = 0; r < routeSolution_.size(); ++r) {
         repStr << routeSolution_[r]->toString();
     }

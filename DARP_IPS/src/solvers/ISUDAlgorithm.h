@@ -36,6 +36,9 @@ public:
     int isudIter_;
     double objValue_;
     Tools::Timer *isudTime_;
+    Tools::Timer *RPTime_;
+    Tools::Timer *CPTime_;
+    Tools::Timer *ZOOMTime_;
 
     int improveStatus_;
 
