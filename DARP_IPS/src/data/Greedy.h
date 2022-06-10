@@ -29,7 +29,8 @@ public:
     PGreedyLabel tail_;         // Last node in the partial path
     PGreedyLabel source_;       // starting node of the route
     float totalDelay_;
-    float endTime_;
+    float departTime_;
+    double idleTime_;
 
     // Constructor
 public:
