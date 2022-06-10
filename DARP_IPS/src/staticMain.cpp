@@ -22,14 +22,14 @@ int main() {
     double previousObj = 0;
     SubProSolveStart subStartStatus;
     int epoch = 0;
-    float saveTime = 1250;
+    float saveTime = 3600;
     bool middleSave = false;
     bool showLog = true;
 
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150706_12-120m";
+    std::string instanceName = "20160622_11-240m-2";
 
     // build the path of input files
     // create output files for epoch results
@@ -40,8 +40,8 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
-//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 802 + 1);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 1432 + 1);
+//    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
 
@@ -111,7 +111,7 @@ int main() {
                 StaticInst->resetRequestsSelectStatus();
                 if (subStartStatus != NOT_RESTRICTED) {
                     if (subStartStatus == NUM_PICK_RESTRICTED)
-                        maxPick = floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_ + 2);
+                        maxPick = floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_ );
                     if (subStartStatus == TIME_RESTRICTED)
                         maxReachTime = 4 * StaticInst->parameters_->epochLength_;
                 }
@@ -205,7 +205,8 @@ int main() {
                 for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     vehicleObj->currentRoute_->routeNodes_[i]->reachTime_ = vehicleObj->currentRoute_->plannedReachTime_[i];
-                    vehicleObj->solutionRoute_->addNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                    vehicleObj->solutionRoute_->addNode(vehicleObj->currentRoute_->routeNodes_[i],
+                                                        vehicleObj->currentRoute_->plannedReachTime_[i]);
 
                     if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                         vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->pickTime_ =
