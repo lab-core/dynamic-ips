@@ -30,6 +30,7 @@ public:
     PRoute emptyRoute_;
     double dual_;
     double bestReducedCost_;
+    double idleTime_;
 
 
     // Constructor and Destructor
