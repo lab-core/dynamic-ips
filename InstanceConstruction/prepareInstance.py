@@ -12,19 +12,19 @@ import os
 
 
 # Importing trip record data and polygon points of desired area
-nbVehices = 25
-capacity = 6
+nbVehices = 40
+capacity = 10
 
-FolderName = "20150706_12-240m"
+FolderName = "20160630_11-240m"
 dataset_fileName = FolderName + "/Dataset_" + FolderName + ".csv"
 df_initial_dataset = pd.read_csv(dataset_fileName, sep=',', header = 0)
 
 # determine the desired period of time for trip requests
-year = 2015
-month = 7
-day = 6
-period_start = dt.datetime(year,month,day,12,0,0)
-period_end = dt.datetime(year,month,day,16,0,0)
+year = 2016
+month = 6
+day = 30
+period_start = dt.datetime(year,month,day,11,0,0)
+period_end = dt.datetime(year,month,day,14,0,0)
 origin_time = dt.datetime(year,month,day,0,0,0)
 
 start_seconds = (period_start - origin_time).total_seconds()
