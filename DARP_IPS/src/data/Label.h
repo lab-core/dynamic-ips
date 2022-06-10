@@ -8,7 +8,9 @@
 #include "utilities/MyTools.h"
 #include "data/Graph.h"
 
+
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3 };
+
 
 class Label {
 private:
@@ -23,7 +25,8 @@ public:
     std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
     std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
 //    std::set<PRequest> completedRequests_;                  // set of completed requests
-    std::vector<int> completedRequest_;
+//    std::vector<int> completedRequest_;
+    std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
     std::unordered_map<int, int> requestIDToInt_;
     vector<PNode> pathNodes_;                               // list of nodes in the path of the vehicle

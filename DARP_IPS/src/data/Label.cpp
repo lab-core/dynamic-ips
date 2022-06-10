@@ -20,7 +20,7 @@ Label::Label(PVehicle *vehicle, PNode source) : labelID_(labelCount_++), vehicle
     openNodes_.clear();
     openRequests_.clear();
  //   completedRequests_.clear();
-    completedRequest_.clear();
+ //   completedRequest_.clear();
     currentNode_ = pathNodes_[0];
     nbPickUp_ = 0;
 //    extendCheck_.insert(source->nodeID_);
@@ -45,8 +45,8 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     totalDelay_ = label.totalDelay_;
     openNodes_ = label.openNodes_;
     openRequests_ = label.openRequests_;
- //   completedRequests_ = label.completedRequests_;
-    completedRequest_ = label.completedRequest_;
+    completedRequests_ = label.completedRequests_;
+ //   completedRequest_ = label.completedRequest_;
     requestIDToInt_ = label.requestIDToInt_;
     nbPickUp_ = label.nbPickUp_;
     for (auto & nodeObj:label.pathNodes_) {
@@ -83,7 +83,8 @@ void Label:: extend(PNode &outNode) {
         extendCheck_.insert(outNode->nodeID_);
         openNodes_.insert(*outNode->pairNode_);
  //       completedRequests_.insert(outNode->related_Request_);
-        completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
+ //       completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
+        completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
         openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
         nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
@@ -119,7 +120,7 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
         if (nbPickUp_ == maxPickUp)
             return false;
  //       if (completedRequests_.count(outNode->related_Request_))
-        if (completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)
+        if (completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)
             return false;
     }
     if (outNode->type_ == DROPOFF) {
@@ -152,7 +153,7 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
 }
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
-    if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
+    /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
 //        if (this->completedRequests_ == otherLabel->completedRequests_) {
         if (this->completedRequest_ == otherLabel->completedRequest_) {
             if (this->reducedCost_ == otherLabel->reducedCost_) {
@@ -166,28 +167,31 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
         }
         else
             return false;
-    }
-    else {
+    }*/
+
+//    else {
         if (this->passedTime_ >= otherLabel->passedTime_) {
             if (this->reducedCost_ >= otherLabel->reducedCost_) {
                 if (this->openRequests_ == otherLabel->openRequests_) {
- //               if (this->openNodes_ == otherLabel->openNodes_) {
                     if (solverOption->isDominanceReleased_) {
                         return true;
                         /*if (this->completedRequests_.size() >= otherLabel->completedRequests_.size())
                             return true;*/
                     }
-                    else {
-                        if (this->completedRequest_ >= otherLabel->completedRequest_)
-                        /*if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
-                                          otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))*/
+                    else
+                    {
+//                        if (this->completedRequest_ >= otherLabel->completedRequest_)
+                        if (Tools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                            /*if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
+                                              otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))*/
                             return true;
+                        }
                     }
 
                 }
             }
         }
-    }
+ //   }
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
@@ -294,5 +298,3 @@ std::string Label::toString() const {
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
-
-
