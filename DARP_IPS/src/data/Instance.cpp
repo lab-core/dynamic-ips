@@ -72,6 +72,7 @@ std::string Instance::solutionToString() {
     double totalTripDelay = 0;
     double totalMinWaiting = 0;
     double penalty = 0;
+    double idleTime = 0;
 
 
     std::stringstream repStr;
@@ -104,6 +105,8 @@ std::string Instance::solutionToString() {
             double travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
 
             repStr << std::right << std::setw(11) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
+            if (travelTime > requests_[i]->maxTravelTime_ )
+                int a = 1;
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
         }
         else {
@@ -121,6 +124,7 @@ std::string Instance::solutionToString() {
     for (const auto &vehicleObj : vehicles_) {
         totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
         numServed += vehicleObj->solutionRoute_->routeRequests.size();
+        idleTime += vehicleObj->idleTime_;
     }
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << std::setw(sentenceSize) << "# Total waiting time before pickup" << " = " << totalWaiting << " (s)" << std::endl;
@@ -131,6 +135,7 @@ std::string Instance::solutionToString() {
     }
     repStr << std::setw(sentenceSize) << "# Number of served requests" << " = " << numServed << std::endl;
     repStr << std::setw(sentenceSize) << "# Total number of requests" << " = " << nbRequests_ << std::endl;
+    repStr << std::setw(sentenceSize) << "# Average Vehicle idle Time" << " = " << idleTime/nbVehicles_ << std::endl;
     repStr << std::setw(sentenceSize) << "# Final Objective Value" << " = " << penalty + totalWaiting << std::endl;
     std::cout << "#" << std::endl;
     return repStr.str();
@@ -142,8 +147,16 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+
+        // adding onboard nodes to the graph
+        for (auto & nodeID: vehicleObj->onboards_) {
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
+        }
     }
     nbNewRequests_ = 0;
+
+
+
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
