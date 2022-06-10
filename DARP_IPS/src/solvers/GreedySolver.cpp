@@ -25,15 +25,15 @@ void GreedySolver::initialization(PInstance &PInst) {
     // create an initial label for each vehicle
     for (auto & vehicleObj : PInst->vehicles_) {
         routeLabels_.emplace_back(std::make_shared<Label>(&vehicleObj, PInst->instGraph_->nodes_[vehicleObj->departID_]));
-        routeLabels_.back()->completedRequest_ = RequestVector;
+//        routeLabels_.back()->completedRequest_ = RequestVector;
         for (auto &nodeID: vehicleObj->onboards_) {
-            routeLabels_.back()->openNodes_.insert(PInst->instGraph_->nodes_[nodeID]);
-            routeLabels_.back()->completedRequest_[requestIDToInt_[PInst->instGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
+//            routeLabels_.back()->openNodes_.insert(PInst->instGraph_->nodes_[nodeID]);
+//            routeLabels_.back()->completedRequest_[requestIDToInt_[PInst->instGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
             float remaindTime = PInst->instGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
                     vehicleObj->departTime_ + PInst->instGraph_->nodes_[nodeID]->related_Request_->pickTime_;
             routeLabels_.back()->travelResource_.insert(std::pair<std::string, float>(nodeID, remaindTime));
         }
-        routeLabels_.back()->openRequests_ = routeLabels_.back()->completedRequest_;
+ //       routeLabels_.back()->openRequests_ = routeLabels_.back()->completedRequest_;
     }
 }
 

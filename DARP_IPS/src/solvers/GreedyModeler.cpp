@@ -24,6 +24,18 @@ void GreedyModeler::solve(PInstance &PInst) {
             std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
             for (auto & GreedyObj : solutionList_){
+                // if a vehicle is idle before arrival of a request, its departure time should be after the request time
+                // after arrival of each request, the vehicle positions should be updated
+                if (GreedyObj->departTime_ < requestObj->earlyPick_) {
+                    while ((GreedyObj->head_->child_ != nullptr) && (GreedyObj->departTime_ < requestObj->earlyPick_)) {
+                        GreedyObj->head_ = GreedyObj->head_->child_;
+                        GreedyObj->departTime_ = GreedyObj->head_->reachTime_ + GreedyObj->head_->currentNode_->deltaTime_;
+                    }
+                    if (GreedyObj->departTime_ < requestObj->earlyPick_) {
+                        GreedyObj->idleTime_ += requestObj->earlyPick_ - GreedyObj->departTime_;
+                        GreedyObj->departTime_ = requestObj->earlyPick_;
+                    }
+                }
                 preLabelList.push_back(GreedyObj->findInsertPosition(PInst->instGraph_->nodes_[pickID],
                                                                      PInst->instGraph_->nodes_[dropID],
                                                                      requestObj->maxTravelTime_));
@@ -40,6 +52,7 @@ void GreedyModeler::solve(PInstance &PInst) {
 
 void GreedyModeler::solutionToRoute(PInstance &PInst) {
     for (auto & greedySol : solutionList_) {
+        PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ = greedySol->idleTime_;
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute();
     }
 }
