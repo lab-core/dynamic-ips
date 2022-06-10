@@ -50,8 +50,6 @@ void Route::addSource(PNode node, float departTime, int departPassengers) {
 void Route::addNode(PNode node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    /*float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
-                      travelMat->queryTravelTime(routeNodes_.back(), node);*/
     float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
             durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     if (node->type_ == PICKUP) {
@@ -65,6 +63,17 @@ void Route::addNode(PNode node) {
     }
     else
         plannedReachTime_.push_back(reachTime);
+    routeNodes_.push_back(node);
+}
+
+void Route::addNode(PNode node, float reachTime) {
+    routeSize_ ++;
+    plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
+    plannedReachTime_.push_back(reachTime);
+    if (node->type_ == PICKUP) {
+        routeRequests.push_back(node->related_Request_->getRequestId());
+        totalDelay_ += (reachTime - node->requestTime_);
+    }
     routeNodes_.push_back(node);
 }
 

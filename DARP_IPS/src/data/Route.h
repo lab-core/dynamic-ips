@@ -44,6 +44,7 @@ public:
     // these functions are used to add nodes to the routes
     void addSource(PNode node, float departTime, int departPassengers);
     void addNode(PNode node);
+    void addNode(PNode node, float reachTime);
     void addNode(PNode node, float departTime, int departPassengers);
 
     // this function is used to remove completed nodes from the routes
