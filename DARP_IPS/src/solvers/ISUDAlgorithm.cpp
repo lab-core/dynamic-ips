@@ -443,6 +443,7 @@ std::string ISUDAlgorithm::toString() const {
     repStr << "#" << std::endl;
     repStr << "# Total waiting time plus the penalty    = " << objValue_ << std::endl;
     repStr << "# Number of requests that are not served = " << zSolution_.size() << std::endl;
+    repStr << "#" << std::endl;
     repStr << "# Time spent on ISUD improvement         = " << isudTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on RP improvement         = " << RPTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on CP improvement         = " << CPTime_->dSinceInit().count() << " (seconds)" << std::endl;
