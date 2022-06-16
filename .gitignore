@@ -1,1 +1,6 @@
-DARP_IPS\cmake-build-debug
+DARP_IPS/cmake-build-debug/*
+DARP_IPS/datasets/*
+DARP_IPS/bin/*
+InstanceConstruction/archive/*
+InstanceConstruction/datasets/*
+.ipynb_checkpoints/*
