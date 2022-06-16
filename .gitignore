@@ -3,5 +3,7 @@ DARP_IPS/datasets/*
 DARP_IPS/bin/*
 InstanceConstruction/archive/*
 InstanceConstruction/datasets/*
+InstanceConstruction/__pycache__/*
+InstanceConstruction/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 OSRM/*
