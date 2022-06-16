@@ -33,6 +33,10 @@ if(CPLEX_ILOCPLEX_FOUND)
     link_directories(${CPLEX_ILOCPLEX_LIBRARY})
 endif()
 
+######## GUROBI Dependency
+find_package(GUROBI REQUIRED)
+include_directories(${GUROBI_INCLUDE_DIRS})
+
 ######## Eigen Dependency
 set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
 set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
@@ -66,13 +70,18 @@ SET(DARP_IPS_LIB DARP_IPS)
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
 
-#add_executable(static_DARP src/staticMain.cpp)
+add_executable(static_DARP src/staticMain.cpp)
 add_executable(dynamic_DARP src/dynamicMain.cpp)
 
-
-
-#target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
 
 target_link_libraries(dynamic_DARP ${LIBCURL_DIR}/lib/libcurl.dll.a)
 target_link_libraries(dynamic_DARP ${JSON_DIR}/lib/jsoncpp.lib)
 target_link_libraries(dynamic_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
+target_link_libraries(dynamic_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
+target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})
+
+target_link_libraries(static_DARP ${LIBCURL_DIR}/lib/libcurl.dll.a)
+target_link_libraries(static_DARP ${JSON_DIR}/lib/jsoncpp.lib)
+target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
+target_link_libraries(static_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
+target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})
