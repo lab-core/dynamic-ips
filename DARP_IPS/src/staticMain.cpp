@@ -29,7 +29,7 @@ int main() {
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20150706_12-180m-1";
 
     // build the path of input files
     // create output files for epoch results
@@ -40,7 +40,7 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 1432 + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * 1480  + 1);
 //    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbRequests_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
@@ -73,7 +73,8 @@ int main() {
             break;
         case GREEDY:
             GreedyModel->initialization(StaticInst);
-            GreedyModel->solve(StaticInst);
+//            GreedyModel->solve(StaticInst);
+            GreedyModel->solveInsertion(StaticInst);
             GreedyModel->solutionToRoute(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
             for (int v = 0; v < StaticInst->nbVehicles_; ++v)

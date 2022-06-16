@@ -35,11 +35,28 @@ public:
     // Constructor
 public:
     LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst);
+    LinkedGreedyLabels(const LinkedGreedyLabels &label);
     void insertionAfter(PGreedyLabel preLabel, PNode &insetNode);
     PGreedyLabel findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration);
     void insertRequest(PGreedyLabel &preLabel, PNode &pickNode, PNode &dropNode, float maxDuration);
+    void insertNode(PGreedyLabel &preLabel, PNode &newNode);
+    void removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay);
+    void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
     PRoute greedyLabelToRoute();
+    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
+    bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode);
+    bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration);
 };
 
+struct insertPosition {
+    PGreedyLabel prePickup_;
+    PGreedyLabel preDrop_;
+    float deltaDelay_;
+    float deltaLength_;
+
+    // Constructor
+    insertPosition(const PGreedyLabel &prePickup, const PGreedyLabel &preDrop, float deltaDelay, float deltaLength);
+    void updatePosition (const PGreedyLabel &prePickup, const PGreedyLabel &preDrop, float deltaDelay, float deltaLength);
+};
 
 #endif //_GREEDY_H

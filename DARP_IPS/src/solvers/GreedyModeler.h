@@ -19,6 +19,7 @@ public:
 
     void initialization(PInstance &PInst);
     void solve(PInstance &PInst);
+    void solveInsertion(PInstance &PInst);
     void solutionToRoute(PInstance &PInst);
 };
 

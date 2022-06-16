@@ -1,0 +1,24 @@
+# MODEL PARAMETERS
+#
+alphaParam = 1.5
+betaParam = 240
+deltaPram = 420
+epochLength = 30
+emptyStart = 0
+mainAlgorithm = 0
+
+# LABEL SETTING STRATEGIES
+#
+isTruncated = 0
+MaxLabel = 150
+isDominanceReleased = 0`
+isSuccessorsLimited = 0
+SubproSolveStartState = 2
+LabelingStrategy = 0
+subproblemAlgorithm = 1
+
+# CPLEX PARAMETERS
+#
+BigM = 27000
+solveTimeLimit = 300
+populateTimeLimit = 200

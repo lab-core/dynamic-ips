@@ -12,6 +12,8 @@ import math
 from requests.structures import CaseInsensitiveDict
 import os
 from copy import deepcopy
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import datetime as dt
 
 # function that determine whether a point is inside a polygon or not
 def point_inside_polygon(x,y,polygon):
@@ -65,7 +67,7 @@ def filter_records_time_period(df_input, period_start, period_end):
 
 # function to calculate datetime fileds based on seconds from an origin datetime and calculate min travel time in seconds to dataframe
 def calculate_times_seconds(df_input, origin_time):
-    df_input['pickup_time_sec'] = (df_input['tpep_pickup_datetime'] - origin_time).dt.seconds
+    df_input['request_time_sec'] = (df_input['tpep_pickup_datetime'] - origin_time).dt.seconds
   
     # remove travel time columns
     df_output = df_input.drop(columns =['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
@@ -91,24 +93,40 @@ def list_locations(df_data):
 
 # function to perform all required operations on the input data and transfer it
 def transfer_dataset(df_input, polygon, period_start, period_end, origin_time):
-    df_filtered = filter_records_time_period(df_input, period_start, period_end);
-    df_reduced = remove_unwanted_data(df_filtered);
+    df_reduced = clean_dataset(df_input, period_start, period_end)
     df_limited = trip_requests_inside_polygon(df_reduced , polygon);
     
-    # sort records based on request time
-    df_sorted = df_limited.sort_values(by=['tpep_pickup_datetime']);
     
     # calculate datetime fileds based (in seconds) and add min travel time (in seconds) to dataframe
-    df_output = calculate_times_seconds(df_sorted, origin_time);
+    df_output = calculate_times_seconds(df_limited, origin_time);
     
     # reordering the columns in dataset and add location IDs
     df_output['pickup_ID'] = np.arange(len(df_output))
     df_output['dropoff_ID'] = np.arange(len(df_output),2*len(df_output))
-    df_output = df_output[['passenger_count', 'pickup_ID', 'dropoff_ID','pickup_time_sec', 'pickup_latitude', 'pickup_longitude','dropoff_latitude', 'dropoff_longitude',]]
+    df_output = df_output[['passenger_count', 'pickup_ID', 'dropoff_ID','request_time_sec', 'pickup_latitude', 'pickup_longitude','dropoff_latitude', 'dropoff_longitude',]]
     
-    print("\nThe number of data records in time period is:", len(df_filtered.index))
-    print("The number of clean data records is:", len(df_reduced.index))
+    print("\nThe number of clean data records is:", len(df_input.index))
     print("The number of trips inside desired area is:", len(df_limited.index))
+    return df_output
+
+# function to limit dataset in time
+def limit_time(df_input, period_start, period_end, origin_time):
+    start_seconds = (period_start - origin_time).total_seconds()
+    end_seconds = (period_end - origin_time).total_seconds()
+    
+    df_limited = df_input[df_input.request_time_sec >= start_seconds]
+    df_output = df_limited[df_input.request_time_sec <= end_seconds]
+    
+    df_output['pickup_ID'] = np.arange(len(df_output))
+    df_output['dropoff_ID'] = np.arange(len(df_output),2*len(df_output))
+    
+    print("\nThe number of data records in time period is:", len(df_output.index))
+    return df_output
+
+# function to limit dataset based on vehicle capacity
+def limit_capacity(df_input, capacity):  
+    df_output = df_input[df_input.passenger_count <= capacity]   
+    print("\nThe number of data records based on capacity:", len(df_output.index))
     return df_output
 
 def show_data_situation(dataframe):
@@ -135,6 +153,7 @@ def calculate_durations(df_input):
     source_header = []
     split_size = 100
     part = math.floor(len(locaion_list)/split_size)
+    print(part)
     
     for i in range(part):
         source_split.append([source_index[i*split_size:(i+1)*split_size]])
@@ -153,6 +172,7 @@ def calculate_durations(df_input):
     headers["Accept"] = "application/json"
     duration_Mat = np.empty((0,len(locaion_list)),float)
     for i in range(len(source_split)):
+        print(i)
         duration_SubMat = np.empty((len(source_split[i][0]),0),float)
         for j in range(len(source_split)):
             url = starturl + location_string[i] + ";" + location_string[j]
@@ -268,4 +288,151 @@ def printData(fileName, df_data, df_coordinates, nbVehicles, capacity, start, en
     
     #write locatios data to csv
     df_coordinates.to_csv(locationFile, index=False)
+    
+    
+# function to create instance files
+def saveInstance(fileName, df_data, df_coordinates, nbVehicles, capacity, start, end):
+    
+    if not os.path.exists(fileName):
+        os.mkdir(fileName)
+    txtFile = fileName + "/" + "TRIP_" + fileName + ".txt"
+    csvFile = fileName + "/" + "TRIP_" + fileName + ".csv"
+    instanceFile = fileName + "/" + "INSTANCE_" + fileName + ".txt"
+    locationFile = fileName + "/" + "LOCATION_" + fileName + ".csv"
+    vehicleFile = fileName + "/" + "VEHICLES_" + fileName + ".txt"
 
+
+    df_trip = df_data.drop(columns =["pickup_latitude", "pickup_longitude", 
+                                     "dropoff_latitude", "dropoff_longitude"])
+    df_columns = df_trip.columns.tolist()
+    
+    # write trip data to txt
+    file = open(txtFile, "w")
+    file.write("COLUMNS\n\n")
+    
+    for col in df_columns:
+        file.write(col)
+        file.write("\n")
+    file.write("\nREQUESTS_INFO\n")
+    dfAsString = df_trip.to_string(header=False, index=False)
+    file.write(dfAsString)
+    file.close()
+    
+    # write instance data to txt
+    file = open(instanceFile, "w")
+    file.write("INSTANCE = ")
+    file.write(fileName)
+    file.write("\n\n")
+    
+    file.write("SIMULATION_START = ")
+    file.write(str(start))
+    file.write("\n\n")
+    
+    file.write("NUM_VEHICLES = ")
+    file.write(str(nbVehicles))
+    file.write("\n")
+    file.write("NUM_ONBOARDS = ")
+    file.write(str(0))
+    file.write("\n")
+    file.write("NUM_RECEIVED = ")
+    file.write(str(0))
+    file.write("\n")
+    
+    file.write("NUM_REQUESTS = ")
+    file.write(str(len(df_trip.index)))
+    file.close()
+    
+    
+    file = open(vehicleFile, "w")
+    file.write("COLUMNS\n\n")
+    file.write("vehicle_ID\n")
+    file.write("capacity\n")
+    file.write("depart_Time\n")
+    file.write("end_Time\n")
+    file.write("depart_ID\n")
+    file.write("sink_ID\n\n")
+    file.write("VEHICLES_INFO\n")
+
+    for v in range(nbVehicles):
+        file.write(str(v))
+        file.write("\t")
+        file.write(str(capacity))
+        file.write("\t")
+        file.write(str(start))
+        file.write("\t")
+        file.write(str(end))
+        file.write("\t")
+        file.write(str(2*len(df_data.index)))
+        file.write("\t")
+        file.write(str(2*len(df_data.index)))
+        file.write("\n")
+    file.close()
+    
+    # write trip data to csv
+    df_trip.to_csv(csvFile, index=False)
+    
+    #write locatios data to csv
+    df_coordinates.to_csv(locationFile, index=False)
+    
+# function to perform all required operations on the input data and transfer it
+def clean_dataset(df_input, period_start, period_end):
+    df_filtered = filter_records_time_period(df_input, period_start, period_end);
+    df_reduced = remove_unwanted_data(df_filtered);
+    
+    # sort records based on request time
+    df_output = df_reduced.sort_values(by=['tpep_pickup_datetime']);
+    
+    print("\nThe number of data records after cleaning is:", len(df_output.index))
+    return df_output
+
+def showRequests_PerHour(df_dataset, polygon, period_start):
+    df_dataset['count'] = 1
+    df_limited = trip_requests_inside_polygon(df_dataset , polygon);
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime',freq='H')).sum()
+    df_grouped_limited = df_limited.groupby(pd.Grouper(key='tpep_pickup_datetime',freq='H')).sum()
+    
+    hour_list = tuple([dt.datetime.strftime(d, '%H:%M') for d in df_grouped.index.tolist()])
+    hour_list_limited = tuple([dt.datetime.strftime(d, '%H:%M') for d in df_grouped_limited.index.tolist()])
+    y_pos = np.arange(len(hour_list))
+    y_pos_limited = np.arange(len(hour_list_limited))
+    num_requests = df_grouped['count'].tolist()
+    num_requests_limited = df_grouped_limited['count'].tolist()
+#    plt.figure(figsize=(30,15))   
+    fig = plt.figure(figsize=(30,18))
+    gs = fig.add_gridspec(2, hspace=0)
+    axs = gs.subplots(sharex=True)
+    date = period_start.strftime("%d/%m/%Y")
+    fig.suptitle('Number of arrival requests per hour (' + date + ')', fontsize=25, fontweight='bold')
+    axs[0].bar(y_pos, num_requests, align='center', alpha = 1, color = 'yellowgreen', width = 0.7)
+    i = 1.0
+    for i in range(len(hour_list)):
+        axs[0].annotate(num_requests[i], (0 + i, num_requests[i]+num_requests[4]*0.03), 
+                     weight='bold', size = 20, ha='center', va='center',
+                     color = 'darkgreen')
+        
+    axs[1].bar(y_pos_limited, num_requests_limited, align='center', alpha = 1, color = 'yellow', width = 0.7)
+    i = 1.0
+    for i in range(len(hour_list_limited)):
+        axs[1].annotate(num_requests_limited[i], (0 + i, num_requests_limited[i]+num_requests_limited[4]*0.03), 
+                     weight='bold', size = 20, ha='center', va='center',
+                     color = 'darkgreen')
+    axs[0].tick_params(axis='both', labelsize=20)
+    
+    axs[0].set_xticks(y_pos)
+    axs[0].set_xticklabels(hour_list)
+    
+    axs[0].set_ylabel('Number of requests', fontsize=20, fontweight='bold')
+
+    axs[1].tick_params(axis='both', labelsize=20)
+    axs[1].set_xticks(y_pos_limited)
+    axs[1].set_xticklabels(hour_list_limited)
+    
+    axs[1].set_ylabel('Number of requests', fontsize=20, fontweight='bold')
+    
+    
+    fileName = period_start.strftime("%Y%m%d") + '.png'
+    fig.savefig(fileName)
+
+    fig.show()
+    
+  

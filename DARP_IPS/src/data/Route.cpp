@@ -159,6 +159,10 @@ std::string Route::toString() const {
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
         repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
+        float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
+                routeNodes_[i]->requestTime_;
+        if (reachTime > plannedReachTime_[i])
+            std::cout << "Hi";
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 

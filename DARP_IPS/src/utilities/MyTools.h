@@ -69,6 +69,8 @@ class LinkedGreedyLabels;
 typedef std::shared_ptr<LinkedGreedyLabels> PLinkedGreedyLabels;
 class GreedyModeler;
 typedef std::shared_ptr<GreedyModeler> PGreedyModeler;
+struct insertPosition;
+typedef std::shared_ptr<insertPosition> PInsertPosition;
 // extern PTravelTime travelMat;
 
 
