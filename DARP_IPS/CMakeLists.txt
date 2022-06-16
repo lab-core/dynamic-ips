@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 project(DARP_IPS)
 
 # this code is to solve the following warning
@@ -34,11 +35,17 @@ if(CPLEX_ILOCPLEX_FOUND)
 endif()
 
 ######## GUROBI Dependency
-find_package(GUROBI REQUIRED)
-include_directories(${GUROBI_INCLUDE_DIRS})
+#find_package(GUROBI REQUIRED)
+#include_directories(${GUROBI_INCLUDE_DIRS})
 
 ######## Eigen Dependency
-set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
+if (UNIX)
+    if (APPLE)
+        set (EIGEN_DIR "/Applications/eigen-3.4.0")
+    endif()
+else()
+    set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
+endif()
 set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
@@ -77,11 +84,11 @@ add_executable(dynamic_DARP src/dynamicMain.cpp)
 #target_link_libraries(dynamic_DARP ${LIBCURL_DIR}/lib/libcurl.dll.a)
 #target_link_libraries(dynamic_DARP ${JSON_DIR}/lib/jsoncpp.lib)
 target_link_libraries(dynamic_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-target_link_libraries(dynamic_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
-target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})
+#target_link_libraries(dynamic_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
+#target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})
 
 #target_link_libraries(static_DARP ${LIBCURL_DIR}/lib/libcurl.dll.a)
 #target_link_libraries(static_DARP ${JSON_DIR}/lib/jsoncpp.lib)
 target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-target_link_libraries(static_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
-target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})
+#target_link_libraries(static_DARP optimized ${GUROBI_CXX_LIBRARY} debug ${GUROBI_CXX_DEBUG_LIBRARY})
+#target_link_libraries(dynamic_DARP ${GUROBI_LIBRARY})

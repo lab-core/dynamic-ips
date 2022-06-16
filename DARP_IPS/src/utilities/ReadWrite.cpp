@@ -98,7 +98,8 @@ void ReadWrite::readVehiclesData(std::string strTripsFile, PInstance &pInstance)
 
 
     while (file.good()) {
-        readUntilChar(file, '\n', title);
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "VEHICLES_INFO")) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
                 file >> vehicleID;
@@ -139,7 +140,8 @@ void ReadWrite::readOnboardRequests(std::string strTripsFile, PInstance &pInstan
     string title;
 
     while (file.good()) {
-        readUntilChar(file, '\n', title);
+ //       readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
 
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
@@ -198,7 +200,8 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance &pInstance,
     string title;
 
     while (file.good()) {
-        readUntilChar(file, '\n', title);
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
 
             for (int r = 0; r < nbRequest; ++r) {
@@ -253,7 +256,8 @@ void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationM
     string title;
 
     while (file.good()) {
-        readUntilChar(file, '\n', title);
+ //       readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "DURATION_INFO")) {
 
             for (int l = 0; l < nbLocations*nbLocations; ++l) {
