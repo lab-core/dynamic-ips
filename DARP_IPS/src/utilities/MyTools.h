@@ -21,8 +21,8 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
-#include <json/json.h>
-#include <curl/curl.h>
+/*#include <json/json.h>
+#include <curl/curl.h>*/
 #include "Eigen/Dense"
 #include <set>
 #include <queue>
@@ -232,10 +232,10 @@ namespace Tools {
     static int writer(char *data, size_t size, size_t nmemb, std::string *writerData);
 
     // function to query the fastest route between coordinates
-    float queryTravelTime(double lat1, double long1, double lat2, double long2);
+    //float queryTravelTime(double lat1, double long1, double lat2, double long2);
 
     // function to get data from a http url
-    std::string queryHTTPData(const std::string &url);
+    //std::string queryHTTPData(const std::string &url);
 
 }; // Tools namespace
 

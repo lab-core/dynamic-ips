@@ -230,7 +230,7 @@ namespace Tools {
 
 
     // function to query the fastest route between coordinates
-    float queryTravelTime(double lat1, double long1, double lat2, double long2) {
+    /*float queryTravelTime(double lat1, double long1, double lat2, double long2) {
         float duration = 0;
         const std::string url = "http://206.12.92.28/ny/route/v1/driving/" +
                                 std::to_string(long1) + "," + std::to_string(lat1) + ";" +
@@ -259,10 +259,10 @@ namespace Tools {
         }
         return duration;
 
-    }
+    }*/
 
     // function to get data from a http url
-    std::string queryHTTPData(const std::string &url) {
+    /*std::string queryHTTPData(const std::string &url) {
         CURL *curl = curl_easy_init();
         std::string content;
 
@@ -295,7 +295,7 @@ namespace Tools {
         curl_easy_cleanup(curl);
 
         return content;
-    }
+    }*/
 
 
 } // end namespace
