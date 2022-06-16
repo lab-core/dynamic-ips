@@ -29,7 +29,7 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     // attributes to read data file and initialize instance
     string title;
     std::string name;
-    int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1;
+    int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1, nbLocations = -1;
     /*double sourceLatitude = -1, sourceLongitude = -1;
     double sinkLatitude = -1, sinkLongitude = -1;*/
     float simulationStart = -1;
@@ -63,6 +63,10 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
         else if (strEndWith(title, "NUM_REQUESTS "))
             file >> nbRequests;
 
+        // read number of stop locations
+        else if (strEndWith(title, "NUM_LOCATIONS "))
+            file >> nbLocations;
+
     }
 
     // main graph initialization with source and sink
@@ -71,7 +75,7 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
 
     PGraph mainGraph = std::make_shared<Graph>();
     return std::make_shared<Instance>(name, simulationStart, nbVehicles, nbOnboards, nbReceived, vehicles, nbRequests,
-                                      mainGraph);
+                                      nbLocations, mainGraph);
 }
 
 //************************************************************************

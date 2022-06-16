@@ -11,9 +11,10 @@
 
 // Constructor and Destructor
 Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
-                   std::vector<PVehicle> &vehicles, int nbRequests, PGraph &mainGraph) : name_(name),
+                   std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph) : name_(name),
                    simulationStartTime_(simulationStart), nbVehicles_(nbVehicles), nbOnboards_(nbOnboards),
-                   nbWaiting_(nbReceived), vehicles_(vehicles), nbRequests_(nbRequests), instGraph_(mainGraph) {
+                   nbWaiting_(nbReceived), vehicles_(vehicles), nbRequests_(nbRequests), nbLocations_(nbLocations),
+                   instGraph_(mainGraph) {
     nbNewRequests_ = nbRequests;
     std::cout << "Instance created!"<< std::endl;
 }
@@ -29,6 +30,7 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbWaiting_ = 0;
     instGraph_ = std::make_shared<Graph>();
     nbOnboards_ = mainInst.nbOnboards_;
+    nbLocations_ = mainInst.nbLocations_;
 }
 Instance::~Instance() {
     instGraph_.reset();
@@ -430,6 +432,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "NUM_ONBOARDS = " << nbOnboards << std::endl;
     myFile << "NUM_RECEIVED = " << nbWaiting << std::endl;
     myFile << "NUM_REQUESTS = " << nbRequests << std::endl;
+    myFile << "NUM_LOCATIONS = " << nbLocations_ << std::endl;
     myFile.close();
 }
 

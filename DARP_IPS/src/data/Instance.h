@@ -35,6 +35,7 @@ public:
     int nbOnboards_;                            // Number of initial onboard requests
     int nbWaiting_;                             // Number of requests at the initial state
     int nbNewRequests_;                         // Number of requests added after each epoch
+    int nbLocations_;                           // Number of stop locations
     std::vector<PRequest> requests_;            // List of requests
     std::unordered_map<std::string , PRequest> nameToRequest_;
     PGraph instGraph_;
@@ -42,7 +43,7 @@ public:
 
     // Constructor and Destructor
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
-             std::vector<PVehicle> &vehicles, int nbRequests, PGraph &mainGraph);
+             std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph);
     Instance(const Instance &mainInst);
     virtual ~Instance();
 
