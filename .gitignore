@@ -4,3 +4,4 @@ DARP_IPS/bin/*
 InstanceConstruction/archive/*
 InstanceConstruction/datasets/*
 .ipynb_checkpoints/*
+OSRM/*
