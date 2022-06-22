@@ -18,7 +18,7 @@ polygon_filename = "Manhattan_polygon_neigh1-6.csv"
 
 # Selecting the operating system is just for setting the resolution
 # It can be set on windows or osx
-os = "osx"
+os = "windows"
 
 df_tripdata = pd.read_csv(trip_filename, sep=',', header = 0)
 df_polygon = pd.read_csv(polygon_filename, sep=',', header = 0)
