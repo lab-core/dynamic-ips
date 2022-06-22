@@ -17,7 +17,7 @@ trip_filename = "yellow_tripdata_2016-06.csv"
 polygon_filename = "Manhattan_polygon_neigh1-6.csv"
 
 # Selecting the operating system is just for setting the resolution
-# It can be set on windows or osx
+# It can be set on "windows" or "osx"
 os = "windows"
 
 df_tripdata = pd.read_csv(trip_filename, sep=',', header = 0)

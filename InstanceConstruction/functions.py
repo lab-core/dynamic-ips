@@ -337,8 +337,10 @@ def saveInstance(fileName, df_data, df_coordinates, nbVehicles, capacity, start,
     file.write("NUM_RECEIVED = ")
     file.write(str(0))
     file.write("\n")
-    
     file.write("NUM_REQUESTS = ")
+    file.write(str(len(df_trip.index)))
+    file.write("\n")
+    file.write("NUM_LOCATIONS = ")
     file.write(str(len(df_trip.index)))
     file.close()
     
