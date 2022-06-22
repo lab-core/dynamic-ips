@@ -15,14 +15,14 @@ import os
 nbVehices = 40
 capacity = 10
 
-FolderName = "20160630_11-240m"
+FolderName = "20160603_10-240m"
 dataset_fileName = FolderName + "/Dataset_" + FolderName + ".csv"
 df_initial_dataset = pd.read_csv(dataset_fileName, sep=',', header = 0)
 
 # determine the desired period of time for trip requests
 year = 2016
 month = 6
-day = 30
+day = 3
 period_start = dt.datetime(year,month,day,11,0,0)
 period_end = dt.datetime(year,month,day,14,0,0)
 origin_time = dt.datetime(year,month,day,0,0,0)

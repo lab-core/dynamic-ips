@@ -385,7 +385,12 @@ def clean_dataset(df_input, period_start, period_end):
     print("\nThe number of data records after cleaning is:", len(df_output.index))
     return df_output
 
-def showRequests_PerHour(df_dataset, polygon, period_start):
+def showRequests_PerHour(df_dataset, polygon, period_start, os):
+    titleSize = 25
+    textSize = 20
+    if os == "osx":
+        titleSize = 15
+        textSize = 10
     df_dataset['count'] = 1
     df_limited = trip_requests_inside_polygon(df_dataset , polygon);
     df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime',freq='H')).sum()
@@ -397,37 +402,41 @@ def showRequests_PerHour(df_dataset, polygon, period_start):
     y_pos_limited = np.arange(len(hour_list_limited))
     num_requests = df_grouped['count'].tolist()
     num_requests_limited = df_grouped_limited['count'].tolist()
-#    plt.figure(figsize=(30,15))   
-    fig = plt.figure(figsize=(30,18))
+#    plt.figure(figsize=(30,15))
+    if os == "windows" :
+        fig = plt.figure(figsize=(30,18))
+    else:
+        fig = plt.figure(figsize=(20,9))
     gs = fig.add_gridspec(2, hspace=0)
     axs = gs.subplots(sharex=True)
     date = period_start.strftime("%d/%m/%Y")
-    fig.suptitle('Number of arrival requests per hour (' + date + ')', fontsize=25, fontweight='bold')
+    fig.suptitle('Number of arrival requests per hour (' + date + ')', 
+                 fontsize = titleSize, fontweight='bold')
     axs[0].bar(y_pos, num_requests, align='center', alpha = 1, color = 'yellowgreen', width = 0.7)
     i = 1.0
     for i in range(len(hour_list)):
         axs[0].annotate(num_requests[i], (0 + i, num_requests[i]+num_requests[4]*0.03), 
-                     weight='bold', size = 20, ha='center', va='center',
+                     weight='bold', size = textSize, ha='center', va='center',
                      color = 'darkgreen')
         
     axs[1].bar(y_pos_limited, num_requests_limited, align='center', alpha = 1, color = 'yellow', width = 0.7)
     i = 1.0
     for i in range(len(hour_list_limited)):
         axs[1].annotate(num_requests_limited[i], (0 + i, num_requests_limited[i]+num_requests_limited[4]*0.03), 
-                     weight='bold', size = 20, ha='center', va='center',
+                     weight='bold', size = textSize, ha='center', va='center',
                      color = 'darkgreen')
-    axs[0].tick_params(axis='both', labelsize=20)
+    axs[0].tick_params(axis='both', labelsize = textSize)
     
     axs[0].set_xticks(y_pos)
     axs[0].set_xticklabels(hour_list)
     
-    axs[0].set_ylabel('Number of requests', fontsize=20, fontweight='bold')
+    axs[0].set_ylabel('Number of requests', fontsize = textSize, fontweight='bold')
 
-    axs[1].tick_params(axis='both', labelsize=20)
+    axs[1].tick_params(axis='both', labelsize = textSize)
     axs[1].set_xticks(y_pos_limited)
     axs[1].set_xticklabels(hour_list_limited)
     
-    axs[1].set_ylabel('Number of requests', fontsize=20, fontweight='bold')
+    axs[1].set_ylabel('Number of requests', fontsize = textSize, fontweight='bold')
     
     
     fileName = period_start.strftime("%Y%m%d") + '.png'
