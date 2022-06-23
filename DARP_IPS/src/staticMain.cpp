@@ -9,7 +9,6 @@
 #include "solvers/LabelingSubProblem.h"
 #include "data/Instance.h"
 #include "solvers/MIPSolver.h"
-#include "solvers/GreedySolver.h"
 #include "solvers/GreedyModeler.h"
 
 
