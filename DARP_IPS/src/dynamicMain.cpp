@@ -56,7 +56,7 @@ int main() {
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
         isudObj->restGeneratedRoutes(mainInst);
-        if (epoch == 62)
+        if (epoch == 10)
             std::cout << "stop";
 
         // update vehicle status
@@ -114,11 +114,11 @@ int main() {
                     float maxReachTime = MAXReachTime;
                     previousObj = isudObj->objValue_;
                     // sort the list of vehicles
-                    sort(EpochInst->vehicles_.begin(), EpochInst->vehicles_.end(),
+                    /*sort(EpochInst->vehicles_.begin(), EpochInst->vehicles_.end(),
                          [](const PVehicle &lhs, const PVehicle &rhs) {
                              return std::tie(lhs->currentRoute_->routeSize_, lhs->departTime_) <
                                     std::tie(rhs->currentRoute_->routeSize_, rhs->departTime_);
-                         });
+                         });*/
                     // start the time
                     subProTime->start();
                     EpochInst->resetRequestsSelectStatus();
