@@ -47,10 +47,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
 
-//        env_.out() << routeVal << std::endl;
-//        env_.out() << zVal << std::endl;
 
-        for (int r = routeVal.getSize() - 1; r >= 0; --r) {
+        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
                 routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
                 pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(
@@ -58,9 +56,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
             }
         }
 
-        for (int i = zVal.getSize() - 1; i >= 0; --i) {
+        for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
             if (zVal[i] > 0.9) {
-                //               std::cout << zVar_[i].getName() << std::endl;
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
             }
         }
