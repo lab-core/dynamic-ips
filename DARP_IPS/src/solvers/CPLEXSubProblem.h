@@ -29,12 +29,12 @@ public:
 
 
     // Constructor and Destructor
-    CPLEXSubProblem(PVehicle &vehicle);
+    explicit CPLEXSubProblem(PVehicle &vehicle);
 
-    virtual ~CPLEXSubProblem();
+    ~CPLEXSubProblem() override;
 
     // Build and solve the subProblem with CPLEX
-    void BuildModelCPLEX(std::unordered_map<int, int>& requestToOrder, int maxPickUp);
+    void BuildModelCPLEX(std::unordered_map<unsigned int, int>& requestToOrder, int maxPickUp);
     void SolveCPLEX();
 
     // function to convert solution to routes and save them in vehicle object
@@ -44,6 +44,6 @@ public:
     std::string toString() const;
 
 };
-typedef std::shared_ptr<CPLEXSubProblem> PCPLEXsubPro;
+typedef std::shared_ptr<CPLEXSubProblem> PCplexSubPro;
 
 #endif //_SUBPROBLEM_H

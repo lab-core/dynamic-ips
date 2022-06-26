@@ -19,7 +19,7 @@ public:
     double bestReducedCost_;
 
     // Constructor and Destructor
-    SubproModeler(PVehicle &vehicle);
+    explicit SubproModeler(PVehicle &vehicle);
     virtual ~SubproModeler();
 
     // calculation of penalties and initialization of the subgraph

@@ -20,22 +20,22 @@ class ReadWrite {
 public:
 
     // Read the instance file and store content in an instance object
-    static PInstance readInstance(std::string strInstanceFile);
+    static PInstance readInstance(const std::string& strInstanceFile);
 
     // Read the vehicle file
-    static void readVehiclesData(std::string strTripsFile, PInstance &pInstance);
+    static void readVehiclesData(const std::string& strTripsFile, PInstance &pInstance);
 
     // Read the onboard file
-    static void readOnboardRequests(std::string strTripsFile, PInstance &pInstance);
+    static void readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance);
 
     // Read the trip requests file
-    static void readTripRequests(std::string strTripsFile, PInstance &pInstance, int nbRequest);
+    static void readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest);
 
     // Read duration data file
-    static void readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations);
+    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
 
     // Read the parameters datafile
-    static void readParameters(std::string strParamFile, PInstance &pInstance);
+    static void readParameters(const std::string& strParamFile, PInstance &pInstance);
 
     // function that open all input files and create the main instance
     static PInstance createMainInstance(InputPaths &inputPaths);
@@ -50,8 +50,8 @@ public:
     static bool readUntilOneOfTwoChar(std::fstream &pFile, char separator1, char separator2, std::string &pReadStr);
 
     // check if a string (sentence) ends with a given substring (word)
-    static bool strEndWith(std::string sentence, std::string word);
+    static bool strEndWith(const std::string& sentence, const std::string& word);
 };
 
 
-#endif //DARP_IPS_READWRITE_H
+#endif //_READWRITE_H

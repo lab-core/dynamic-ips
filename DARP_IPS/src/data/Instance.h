@@ -53,11 +53,11 @@ public:
     std::string solutionToString();
 
     // function to set the data of the partial instance based on the epoch
-    void buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests);
+    void buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, int epoch, int lastRecRequests);
     void buildStaticData(const PInstance &mainInst);
 
     // function to add requests from previous epochs to the current partial instance
-    void addRequest(PRequest request, int epoch, PParameters &parameters, float simulationStart);
+    void addRequest(PRequest &request, int epoch, PParameters &parameters, float simulationStart);
 
     // setting min travel times of requests based on the distance matrix
     // initializing vehicles empty route and current route
@@ -70,12 +70,12 @@ public:
     void resetRequestsSelectStatus();
 
     // print solution in csv files
-    void saveSolutionRoutes(std::string routeResultDir);
-    void saveRequestsResults(std::string requestResultDir);
-    // save the solution route of the vehicles (current solutoin of IUSD)
-    void saveEpochRoutes(std::string finalSolutionDir , int epoch);
-    // save the current route of the vehicles (current solutoin of IUSD)
-    void saveISUDRoutes(std::string isudSolutionDir, int epoch, int isudIter);
+    void saveSolutionRoutes(const std::string& routeResultDir);
+    void saveRequestsResults(const std::string& requestResultDir);
+    // save the solution route of the vehicles (current solution of ISUD)
+    void saveEpochRoutes(const std::string& finalSolutionDir , int epoch);
+    // save the current route of the vehicles (current solution of ISUD)
+    void saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
 };
 

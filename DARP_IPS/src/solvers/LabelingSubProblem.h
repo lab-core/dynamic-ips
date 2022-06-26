@@ -17,21 +17,21 @@
 
 class LabelingSubProblem : public SubproModeler{
 public:
-    std::vector<PLabel> dominatedLabels_; // list of active labels, ordered based on reduced cost
+    std::vector<PLabel> dominatedLabels_;           // list of active labels, ordered based on reduced cost
     std::vector<PNode> activeNodes_;
-    int nbDominated_;                                                       // number of labels removed via Domination Rules
-    int nbEliminated_;                                                      // number of labels removed via Elimination Rules
+    int nbDominated_;                               // number of labels removed via Domination Rules
+    int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
     int nbActivated_;
     PSolverOption solverOptions_;
-    std::unordered_map<int, int> requestIDToInt_;
+    std::unordered_map<unsigned int, int> requestIDToInt_;
 
 
     std::vector<PNode> nodesOrder_;
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, const PSolverOption &solverOptions);
-    virtual ~LabelingSubProblem();
+    ~LabelingSubProblem() override;
 
     // this function sort the list of nodes based of their dual values
     void sortNodes();

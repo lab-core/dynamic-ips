@@ -29,7 +29,7 @@ public:
 
 
     Eigen::MatrixXd incMatrix_;                                     // incompatibility matrix
-    std::unordered_map<int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
+    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
     std::unordered_map<int, int> incVehicleToOrder_;
 
     int improveIter_;
@@ -40,7 +40,6 @@ public:
     Tools::Timer *CPTime_;
     Tools::Timer *ZOOMTime_;
 
-    int improveStatus_;
 
 
     // Constructor and Destructor
@@ -56,8 +55,8 @@ public:
     void initialization(PInstance &pInst, bool emptyStart);
 
     // function to create M2 matrix for each column in the current solution
-    Eigen::MatrixXd calcM2Matrix(PRoute solColumn);
-    Eigen::MatrixXd calcM2Matrix(int nbRows);
+    static Eigen::MatrixXd calcM2Matrix(PRoute &solColumn);
+    static Eigen::MatrixXd calcM2Matrix(int nbRows);
 
     // function to calculate incompatibility matrix
     void calcIncMatrix();
@@ -74,8 +73,8 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(int &vehicleID);
 
-    void solveISUD(PInstance &pInst, int epoch, string isudSolutionDir);
-    void solveISUDMIP(PInstance &pInst, int epoch, string isudSolutionDir);
+    void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir);
+    void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
 
     // Display function
     std::string toString() const;
@@ -83,7 +82,7 @@ public:
     // function to evaluate available routes and find proper ones to be added to the models
     void updateRoutesToAdd(int compDegree, PInstance &pInst);
     void updateRoutesToAddZoom(PInstance &pInst);
-    bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<int, int> &requestToOrder);
+    static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<unsigned int, int> &requestToOrder);
 
     void restGeneratedRoutes(PInstance &pInst);
 

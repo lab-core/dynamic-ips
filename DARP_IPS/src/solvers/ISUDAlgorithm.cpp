@@ -32,11 +32,11 @@ ISUDAlgorithm::~ISUDAlgorithm() {
 
 void ISUDAlgorithm::setObjValue() {
     objValue_ = 0.0;
-    for (int r = 0; r < routeSolution_.size(); ++r) {
-        objValue_ += routeSolution_[r]->totalDelay_;
+    for (auto & routeObj : routeSolution_) {
+        objValue_ += routeObj->totalDelay_;
     }
-    for (int i = 0; i < zSolution_.size(); ++i) {
-        objValue_+= zSolution_[i]->penalty_;
+    for (auto & zRequest : zSolution_) {
+        objValue_+= zRequest->penalty_;
     }
 }
 
@@ -103,8 +103,8 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
 }
 
 // function to create M2 matrix for each column in the current solution
-Eigen::MatrixXd ISUDAlgorithm::calcM2Matrix(PRoute solColumn) {
-    int nbRows = solColumn->routeRequests.size()-1;
+Eigen::MatrixXd ISUDAlgorithm::calcM2Matrix(PRoute &solColumn) {
+    unsigned int nbRows = solColumn->routeRequests_.size() - 1;
     Eigen::MatrixXd M2 = Eigen::MatrixXd::Zero(nbRows, nbRows+1);
     for (int i = 0; i < nbRows; ++i) {
         M2(i,i) = 1;
@@ -127,28 +127,28 @@ void ISUDAlgorithm::calcIncMatrix() {
     incRequestToOrder_.clear();
     int orderCount = 0;
     sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
-        return lhs->routeRequests.size() < rhs->routeRequests.size();});
-    if (routeSolution_.back()->routeRequests.size() <= 1) {
+        return lhs->routeRequests_.size() < rhs->routeRequests_.size();});
+    if (routeSolution_.back()->routeRequests_.size() <= 1) {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
     }
     else {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
-        for (int r = 0; r < routeSolution_.size(); ++r) {
-            if (routeSolution_[r]->routeRequests.size() > 1) {
-                for (int i = 0; i < routeSolution_[r]->routeRequests.size(); ++i) {
-                    incRequestToOrder_[routeSolution_[r]->routeRequests[i]] = orderCount;
+        for (auto & routeObj : routeSolution_) {
+            if (routeObj->routeRequests_.size() > 1) {
+                for (auto & requestID : routeObj->routeRequests_) {
+                    incRequestToOrder_[requestID] = orderCount;
                     orderCount++;
                 }
-                int nbRows = routeSolution_[r]->routeRequests.size() - 1;
-                int rowSize = incMatrix_.rows();
-                int colSize = incMatrix_.cols();
+                unsigned int nbRows = routeObj->routeRequests_.size() - 1;
+                unsigned int rowSize = incMatrix_.rows();
+                unsigned int colSize = incMatrix_.cols();
                 if (nbRows == 0) {
                     incMatrix_.conservativeResize(rowSize, colSize + 1);
                     incMatrix_.bottomRightCorner(rowSize, 1) = Eigen::MatrixXd::Zero(rowSize, 1);
                 } else {
 
                     incMatrix_.conservativeResize(rowSize + nbRows, colSize + nbRows + 1);
-                    incMatrix_.bottomRightCorner(nbRows, nbRows + 1) = calcM2Matrix(routeSolution_[r]);
+                    incMatrix_.bottomRightCorner(nbRows, nbRows + 1) = calcM2Matrix(routeObj);
                     incMatrix_.bottomLeftCorner(nbRows, colSize) = Eigen::MatrixXd::Zero(nbRows, colSize);
                     incMatrix_.topRightCorner(rowSize, nbRows + 1) = Eigen::MatrixXd::Zero(rowSize, nbRows + 1);
                 }
@@ -162,26 +162,26 @@ void ISUDAlgorithm::calcIncMatrixFull() {
     incVehicleToOrder_.clear();
     int orderCount = 0;
     sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
-        return lhs->routeRequests.size() < rhs->routeRequests.size();});
-    if (routeSolution_.back()->routeRequests.size() == 0) {
+        return lhs->routeRequests_.size() < rhs->routeRequests_.size();});
+    if (routeSolution_.back()->routeRequests_.empty()) {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
     }
     else {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
-        for (int r = 0; r < routeSolution_.size(); ++r) {
-            if (routeSolution_[r]->routeRequests.size() >= 1) {
-                for (int i = 0; i < routeSolution_[r]->routeRequests.size(); ++i) {
-                    incRequestToOrder_[routeSolution_[r]->routeRequests[i]] = orderCount;
+        for (auto & routeObj : routeSolution_) {
+            if (routeObj->routeRequests_.size() >= 1) {
+                for (auto & requestID : routeObj->routeRequests_) {
+                    incRequestToOrder_[requestID] = orderCount;
                     orderCount++;
                 }
-                incVehicleToOrder_[routeSolution_[r]->vehicleID_] = orderCount;
+                incVehicleToOrder_[routeObj->vehicleID_] = orderCount;
                 orderCount++;
-                int nbRows = routeSolution_[r]->routeRequests.size();
-                int rowSize = incMatrix_.rows();
-                int colSize = incMatrix_.cols();
+                unsigned int nbRows = routeObj->routeRequests_.size();
+                unsigned int rowSize = incMatrix_.rows();
+                unsigned int colSize = incMatrix_.cols();
 
                 incMatrix_.conservativeResize(rowSize + nbRows, colSize + nbRows + 1);
-                incMatrix_.bottomRightCorner(nbRows, nbRows + 1) = calcM2Matrix(routeSolution_[r]->routeRequests.size());
+                incMatrix_.bottomRightCorner(nbRows, nbRows + 1) = calcM2Matrix((int)routeObj->routeRequests_.size());
                 incMatrix_.bottomLeftCorner(nbRows, colSize) = Eigen::MatrixXd::Zero(nbRows, colSize);
                 incMatrix_.topRightCorner(rowSize, nbRows + 1) = Eigen::MatrixXd::Zero(rowSize, nbRows + 1);
             }
@@ -191,66 +191,65 @@ void ISUDAlgorithm::calcIncMatrixFull() {
 // function to calculate incompatibility degree of a route
 void ISUDAlgorithm::calcIncompatibility(PRoute &route) {
     if (incMatrix_.rows() > 0) {
-        Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero(incRequestToOrder_.size(),1);
+        Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero((int) incRequestToOrder_.size(),1);
 
-        for (int i = 0; i < route->routeRequests.size(); ++i) {
-            if (incRequestToOrder_.count(route->routeRequests[i])>0)
-                pattern(incRequestToOrder_[route->routeRequests[i]],0) = 1;
+        for (auto & requestID : route->routeRequests_) {
+            if (incRequestToOrder_.count(requestID) > 0)
+                pattern(incRequestToOrder_[requestID], 0) = 1;
         }
         Eigen::MatrixXd multiplication = incMatrix_ * pattern;
-        route->incompatibilityDegree = 0;
+        route->incompatibilityDegree_ = 0;
         for (int i = 0; i < multiplication.rows(); ++i) {
             if (multiplication(i,0) != 0)
-                route->incompatibilityDegree ++;
+                route->incompatibilityDegree_ ++;
         }
     }
     else
-        route->incompatibilityDegree = 0;
+        route->incompatibilityDegree_ = 0;
 }
 
 void ISUDAlgorithm::calcIncompatibilityFull(PRoute &route) {
     if (incMatrix_.rows() > 0) {
-        Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero(incRequestToOrder_.size() + incVehicleToOrder_.size(),1);
+        Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero((int) incRequestToOrder_.size() + (int) incVehicleToOrder_.size(),1);
 
-        for (int i = 0; i < route->routeRequests.size(); ++i) {
-            if (incRequestToOrder_.count(route->routeRequests[i])>0)
-                pattern(incRequestToOrder_[route->routeRequests[i]],0) = 1;
+        for (auto & requestObj : route->routeRequests_) {
+            if (incRequestToOrder_.count(requestObj) > 0)
+                pattern(incRequestToOrder_[requestObj], 0) = 1;
         }
         if (incVehicleToOrder_.count(route->vehicleID_)>0)
             pattern(incVehicleToOrder_[route->vehicleID_],0) = 1;
         Eigen::MatrixXd multiplication = incMatrix_ * pattern;
-        route->incompatibilityDegree = 0;
+        route->incompatibilityDegree_ = 0;
         for (int i = 0; i < multiplication.rows(); ++i) {
             if (multiplication(i,0) != 0)
-                route->incompatibilityDegree ++;
+                route->incompatibilityDegree_ ++;
         }
     }
     else
-        route->incompatibilityDegree = 0;
+        route->incompatibilityDegree_ = 0;
 }
 
 // this function update the incompatibility degree of availableRoutes and
 // order them based on the incompatibility degree and reduced cost
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
-    for (int r = 0; r < availableRoutes_[vehicleID].size(); ++r) {
-//        calcIncompatibility(availableRoutes_[vehicleID][r]);
-        calcIncompatibilityFull(availableRoutes_[vehicleID][r]);
+    for (auto & routeObj : availableRoutes_[vehicleID]) {
+//        calcIncompatibility(routeObj);
+        calcIncompatibilityFull(routeObj);
     }
 
     // sort the routes based on their incompatibility degree
     sort(availableRoutes_[vehicleID].begin(),availableRoutes_[vehicleID].end(),[](const PRoute &lhs, const PRoute &rhs){
-        return std::tie(lhs->incompatibilityDegree,lhs->reducedCost_) < std::tie(rhs->incompatibilityDegree,rhs->reducedCost_);
+        return std::tie(lhs->incompatibilityDegree_, lhs->reducedCost_) < std::tie(rhs->incompatibilityDegree_, rhs->reducedCost_);
     });
 }
 
 // this function updates the reduced cost for the routes in the pool
 void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
 
-
-    for (int r = availableRoutes_[vehicleID].size()-1; r >= 0; --r) {
+    for (int r = (int)availableRoutes_[vehicleID].size()-1; r >= 0; --r) {
         availableRoutes_[vehicleID][r]->updateReducedCost(ReducedPro_->requestDuals_, ReducedPro_->vehicleDuals_,
-                                               ReducedPro_->requestToOrder_);
+                                                          ReducedPro_->requestToOrder_);
         /*if (availableRoutes_[vehicleID][r]->reducedCost_ >= -0.001)
             availableRoutes_[vehicleID].erase(availableRoutes_[vehicleID].begin() + r);*/
 
@@ -263,15 +262,14 @@ void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
             }
         }*/
     }
+
 }
 
 
-void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDir) {
+void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir) {
     double previousObj = objValue_;
     bool restartAlgorithm = true;
-    bool reducedImproved = true;
-    bool iterationStart = true;
-    int maxZoom = 5;
+    bool reducedImproved;
     isudTime_->start();
     // improve by solving the Reduced problem
 
@@ -286,10 +284,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
             // if RP improve the solution another iteration is done and reducedImproved stay true
             reducedImproved = false;
             updateRoutesToAdd(0, pInst);
-            if (ReducedPro_->routesToAdd_.size() > 0) {
-                iterationStart = false;
+            if (!ReducedPro_->routesToAdd_.empty()) {
                 std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
-                improveStatus_ = 1;
                 for (int v = 0; v < pInst->nbVehicles_; ++v)
                     ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
 
@@ -310,7 +306,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                     isudIter_++;
                     reducedImproved = true;
                     previousObj = objValue_;
-                    std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;;
+                    std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
                     /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                     std::cout << "+         Solution Result after RP improve:        +" << std::endl;
                     std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -329,12 +325,11 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
 
  //       updateRoutesToAdd(2*pInst->nbRequests_, pInst);
         updateRoutesToAdd(3, pInst);
-        std::cout << "sizeeeee: " << CompPro_->routesToAdd_.size() << std::endl;
+        std::cout << "size: " << CompPro_->routesToAdd_.size() << std::endl;
 
-        if (CompPro_->routesToAdd_.size() > 0) {
+        if (!CompPro_->routesToAdd_.empty()) {
 
             std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
-            iterationStart = false;
             /*for (int v = 0; v < pInst->nbVehicles_; ++v)
                 CompPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);*/
             CompPro_->buildModel(pInst, zSolution_, routeSolution_);
@@ -361,16 +356,16 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
                 ZoomPro_->routesToAdd_.clear();
                 ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
-                for (auto & routeObj : pInst->vehicles_) {
-                    for (auto & routeObj : availableRoutes_[routeObj->vehicleID_]) {
-                        if (routeObj->incompatibilityDegree < 3)
+                for (auto & vehicleObj : pInst->vehicles_) {
+                    for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                        if (routeObj->incompatibilityDegree_ < 3)
                             ZoomPro_->routesToAdd_.push_back(routeObj);
                     }
                 }
                 ZoomPro_->updateModel(pInst, CompPro_->fractionalZ_);
                 ZoomPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 setObjValue();
-                std::cout << "Objective Value after the Zoom improve: " << objValue_ << std::endl;;
+                std::cout << "Objective Value after the Zoom improve: " << objValue_ << std::endl;
                 ZOOMTime_->stop();
                 /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 std::cout << "+        Solution Result after Zoom Improve:       +" << std::endl;
@@ -419,7 +414,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, string isudSolutionDi
                 ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
                 ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
                 ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
-                std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;;
+                std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;
                 /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 std::cout << "+         Solution Result after CP improve:        +" << std::endl;
                 std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -448,8 +443,8 @@ std::string ISUDAlgorithm::toString() const {
     repStr << "# Time spent on RP improvement         = " << RPTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on CP improvement         = " << CPTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on ZOOM improvement         = " << ZOOMTime_->dSinceInit().count() << " (seconds)" << std::endl;
-    for (int r = 0; r < routeSolution_.size(); ++r) {
-        repStr << routeSolution_[r]->toString();
+    for (auto & routeObj : routeSolution_) {
+        repStr << routeObj->toString();
     }
     return repStr.str();
 }
@@ -459,7 +454,7 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
 //    calcIncMatrix();
 
     for (auto & vehicleObj : pInst->vehicles_) {
-        if (availableRoutes_[vehicleObj->vehicleID_].size()>0) {
+        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             updateRoutesIncDegree(vehicleObj->vehicleID_);
 //            vehicleObj->bestReducedCost_ = availableRoutes_[vehicleObj->vehicleID_][0]->reducedCost_;
         }
@@ -468,9 +463,9 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (compDegree == 0) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-                if (routeObj->incompatibilityDegree > 0)
+                if (routeObj->incompatibilityDegree_ > 0)
                     break;
-                if ((routeObj->incompatibilityDegree == 0) && (routeObj->reducedCost_ < -0.001)) {
+                if ((routeObj->incompatibilityDegree_ == 0) && (routeObj->reducedCost_ < -0.001)) {
                     if (!routeObj->equal(*vehicleObj->currentRoute_))
                         ReducedPro_->routesToAdd_.push_back(routeObj);
  //                   break;
@@ -487,18 +482,15 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
                 break;*/
         }
         else {
-            for (int r = availableRoutes_[vehicleObj->vehicleID_].size()-1; r >= 0 ; --r) {
-                if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree <= compDegree) {
-                    if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree == 0)
+            for (int r = (int)availableRoutes_[vehicleObj->vehicleID_].size() - 1; r >= 0; --r) {
+                if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree_ <= compDegree) {
+                    if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree_ == 0)
                         break;
                     else {
-//                        if (availableRoutes_[vehicleObj->vehicleID_][r]->reducedCost_ < -0.001)
-//                        if (availableRoutes_[vehicleObj->vehicleID_][r]->reducedCost_ <= 0)
-                            CompPro_->routesToAdd_.push_back(availableRoutes_[vehicleObj->vehicleID_][r]);
+                        CompPro_->routesToAdd_.push_back(availableRoutes_[vehicleObj->vehicleID_][r]);
                     }
                 }
             }
-
         }
     }
     pInst->restVehicleOrder();
@@ -518,7 +510,7 @@ void ISUDAlgorithm::updateRoutesToAddZoom(PInstance &pInst) {
             }
             if (!routeIsAdded) {
                 if ((routeObj != vehicleObj->currentRoute_)&& (routeObj->reducedCost_ < -0.001)) {
-                    if (routeObj->incompatibilityDegree == 0) {
+                    if (routeObj->incompatibilityDegree_ == 0) {
                         ReducedPro_->routesToAdd_.push_back(routeObj);
                     }
                     else {
@@ -534,7 +526,7 @@ void ISUDAlgorithm::updateRoutesToAddZoom(PInstance &pInst) {
                         // add compatible columns with fractional requests
                         if (!routeIsAdded) {
                             for (auto &requestObj: CompPro_->fractionalZ_) {
-                                for (auto &requestID: routeObj->routeRequests) {
+                                for (auto &requestID: routeObj->routeRequests_) {
                                     if (requestObj->getRequestId() == requestID) {
                                         ReducedPro_->routesToAdd_.push_back(routeObj);
                                         break;
@@ -551,46 +543,44 @@ void ISUDAlgorithm::updateRoutesToAddZoom(PInstance &pInst) {
     }
 }
 
-bool ISUDAlgorithm::isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<int, int> &requestToOrder) {
-    Eigen::MatrixXd solutionPattern = Eigen::MatrixXd::Zero(requestToOrder.size(), 1);
-    Eigen::MatrixXd comingPattern = Eigen::MatrixXd::Zero(requestToOrder.size(),1);
+bool ISUDAlgorithm::isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<unsigned int, int> &requestToOrder) {
+    Eigen::MatrixXd solutionPattern = Eigen::MatrixXd::Zero((int) requestToOrder.size(), 1);
+    Eigen::MatrixXd comingPattern = Eigen::MatrixXd::Zero((int) requestToOrder.size(),1);
 
-    for (int i = 0; i < solutionRoute->routeRequests.size(); ++i) {
-        solutionPattern(requestToOrder[solutionRoute->routeRequests[i]], 0) = 1;
+    for (auto & requestID : solutionRoute->routeRequests_) {
+        solutionPattern(requestToOrder[requestID], 0) = 1;
     }
-    for (int i = 0; i < comingRoute->routeRequests.size(); ++i) {
-        comingPattern(requestToOrder[comingRoute->routeRequests[i]], 0) = 1;
+    for (auto & requestID : comingRoute->routeRequests_) {
+        comingPattern(requestToOrder[requestID], 0) = 1;
     }
 
     Eigen::MatrixXd multiplication = solutionPattern.transpose() * comingPattern;
-    if (multiplication(0,0) == solutionRoute->routeRequests.size())
+    if ((int) multiplication(0,0) == (int) solutionRoute->routeRequests_.size())
         return true;
     else
         return false;
 }
 
-void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, int epoch, string isudSolutionDir) {
-    double previousObj = objValue_;
+void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, const string& isudSolutionDir) {
 
     isudTime_->start();
     // improve by solving the Reduced problem
 
     ZoomPro_->routesToAdd_.clear();
 
-    for (auto & routeObj : pInst->vehicles_) {
-        for (auto & routeObj : availableRoutes_[routeObj->vehicleID_]) {
+    for (auto & vehicleObj : pInst->vehicles_) {
+        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
             ZoomPro_->routesToAdd_.push_back(routeObj);
         }
     }
     ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
     ZoomPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
 
-    previousObj = objValue_;
     std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     std::cout << "+        Solution Result after Zoom Improve:       +" << std::endl;
     std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    for (int r = 0; r < routeSolution_.size(); ++r) {
-        std::cout << routeSolution_[r]->toString();
+    for (auto & routeObj : routeSolution_) {
+        std::cout << routeObj->toString();
     }
 
     CompPro_->routesToAdd_.clear();

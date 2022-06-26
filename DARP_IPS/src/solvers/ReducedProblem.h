@@ -38,18 +38,18 @@ public:
     // this function build the model at the start of each epoch
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, bool emptyStart);
 
-    // this function solve the model and remove all columns except than the current base
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+     // this function solve the model and remove all columns except than the current base
+     virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     std::unordered_map<std::string , PRoute> &generatedRoutes);
 
     // function to check whether two routes are column disjoint or not
-    bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<int, int>& requestToOrder);
+    static bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int>& requestToOrder);
 
     // function to check whether the route is repeated before
-    bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<int, int>& requestToOrder);
+    static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int>& requestToOrder);
 
     // Display function
-    std::string toString() const;
+    std::string toString() const override;
 };
 
 

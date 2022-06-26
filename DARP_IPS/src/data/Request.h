@@ -16,7 +16,7 @@ enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
 static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
 
-enum SubSelectionStatus {NOTSELECTED = 0, SELECTED = 1};
+enum SubSelectionStatus {NOT_SELECTED = 0, SELECTED = 1};
 
 
 
@@ -33,11 +33,9 @@ public:
     float dropTime_;                    // actual pick up time of the request
     int nbPassengers_;                  // number of passengers to pick up or drop off
     float deltaTime_;                   // time to perform pick up or drop off
-    float minReachTime_;                // minimum travel distance between pickup and drop off location
     float minTravelTime_;               // minimum travel time between pickup and drop off location
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
     float penalty_;                     // penalty of not serving at current period
-    int readEpoch_;
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     SubSelectionStatus selectStatus_;            // status of the request based on previous solution of sub problems
     double dual_;
@@ -50,15 +48,15 @@ public:
 
     // Getters and Setters
     void setPenalty(int epoch, PParameters &parameters, float simulationStart);
-    const unsigned int getRequestId() const;
+    unsigned int getRequestId() const;
     void setMinTravelTime(float minTravelTime);
-    void setMinReachTime(float minReachTime);
     void setMaxTravelTime(float &alphaParam, float &betaParam);
+
 
     // Display function
     std::string toString() const;
 };
 
-inline bool operator == (const PRequest &lhs, const PRequest &rhs) {return (lhs->getRequestId() == rhs->getRequestId()); };
+inline bool operator == (const PRequest &lhs, const PRequest &rhs) {return (lhs->getRequestId() == rhs->getRequestId()); }
 
 #endif //_REQUEST_H

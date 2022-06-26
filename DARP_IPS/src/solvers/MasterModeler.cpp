@@ -25,10 +25,7 @@ MasterModeler::~MasterModeler() {
 void MasterModeler::updateRequestOrder(PInstance &pInst) {
     orderToRequest_.clear();
     requestToOrder_.clear();
-    /*for (int i = 0; i < pInst->nbRequests_; ++i) {
-        orderToRequest_.push_back(pInst->requests_[i]->getRequestId());
-        requestToOrder_[pInst->requests_[i]->getRequestId()] = i;
-    }*/
+
     int orderCounter = 0;
     for (auto & requestObj : pInst->requests_){
         if (requestObj->requestStatus_ == NO_ACTION) {
@@ -56,15 +53,15 @@ std::string MasterModeler::toString() const {
 }
 
 // function to create pattern from routes
-void MasterModeler::createPattern(IloNumArray &pattern, PRoute route, VarSign sign) {
+void MasterModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
     if (sign == POSITIVE) {
-        for (int i = 0; i < route->routeRequests.size(); ++i) {
-            pattern[requestToOrder_[route->routeRequests[i]]] = 1;
+        for (auto & requestID : route->routeRequests_) {
+            pattern[requestToOrder_[requestID]] = 1;
         }
     }
     else if (sign == NEGATIVE) {
-        for (int i = 0; i < route->routeRequests.size(); ++i) {
-            pattern[requestToOrder_[route->routeRequests[i]]] = -1;
+        for (auto & requestID : route->routeRequests_) {
+            pattern[requestToOrder_[requestID]] = -1;
         }
     }
 }
@@ -89,7 +86,7 @@ void MasterModeler::addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sig
 
 // this function adds routeVar to the model
 void MasterModeler::addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
-    IloNumArray columnVar(env_, orderToRequest_.size());
+    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
     createPattern(columnVar, newRoute, sign);
     IloNumVar numVar;
     if (sign == POSITIVE)

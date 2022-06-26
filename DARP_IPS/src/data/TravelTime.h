@@ -18,16 +18,13 @@ public:
     std::unordered_map<std::string, int> nodeIDToInt_;
     vector2D<float> durationValues_;
 
-    // Constructor and Destructor
-    TravelTime();
-    virtual ~TravelTime();
 
     // Setters
-    void setDurationMat(PGraph &graph);
+//    void setDurationMat(PGraph &graph);
     void setNodeIdToInt(const std::unordered_map<std::string, int> &nodeIdToInt);
 
     // function to return travel duration between two nodes
-    float queryTravelTime(PNode startNode, PNode endNode);
+    float queryTravelTime(PNode &startNode, PNode &endNode);
 
 };
 

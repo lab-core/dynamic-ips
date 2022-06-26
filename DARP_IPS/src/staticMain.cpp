@@ -18,7 +18,7 @@ vector2D<float> durationMatrix_;
 int main() {
 
     // definition of the solution Parameters
-    double previousObj = 0;
+    double previousObj;
     SubProSolveStart subStartStatus;
     int epoch = 0;
     float saveTime = 3600;
@@ -112,7 +112,7 @@ int main() {
                     if (subStartStatus == NUM_PICK_RESTRICTED)
                         maxPick = floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_ );
                     if (subStartStatus == TIME_RESTRICTED)
-                        maxReachTime = 4 * StaticInst->parameters_->epochLength_;
+                        maxReachTime = static_cast<float> (4 * StaticInst->parameters_->epochLength_);
                 }
 
                 switch (StaticInst->parameters_->subAlgorithm_) {
@@ -122,7 +122,7 @@ int main() {
                     case CPLEX:
                         for (auto &vehicleObj: StaticInst->vehicles_) {
                             StaticInst->resetRequestsSelectStatus();
-                            PCPLEXsubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
+                            PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                             subProblem->initSubGraph(StaticInst);
                             subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
                             subProblem->SolveCPLEX();
@@ -172,7 +172,7 @@ int main() {
                 }
                 else {
                     if (StaticInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                        isudObj->solveISUDMIP(StaticInst, epoch, inputPaths.getOutputEpochIsud());
+                        isudObj->solveISUDMIP(StaticInst, inputPaths.getOutputEpochIsud());
  //                       break;
                     }
                     else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD){
@@ -240,7 +240,7 @@ int main() {
     std::cout << "#" << std::endl;
     std::cout << mainInst->solutionToString();
     std::cout << std::left << std::fixed << std::setprecision(2);
-    std::cout << std::setw(sentenceSize) << "# TORAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUBPROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
 
 

@@ -41,9 +41,7 @@ public:
     // Setters
     void setDepartTime(float departTime);
     void setEmptyRoute(PInstance &pInst);
-    void setCurrentRoute(PRoute currentRoute);
-
-    void setEndTime(float endTime);
+    void setCurrentRoute(PRoute &currentRoute);
 
     // Display function
     std::string toString() const;

@@ -16,13 +16,13 @@ InputPaths::InputPaths() {
     input_durationData_ = "";
 }
 
-InputPaths::InputPaths(std::string datadir, std::string instanceName, double timeOUt)
-        : instanceName_(instanceName), timeOUt(timeOUt) {
+InputPaths::InputPaths(const std::string& datadir, const std::string& instanceName, double timeOUt)
+        : instanceName_(instanceName), timeOut_(timeOUt) {
 
     std::string instanceDir = datadir + instanceName + "/";
 
     // create directory for results
-    time_t now = time(0);
+    time_t now = time(nullptr);
     tm * curr_tm = localtime(&now);
     char resultFolder[100];
     strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
@@ -58,11 +58,9 @@ InputPaths::InputPaths(std::string datadir, std::string instanceName, double tim
     // create output files for epoch results
     std::ofstream myFile;
     myFile.open(output_epochISUD_);
-//    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
     myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID" << std::endl;
     myFile.close();
     myFile.open(output_epochFinal_);
-//    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType,Latitude,Longitude, LocationID" << std::endl;
     myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
     myFile.close();
 }
@@ -94,7 +92,7 @@ const std::string &InputPaths::getOutputVehicles() const { return output_vehicle
 const std::string &InputPaths::getOutputInstance() const { return output_instance_;}
 
 
-double InputPaths::getTimeOUt() const {return timeOUt; }
+double InputPaths::getTimeOut() const {return timeOut_; }
 
 // setters
 void InputPaths::setInstanceName(const std::string &instanceName) {
@@ -110,7 +108,7 @@ void InputPaths::setInstanceData(const std::string &instanceData) {
 }
 
 void InputPaths::setTimeOUt(double timeOUt) {
-    InputPaths::timeOUt = timeOUt;
+    InputPaths::timeOut_ = timeOUt;
 }
 
 

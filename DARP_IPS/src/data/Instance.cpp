@@ -72,7 +72,6 @@ std::string Instance::solutionToString() {
     int numServed = 0;
     double totalWaiting = 0;
     double totalTripDelay = 0;
-    double totalMinWaiting = 0;
     double penalty = 0;
     double idleTime = 0;
 
@@ -98,7 +97,6 @@ std::string Instance::solutionToString() {
         repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
         repStr << std::right << std::setw(12) << requests_[i]->earlyPick_ << " (s)  ";
         if (requests_[i]->requestStatus_ != NO_ACTION) {
-            totalMinWaiting += requests_[i]->minReachTime_;
             repStr << std::right << std::setw(10) << requests_[i]->pickTime_ << " (s)  ";
             repStr << std::right << std::setw(10) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
 
@@ -108,7 +106,7 @@ std::string Instance::solutionToString() {
 
             repStr << std::right << std::setw(11) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ )
-                int a = 1;
+                std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
         }
         else {
@@ -125,7 +123,7 @@ std::string Instance::solutionToString() {
 
     for (const auto &vehicleObj : vehicles_) {
         totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
-        numServed += vehicleObj->solutionRoute_->routeRequests.size();
+        numServed += (int)vehicleObj->solutionRoute_->routeRequests_.size();
         idleTime += vehicleObj->idleTime_;
     }
     repStr << std::left << std::fixed << std::setprecision(2);
@@ -144,7 +142,7 @@ std::string Instance::solutionToString() {
 }
 
 // function to set the data of the partial instance based on the epoch
-void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> penaltyRequests, int epoch, int lastRecRequests) {
+void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, int epoch, int lastRecRequests) {
 
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
@@ -180,7 +178,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
 
 
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + (epoch) * mainInst->parameters_->epochLength_ ) {
+        if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + static_cast<float>((epoch) * mainInst->parameters_->epochLength_) ) {
  //           mainInst->requests_[i]->readEpoch_ = epoch;
             nbNewRequests_++;
             addRequest(mainInst->requests_[i], epoch, mainInst->parameters_, simulationStartTime_);
@@ -221,13 +219,13 @@ void Instance::buildStaticData(const PInstance &mainInst) {
 }
 
 // function to add requests from previous epochs to the current partial instance
-void Instance::addRequest(PRequest request, int epoch, PParameters &parameters, float simulationStart) {
+void Instance::addRequest(PRequest &request, int epoch, PParameters &parameters, float simulationStart) {
     nbRequests_++;
     requests_.push_back(request);
     request->setPenalty(epoch , parameters, simulationStart);
 //    request->setPenalty(epoch - request->readEpoch_, parameters, simulationStart);
     nameToRequest_[request->name_] = request;
-    request->selectStatus_ = NOTSELECTED;
+    request->selectStatus_ = NOT_SELECTED;
 }
 
 
@@ -241,7 +239,7 @@ void Instance::setInitialTimes() {
     // if the vehicles start from the source depart time is after the first epoch
     if ((nbOnboards_ == 0) &&(parameters_->mainAlgorithm_ != GREEDY)) {
         for (auto &vehicleObj: vehicles_) {
-            vehicleObj->setDepartTime(vehicleObj->startTime_ + parameters_->epochLength_);
+            vehicleObj->setDepartTime(vehicleObj->startTime_ + static_cast<float>(parameters_->epochLength_));
         }
     }
 }
@@ -277,11 +275,11 @@ void Instance::sortVehicles(SortVehicle sortBase) {
 
 void Instance::resetRequestsSelectStatus() {
     for (auto & requestObj: requests_)
-        requestObj->selectStatus_ = NOTSELECTED;
+        requestObj->selectStatus_ = NOT_SELECTED;
 }
 
 // print solutions in csv files
-void Instance::saveSolutionRoutes(std::string routeResultDir) {
+void Instance::saveSolutionRoutes(const std::string& routeResultDir) {
     std::ofstream myFile;
     myFile.open (routeResultDir);
     myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
@@ -299,7 +297,7 @@ void Instance::saveSolutionRoutes(std::string routeResultDir) {
     myFile.close();
 }
 
-void Instance::saveRequestsResults(std::string requestResultDir) {
+void Instance::saveRequestsResults(const std::string& requestResultDir) {
     std::ofstream myFile;
     myFile.open (requestResultDir);
     myFile << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
@@ -327,7 +325,7 @@ void Instance::saveRequestsResults(std::string requestResultDir) {
 }
 
 
-void Instance::saveEpochRoutes(std::string finalSolutionDir , int epoch) {
+void Instance::saveEpochRoutes(const std::string& finalSolutionDir , int epoch) {
     std::ofstream myFile;
     myFile.open (finalSolutionDir, std::ofstream::app);
     for (auto & vehicleObj : vehicles_) {
@@ -346,7 +344,7 @@ void Instance::saveEpochRoutes(std::string finalSolutionDir , int epoch) {
     myFile.close();
 }
 
-void Instance::saveISUDRoutes(std::string isudSolutionDir, int epoch, int isudIter) {
+void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter) {
     std::ofstream myFile;
     myFile.open (isudSolutionDir, std::ofstream::app);
     for (auto & vehicleObj : vehicles_) {
@@ -379,7 +377,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "sink_ID\n\n" << "VEHICLES_INFO" << std::endl;
 
     for (auto & vehicleObj : vehicles_) {
-        nbOnboards += vehicleObj->onboards_.size();
+        nbOnboards += int(vehicleObj->onboards_.size());
         myFile << std::left << std::setw(7) << vehicleObj->vehicleID_;
         myFile << std::setw(10) << vehicleObj->capacity_ ;
         myFile << std::setw(10) << vehicleObj->departTime_ ;

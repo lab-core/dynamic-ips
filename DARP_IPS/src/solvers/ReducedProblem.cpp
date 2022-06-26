@@ -23,12 +23,12 @@ void ReducedProblem::ResetRPModel() {
 
     try {
         int modelExist = 0;
-        for (int r = routeVar_.getSize()-1; r >= 0; --r) {
+        for (int r = (int)routeVar_.getSize()-1; r >= 0; --r) {
             routeVar_[r].end();
             routeVar_.remove(r,1);
             modelExist = 1;
         }
-        for (int i = zVar_.getSize()-1; i >= 0; --i) {
+        for (int i = (int)zVar_.getSize()-1; i >= 0; --i) {
             zVar_[i].end();
             zVar_.remove(i,1);
             modelExist = 1;
@@ -56,20 +56,20 @@ void ReducedProblem:: addZVar(PRequest &request) {
 
 // this function add one route at each iteration of the algorithm during one epoch
 void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution) {
-    if (routesToAdd_.size() == 0) {
+    if (routesToAdd_.empty()) {
         std::cout << "There is no route to be added" << std::endl;
         throw Tools::myException("The input route is empty, No new column is passed to be added", __LINE__);
     }
 
     // add the new compatible column to the model
-    for (int i = 0; i < routesToAdd_.size(); ++i) {
-        addRouteVar(routesToAdd_[i]);
+    for (auto & routeObj : routesToAdd_) {
+        addRouteVar(routeObj);
     }
 
     // add compatible z variables
     // just z variables related to requests that are served in routes with one request are compatible
     /*for (int r = 0; r < routeSolution.size(); ++r) {
-        if (routeSolution[r]->routeRequests.size() == 1) {
+        if (routeSolution[r]->routeRequests_.size() == 1) {
             addZVar(routeSolution[r]->routeNodes_[1]->related_Request_);
         }
     }*/
@@ -95,7 +95,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     // adding route solution columns
     for (auto & routeSol : routeSolution) {
         if (emptyStart) {
-            for (auto nodeObj : routeSol->routeNodes_) {
+            for (auto & nodeObj : routeSol->routeNodes_) {
                 if (nodeObj->type_ == PICKUP)
                     addZVar(nodeObj->related_Request_);
             }
@@ -148,7 +148,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
 
         // printing solution status
-        std::cout << MasterModeler::toString();
+        std::cout << toString();
 
         // saving the result and remove out of base variables
         zSolution.clear();
@@ -163,10 +163,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 //        env_.out() << routeVal << std::endl;
 //        env_.out() << zVal << std::endl;
 
-        for (int r = routeVal.getSize()-1; r >= 0; --r) {
-            if (routeVal[r] > 0)
-//               std::cout << routeVal[r] << std::endl;
-
+        for (int r = (int)routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.1) {
                 routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
                 pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(generatedRoutes[routeVar_[r].getName()]);
@@ -177,9 +174,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
             }
         }
 //        std::cout << "------------" << std::endl;
-        for (int i = zVal.getSize()-1; i >= 0; --i) {
-            if (zVal[i] > 0)
- //               std::cout << zVal[i] << std::endl;
+        for (int i = (int)zVal.getSize()-1; i >= 0; --i) {
             if (zVal[i] > 0.9) {
 //                std::cout << zVar_[i].getName() << std::endl;
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
@@ -205,13 +200,13 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
 
 // function to check whether two routes are column disjoint or not
-bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<int, int> &requestToOrder){
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(requestToOrder.size(), routeSet.size()+1);
+bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int> &requestToOrder){
+    Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), (signed) routeSet.size()+1);
     vector<PRoute> selectedRoutes = routeSet;
     selectedRoutes.push_back(newRoute);
     for (int r = 0; r < selectedRoutes.size(); ++r) {
-        for (int i = 0; i < selectedRoutes[r]->routeRequests.size(); ++i)
-            A(requestToOrder[selectedRoutes[r]->routeRequests[i]],r) = 1;
+        for (int i = 0; i < selectedRoutes[r]->routeRequests_.size(); ++i)
+            A(requestToOrder[selectedRoutes[r]->routeRequests_[i]], r) = 1;
     }
     Eigen::MatrixXd ATA = A.transpose()*A;
     // setting diagonal elements to zero
@@ -237,16 +232,16 @@ std::string ReducedProblem::toString() const {
 
 // function to check whether the route is repeated before
 bool ReducedProblem::isColumnRepeat(vector<PRoute> &routeSet, PRoute &newRoute,
-                                    std::unordered_map<int, int> &requestToOrder) {
-    Eigen::MatrixXd newCol = Eigen::MatrixXd::Zero(requestToOrder.size(), 1);
+                                    std::unordered_map<unsigned int, int> &requestToOrder) {
+    Eigen::MatrixXd newCol = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), 1);
 
-    for (int i = 0; i < newRoute->routeRequests.size(); ++i)
-        newCol(requestToOrder[newRoute->routeRequests[i]],0) = 1;
+    for (auto & requestID : newRoute->routeRequests_)
+        newCol(requestToOrder[requestID], 0) = 1;
 
-    for (int r = 0; r < routeSet.size(); ++r) {
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(requestToOrder.size(), 1);
-        for (int i = 0; i < routeSet[r]->routeRequests.size(); ++i) {
-            A(requestToOrder[routeSet[r]->routeRequests[i]], 0) = 1;
+    for (auto & routeObj : routeSet) {
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), 1);
+        for (auto & requestID : routeObj->routeRequests_) {
+            A(requestToOrder[requestID], 0) = 1;
         }
         if (newCol == A)
             return true;

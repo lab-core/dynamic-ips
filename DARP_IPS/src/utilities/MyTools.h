@@ -5,8 +5,6 @@
 #ifndef _MYTOOLS_H
 #define _MYTOOLS_H
 
-#define NOMINMAX
-
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -16,13 +14,12 @@
 #include <unordered_map>
 #include <map>
 #include <string>
-#include <limits.h>
+#include <climits>
 #include <chrono>
 #include <iomanip>
-#include <stdlib.h>
-#include <stdio.h>
-/*#include <json/json.h>
-#include <curl/curl.h>*/
+#include <cstdlib>
+#include <cstdio>
+
 #include "Eigen/Dense"
 #include <set>
 #include <queue>
@@ -55,8 +52,6 @@ class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
 class ZoomReducedProblem;
 typedef std::shared_ptr<ZoomReducedProblem> PZoomReducedProblem;
-class TravelTime;
-typedef std::shared_ptr<TravelTime> PTravelTime;
 class Label;
 typedef std::shared_ptr<Label> PLabel;
 struct Parameters;
@@ -148,20 +143,20 @@ namespace Tools {
         }
 
         // Destructor
-        virtual ~myException() throw() {}
+        ~myException() noexcept override = default;
 
         // Returns a pointer to the (constant) error description
         /* The underlying memory is in possession of the Except object.
          * Callers must not attempt to free the memory */
-        virtual  const char* what() const throw() { return this->msg.c_str();}
+         const char* what() const noexcept override { return this->msg.c_str();}
     private:
         std::string msg;
     };
 
     // Throw an exception with the input message
     struct INMsgException: std::exception {
-        INMsgException(const char* what): std::exception(), what_(what) {}
-        const char* what() const throw() {
+        explicit INMsgException(const char* what): std::exception(), what_(what) {}
+        const char* what() const noexcept override {
             return what_;
         }
     private:
@@ -179,7 +174,7 @@ namespace Tools {
     //-----------------------------------------------------------------------------
 
     // function to convert degrees to radians
-    double toRadians(const double degree);
+    double toRadians(double degree);
 
     // function to calculate the distance
     double calcDistance(double lat1, double long1, double lat2, double long2);
@@ -188,10 +183,10 @@ namespace Tools {
     double calcTravelTime(double lat1, double long1, double lat2, double long2);
 
     // functions to create node IDs
-    std::string createNodeID(int requestID, NodeType type);
+    std::string createNodeID(unsigned int requestID, NodeType type);
     std::string createSourceID(int vehicleID, NodeType type);
 
-    // function to compare two valarray
+    // function to compare two val_array
     bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs);
 
 
@@ -218,58 +213,48 @@ namespace Tools {
 
 
         void init();        // function fo initialize the timer
-        bool isInit();      // function to check initialization status
+        bool isInit() const;      // function to check initialization status
         void start();       // function to start the timer
         void stop();        // function to stop the timer
 
         // get the time spent since the initialization of the timer and since the last
         // time it was started
-        const std::chrono::duration<double> dSinceInit();
-        const std::chrono::duration<double> dSinceStart();
+        std::chrono::duration<double> dSinceInit();
+        std::chrono::duration<double> dSinceStart();
     };
 
-    // function for reading data from url
-    static int writer(char *data, size_t size, size_t nmemb, std::string *writerData);
-
-    // function to query the fastest route between coordinates
-    //float queryTravelTime(double lat1, double long1, double lat2, double long2);
-
-    // function to get data from a http url
-    //std::string queryHTTPData(const std::string &url);
-
-}; // Tools namespace
+} // Tools namespace
 
 struct Parameters {
 public:
     // model Parameters
-    float alphaParam_;
-    float betaParam_;
-    float deltaPram_;
-    int epochLength_;
+    float alphaParam_{};
+    float betaParam_{};
+    float deltaPram_{};
+    int epochLength_{};
 
-    bool emptyStart_;
+    bool emptyStart_{};
 
     MainAlgorithm mainAlgorithm_;
 
     // label setting strategies
-    bool isTruncated_;
-    int MaxLabel_;
-    bool isDominanceReleased_;
-    bool isSuccessorsLimited_;
+    bool isTruncated_{};
+    int MaxLabel_{};
+    bool isDominanceReleased_{};
+    bool isSuccessorsLimited_{};
     SubProSolveStart SubproSolveStartState_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
 
 
     //CPLEX Parameters
-    int bigM_;
-    int solveTimeLimit_;
-    int populateTimeLimit_;
+    int bigM_{};
+    int solveTimeLimit_{};
+    int populateTimeLimit_{};
 
     // Constructor and Destructor
-    Parameters();
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
-               MainAlgorithm mainAlgorithm, bool isTruncated, int maxLebel, bool isSuccessorsLimited, bool isDominanceReleased,
+               MainAlgorithm mainAlgorithm, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
                subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
 
@@ -297,10 +282,10 @@ struct solverOption {
     solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
                  bool isSuccessorsLimited, LabelingStrategy labelingStrategy);
 
-    solverOption(float maxReachTime, int maxPickup, const PParameters MainParams);
+    solverOption(float maxReachTime, int maxPickup, PParameters &MainParams);
 
     virtual ~solverOption();
     void disableHeuristics();
-    bool areHeuristicsDisabled();
+    bool areHeuristicsDisabled() const;
 };
 #endif //_MYTOOLS_H

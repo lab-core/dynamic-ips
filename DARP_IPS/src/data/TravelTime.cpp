@@ -8,8 +8,6 @@
 //  Node class
 //  Define pickup or drop off nodes for each request
 //-----------------------------------------------------------------------------
-TravelTime::TravelTime(){}
-TravelTime::~TravelTime() {}
 
 void TravelTime::setNodeIdToInt(const std::unordered_map<std::string, int> &nodeIdToInt) {
     nodeIDToInt_ = nodeIdToInt;
@@ -85,7 +83,7 @@ void TravelTime::setNodeIdToInt(const std::unordered_map<std::string, int> &node
     }
 }*/
 
-float TravelTime::queryTravelTime(PNode startNode, PNode endNode) {
+float TravelTime::queryTravelTime(PNode &startNode, PNode &endNode) {
     float travelTime = durationValues_[nodeIDToInt_[startNode->nodeID_]][nodeIDToInt_[endNode->nodeID_]];
     return travelTime;
 }

@@ -23,7 +23,7 @@ int main() {
     float saveTime = 3600;
     bool middleSave = false;
     bool showLog = true;
-    bool disabledHeuristics = false;
+    bool disabledHeuristics;
 
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
@@ -73,8 +73,8 @@ int main() {
         std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         // saving the status in the middle of running
-        if ((epoch*EpochInst->parameters_->epochLength_ >= saveTime) && middleSave ) {
-            EpochInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + epoch * EpochInst->parameters_->epochLength_);
+        if ((static_cast<float> (epoch*EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
+            EpochInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + static_cast<float>(epoch * EpochInst->parameters_->epochLength_));
             break;
         }
         if (epoch == 0 && nbReceivedRequest == 0) {
@@ -101,7 +101,7 @@ int main() {
                 for (auto & vehicleObj : EpochInst->vehicles_) {
                     std::cout << vehicleObj->currentRoute_->toString();
                 }*/
-                if (EpochInst->parameters_->isSuccessorsLimited_ == false && EpochInst->parameters_->isTruncated_ == false)
+                if (!EpochInst->parameters_->isSuccessorsLimited_ && !EpochInst->parameters_->isTruncated_)
                     disabledHeuristics = true;
                 else
                     disabledHeuristics = false;
@@ -123,9 +123,9 @@ int main() {
                     if (subStartStatus != NOT_RESTRICTED) {
                         if (subStartStatus == NUM_PICK_RESTRICTED)
                  //           maxPick = EpochInst->nbRequests_;
-                            maxPick = floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_)+2;
+                            maxPick = (int)floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_)+2;
                         if (subStartStatus == TIME_RESTRICTED)
-                            maxReachTime = 4 * EpochInst->parameters_->epochLength_;
+                            maxReachTime = static_cast<float>(4 * EpochInst->parameters_->epochLength_);
                     }
 
                     PSolverOption subProOptions = std::make_shared<solverOption>(maxReachTime, maxPick,
@@ -140,7 +140,7 @@ int main() {
                         case CPLEX:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 EpochInst->resetRequestsSelectStatus();
-                                PCPLEXsubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
+                                PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                                 subProblem->initSubGraph(EpochInst);
                                 subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
                                 subProblem->SolveCPLEX();
@@ -191,7 +191,7 @@ int main() {
                     }
                     else {
                         if (mainInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                            isudObj->solveISUDMIP(EpochInst, epoch, inputPaths.getOutputEpochIsud());
+                            isudObj->solveISUDMIP(EpochInst, inputPaths.getOutputEpochIsud());
                             break;
                         }
                         else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){

@@ -14,7 +14,7 @@
 // Read the instance file and store content in an instance object
 //************************************************************************
 
-PInstance ReadWrite::readInstance(std::string strInstanceFile) {
+PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
     // open the file
     std::fstream file;
     std::cout << "Reading << " << strInstanceFile << " >>" << std::endl;
@@ -30,10 +30,7 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     string title;
     std::string name;
     int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1, nbLocations = -1;
-    /*double sourceLatitude = -1, sourceLongitude = -1;
-    double sinkLatitude = -1, sinkLongitude = -1;*/
     float simulationStart = -1;
-    int sourceID = -1, sinkID = -1;
     std::vector<PVehicle> vehicles;
 
     while (file.good()) {
@@ -70,9 +67,6 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
     }
 
     // main graph initialization with source and sink
-    /*PGraph mainGraph = std::make_shared<Graph>(std::make_shared<Node>(sourceLatitude, sourceLongitude, sourceID, SOURCE),
-                                               std::make_shared<Node>(sinkLatitude, sinkLongitude, sinkID, SINK));*/
-
     PGraph mainGraph = std::make_shared<Graph>();
     return std::make_shared<Instance>(name, simulationStart, nbVehicles, nbOnboards, nbReceived, vehicles, nbRequests,
                                       nbLocations, mainGraph);
@@ -81,7 +75,7 @@ PInstance ReadWrite::readInstance(std::string strInstanceFile) {
 //************************************************************************
 // Read the vehicle file
 //************************************************************************
-void ReadWrite::readVehiclesData(std::string strTripsFile, PInstance &pInstance) {
+void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -128,7 +122,7 @@ void ReadWrite::readVehiclesData(std::string strTripsFile, PInstance &pInstance)
 //************************************************************************
 // Read the onboard file
 //************************************************************************
-void ReadWrite::readOnboardRequests(std::string strTripsFile, PInstance &pInstance) {
+void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -163,7 +157,7 @@ void ReadWrite::readOnboardRequests(std::string strTripsFile, PInstance &pInstan
                 file >> vehicleID;
 
                 // the starting time of the instance is 16pm
-                deltaTime = nbPassengers * TimePerPassenger;
+                deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
@@ -188,7 +182,7 @@ void ReadWrite::readOnboardRequests(std::string strTripsFile, PInstance &pInstan
 // Read the trip requests file
 //************************************************************************
 
-void ReadWrite::readTripRequests(std::string strTripsFile, PInstance &pInstance, int nbRequest) {
+void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest) {
     // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -221,8 +215,7 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance &pInstance,
                 file >> earlyPick;
 
                 // the starting time of the instance is 16pm
-//                earlyPick -= 57600;
-                deltaTime = nbPassengers * TimePerPassenger;
+                deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime));
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
@@ -240,7 +233,7 @@ void ReadWrite::readTripRequests(std::string strTripsFile, PInstance &pInstance,
 // Read the duration data file
 //************************************************************************
 
-void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationMat, int nbLocations) {
+void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strDurFile << " >>" << std::endl;
@@ -281,7 +274,7 @@ void ReadWrite::readDurations(std::string strDurFile, vector2D<float> &durationM
 //************************************************************************
 // Read the parameters datafile
 //************************************************************************
-void ReadWrite::readParameters(std::string strParamFile, PInstance &pInstance) {
+void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strParamFile << " >>" << std::endl;
@@ -298,7 +291,7 @@ void ReadWrite::readParameters(std::string strParamFile, PInstance &pInstance) {
 
     float alphaParam = -1, betaParam = -1, deltaPram = -1;
     int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
-    bool isTruncated = 0, isSuccessorsLimited = 0, isDominanceReleased = 0,  sameDepot = 0;
+    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false,  sameDepot = false;
     int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0;
     int strategy = 0;
 
@@ -432,9 +425,9 @@ bool ReadWrite::readUntilOneOfTwoChar(std::fstream &pFile, char separator1, char
     return true;
 }
 // check if a string (sentence) ends with a given substring (word)
-bool ReadWrite::strEndWith(std::string sentence, std::string word) {
-    int lenWord = word.length();
-    int lenSentence = sentence.length();
+bool ReadWrite::strEndWith(const std::string& sentence, const std::string& word) {
+    int lenWord = (int) word.length();
+    int lenSentence = (int) sentence.length();
     if (lenWord > lenSentence)
         return false;
     else {

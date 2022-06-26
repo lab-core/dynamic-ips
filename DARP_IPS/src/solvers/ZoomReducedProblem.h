@@ -12,6 +12,9 @@ public:
     void updateModel(PInstance &pInst, std::vector<PRequest> &fractionalZ);
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+
+    // Display function
+    std::string toString() const override;
 };
 
 

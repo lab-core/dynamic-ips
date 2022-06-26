@@ -37,8 +37,8 @@ public:
     IloRangeArray requestConst_;
     IloRangeArray vehicleConst_;
 
-    vector<int> orderToRequest_;
-    std::unordered_map<int, int> requestToOrder_;
+    vector<unsigned int> orderToRequest_;
+    std::unordered_map<unsigned int, int> requestToOrder_;
 
     std::vector<PRoute> routesToAdd_;
 
@@ -53,11 +53,11 @@ public:
     // this function clear all objects from the model at the start of each epoch
     void clearModel();
 
-    // Display function
+    virtual // Display function
     std::string toString() const;
 
     // function to create pattern from routes
-    void createPattern (IloNumArray& pattern, PRoute route, VarSign sign);
+    void createPattern (IloNumArray& pattern, PRoute &route, VarSign sign);
 
     // this function initialized the model
     void initializeModel(PInstance &pInst, int rhs);

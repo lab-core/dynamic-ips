@@ -19,7 +19,7 @@ typedef IloIterator<IloNumVar> IloNumVarIterator;
 
 
 // function to create IloNumArray with identical elements
-static void createIloNumArray (IloNumArray& numArray, int size, int elementValue) {
+static void createIloNumArray (IloNumArray& numArray, unsigned int size, int elementValue) {
     numArray.clear();
     for (int i = 0; i < size; ++i) {
         numArray.add(elementValue);
@@ -27,9 +27,9 @@ static void createIloNumArray (IloNumArray& numArray, int size, int elementValue
 }
 
 // function to create pattern from routes
-static void createPattern (IloNumArray& pattern, PRoute route, std::unordered_map<int, int>& requestToOrder) {
-    for (int i = 0; i < route->routeRequests.size(); ++i) {
-        pattern[requestToOrder[route->routeRequests[i]]] = 1;
+static void createPattern (IloNumArray& pattern, PRoute & route, std::unordered_map<unsigned int, int>& requestToOrder) {
+    for (auto requestID : route->routeRequests_) {
+        pattern[requestToOrder[requestID]] = 1;
     }
 }
 

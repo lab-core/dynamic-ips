@@ -50,11 +50,11 @@ public:
                     std::unordered_map<std::string , PRoute> &generatedRoutes);
 
     // this function check the situation of the CP solution to be column disjoint
-    bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults,
-                          std::unordered_map<int, int>& requestToOrder, int nbVehicle);
+    static bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults,
+                          std::unordered_map<unsigned int, int>& requestToOrder, int nbVehicle);
 
     // Display function
-    std::string toString() const;
+    std::string toString() const override;
 
     // this function initialized the model and define empty set of constraints
     void ResetCPModel();

@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(PVehicle *vehicle, PNode source) : labelID_(labelCount_++), vehicle_(vehicle) {
+Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicle_(vehicle) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -55,9 +55,9 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     }
     isDropped_ = false;
 }
-Label::~Label() {}
+Label::~Label() = default;
 
-const unsigned int Label::getLabelId() const {
+unsigned int Label::getLabelId() const {
     return labelID_;
 }
 
@@ -130,7 +130,7 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
     }
     if (outNode->type_ == SINK) {
 //        if (openRequests_.size() > 0)
-        if (openNodes_.size() > 0)
+        if (!openNodes_.empty())
             return false;
     }
 
@@ -152,7 +152,7 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
     return true;
 }
 
-bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
+bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
 //        if (this->completedRequests_ == otherLabel->completedRequests_) {
         if (this->completedRequest_ == otherLabel->completedRequest_) {
@@ -195,7 +195,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) {
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
-bool Label::isEliminated(int maxPickUp, PGraph &graph) {
+bool Label::isEliminated(PGraph &graph) {
     /*for (auto & nodeObj: openNodes_) {
         float travelDuration = passedTime_ - openReachTime_[nodeObj->nodeID_] + (*currentNode_)->deltaTime_ +
                                durationMatrix_[(*currentNode_)->locationID_][nodeObj->locationID_];
@@ -244,7 +244,7 @@ bool Label::isEliminated(int maxPickUp, PGraph &graph) {
 }
 
 // this function check whether the label is originated from a dominated parent or not
-bool Label::haveDominatedParent() {
+bool Label::haveDominatedParent() const {
     PLabel  childLabel = parent_;
     if (childLabel != nullptr) {
         while (childLabel->parent_ != nullptr) {
@@ -281,19 +281,11 @@ std::string Label::toString() const {
     repStr << "#" << std::endl;
     repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : " ;
 
-    /*for (auto & requestObj : openRequests_) {
-        repStr << requestObj->getRequestId() << "  ";
-    }*/
     for (auto & nodeObj : openNodes_) {
         repStr << nodeObj->related_Request_->getRequestId() << "  ";
     }
     repStr << std::endl;
 
-    /*repStr << "#\t" << std::setw(24) << "- COMPLETE_REQUESTS" << " : " ;
-
-    for (auto & requestObj : completedRequests_) {
-        repStr << requestObj->getRequestId() << "   ";
-    }*/
     repStr << std::endl;
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();

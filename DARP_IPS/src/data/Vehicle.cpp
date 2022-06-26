@@ -4,6 +4,8 @@
 
 #include "Vehicle.h"
 
+#include <utility>
+
 //-----------------------------------------------------------------------------
 //  vehicle class
 //  contains the vehicle info like working time, capacity and passengers
@@ -12,16 +14,17 @@
 // Constructor and Destructor
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
                  std::string sinkID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                 endTime_(endTime), departID_(departID), sinkID_(sinkID) {
+                 endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)) {
     numPassengers_ = 0;
 //    departID_ = Tools::createNodeID(0, SOURCE);
 //    sinkID_ = Tools::createNodeID(0, SINK);
     dual_=0;
     bestReducedCost_ = 9999;
     idleTime_ = 0;
+    startTime_ = departTime;
 }
 
-Vehicle::~Vehicle() {}
+Vehicle::~Vehicle() = default;
 
 // Setters
 void Vehicle::setDepartTime(float departTime) {
@@ -33,7 +36,7 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);
 
-    if (onboards_.size() > 0) {
+    if (!onboards_.empty()) {
         for (auto &nodeID: onboards_) {
             newRoute->addNode(pInst->instGraph_->nodes_[nodeID]);
         }
@@ -43,11 +46,8 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
     emptyRoute_ = newRoute;
 }
 
-void Vehicle::setCurrentRoute(PRoute currentRoute) {
+void Vehicle::setCurrentRoute(PRoute &currentRoute) {
     currentRoute_ = currentRoute;
-}
-void Vehicle::setEndTime(float endTime) {
-    endTime_ = endTime;
 }
 
 
@@ -55,7 +55,7 @@ void Vehicle::setEndTime(float endTime) {
 std::string Vehicle::toString() const {
     std::stringstream repStr;
     repStr << std::left;
-    repStr << "# VEHICLE ( " << vehicleID_ << " )" << std::endl;;
+    repStr << "# VEHICLE ( " << vehicleID_ << " )" << std::endl;
     repStr << "#\t" << std::setw(24) << "- VEHICLE_CAPACITY" << " : " << capacity_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- START_TIME (seconds)" << " : " << startTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departTime_ << std::endl;
@@ -80,7 +80,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < startTime_ + (epoch+1) * epochLength) {
+        if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -101,13 +101,13 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
                 }
 
-                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + (epoch+1) * epochLength)||(i == currentRoute_->routeSize_-1)){
+                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))||(i == currentRoute_->routeSize_-1)){
 
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
-                    if (departTime_ < startTime_ + (epoch+1) * epochLength) {
-                        idleTime_ += startTime_ + (epoch+1) * epochLength - departTime_;
-                        departTime_ = startTime_ + (epoch + 1) * epochLength;
+                    if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
+                        idleTime_ += startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_;
+                        departTime_ = startTime_ + static_cast<float>((epoch + 1) * epochLength);
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
                     departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
@@ -129,9 +129,9 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
-    else if (departTime_ < startTime_ + (epoch+1) * epochLength){
-        idleTime_ += startTime_ + (epoch+1) * epochLength - departTime_;
-        departTime_ = startTime_ + (epoch+1) * epochLength;
+    else if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)){
+        idleTime_ += startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_;
+        departTime_ = startTime_ + static_cast<float>((epoch+1) * epochLength);
         currentRoute_->plannedReachTime_[0] = departTime_;
         solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
         solutionRoute_->plannedReachTime_.back() = departTime_;

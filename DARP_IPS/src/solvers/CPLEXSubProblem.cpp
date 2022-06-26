@@ -11,9 +11,6 @@
 
 // Constructor and Destructor
 CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : SubproModeler(vehicle){
- //   subGraph_ = std::make_shared<Graph>();
-    /*numRoutes_ = 0;
-    bestReducedCost_ = 0;*/
     SubProModel_ = IloModel(env_);
 }
 CPLEXSubProblem::~CPLEXSubProblem() {
@@ -24,7 +21,7 @@ CPLEXSubProblem::~CPLEXSubProblem() {
 // Build the SUb Problem model with CPLEX
 //************************************************************************
 
-void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrder, int maxPickUp)
+void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& requestToOrder, int maxPickUp)
 {
     // Definition of variables
     X = IloNumVar2D(env_, subGraph_->nbNodes_);
@@ -40,16 +37,14 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
 
     // define objective
     IloExpr objExpr(env_);
-    for (int i = 0; i < subRequests_.size(); ++i) {
-        int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
-        objExpr += (U[nodeIndex] - subRequests_[i]->earlyPick_);
+    for (auto & requestObj : subRequests_) {
+        int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)];
+        objExpr += (U[nodeIndex] - requestObj->earlyPick_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-            /*std::cout << "REQUEST ID: " << subRequests_[i]->getRequestId() << std::endl;
-            std::cout << requestDuals[requestToOrder[subRequests_[i]->getRequestId()]] << std::endl;*/
-//            objExpr -= (X[nodeIndex][j] * requestDuals[requestToOrder[subRequests_[i]->getRequestId()]]);
-            objExpr -= (X[nodeIndex][j] * subRequests_[i]->dual_);
+            objExpr -= (X[nodeIndex][j] * requestObj->dual_);
         }
     }
+
 //    objExpr += U[sinkIndex];
     objExpr -= (*Vehicle_)->dual_;
     SubProModel_.add(IloMinimize(env_, objExpr));
@@ -58,11 +53,9 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
     // defining constraints
     // -----------------------------------------
 
-
-
     // add this constraint to be sure that each request is served at most once
-    for (int i = 0; i < subRequests_.size(); ++i) {
-        std::string nodeID = Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP);
+    for (auto & requestObj : subRequests_) {
+        std::string nodeID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
         int nodeIndex = subGraph_->nodeIDToInt_[nodeID];
 
         IloExpr exprV(env_);
@@ -72,6 +65,7 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
         }
         SubProModel_.add(exprV <= 1);
     }
+
 
     // add these constraints for just solving the extraction problem of variables
     IloExpr exprP(env_);
@@ -107,11 +101,11 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
     // constraints 9c -------------------
     SubProModel_.add(U[sinkIndex] <= (*Vehicle_)->endTime_);
 
-    for (int i = 0; i < subRequests_.size(); ++i) {
-        std::string pickID = Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP);
+    for (auto & requestObj : subRequests_) {
+        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
         int pickIndex = subGraph_->nodeIDToInt_[pickID];
 
-        std::string dropID = Tools::createNodeID(subRequests_[i]->getRequestId(), DROPOFF);
+        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
         int dropIndex = subGraph_->nodeIDToInt_[dropID];
 
         // constraints 5c -------------------
@@ -126,14 +120,14 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
         //       SubProModel_.add(U[pickIndex] - U[dropIndex] <= 0);
 
         // constraints 10c -------------------
-        SubProModel_.add(U[pickIndex] >= subRequests_[i]->earlyPick_);
+        SubProModel_.add(U[pickIndex] >= requestObj->earlyPick_);
 
         // constraints 11c -------------------
         IloExpr expr11(env_);
-        expr11 = U[dropIndex] - U[pickIndex] - subRequests_[i]->deltaTime_;
+        expr11 = U[dropIndex] - U[pickIndex] - requestObj->deltaTime_;
 
-        SubProModel_.add(expr11 <= subRequests_[i]->maxTravelTime_);
-        SubProModel_.add(expr11 >= subRequests_[i]->minTravelTime_);
+        SubProModel_.add(expr11 <= requestObj->maxTravelTime_);
+        SubProModel_.add(expr11 >= requestObj->minTravelTime_);
     }
 
     // add this constraint to control the length of generated routes in subproblems
@@ -186,9 +180,8 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
         SubProModel_.add(W[i] <= (*Vehicle_)->capacity_);
 
     }
-    for (int i = 0; i < (*Vehicle_)->onboards_.size(); ++i) {
-        std::string onboardID = subGraph_->nodes_[(*Vehicle_)->onboards_[i]]->nodeID_;
- //       std::string pickNodeID = subGraph_->nodes_[onboardID]->pairNodeID_;
+    for (auto &onboardID : (*Vehicle_)->onboards_) {
+//        std::string onboardID = subGraph_->nodes_[(*Vehicle_)->onboards_[i]]->nodeID_;
 
         // constraints 6c -------------------
         IloExpr expr6(env_);
@@ -205,8 +198,7 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<int, int>& requestToOrd
 //        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
         SubProModel_.add(expr12 <= subGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
         SubProModel_.add(expr12 >= subGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
-        /*SubProModel_.add(expr12 <= std::max(alphaParam_ * t, betaParam + t));
-        SubProModel_.add(expr12 >= t);*/
+
     }
 }
 
@@ -257,11 +249,11 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
 
 //        availableRoutes.clear();
         for (int s = 0; s < SubProbCplex_.getSolnPoolNsolns(); ++s) {
-            bool isRepeated = false;
+//            bool isRepeated = false;
 
             // extracting the value of variables in each solution
             if (SubProbCplex_.getObjValue(s) < 0) {
-                isRepeated = 0;
+//                isRepeated = 0;
                 IloNumArray uVal(env_);
                 IloNumArray wVal(env_);
                 IloNum2D xVal(env_, subGraph_->nbNodes_);

@@ -24,7 +24,7 @@ public:
 };
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing
-// any pick up is followed by the drop off
+// any pick up is followed by the drop-off
 void GreedySolver_noShare(PInstance& PInst);
 
 #endif //_GREEDYMODELER_H

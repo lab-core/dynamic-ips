@@ -38,11 +38,11 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
     if (sign == NEGATIVE)
         MasterModeler::addRouteVar(routeVar, newRoute, sign);
     else {
-        IloNumArray columnVar(env_, orderToRequest_.size());
+        IloNumArray columnVar(env_, (signed) orderToRequest_.size());
         MasterModeler::createPattern(columnVar, newRoute, POSITIVE);
         IloNumVar numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
                                      + vehicleConst_[newRoute->vehicleID_](1)
-                                     + normalConst_[0](newRoute->incompatibilityDegree));
+                                     + normalConst_[0](newRoute->incompatibilityDegree_));
         numVar.setName(newRoute->name_);
         routeVar.add(numVar);
     }
@@ -144,12 +144,12 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
 
                 // remove outgoing variable
-                for (int r = routeSolVar_.getSize() - 1; r >= 0; --r) {
+                for (int r = (int)routeSolVar_.getSize() - 1; r >= 0; --r) {
                     if (Cplex_.getValue(routeSolVar_[r]) > 0) {
                         routeSolution.erase(routeSolution.begin() + r);
                     }
                 }
-                for (int i = zSolVar_.getSize() - 1; i >= 0; --i) {
+                for (int i = (int)zSolVar_.getSize() - 1; i >= 0; --i) {
                     if (Cplex_.getValue(zSolVar_[i]) > 0) {
                         zSolution.erase(zSolution.begin() + i);
                     }
@@ -203,15 +203,15 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
 // this function check the situation of the CP solution to be column disjoint
 bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> &routeResults,
-                                     std::unordered_map<int, int>& requestToOrder, int nbVehicle) {
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(requestToOrder.size()+ nbVehicle, zResults.size()+routeResults.size());
+                                     std::unordered_map<unsigned int, int>& requestToOrder, int nbVehicle) {
+    Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed)requestToOrder.size()+ nbVehicle, (signed)zResults.size() + (signed)routeResults.size());
     for (int r = 0; r < routeResults.size(); ++r) {
-        for (int i = 0; i < routeResults[r]->routeRequests.size(); ++i)
-            A(requestToOrder[routeResults[r]->routeRequests[i]],r) = 1;
-        A(requestToOrder.size()+routeResults[r]->vehicleID_,r) = 1;
+        for (int i = 0; i < routeResults[r]->routeRequests_.size(); ++i)
+            A(requestToOrder[routeResults[r]->routeRequests_[i]], r) = 1;
+        A((signed)requestToOrder.size()+routeResults[r]->vehicleID_,r) = 1;
     }
     for (int i = 0; i < zResults.size(); ++i) {
-        A(requestToOrder[zResults[i]->getRequestId()],routeResults.size()+i) = 1;
+        A((signed)requestToOrder[zResults[i]->getRequestId()],(signed)routeResults.size()+i) = 1;
     }
 
     Eigen::MatrixXd ATA = A.transpose()*A;
@@ -239,24 +239,24 @@ std::string ComplementPro::toString() const {
 void ComplementPro::ResetCPModel() {
     try {
         int modelExist = 0;
-        for (int r = routeSolVar_.getSize()-1; r >= 0; --r) {
+        for (int r = (int)routeSolVar_.getSize() - 1; r >= 0; --r) {
             routeSolVar_[r].end();
-            routeSolVar_.remove(r,1);
+            routeSolVar_.remove(r, 1);
             modelExist = 1;
         }
-        for (int i = zSolVar_.getSize()-1; i >= 0; --i) {
+        for (int i = (int)zSolVar_.getSize() - 1; i >= 0; --i) {
             zSolVar_[i].end();
-            zSolVar_.remove(i,1);
+            zSolVar_.remove(i, 1);
             modelExist = 1;
         }
-        for (int r = routeIncVar_.getSize()-1; r >= 0; --r) {
+        for (int r = (int)routeIncVar_.getSize() - 1; r >= 0; --r) {
             routeIncVar_[r].end();
-            routeIncVar_.remove(r,1);
+            routeIncVar_.remove(r, 1);
             modelExist = 1;
         }
-        for (int i = zIncVar_.getSize()-1; i >= 0; --i) {
+        for (int i = (int)zIncVar_.getSize() - 1; i >= 0; --i) {
             zIncVar_[i].end();
-            zIncVar_.remove(i,1);
+            zIncVar_.remove(i, 1);
             modelExist = 1;
         }
         if (modelExist == 1) {

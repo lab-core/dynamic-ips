@@ -17,28 +17,24 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     totalDelay_ = 0.0;
     reducedCost_ = 0.0;
     routeSize_ = 0;
-    incompatibilityDegree = 0;
+    incompatibilityDegree_ = 0;
     char* name2 = new char[255];
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
 }
-Route::~Route() {}
+Route::~Route() = default;
 
 // Getters and Setters
-void Route::setIncompatibilityDegree(float incompatibilityDegree) {
-    Route::incompatibilityDegree = incompatibilityDegree;
-}
+unsigned int Route::getRouteId() const {return routeID_;}
 
-const unsigned int Route::getRouteId() const {return routeID_;}
-
-void Route::updateReducedCost(IloNumArray &requestDuals, IloNumArray &vehicleDual, std::unordered_map<int, int> &requestToOrder) {
+void Route::updateReducedCost(IloNumArray &requestDuals, IloNumArray &vehicleDual, std::unordered_map<unsigned int, int> &requestToOrder) {
     reducedCost_ = totalDelay_ - vehicleDual[vehicleID_];
-    for (int r = 0; r < routeRequests.size(); ++r) {
-        reducedCost_ -= requestDuals[requestToOrder[routeRequests[r]]];
+    for (auto & requestID : routeRequests_) {
+        reducedCost_ -= requestDuals[requestToOrder[requestID]];
     }
 }
 // these functions are used to add nodes to the routes
-void Route::addSource(PNode node, float departTime, int departPassengers) {
+void Route::addSource(PNode &node, float departTime, int departPassengers) {
     routeSize_ ++;
     if (node->type_ == SOURCE) {
         routeNodes_.push_back(node);
@@ -47,13 +43,13 @@ void Route::addSource(PNode node, float departTime, int departPassengers) {
         node->reachTime_ = departTime;
     }
 }
-void Route::addNode(PNode node) {
+void Route::addNode(PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
             durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     if (node->type_ == PICKUP) {
-        routeRequests.push_back(node->related_Request_->getRequestId());
+        routeRequests_.push_back(node->related_Request_->getRequestId());
         if (reachTime < node->requestTime_)
             plannedReachTime_.push_back(node->requestTime_);
         else {
@@ -66,18 +62,18 @@ void Route::addNode(PNode node) {
     routeNodes_.push_back(node);
 }
 
-void Route::addNode(PNode node, float reachTime) {
+void Route::addNode(PNode &node, float reachTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     plannedReachTime_.push_back(reachTime);
     if (node->type_ == PICKUP) {
-        routeRequests.push_back(node->related_Request_->getRequestId());
+        routeRequests_.push_back(node->related_Request_->getRequestId());
         totalDelay_ += (reachTime - node->requestTime_);
     }
     routeNodes_.push_back(node);
 }
 
-void Route::addNode(PNode node, float departTime, int departPassengers) {
+void Route::addNode(PNode &node, float departTime, int departPassengers) {
 
     routeSize_ ++;
     if (node->type_ == SOURCE) {
@@ -93,7 +89,7 @@ void Route::addNode(PNode node, float departTime, int departPassengers) {
                           durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
 
         if (node->type_ == PICKUP) {
-            routeRequests.push_back(node->related_Request_->getRequestId());
+            routeRequests_.push_back(node->related_Request_->getRequestId());
             plannedReachTime_.push_back(std::max(node->requestTime_,reachTime));
             totalDelay_ += (plannedReachTime_.back() - node->requestTime_);
 
@@ -110,11 +106,11 @@ void Route::removeNode(int nodeIndex) {
     routeNodes_.erase(routeNodes_.begin(), routeNodes_.begin()+nodeIndex);
     plannedReachTime_.erase(plannedReachTime_.begin(), plannedReachTime_.begin()+nodeIndex);
     plannedPassengers_.erase(plannedPassengers_.begin(), plannedPassengers_.begin()+nodeIndex);
-    routeRequests.clear();
+    routeRequests_.clear();
     totalDelay_ = 0;
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->type_ == PICKUP) {
-            routeRequests.push_back(routeNodes_[i]->related_Request_->getRequestId());
+            routeRequests_.push_back(routeNodes_[i]->related_Request_->getRequestId());
             totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
         }
 

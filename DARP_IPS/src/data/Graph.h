@@ -25,24 +25,22 @@ enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 };
 // Defining the properties of the graph nodes
 class Node {
 public:
-    string nodeID_;                 // node ID
-    PRequest related_Request_;     // pointer to its request
-    string pairNodeID_;             // related pickup/  drop off
-    PNode * pairNode_;
-    /*double locLatitude_;             // node location latitude
-    double locLongitude_;            // node location longitude*/
-    int locationID_;                // node location ID
-    NodeType type_;                 // node type: pick up, drop off, source, sink
-    float reachTime_;               // the time that vehicle reach to the node
-    int nbPassengers_;              // number of passengers to pick up or drop off
-    float deltaTime_;               // time to perform pick up or drop off
-    NodeStatus nodeStatus_;         // status of the node: no action, planned, completed
-    float requestTime_;             // earliest possible pick up time for the request (request time)
-    double bestLabelReduceCost_;     // smallest reduced cost af active vehicles
-    int nbActiveLabels_;
+    string nodeID_;                     // node ID
+    PRequest related_Request_;          // pointer to its request
+    string pairNodeID_;                 // related pickup/drop off
+    PNode *pairNode_;
+    int locationID_;                    // node location ID
+    NodeType type_;                     // node type: pick up, drop off, source, sink
+    float reachTime_;                   // the time that vehicle reach to the node
+    int nbPassengers_;                  // number of passengers to pick up or drop off
+    float deltaTime_;                   // time to perform pick up or drop off
+    NodeStatus nodeStatus_;             // status of the node: no action, planned, completed
+    float requestTime_;                 // earliest possible pick up time for the request (request time)
+    double bestLabelReduceCost_;        // smallest reduced cost af active vehicles
+    int nbActiveLabels_;                // Number of active labels in labeling approach
     std::vector<PNode> successors_;
     std::set<PNode> predecessor_;
-    float travelTimeFromNode_;
+    float travelTimeFromNode_;          // is used in labeling for sorting successors_
 
 
     std::vector<PLabel> activeLabels_;
@@ -56,13 +54,9 @@ public:
 
     virtual ~Node();
 
-    // Setters
-    void setPairNodeId(const string &pairNodeId);
-
-    void setType(NodeType type);
     // this function return the index in of the first label in the active labels of the node whose reduced cost
     // is grater than the newLabel
-    int getLabelListIndex(PLabel newLabel);
+    unsigned int getLabelListIndex(PLabel &newLabel);
 };
 
 
@@ -74,22 +68,20 @@ class Graph {
 public:
     int nbNodes_;
     std::unordered_map<std::string,PNode> nodes_;
-//    std::vector<PNode> nodes_;
     std::unordered_map<std::string, int> nodeIDToInt_;
     std::vector<std::string> intToNodeID_;
 
 
     // Constructor and Destructor
     Graph();
-    Graph(PNode source, PNode sink);
+    Graph(PNode &source, PNode &sink);
 
     // function for adding node to graph
-    void addNewNode(PNode node);
+    void addNewNode(const PNode &node);
 
     // function for updating the graph and adding new request
-    void addRequestsToGraph(PInstance &pInstance);
     void addRequestToGraph(PRequest &newRequest);
-    void addNewRequestToGraph(PInstance &pInstance);
+//    void addNewRequestToGraph(PInstance &pInstance);
 };
 typedef std::shared_ptr<Graph> PGraph;
 

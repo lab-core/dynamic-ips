@@ -5,7 +5,6 @@ set(SOURCE_FILES
         Request.cpp
         Graph.cpp
         Route.cpp
-        TravelTime.cpp
         Label.cpp
         Greedy.cpp)
 

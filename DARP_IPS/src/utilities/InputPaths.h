@@ -47,13 +47,13 @@ protected:
     std::string output_vehicles_;
     std::string output_instance_;
 
-    double timeOUt = 3600;
+    double timeOut_ = 3600;
 
 public:
 
     // Constructors
     InputPaths();
-    InputPaths(std::string datadir, std::string instanceName, double timeOUt = 3600.0);
+    InputPaths(const std::string& datadir, const std::string& instanceName, double timeOUt = 3600.0);
 
     // getters
     const std::string &getInstanceName() const;
@@ -81,7 +81,7 @@ public:
     const std::string &getOutputVehicles() const;
     const std::string &getOutputInstance() const;
 
-    double getTimeOUt() const;
+    double getTimeOut() const;
 
     // setters
     void setInstanceName(const std::string &instanceName);
