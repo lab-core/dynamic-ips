@@ -204,6 +204,7 @@ int main() {
                 for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     vehicleObj->currentRoute_->routeNodes_[i]->reachTime_ = vehicleObj->currentRoute_->plannedReachTime_[i];
+                    vehicleObj->currentRoute_->routeNodes_[i]->departTime_ = vehicleObj->currentRoute_->plannedReachTime_[i];
                     vehicleObj->solutionRoute_->addNode(vehicleObj->currentRoute_->routeNodes_[i],
                                                         vehicleObj->currentRoute_->plannedReachTime_[i]);
 

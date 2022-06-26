@@ -40,7 +40,8 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
         routeNodes_.push_back(node);
         plannedReachTime_.push_back(departTime);
         plannedPassengers_.push_back(departPassengers);
-        node->reachTime_ = departTime;
+ //       node->reachTime_ = departTime;
+        node->departTime_ = departTime;
     }
 }
 void Route::addNode(PNode &node) {
@@ -129,19 +130,22 @@ std::string Route::toString() const {
     repStr << "#" << std::endl;
 
     // print table header
-    repStr << "# ------------------------------------------------------------------------" << std::endl;
+    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
     repStr << std::left << std::setw(6) << "#      ";
     repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
     repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
     repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
     repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# ------------------------------------------------------------------------" << std::endl;
+    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
 
     // print the source stop pint
     repStr << "#" << std::setw(4) << 1 << "  ";
     repStr << std::left << std::setw(27) << "(SOURCE ) departure";
     repStr << std::left << std::setw(11) << routeNodes_[0]->nodeID_;
-    repStr << std::right << std::setw(11) << plannedReachTime_[0] << " (s)  ";
+    repStr << std::right << std::setw(11) << routeNodes_[0]->reachTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << routeNodes_[0]->departTime_ << " (s)  ";
+ //   repStr << std::right << std::setw(11) << plannedReachTime_[0] << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
 
     // print the internal nodes of the route
@@ -154,7 +158,11 @@ std::string Route::toString() const {
             repStr << std::left << std::setw(6) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
-        repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
+        repStr << std::right << std::setw(11) << routeNodes_[i]->reachTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
+        if (routeNodes_[i]->departTime_ != plannedReachTime_[i])
+            std::cout << "HI" << std::endl;
+ //       repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
         float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
                 routeNodes_[i]->requestTime_;
         if (reachTime > plannedReachTime_[i])
@@ -162,7 +170,7 @@ std::string Route::toString() const {
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 
-    repStr << "==========================================================================" << std::endl;
+    repStr << "===========================================================================================" << std::endl;
     return repStr.str();
 }
 

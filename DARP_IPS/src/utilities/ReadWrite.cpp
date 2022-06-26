@@ -173,6 +173,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->instGraph_->nodes_[dropID]->nodeStatus_ = PLANNED;
                 (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->nodeStatus_ = DONE;
                 (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->reachTime_ = pickTime;
+                (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->departTime_ = pickTime;
             }
         }
     }

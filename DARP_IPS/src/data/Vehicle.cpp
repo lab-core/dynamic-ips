@@ -84,8 +84,11 @@ void Vehicle::updateState(int epoch, int &epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+                if (currentRoute_->routeNodes_[i]->related_Request_->getRequestId() == 260)
+                    std::cout << "HI" << std::endl;
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
                 solutionRoute_->addNode(currentRoute_->routeNodes_[i],
                                         currentRoute_->plannedReachTime_[i]);
 
@@ -133,7 +136,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         idleTime_ += startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_;
         departTime_ = startTime_ + static_cast<float>((epoch+1) * epochLength);
         currentRoute_->plannedReachTime_[0] = departTime_;
-        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
+//        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
+        solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
         solutionRoute_->plannedReachTime_.back() = departTime_;
     }
 }
@@ -144,8 +148,11 @@ void Vehicle::updateStateTime(float stopTime) {
         onboards_.clear();
         int breakIndex = 0;
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+            if (currentRoute_->routeNodes_[i]->related_Request_->getRequestId() == 260)
+                std::cout << "HI" << std::endl;
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
             currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
+            currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
             solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
 
             // set request status

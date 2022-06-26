@@ -32,6 +32,7 @@ public:
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
     float reachTime_;                   // the time that vehicle reach to the node
+    float departTime_;                   // the time that vehicle reach to the node
     int nbPassengers_;                  // number of passengers to pick up or drop off
     float deltaTime_;                   // time to perform pick up or drop off
     NodeStatus nodeStatus_;             // status of the node: no action, planned, completed

@@ -336,8 +336,6 @@ void Instance::saveEpochRoutes(const std::string& finalSolutionDir , int epoch) 
             myFile << nodeObj->requestTime_ << ",";
             myFile << nodeObj->reachTime_ << ",";
             myFile << nodeObj->type_ << ",";
-//            myFile << nodeObj->locLatitude_ << ",";
-//            myFile << nodeObj->locLongitude_ << ",";
             myFile << nodeObj->locationID_ << "\n";
         }
     }
@@ -356,8 +354,6 @@ void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int
             myFile << nodeObj->requestTime_ << ",";
             myFile << nodeObj->reachTime_ << ",";
             myFile << nodeObj->type_ << ",";
-//            myFile << nodeObj->locLatitude_ << ",";
-//            myFile << nodeObj->locLongitude_ << ",";
             myFile << nodeObj->locationID_ << "\n";
         }
     }

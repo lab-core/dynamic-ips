@@ -18,6 +18,7 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
                                                                                         related_Request_(relatedRequest),
                                                                                         type_(type), pairNodeID_(std::move(pairNodeID)) {
     reachTime_ = 0;
+    departTime_ = 0;
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     deltaTime_ = relatedRequest->deltaTime_;
@@ -39,6 +40,7 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
 Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type) {
     related_Request_ = nullptr;
     reachTime_ = 0;
+    departTime_ = 0;
     nbPassengers_ = 0;
     deltaTime_ = 0;
     requestTime_ = 0;
@@ -58,6 +60,7 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
 
     related_Request_ = nullptr;
     reachTime_ = 0;
+    departTime_ = 0;
     nbPassengers_ = 0;
     deltaTime_ = 0;
     requestTime_ = 0;
