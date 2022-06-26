@@ -443,9 +443,9 @@ std::string ISUDAlgorithm::toString() const {
     repStr << "# Time spent on RP improvement         = " << RPTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on CP improvement         = " << CPTime_->dSinceInit().count() << " (seconds)" << std::endl;
     repStr << "# Time spent on ZOOM improvement         = " << ZOOMTime_->dSinceInit().count() << " (seconds)" << std::endl;
-    for (auto & routeObj : routeSolution_) {
+    /*for (auto & routeObj : routeSolution_) {
         repStr << routeObj->toString();
-    }
+    }*/
     return repStr.str();
 }
 

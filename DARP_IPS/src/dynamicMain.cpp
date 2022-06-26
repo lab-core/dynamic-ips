@@ -222,6 +222,9 @@ int main() {
                 isudObj->setObjValue();
                 std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch << " : " << std::endl;
                 std::cout << isudObj->toString();
+                for (int v = 0; v < mainInst->nbVehicles_; ++v) {
+                    std::cout << mainInst->vehicles_[v]->currentRoute_->toString();
+                }
                 break;
         }
 
