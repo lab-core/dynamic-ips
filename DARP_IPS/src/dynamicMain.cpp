@@ -56,6 +56,8 @@ int main() {
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
         isudObj->restGeneratedRoutes(mainInst);
+        if (epoch == 62)
+            std::cout << "stop";
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -97,10 +99,10 @@ int main() {
                 EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;
 
-                /*std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
+                std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
                 for (auto & vehicleObj : EpochInst->vehicles_) {
                     std::cout << vehicleObj->currentRoute_->toString();
-                }*/
+                }
                 if (!EpochInst->parameters_->isSuccessorsLimited_ && !EpochInst->parameters_->isTruncated_)
                     disabledHeuristics = true;
                 else
