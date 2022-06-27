@@ -354,7 +354,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
             if (CompPro_->status_ == FRACTIONAL) {
                 ZOOMTime_->start();
                 std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
-                ZoomPro_->routesToAdd_.clear();
+                /*ZoomPro_->routesToAdd_.clear();
                 ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
                 for (auto & vehicleObj : pInst->vehicles_) {
                     for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
@@ -367,12 +367,12 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                 setObjValue();
                 std::cout << "Objective Value after the Zoom improve: " << objValue_ << std::endl;
                 ZOOMTime_->stop();
-                /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+                *//*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 std::cout << "+        Solution Result after Zoom Improve:       +" << std::endl;
                 std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 for (int r = 0; r < routeSolution_.size(); ++r) {
                     std::cout << routeSolution_[r]->toString();
-                }*/
+                }*//*
                 if (previousObj > objValue_) {
                     previousObj = objValue_;
                     std::cout << "restarting CP after zoom improve" << std::endl;
@@ -387,12 +387,12 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                     // UPDATE DUAL VALUES AFTER SOLVING CP
                     ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
                     ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
-                    /*ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
-                    ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);*/
+                    *//*ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
+                    ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);*//*
                     restartAlgorithm = false;
-                }
+                }*/
 
-//                restartAlgorithm = false;
+                restartAlgorithm = false;
 
             }
             else if (CompPro_->status_ == POSITIVE_VALUE) {
