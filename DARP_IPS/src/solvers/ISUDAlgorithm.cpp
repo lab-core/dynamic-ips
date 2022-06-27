@@ -352,7 +352,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
             }
 
             if (CompPro_->status_ == FRACTIONAL) {
-                ZOOMTime_->start();
+ //               ZOOMTime_->start();
                 std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
                 /*ZoomPro_->routesToAdd_.clear();
                 ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
