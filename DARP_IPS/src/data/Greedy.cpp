@@ -346,6 +346,8 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 // first we make a copy of the list and insert the pickup
                 float endTime = tail_->reachTime_;
                 float curDelay = totalDelay_;
+                std::cout << "GreedyLinkList before checking" << std::endl;
+                toString();
                 insertNode(prePick,pickNode);
                 deltaDelay =  totalDelay_ - curDelay;
                 pickDeltaT = tail_->reachTime_ - endTime;
@@ -392,6 +394,8 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     preDrop = preDrop->child_;
                 }
                 removeLabel(pickLabel, pickDeltaT, deltaDelay);
+                std::cout << "GreedyLinkList before checking" << std::endl;
+                toString();
             }
         }
         prePick = prePick->child_;
@@ -482,6 +486,7 @@ std::string LinkedGreedyLabels::toString() const {
         repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
         repStr << std::right << std::setw(11) << curr->child_->departTime_ << " (s)  ";
         repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
+        curr = curr->child_;
         counter++;
     }
 
