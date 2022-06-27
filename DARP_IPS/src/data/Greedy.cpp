@@ -208,9 +208,9 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         tail_ = newLabel;
     }
     else {
-        float deltaT = reachTime + newNode->deltaTime_ +
+        /*float deltaT = reachTime + newNode->deltaTime_ +
                        durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
-                       preLabel->child_->reachTime_;
+                       preLabel->child_->reachTime_;*/
 //        std::cout << durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] << std::endl;
         preLabel->child_->parent_ = newLabel;
         newLabel->child_ = preLabel->child_;
@@ -220,7 +220,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         PGreedyLabel currentLabel = newLabel;
         while (currentLabel->child_ != nullptr) {
             // calculate child reach time
-            float childReachTime = 0;
+            float childReachTime;
             if ((currentLabel->reachTime_ + currentLabel->currentNode_->deltaTime_ < currentLabel->child_->currentNode_->requestTime_) && (currentLabel->child_->currentNode_->type_ == PICKUP)) {
                 childReachTime = currentLabel->child_->currentNode_->requestTime_ + durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_];
                 currentLabel->departTime_ = childReachTime;
@@ -301,6 +301,8 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
     PGreedyLabel  currentLabel = source_->child_;
     while (currentLabel != nullptr) {
         newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
+        newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
+        newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
         currentLabel = currentLabel->child_;
     }
     return newRoute;
@@ -435,7 +437,57 @@ bool LinkedGreedyLabels::isDropPossible(PGreedyLabel &preDrop, PGreedyLabel &pic
     return true;
 }
 
+std::string LinkedGreedyLabels::toString() const {
+    std::stringstream repStr;
 
+    repStr << "#" << std::left << std::endl;
+    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departTime_ << std::endl;
+    repStr << "#" << std::endl;
+
+    // print table header
+    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+    repStr << std::left << std::setw(6) << "#      ";
+    repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
+    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
+    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
+    repStr << "#PASSENGERS" <<std::endl;
+    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+
+    // print the source stop pint
+    repStr << "#" << std::setw(4) << 1 << "  ";
+    repStr << std::left << std::setw(27) << "(SOURCE ) departure";
+    repStr << std::left << std::setw(11) << source_->currentNode_->nodeID_;
+    repStr << std::right << std::setw(11) << source_->reachTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << source_->departTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << source_->travelResource_ << " (s)  ";
+    repStr << std::setw(7) << source_->nbPassengers_ << std::endl;
+
+    // print the internal nodes of the route
+    PGreedyLabel curr = source_;
+    int counter = 1;
+    while (curr->child_ != nullptr) {
+        repStr << "#" << std::setw(4) << counter + 1 << "  ";
+        if (curr->child_->currentNode_->type_ == SINK)
+            repStr << std::left << std::setw(27) << "(SINK   ) return";
+        else {
+            repStr << "(" << NodeTypeStr[curr->child_->currentNode_->type_] << ") Request_ID ";
+            repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
+        }
+        repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
+        repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << curr->child_->departTime_ << " (s)  ";
+        repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
+        counter++;
+    }
+
+    repStr << "===========================================================================================" << std::endl;
+    return repStr.str();
+}
 
 
 insertPosition::insertPosition(PGreedyLabel prePickup, PGreedyLabel preDrop, float deltaDelay,

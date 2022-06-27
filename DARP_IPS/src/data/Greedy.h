@@ -47,6 +47,8 @@ public:
     PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
     bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
     bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
+    // Display function
+    std::string toString() const;
 };
 
 struct insertPosition {
