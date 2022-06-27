@@ -158,15 +158,18 @@ std::string Route::toString() const {
             repStr << std::left << std::setw(6) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
-        repStr << std::right << std::setw(11) << routeNodes_[i]->reachTime_ << " (s)  ";
-        repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
-        if (routeNodes_[i]->departTime_ != plannedReachTime_[i])
-            std::cout << "HI" << std::endl;
- //       repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
-        float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
+        if (routeNodes_[i]->reachTime_ == 0)
+            repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
+        else
+            repStr << std::right << std::setw(11) << routeNodes_[i]->reachTime_ << " (s)  ";
+        if (routeNodes_[i]->departTime_ == 0)
+            repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
+        else
+            repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
+        /*float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
                 routeNodes_[i]->requestTime_;
         if (reachTime > plannedReachTime_[i])
-            std::cout << "Hi";
+            std::cout << "Hi";*/
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 

@@ -181,8 +181,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + static_cast<float>((epoch) * mainInst->parameters_->epochLength_) ) {
  //           mainInst->requests_[i]->readEpoch_ = epoch;
             nbNewRequests_++;
-            if (mainInst->requests_[i]->getRequestId() == 199)
-                std::cout << "Hi";
             addRequest(mainInst->requests_[i], epoch, mainInst->parameters_, simulationStartTime_);
             std::string pickID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
             std::string dropID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);

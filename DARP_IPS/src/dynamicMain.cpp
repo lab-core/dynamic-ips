@@ -56,8 +56,6 @@ int main() {
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
         isudObj->restGeneratedRoutes(mainInst);
-        if (epoch == 50)
-            std::cout << "stop";
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
