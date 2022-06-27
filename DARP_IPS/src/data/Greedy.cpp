@@ -13,6 +13,7 @@ GreedyLabel::GreedyLabel(PNode currentNode, float reachTime, int nbPassengers) :
     child_ = nullptr;
     pair_ = nullptr;
     travelResource_ = 0;
+    departTime_ = reachTime;
 }
 
 
@@ -192,8 +193,10 @@ void LinkedGreedyLabels::insertRequest(PGreedyLabel &preLabel, PNode &pickNode, 
 
 void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
     float reachTime = 0;
-    if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < newNode->requestTime_) && (newNode->type_ == PICKUP))
+    if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < newNode->requestTime_) && (newNode->type_ == PICKUP)) {
         reachTime = departTime_ + durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
+        preLabel->departTime_ = departTime_;
+    }
     else
         reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
                    durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
@@ -208,7 +211,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         float deltaT = reachTime + newNode->deltaTime_ +
                        durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
                        preLabel->child_->reachTime_;
-        std::cout << durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] << std::endl;
+//        std::cout << durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] << std::endl;
         preLabel->child_->parent_ = newLabel;
         newLabel->child_ = preLabel->child_;
         newLabel->parent_ = preLabel;
@@ -216,14 +219,24 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
 
         PGreedyLabel currentLabel = newLabel;
         while (currentLabel->child_ != nullptr) {
-            currentLabel->child_->reachTime_ += deltaT;
+            // calculate child reach time
+            float childReachTime = 0;
+            if ((currentLabel->reachTime_ + currentLabel->currentNode_->deltaTime_ < currentLabel->child_->currentNode_->requestTime_) && (currentLabel->child_->currentNode_->type_ == PICKUP)) {
+                childReachTime = currentLabel->child_->currentNode_->requestTime_ + durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_];
+                currentLabel->departTime_ = childReachTime;
+            }
+            else
+                childReachTime = currentLabel->reachTime_ + currentLabel->currentNode_->deltaTime_ +
+                            durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_];
+            float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
+            currentLabel->child_->reachTime_ = childReachTime;
             currentLabel->child_->nbPassengers_ += newNode->nbPassengers_;
             if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
                 if ((currentLabel->child_->pair_ == nullptr) ||(currentLabel->child_->pair_->reachTime_ <= preLabel->reachTime_))
-                    currentLabel->child_->travelResource_ -= deltaT;
+                    currentLabel->child_->travelResource_ -= childDeltaT;
             }
             if (currentLabel->child_->currentNode_->type_ == PICKUP)
-                totalDelay_ += deltaT;
+                totalDelay_ += childDeltaT;
             currentLabel = currentLabel->child_;
         }
     }

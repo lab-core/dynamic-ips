@@ -15,6 +15,7 @@ public:
     PGreedyLabel child_;
     PGreedyLabel pair_;
     float reachTime_;
+    float departTime_;
     int nbPassengers_;
     float travelResource_;
 
