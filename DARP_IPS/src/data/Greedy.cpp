@@ -241,6 +241,8 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 std::cout << "GreedyLinkList before checking" << std::endl;
                 std::cout << toString() << std::endl;
                 insertNode(prePick,pickNode);
+                std::cout << "GreedyLinkList after insertion" << std::endl;
+                std::cout << toString() << std::endl;
                 deltaDelay =  totalDelay_ - curDelay;
                 pickDeltaT = tail_->reachTime_ - endTime;
                 preDrop = prePick->child_;
@@ -284,8 +286,6 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     }
                     preDrop = preDrop->child_;
                 }
-                std::cout << "GreedyLinkList after checking" << std::endl;
-                std::cout << toString() << std::endl;
                 removeLabel(pickLabel, pickDeltaT, deltaDelay);
                 std::cout << "GreedyLinkList after deletion" << std::endl;
                 std::cout << toString() << std::endl;
@@ -315,7 +315,8 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         preLabel->child_= newLabel;
 
         PGreedyLabel currentLabel = newLabel;
-//        updateReachTimes(currentLabel);
+        updateReachTimes(currentLabel);
+        /*
         while (currentLabel->child_ != nullptr) {
             // calculate child reach time
             float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
@@ -333,6 +334,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
                 totalDelay_ += childDeltaT;
             currentLabel = currentLabel->child_;
         }
+         */
     }
     if (newNode->type_ == PICKUP)
         totalDelay_ += (reachTime - newNode->requestTime_);
@@ -351,6 +353,7 @@ void LinkedGreedyLabels::removeLabel(PGreedyLabel &Label, float deltaT, float de
         PGreedyLabel currentLabel = Label;
         while (currentLabel->child_ != nullptr) {
             currentLabel->child_->reachTime_ -= deltaT;
+            currentLabel->child_->departTime_ -= deltaT;
             currentLabel->child_->nbPassengers_ -= Label->currentNode_->nbPassengers_;
             if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
                 if ((currentLabel->child_->pair_ == nullptr) ||
