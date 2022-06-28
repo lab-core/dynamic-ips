@@ -28,7 +28,7 @@ int main() {
     Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20160622_11-240m-3";
 
     // build the path of input files
     // create output files for epoch results

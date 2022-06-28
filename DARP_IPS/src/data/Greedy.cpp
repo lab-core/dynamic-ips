@@ -247,7 +247,19 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 pickDeltaT = tail_->reachTime_ - endTime;
                 preDrop = prePick->child_;
                 PGreedyLabel pickLabel = prePick->child_;
-                while (preDrop != nullptr) {
+
+                // we have to check the vehicle capacity violation, if there is one, it should be dropped before that
+                PGreedyLabel endLabel = nullptr;
+                PGreedyLabel currentIndex = pickLabel;
+                while (currentIndex->child_ != nullptr){
+                    if (currentIndex->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
+                        endLabel = currentIndex->child_;
+                        break;
+                    }
+                    else
+                        currentIndex = currentIndex->child_;
+                }
+                while (preDrop != endLabel) {
                     float increaseDelayByDrop = 0;
                     if (isDropPossible(preDrop, pickLabel, dropNode, maxDuration)) {
                         if (preDrop == tail_)
@@ -315,8 +327,8 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         preLabel->child_= newLabel;
 
         PGreedyLabel currentLabel = newLabel;
- //       updateReachTimes(currentLabel);
-
+        updateReachTimes(currentLabel);
+/*
         while (currentLabel->child_ != nullptr) {
             // calculate child reach time
             float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
@@ -334,7 +346,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
                 totalDelay_ += childDeltaT;
             currentLabel = currentLabel->child_;
         }
-
+*/
     }
     if (newNode->type_ == PICKUP)
         totalDelay_ += (reachTime - newNode->requestTime_);
@@ -349,6 +361,7 @@ void LinkedGreedyLabels::removeLabel(PGreedyLabel &Label, float deltaT, float de
         Label.reset();
     }
     else {
+        /*
 
         PGreedyLabel currentLabel = Label;
         while (currentLabel->child_ != nullptr) {
@@ -362,9 +375,10 @@ void LinkedGreedyLabels::removeLabel(PGreedyLabel &Label, float deltaT, float de
             }
             currentLabel = currentLabel->child_;
         }
+        */
         Label->child_->parent_ = Label->parent_;
         Label->parent_->child_ = Label->child_;
-//        updateReachTimes(Label->parent_);
+        updateReachTimes(Label->parent_);
         Label.reset();
     }
 }
