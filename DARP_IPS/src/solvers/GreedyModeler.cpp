@@ -72,6 +72,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
                     if (GreedyObj->departTime_ < requestObj->earlyPick_) {
                         GreedyObj->idleTime_ += requestObj->earlyPick_ - GreedyObj->departTime_;
                         GreedyObj->departTime_ = requestObj->earlyPick_;
+                        GreedyObj->tail_->departTime_ = requestObj->earlyPick_;
                     }
                 }
                 positionList.push_back(GreedyObj->findInsertPlace(PInst->instGraph_->nodes_[pickID],
