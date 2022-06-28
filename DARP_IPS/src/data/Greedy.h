@@ -50,7 +50,7 @@ public:
     void removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
     // this function calculate the reachTime from a Label to a node
-    float calculateReachTime(PGreedyLabel &preLabel, PNode &Node);
+    float calculateReachTime(PGreedyLabel &preLabel, PNode &Node) const;
 
     // this function convert a greedyLabel list to a route
     PRoute greedyLabelToRoute() const;

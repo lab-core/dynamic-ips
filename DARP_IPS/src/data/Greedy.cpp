@@ -25,8 +25,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Ve
     idleTime_ = 0;
     departTime_ = vehicle->departTime_;
     for (auto &nodeID: (*Vehicle_)->onboards_) {
-        float dropTime = tail_->reachTime_ + tail_->currentNode_->deltaTime_ +
-                         durationMatrix_[tail_->currentNode_->locationID_][pInst->instGraph_->nodes_[nodeID]->locationID_];
+        float dropTime = calculateReachTime(tail_, pInst->instGraph_->nodes_[nodeID]);
         PGreedyLabel newDropLabel = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[nodeID], dropTime,
                                                                   tail_->nbPassengers_ +
                                                                   pInst->instGraph_->nodes_[nodeID]->nbPassengers_);
@@ -178,8 +177,7 @@ bool LinkedGreedyLabels::isInsertPossible(PGreedyLabel &preLabel, PNode &newNode
     if (preLabel->nbPassengers_ + newNode->nbPassengers_ > (*Vehicle_)->capacity_)
         return false;
 
-    float reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-                      durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
+    float reachTime = calculateReachTime(preLabel, newNode);
     float deltaT = reachTime + newNode->deltaTime_ +
                    durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
                    preLabel->child_->reachTime_;
@@ -226,11 +224,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
         deltaDelay = 999999;
         if (prePick == tail_) {
             // it stays at tail and then departs to the pickup point
-            float pickTime;
-            if (prePick->reachTime_ + prePick->currentNode_->deltaTime_ < pickNode->requestTime_)
-                pickTime = departTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
-            else
-                pickTime = prePick->reachTime_ + prePick->currentNode_->deltaTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
+            float pickTime = calculateReachTime(prePick, pickNode);
             deltaDelay =  pickTime - pickNode->requestTime_;
             pickDeltaT = pickTime - departTime_;
             dropDeltaT = pickNode->deltaTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_];
@@ -261,8 +255,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                             dropDeltaT = preDrop->currentNode_->deltaTime_ +
                                          durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_];
                         else {
-                            dropDeltaT = preDrop->reachTime_ + preDrop->currentNode_->deltaTime_ + dropNode->deltaTime_ +
-                                         durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_] +
+                            dropDeltaT = calculateReachTime(preDrop, dropNode) + dropNode->deltaTime_ +
                                          durationMatrix_[dropNode->locationID_][preDrop->child_->currentNode_->locationID_] -
                                          preDrop->child_->reachTime_;
                             PGreedyLabel currentLabel = preDrop;
@@ -392,7 +385,7 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
 }
 
 // this function calculate the reachTime from a Label to a node
-float LinkedGreedyLabels::calculateReachTime(PGreedyLabel &preLabel, PNode &Node) {
+float LinkedGreedyLabels::calculateReachTime(PGreedyLabel &preLabel, PNode &Node) const {
     if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
         return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
     else
