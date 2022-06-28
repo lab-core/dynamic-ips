@@ -37,16 +37,23 @@ public:
 public:
     LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst);
     LinkedGreedyLabels(const LinkedGreedyLabels &label);
-//    void insertionAfter(PGreedyLabel preLabel, PNode &insetNode);
+    // this function find a position to insert pickup point and add drop off point at the end
     PGreedyLabel findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration) const;
+    // this function insert a request based on the pick-up position and add drop off at the end
     void insertRequest(PGreedyLabel &preLabel, PNode &pickNode, PNode &dropNode, float maxDuration);
+
+    /********************* New approach **********************/
+    bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
+    bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
+    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
     void insertNode(PGreedyLabel &preLabel, PNode &newNode);
     void removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
+    // this function calculate the reachTime from a Label to a node
+    float calculateReachTime(PGreedyLabel &preLabel, PNode &Node);
+
+    // this function convert a greedyLabel list to a route
     PRoute greedyLabelToRoute() const;
-    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
-    bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
-    bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
     // Display function
     std::string toString() const;
 };

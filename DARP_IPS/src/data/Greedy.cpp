@@ -52,29 +52,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(const LinkedGreedyLabels &label) {
 
 }
 
-/*void LinkedGreedyLabels::insertionAfter(PGreedyLabel preLabel, PNode &insetNode) {
-    float reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-            durationMatrix_[preLabel->currentNode_->locationID_][insetNode->locationID_];
-    PGreedyLabel NewGreedyLabel = std::make_shared<GreedyLabel>(insetNode, reachTime,
-                                                                preLabel->nbPassengers_ + insetNode->nbPassengers_);
-    if (preLabel->child_ != nullptr){
-        preLabel->child_->parent_ = NewGreedyLabel;
-        NewGreedyLabel->child_ = preLabel->child_;
-        NewGreedyLabel->parent_ = preLabel;
-        preLabel->child_= NewGreedyLabel;
-    }
-    float increaseTime = reachTime + insetNode->deltaTime_ +
-            durationMatrix_[insetNode->locationID_][NewGreedyLabel->child_->currentNode_->locationID_] -
-            NewGreedyLabel->child_->reachTime_;
-    PGreedyLabel currentLabel = NewGreedyLabel;
-    while (currentLabel->child_ != nullptr) {
-        currentLabel->child_->reachTime_ += increaseTime;
-        currentLabel->child_->nbPassengers_ += insetNode->nbPassengers_;
-        currentLabel = currentLabel->child_;
-    }
-}*/
-
-
+// this function find a position to insert pickup point and add drop off point at the end
 PGreedyLabel LinkedGreedyLabels::findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration) const {
     PGreedyLabel curLabel = head_;
     // find a position based on the available vehicle capacity
@@ -191,15 +169,142 @@ void LinkedGreedyLabels::insertRequest(PGreedyLabel &preLabel, PNode &pickNode, 
     totalDelay_ += (pickTime - pickNode->requestTime_);
 }
 
-void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
-    float reachTime = 0;
-    if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < newNode->requestTime_) && (newNode->type_ == PICKUP)) {
-        reachTime = departTime_ + durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
-        preLabel->departTime_ = departTime_;
+/********************* New approach **********************/
+
+bool LinkedGreedyLabels::isInsertPossible(PGreedyLabel &preLabel, PNode &newNode) const {
+    if (preLabel == tail_)
+        return true;
+    // check the capacity
+    if (preLabel->nbPassengers_ + newNode->nbPassengers_ > (*Vehicle_)->capacity_)
+        return false;
+
+    float reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
+                      durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
+    float deltaT = reachTime + newNode->deltaTime_ +
+                   durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
+                   preLabel->child_->reachTime_;
+
+    PGreedyLabel nextLabel = preLabel->child_;
+    while (nextLabel != nullptr) {
+        if (nextLabel->currentNode_->type_ == DROPOFF) {
+            if ((nextLabel->pair_ == nullptr) || (nextLabel->pair_->reachTime_ <= preLabel->reachTime_)) {
+                if (nextLabel->travelResource_ < deltaT)
+                    return false;
+            }
+        }
+        nextLabel = nextLabel->child_;
     }
-    else
-        reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-                   durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
+    return true;
+}
+
+bool LinkedGreedyLabels::isDropPossible(PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const {
+    if (!isInsertPossible(preDrop, dropNode))
+        return false;
+    else {
+        float dropTime = preDrop->reachTime_ + preDrop->currentNode_->deltaTime_ +
+                         durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_];
+        if (dropTime - (pickLabel->reachTime_ + pickLabel->currentNode_->deltaTime_) > maxDuration)
+            return false;
+    }
+    return true;
+}
+
+PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration) {
+    float deltaDelay = 999999;
+
+    // Tour length increase by adding pickup
+    float pickDeltaT = 999999;
+
+    // Tour length increase by adding drop off
+    float dropDeltaT = 999999;
+    PInsertPosition position = std::make_shared<insertPosition>(tail_,tail_, deltaDelay, pickDeltaT + dropDeltaT);
+
+    // define the initial position to add the request just after all
+    PGreedyLabel prePick = head_;
+    PGreedyLabel preDrop = head_;
+    while (prePick != nullptr) {
+        deltaDelay = 999999;
+        if (prePick == tail_) {
+            // it stays at tail and then departs to the pickup point
+            float pickTime;
+            if (prePick->reachTime_ + prePick->currentNode_->deltaTime_ < pickNode->requestTime_)
+                pickTime = departTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
+            else
+                pickTime = prePick->reachTime_ + prePick->currentNode_->deltaTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
+            deltaDelay =  pickTime - pickNode->requestTime_;
+            pickDeltaT = pickTime - departTime_;
+            dropDeltaT = pickNode->deltaTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_];
+            preDrop = tail_;
+            if (deltaDelay  < position->deltaDelay_) {
+                if (pickDeltaT + dropDeltaT < position->deltaLength_)
+                    position->updatePosition(prePick, preDrop, deltaDelay,pickDeltaT + dropDeltaT);
+            }
+        }
+        else {
+            //first we check to see is it possible to insert pickup after prePick
+            if (isInsertPossible(prePick, pickNode)) {
+                // we have to find a place to insert drop point
+                // first we make a copy of the list and insert the pickup
+                float endTime = tail_->reachTime_;
+                float curDelay = totalDelay_;
+                std::cout << "GreedyLinkList before checking" << std::endl;
+                toString();
+                insertNode(prePick,pickNode);
+                deltaDelay =  totalDelay_ - curDelay;
+                pickDeltaT = tail_->reachTime_ - endTime;
+                preDrop = prePick->child_;
+                PGreedyLabel pickLabel = prePick->child_;
+                while (preDrop != nullptr) {
+                    float increaseDelayByDrop = 0;
+                    if (isDropPossible(preDrop, pickLabel, dropNode, maxDuration)) {
+                        if (preDrop == tail_)
+                            dropDeltaT = preDrop->currentNode_->deltaTime_ +
+                                         durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_];
+                        else {
+                            dropDeltaT = preDrop->reachTime_ + preDrop->currentNode_->deltaTime_ + dropNode->deltaTime_ +
+                                         durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_] +
+                                         durationMatrix_[dropNode->locationID_][preDrop->child_->currentNode_->locationID_] -
+                                         preDrop->child_->reachTime_;
+                            PGreedyLabel currentLabel = preDrop;
+
+                            while (currentLabel->child_ != nullptr) {
+                                if (preDrop->child_->currentNode_->type_ == PICKUP)
+                                    increaseDelayByDrop += dropDeltaT;
+                                currentLabel = currentLabel->child_;
+                            }
+                        }
+                        if (deltaDelay + increaseDelayByDrop < position->deltaDelay_) {
+                            if (preDrop == pickLabel)
+                                position->updatePosition(prePick, prePick, deltaDelay + increaseDelayByDrop,
+                                                         pickDeltaT + dropDeltaT);
+                            else
+                                position->updatePosition(prePick, preDrop, deltaDelay + increaseDelayByDrop,
+                                                         pickDeltaT + dropDeltaT);
+                        }
+                        else if (deltaDelay + increaseDelayByDrop == position->deltaDelay_) {
+                            if (pickDeltaT + dropDeltaT < position->deltaLength_) {
+                                if (preDrop == pickLabel)
+                                    position->updatePosition(prePick, prePick, deltaDelay + increaseDelayByDrop,
+                                                             pickDeltaT + dropDeltaT);
+                                else
+                                    position->updatePosition(prePick, preDrop, deltaDelay + increaseDelayByDrop,
+                                                             pickDeltaT + dropDeltaT);
+                            }
+                        }
+                    }
+                    preDrop = preDrop->child_;
+                }
+                removeLabel(pickLabel, pickDeltaT, deltaDelay);
+                std::cout << "GreedyLinkList before checking" << std::endl;
+                toString();
+            }
+        }
+        prePick = prePick->child_;
+    }
+    return position;
+}
+void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
+    float reachTime = calculateReachTime(preLabel, newNode);
     PGreedyLabel newLabel = std::make_shared<GreedyLabel>(newNode, reachTime, preLabel->nbPassengers_ +
                                                                               newNode->nbPassengers_);
     if (preLabel->child_ == nullptr){
@@ -208,10 +313,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         tail_ = newLabel;
     }
     else {
-        /*float deltaT = reachTime + newNode->deltaTime_ +
-                       durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
-                       preLabel->child_->reachTime_;*/
-//        std::cout << durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] << std::endl;
+
         preLabel->child_->parent_ = newLabel;
         newLabel->child_ = preLabel->child_;
         newLabel->parent_ = preLabel;
@@ -220,14 +322,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         PGreedyLabel currentLabel = newLabel;
         while (currentLabel->child_ != nullptr) {
             // calculate child reach time
-            float childReachTime;
-            if ((currentLabel->reachTime_ + currentLabel->currentNode_->deltaTime_ < currentLabel->child_->currentNode_->requestTime_) && (currentLabel->child_->currentNode_->type_ == PICKUP)) {
-                childReachTime = currentLabel->child_->currentNode_->requestTime_ + durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_];
-                currentLabel->departTime_ = childReachTime;
-            }
-            else
-                childReachTime = currentLabel->reachTime_ + currentLabel->currentNode_->deltaTime_ +
-                            durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_];
+            float childReachTime = calculateReachTime(currentLabel, currentLabel->child_->currentNode_);
             float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
             currentLabel->child_->reachTime_ = childReachTime;
             currentLabel->child_->nbPassengers_ += newNode->nbPassengers_;
@@ -294,7 +389,17 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
     totalDelay_ += (pickLabel->reachTime_ - pickNode->requestTime_);
 }
 
+// this function calculate the reachTime from a Label to a node
+float LinkedGreedyLabels::calculateReachTime(PGreedyLabel &preLabel, PNode &Node) {
+    if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
+        return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+    else
+        return preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
+                         durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+}
 
+
+// this function convert a greedyLabel list to a route
 PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
     newRoute->addSource(source_->currentNode_, source_->reachTime_, (*Vehicle_)->numPassengers_);
@@ -306,139 +411,6 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
         currentLabel = currentLabel->child_;
     }
     return newRoute;
-}
-
-PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration) {
-    float deltaDelay = 999999;
-
-    // Tour length increase by adding pickup
-    float pickDeltaT = 999999;
-
-    // Tour length increase by adding drop off
-    float dropDeltaT = 999999;
-    PInsertPosition position = std::make_shared<insertPosition>(tail_,tail_, deltaDelay, pickDeltaT + dropDeltaT);
-
-    // define the initial position to add the request just after all
-    PGreedyLabel prePick = head_;
-    PGreedyLabel preDrop = head_;
-    while (prePick != nullptr) {
-        deltaDelay = 999999;
-        if (prePick == tail_) {
-            // it stays at tail and then departs to the pickup point
-            float pickTime;
-            if (prePick->reachTime_ + prePick->currentNode_->deltaTime_ < pickNode->requestTime_)
-                pickTime = departTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
-            else
-                pickTime = prePick->reachTime_ + prePick->currentNode_->deltaTime_ + durationMatrix_[prePick->currentNode_->locationID_][pickNode->locationID_];
-            deltaDelay =  pickTime - pickNode->requestTime_;
-            pickDeltaT = pickTime - departTime_;
-            dropDeltaT = pickNode->deltaTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_];
-            preDrop = tail_;
-            if (deltaDelay  < position->deltaDelay_) {
-                if (pickDeltaT + dropDeltaT < position->deltaLength_)
-                    position->updatePosition(prePick, preDrop, deltaDelay,pickDeltaT + dropDeltaT);
-            }
-        }
-        else {
-            //first we check to see is it possible to insert pickup after prePick
-            if (isInsertPossible(prePick, pickNode)) {
-                // we have to find a place to insert drop point
-                // first we make a copy of the list and insert the pickup
-                float endTime = tail_->reachTime_;
-                float curDelay = totalDelay_;
-                std::cout << "GreedyLinkList before checking" << std::endl;
-                toString();
-                insertNode(prePick,pickNode);
-                deltaDelay =  totalDelay_ - curDelay;
-                pickDeltaT = tail_->reachTime_ - endTime;
-                preDrop = prePick->child_;
-                PGreedyLabel pickLabel = prePick->child_;
-                while (preDrop != nullptr) {
-                    float increaseDelayByDrop = 0;
-                    if (isDropPossible(preDrop, pickLabel, dropNode, maxDuration)) {
-                        if (preDrop == tail_)
-                            dropDeltaT = preDrop->currentNode_->deltaTime_ +
-                                    durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_];
-                        else {
-                            dropDeltaT = preDrop->reachTime_ + preDrop->currentNode_->deltaTime_ + dropNode->deltaTime_ +
-                                    durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_] +
-                                    durationMatrix_[dropNode->locationID_][preDrop->child_->currentNode_->locationID_] -
-                                    preDrop->child_->reachTime_;
-                            PGreedyLabel currentLabel = preDrop;
-
-                            while (currentLabel->child_ != nullptr) {
-                                if (preDrop->child_->currentNode_->type_ == PICKUP)
-                                    increaseDelayByDrop += dropDeltaT;
-                                currentLabel = currentLabel->child_;
-                            }
-                        }
-                        if (deltaDelay + increaseDelayByDrop < position->deltaDelay_) {
-                            if (preDrop == pickLabel)
-                                position->updatePosition(prePick, prePick, deltaDelay + increaseDelayByDrop,
-                                                         pickDeltaT + dropDeltaT);
-                            else
-                                position->updatePosition(prePick, preDrop, deltaDelay + increaseDelayByDrop,
-                                                         pickDeltaT + dropDeltaT);
-                        }
-                        else if (deltaDelay + increaseDelayByDrop == position->deltaDelay_) {
-                            if (pickDeltaT + dropDeltaT < position->deltaLength_) {
-                                if (preDrop == pickLabel)
-                                    position->updatePosition(prePick, prePick, deltaDelay + increaseDelayByDrop,
-                                                             pickDeltaT + dropDeltaT);
-                                else
-                                    position->updatePosition(prePick, preDrop, deltaDelay + increaseDelayByDrop,
-                                                             pickDeltaT + dropDeltaT);
-                            }
-                        }
-                    }
-                    preDrop = preDrop->child_;
-                }
-                removeLabel(pickLabel, pickDeltaT, deltaDelay);
-                std::cout << "GreedyLinkList before checking" << std::endl;
-                toString();
-            }
-        }
-        prePick = prePick->child_;
-    }
-    return position;
-}
-
-bool LinkedGreedyLabels::isInsertPossible(PGreedyLabel &preLabel, PNode &newNode) const {
-    if (preLabel == tail_)
-        return true;
-    // check the capacity
-    if (preLabel->nbPassengers_ + newNode->nbPassengers_ > (*Vehicle_)->capacity_)
-        return false;
-
-    float reachTime = preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-                     durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_];
-    float deltaT = reachTime + newNode->deltaTime_ +
-                  durationMatrix_[newNode->locationID_][preLabel->child_->currentNode_->locationID_] -
-                  preLabel->child_->reachTime_;
-
-    PGreedyLabel nextLabel = preLabel->child_;
-    while (nextLabel != nullptr) {
-        if (nextLabel->currentNode_->type_ == DROPOFF) {
-            if ((nextLabel->pair_ == nullptr) || (nextLabel->pair_->reachTime_ <= preLabel->reachTime_)) {
-                if (nextLabel->travelResource_ < deltaT)
-                    return false;
-            }
-        }
-        nextLabel = nextLabel->child_;
-    }
-    return true;
-}
-
-bool LinkedGreedyLabels::isDropPossible(PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const {
-    if (!isInsertPossible(preDrop, dropNode))
-        return false;
-    else {
-        float dropTime = preDrop->reachTime_ + preDrop->currentNode_->deltaTime_ +
-                         durationMatrix_[preDrop->currentNode_->locationID_][dropNode->locationID_];
-        if (dropTime - (pickLabel->reachTime_ + pickLabel->currentNode_->deltaTime_) > maxDuration)
-            return false;
-    }
-    return true;
 }
 
 std::string LinkedGreedyLabels::toString() const {
@@ -493,6 +465,8 @@ std::string LinkedGreedyLabels::toString() const {
     repStr << "===========================================================================================" << std::endl;
     return repStr.str();
 }
+
+
 
 
 insertPosition::insertPosition(PGreedyLabel prePickup, PGreedyLabel preDrop, float deltaDelay,
