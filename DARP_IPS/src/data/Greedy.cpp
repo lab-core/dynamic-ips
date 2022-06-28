@@ -248,7 +248,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 float endTime = tail_->reachTime_;
                 float curDelay = totalDelay_;
                 std::cout << "GreedyLinkList before checking" << std::endl;
-                toString();
+                std::cout << toString() << std::endl;
                 insertNode(prePick,pickNode);
                 deltaDelay =  totalDelay_ - curDelay;
                 pickDeltaT = tail_->reachTime_ - endTime;
@@ -294,9 +294,11 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     }
                     preDrop = preDrop->child_;
                 }
+                std::cout << "GreedyLinkList after checking" << std::endl;
+                std::cout << toString() << std::endl;
                 removeLabel(pickLabel, pickDeltaT, deltaDelay);
-                std::cout << "GreedyLinkList before checking" << std::endl;
-                toString();
+                std::cout << "GreedyLinkList after deletion" << std::endl;
+                std::cout << toString() << std::endl;
             }
         }
         prePick = prePick->child_;
@@ -424,7 +426,7 @@ std::string LinkedGreedyLabels::toString() const {
     repStr << "#" << std::endl;
 
     // print table header
-    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
     repStr << std::left << std::setw(6) << "#      ";
     repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
     repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
@@ -432,7 +434,7 @@ std::string LinkedGreedyLabels::toString() const {
     repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
     repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
     repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
 
     // print the source stop pint
     repStr << "#" << std::setw(4) << 1 << "  ";
@@ -457,12 +459,13 @@ std::string LinkedGreedyLabels::toString() const {
         repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
         repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
         repStr << std::right << std::setw(11) << curr->child_->departTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
         repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
         curr = curr->child_;
         counter++;
     }
 
-    repStr << "===========================================================================================" << std::endl;
+    repStr << "============================================================================================++++++++++===========" << std::endl;
     return repStr.str();
 }
 
