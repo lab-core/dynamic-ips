@@ -25,7 +25,7 @@ int main() {
     bool showLog = true;
     bool disabledHeuristics;
 
-    Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
+    auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
     std::string instanceName = "20160622_11-240m-3";
@@ -61,7 +61,7 @@ int main() {
         mainInst->nbOnboards_ = 0;
         for (auto & vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch, mainInst->parameters_->epochLength_);
-            mainInst->nbOnboards_ += vehicleObj->onboards_.size();
+            mainInst->nbOnboards_ += (int)vehicleObj->onboards_.size();
             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
 
@@ -164,7 +164,7 @@ int main() {
 
                                 PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                                 subProblem->initSubGraph(EpochInst);
-                                subProblem->solveDynamic(epoch);
+                                subProblem->solveDynamic();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
                                 if (subProblem->bestReducedCost_ > 0)
                                     nbNegativeNotFound++;

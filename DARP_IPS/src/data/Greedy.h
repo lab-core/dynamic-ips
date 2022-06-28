@@ -50,10 +50,10 @@ public:
     void removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
     // this function calculate the reachTime from a Label to a node
-    float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) const;
+    static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;
 
     // this function calculate the reachTime from a node to a Label
-    float nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) const;
+    static float nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) ;
 
     // this function starts from a label in the list and update reachTimes and departTimes afterwards to the tail
     void updateReachTimes(PGreedyLabel &preLabel);

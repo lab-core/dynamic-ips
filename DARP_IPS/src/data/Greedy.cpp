@@ -407,7 +407,7 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
 }
 
 // this function calculate the reachTime from a Label to a node
-float LinkedGreedyLabels::labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) const {
+float LinkedGreedyLabels::labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) {
     if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
         return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
     else
@@ -416,7 +416,7 @@ float LinkedGreedyLabels::labelToNodeReachTime(PGreedyLabel &preLabel, PNode &No
 }
 
 // this function calculate the reachTime from a node to a Label
-float LinkedGreedyLabels::nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) const {
+float LinkedGreedyLabels::nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) {
     if ((nodeReachTime + preNode->deltaTime_ < nextLabel->currentNode_->requestTime_) && (nextLabel->currentNode_->type_ == PICKUP))
         return nextLabel->currentNode_->requestTime_ + durationMatrix_[preNode->locationID_][nextLabel->currentNode_->locationID_];
     else

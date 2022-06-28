@@ -25,7 +25,7 @@ int main() {
     bool middleSave = false;
     bool showLog = true;
 
-    Tools::Timer *subProTime = new Tools::Timer(); subProTime->init();
+    auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
     std::string instanceName = "20160622_11-240m-3";
@@ -147,7 +147,7 @@ int main() {
                                 subProOptions->disableHeuristics();
                             PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                             subProblem->initSubGraph(StaticInst);
-                            subProblem->solveDynamic(epoch);
+                            subProblem->solveDynamic();
                             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
                             if (subProblem->bestReducedCost_ > 0)
                                 nbNegativeNotFound++;

@@ -30,7 +30,7 @@ public:
     std::vector<PNode> nodesOrder_;
 
     // Constructor and Destructor
-    LabelingSubProblem(PVehicle &vehicle, const PSolverOption &solverOptions);
+    LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
     ~LabelingSubProblem() override;
 
     // this function sort the list of nodes based of their dual values
@@ -43,10 +43,10 @@ public:
     void labelExtend(PLabel &parentLabel, PNode &outNode, std::vector<PNode> &activeNodeList);
     void labelDrop(PLabel &parentLabel, std::vector<PNode> &activeNodeList);
     bool isLabelAdded(PLabel &newLabel, PNode &outNode);
-    void solveDynamic_pushing(int epoch);
-    void solveDynamic_pulling(int epoch);
-    void solveDynamic_pulling1(int epoch);
-    void solveDynamic(int epoch);
+    void solveDynamic_pushing();
+    void solveDynamic_pulling();
+    void solveDynamic_pulling1();
+    void solveDynamic();
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes);
