@@ -18,7 +18,7 @@ GreedyLabel::GreedyLabel(PNode currentNode, float reachTime, int nbPassengers) :
 
 
 LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Vehicle_(&vehicle)  {
-    source_ = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_], vehicle->departTime_, vehicle->onboards_.size());
+    source_ = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_], vehicle->departTime_, vehicle->numPassengers_);
     head_ = source_;
     tail_ = source_;
     totalDelay_ = 0;
@@ -315,8 +315,8 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
         preLabel->child_= newLabel;
 
         PGreedyLabel currentLabel = newLabel;
-        updateReachTimes(currentLabel);
-        /*
+ //       updateReachTimes(currentLabel);
+
         while (currentLabel->child_ != nullptr) {
             // calculate child reach time
             float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
@@ -334,7 +334,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
                 totalDelay_ += childDeltaT;
             currentLabel = currentLabel->child_;
         }
-         */
+
     }
     if (newNode->type_ == PICKUP)
         totalDelay_ += (reachTime - newNode->requestTime_);
@@ -364,6 +364,7 @@ void LinkedGreedyLabels::removeLabel(PGreedyLabel &Label, float deltaT, float de
         }
         Label->child_->parent_ = Label->parent_;
         Label->parent_->child_ = Label->child_;
+//        updateReachTimes(Label->parent_);
         Label.reset();
     }
 }
@@ -420,7 +421,7 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
         currentLabel->child_->reachTime_ = childReachTime;
         currentLabel->child_->departTime_ = childReachTime;
-        currentLabel->child_->nbPassengers_ += currentLabel->nbPassengers_ + currentLabel->child_->currentNode_->nbPassengers_;
+        currentLabel->child_->nbPassengers_ = currentLabel->nbPassengers_ + currentLabel->child_->currentNode_->nbPassengers_;
         if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
             if (currentLabel->child_->pair_ == nullptr) {
                 currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
