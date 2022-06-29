@@ -73,10 +73,6 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
-        /*if (departTime_ < startTime_ + (epoch+1) * epochLength) {
-            departTime_ = startTime_ + (epoch + 1) * epochLength;
-            currentRoute_ = solutionRoute_;
-        }*/
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
@@ -108,9 +104,12 @@ void Vehicle::updateState(int epoch, int &epochLength) {
 
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
+
+                    // if we have reached the end of the route, next condition is checked
                     if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
-                        idleTime_ += startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_;
+                        idleTime_ += (startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_);
                         departTime_ = startTime_ + static_cast<float>((epoch + 1) * epochLength);
+                        currentRoute_->routeNodes_[i]->departTime_ = departTime_;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
                     departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
@@ -171,8 +170,11 @@ void Vehicle::updateStateTime(float stopTime) {
 
                 // at depart point the vehicle is ready to leave the stop location and delta time has passed
                 departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
-                if (departTime_ < startTime_ + stopTime)
+                if (departTime_ < startTime_ + stopTime) {
+                    idleTime_ += (startTime_ + stopTime - departTime_);
                     departTime_ = startTime_ + stopTime;
+                    currentRoute_->routeNodes_[i]->departTime_ = departTime_;
+                }
                 numPassengers_ = currentRoute_->plannedPassengers_[i];
                 departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
                 currentRoute_->routeNodes_[i]->type_ = SOURCE;

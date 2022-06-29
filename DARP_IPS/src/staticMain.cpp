@@ -75,12 +75,16 @@ int main() {
             GreedyModel->solveInsertion(StaticInst);
             GreedyModel->solutionToRoute(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
-            for (int v = 0; v < StaticInst->nbVehicles_; ++v)
-                std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();
+            for (auto & vehicleObj : StaticInst->vehicles_)
+                std::cout << vehicleObj->currentRoute_->toString();
             if (middleSave) {
                 for (auto & vehicleObj: StaticInst->vehicles_)
                     vehicleObj->updateStateTime(saveTime);
                 StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime);
+            }
+            else {
+                for (auto & vehicleObj : StaticInst->vehicles_)
+                    vehicleObj->solutionRoute_ = vehicleObj->currentRoute_;
             }
             break;
         default: // CG_CPLEX and CG_ISUD (Column generation approaches)
@@ -198,7 +202,7 @@ int main() {
 
     StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
 
-    if (!middleSave) {
+    if (!middleSave && StaticInst->parameters_->mainAlgorithm_ != GREEDY) {
         for (auto &vehicleObj: StaticInst->vehicles_) {
             if (vehicleObj->solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
                 for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
@@ -235,15 +239,20 @@ int main() {
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
 
-    for (int v = 0; v < mainInst->nbVehicles_; ++v) {
-        std::cout << mainInst->vehicles_[v]->solutionRoute_->toString();
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        std::cout << "#" << std::left << std::endl;
+        std::cout << "#\t" << std::setw(25) << "- IDLE_TIME" << " : " << vehicleObj->idleTime_ << std::endl;
+        std::cout << vehicleObj->solutionRoute_->toString();
     }
     std::cout << "#" << std::endl;
     std::cout << mainInst->solutionToString();
     std::cout << std::left << std::fixed << std::setprecision(2);
+    std::cout << "#" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUBPROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
-
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
 
     // save vehicle solutions in csv file
     mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());

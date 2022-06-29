@@ -462,6 +462,13 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
         newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
         newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
         newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
+        newRoute->routeNodes_.back()->nodeStatus_ = DONE;
+        if (newRoute->routeNodes_.back()->type_ == PICKUP)
+            newRoute->routeNodes_.back()->related_Request_->pickTime_ = currentLabel->reachTime_;
+        else if (newRoute->routeNodes_.back()->type_ == DROPOFF) {
+            newRoute->routeNodes_.back()->related_Request_->dropTime_ = currentLabel->reachTime_;
+            newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
+        }
         currentLabel = currentLabel->child_;
     }
     return newRoute;

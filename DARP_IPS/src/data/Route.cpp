@@ -122,11 +122,13 @@ void Route::removeNode(int nodeIndex) {
 std::string Route::toString() const {
     std::stringstream repStr;
 
-    repStr << "#" << std::left << std::endl;
-    repStr << "#\t" << std::setw(24) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+//    repStr << "#" << std::left << std::endl;
+    repStr << std::left;
+    repStr << "#\t" << std::setw(25) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+
     repStr << "#" << std::endl;
 
     // print table header

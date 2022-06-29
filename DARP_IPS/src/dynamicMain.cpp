@@ -267,13 +267,16 @@ int main() {
     std::cout << "*********************** FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch << " EPOCHS *********************** " << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
-
-    for (int v = 0; v < mainInst->nbVehicles_; ++v) {
-        std::cout << mainInst->vehicles_[v]->solutionRoute_->toString();
+    std::cout << "#" << std::left << std::endl;
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        std::cout << "#" << std::left << std::endl;
+        std::cout << "#\t" << std::setw(24) << "- IDLE_TIME" << " : " << vehicleObj->idleTime_ << std::endl;
+        std::cout << vehicleObj->solutionRoute_->toString();
     }
     std::cout << "#" << std::endl;
     std::cout << mainInst->solutionToString();
     std::cout << std::left << std::fixed << std::setprecision(2);
+    std::cout << "#" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;

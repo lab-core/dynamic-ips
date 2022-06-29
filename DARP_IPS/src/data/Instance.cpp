@@ -80,14 +80,15 @@ std::string Instance::solutionToString() {
 
 
     // print table header
-    repStr << "# ---------------------------------------------------------------------------------------------------" << std::endl;
-    repStr << "#   REQUEST_ID" << "   ";
-    repStr << "REQUEST_TIME (s)" << "   ";
-    repStr << "PICK_TIME (s)" << "   ";
-    repStr << "WAIT_TIME (s)" << "   ";
-    repStr << "TRIP_DELAY (s)" << "   ";
+    repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << "#  REQUEST_ID" << "  ";
+    repStr << "REQUEST_TIME(s)" << "   ";
+    repStr << "PICK_TIME(s)" << "   ";
+    repStr << "DROP_TIME(s)" << "   ";
+    repStr << "WAIT_TIME(s)" << "  ";
+    repStr << "TRIP_DELAY(s)" << "   ";
     repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# ---------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
     // print the internal nodes of the route
     for (int i = 0; i < nbRequests_; ++i) {
@@ -95,31 +96,32 @@ std::string Instance::solutionToString() {
         repStr << std::fixed;
         repStr << std::setprecision(2);
         repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
-        repStr << std::right << std::setw(12) << requests_[i]->earlyPick_ << " (s)  ";
+        repStr << std::right << std::setw(9) << requests_[i]->earlyPick_ << " (s)  ";
         if (requests_[i]->requestStatus_ != NO_ACTION) {
-            repStr << std::right << std::setw(10) << requests_[i]->pickTime_ << " (s)  ";
-            repStr << std::right << std::setw(10) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
 
 /*            double travelTime =
                     instGraph_->nodes_[dropID]->reachTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;*/
             double travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
 
-            repStr << std::right << std::setw(11) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
+            repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ )
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
         }
         else {
-            repStr << std::right << std::setw(10) << "-------" << " (s)  ";
-            repStr << std::right << std::setw(10) << "-------" << " (s)  ";
-            repStr << std::right << std::setw(11) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             penalty += requests_[i]->penalty_;
         }
 
         repStr << std::setw(7) << requests_[i]->nbPassengers_ << std::endl;
     }
 
-    repStr << "# ---------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
     for (const auto &vehicleObj : vehicles_) {
         totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
