@@ -164,6 +164,8 @@ void LinkedGreedyLabels::insertRequest(PGreedyLabel &preLabel, PNode &pickNode, 
         newDropLabel->travelResource_ = maxDuration - newDropLabel->reachTime_ + newPickLabel->reachTime_ + pickNode->deltaTime_;
     }
     departTime_ = head_->reachTime_ + head_->currentNode_->deltaTime_;
+    if ((pickTime - pickNode->requestTime_) < 0)
+        std::cout << "error" ;
     totalDelay_ += (pickTime - pickNode->requestTime_);
 }
 
@@ -238,6 +240,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 // first we make a copy of the list and insert the pickup
                 float endTime = tail_->reachTime_;
                 float curDelay = totalDelay_;
+
                 std::cout << "GreedyLinkList before checking" << std::endl;
                 std::cout << toString() << std::endl;
                 insertNode(prePick,pickNode);
@@ -298,7 +301,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     }
                     preDrop = preDrop->child_;
                 }
-                removeLabel(pickLabel, pickDeltaT, deltaDelay);
+                removeLabel(pickLabel, pickDeltaT);
                 std::cout << "GreedyLinkList after deletion" << std::endl;
                 std::cout << toString() << std::endl;
             }
@@ -328,58 +331,33 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
 
         PGreedyLabel currentLabel = newLabel;
         updateReachTimes(currentLabel);
-/*
-        while (currentLabel->child_ != nullptr) {
-            // calculate child reach time
-            float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
-            if (currentLabel->departTime_ < currentLabel->child_->currentNode_->requestTime_)
-                currentLabel->departTime_ = currentLabel->child_->currentNode_->requestTime_;
-            float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
-            currentLabel->child_->reachTime_ = childReachTime;
-            currentLabel->child_->departTime_ = childReachTime;
-            currentLabel->child_->nbPassengers_ += newNode->nbPassengers_;
-            if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
-                if ((currentLabel->child_->pair_ == nullptr) ||(currentLabel->child_->pair_->reachTime_ <= preLabel->reachTime_))
-                    currentLabel->child_->travelResource_ -= childDeltaT;
-            }
-            if (currentLabel->child_->currentNode_->type_ == PICKUP)
-                totalDelay_ += childDeltaT;
-            currentLabel = currentLabel->child_;
-        }
-*/
     }
-    if (newNode->type_ == PICKUP)
+    if (newNode->type_ == PICKUP){
+        if ((reachTime - newNode->requestTime_) < 0 )
+            std::cout << "error" ;
         totalDelay_ += (reachTime - newNode->requestTime_);
+    }
 }
 
 
-void LinkedGreedyLabels::removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay) {
-    totalDelay_ -= deltaDelay;
-    if (Label->child_ == nullptr){
-        Label->parent_->child_ = nullptr;
-        tail_ = Label->parent_;
-        Label.reset();
+void LinkedGreedyLabels::removeLabel(PGreedyLabel &label, float deltaT) {
+//    if (totalDelay_ < deltaDelay)
+//        std::cout << "error" ;
+//    totalDelay_ -= deltaDelay;
+    if (label->currentNode_->type_ == PICKUP) {
+        totalDelay_ -= (label->reachTime_ - label->currentNode_->requestTime_);
+    }
+    if (label->child_ == nullptr){
+        label->parent_->child_ = nullptr;
+        tail_ = label->parent_;
+        label.reset();
     }
     else {
-        /*
 
-        PGreedyLabel currentLabel = Label;
-        while (currentLabel->child_ != nullptr) {
-            currentLabel->child_->reachTime_ -= deltaT;
-            currentLabel->child_->departTime_ -= deltaT;
-            currentLabel->child_->nbPassengers_ -= Label->currentNode_->nbPassengers_;
-            if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
-                if ((currentLabel->child_->pair_ == nullptr) ||
-                    (currentLabel->child_->pair_->reachTime_ <= Label->parent_->reachTime_))
-                    currentLabel->child_->travelResource_ += deltaT;
-            }
-            currentLabel = currentLabel->child_;
-        }
-        */
-        Label->child_->parent_ = Label->parent_;
-        Label->parent_->child_ = Label->child_;
-        updateReachTimes(Label->parent_);
-        Label.reset();
+        label->child_->parent_ = label->parent_;
+        label->parent_->child_ = label->child_;
+        updateReachTimes(label->parent_);
+        label.reset();
     }
 }
 
@@ -403,7 +381,9 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
     pickLabel->pair_ = dropLabel;
     dropLabel->pair_ = pickLabel;
     dropLabel->travelResource_ = maxDuration - dropLabel->reachTime_ + pickLabel->reachTime_ + pickNode->deltaTime_;
-    totalDelay_ += (pickLabel->reachTime_ - pickNode->requestTime_);
+//    if ((pickLabel->reachTime_ - pickNode->requestTime_))
+//        std::cout << "error" ;
+//    totalDelay_ += (pickLabel->reachTime_ - pickNode->requestTime_);
 }
 
 // this function calculate the reachTime from a Label to a node
@@ -433,6 +413,15 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         if (currentLabel->departTime_ < currentLabel->child_->currentNode_->requestTime_)
             currentLabel->departTime_ = currentLabel->child_->currentNode_->requestTime_;
         float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
+        if (currentLabel->child_->currentNode_->type_ == PICKUP) {
+            float preDelay = currentLabel->child_->reachTime_ - currentLabel->child_->currentNode_->requestTime_;
+            float newDelay = childReachTime - currentLabel->child_->currentNode_->requestTime_;
+            totalDelay_ += (newDelay - preDelay);
+            if (totalDelay_ < 0 ) {
+                std::cout << "error";
+                std::cout << toString() << std::endl;
+            }
+        }
         currentLabel->child_->reachTime_ = childReachTime;
         currentLabel->child_->departTime_ = childReachTime;
         currentLabel->child_->nbPassengers_ = currentLabel->nbPassengers_ + currentLabel->child_->currentNode_->nbPassengers_;
@@ -448,18 +437,35 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
             }
         }
 
-        if (currentLabel->child_->currentNode_->type_ == PICKUP)
-            totalDelay_ += childDeltaT;
         currentLabel = currentLabel->child_;
+    }
+    if (totalDelay_ < 0 ) {
+        std::cout << "error";
+        std::cout << toString() << std::endl;
     }
 }
 // this function convert a greedyLabel list to a route
 PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
+    std::cout << "GreedyLinkList before converting to the route" << std::endl;
+    std::cout << toString() << std::endl;
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
     newRoute->addSource(source_->currentNode_, source_->reachTime_, (*Vehicle_)->numPassengers_);
     PGreedyLabel  currentLabel = source_->child_;
     while (currentLabel != nullptr) {
-        newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
+//        newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
+        newRoute->addNode(currentLabel->currentNode_);
+        if (newRoute->plannedReachTime_.back() != currentLabel->reachTime_) {
+            std::cout << "Connectivity constraint violated at node : ";
+            std::cout << newRoute->routeNodes_.back()->nodeID_ << std::endl;
+            Tools::throwException("Route-Validation");
+        }
+        if (currentLabel->parent_->departTime_ != currentLabel->parent_->reachTime_) {
+            if (currentLabel->parent_->departTime_ != currentLabel->currentNode_->requestTime_){
+                std::cout << "Depart time violated at node : ";
+                std::cout << currentLabel->parent_->currentNode_->nodeID_ << std::endl;
+                Tools::throwException("Route-Validation");
+            }
+        }
         newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
         newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
         newRoute->routeNodes_.back()->nodeStatus_ = DONE;
@@ -471,6 +477,8 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
         }
         currentLabel = currentLabel->child_;
     }
+    std::cout << "Created route from the GreedyLinkList" << std::endl;
+    std::cout << newRoute->toString() << std::endl;
     return newRoute;
 }
 
@@ -517,6 +525,8 @@ std::string LinkedGreedyLabels::toString() const {
         }
         repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
         repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
+        if (curr->child_->reachTime_ != curr->child_->currentNode_->reachTime_ && curr->child_->currentNode_->reachTime_ != 0)
+            std::cout << "error";
         repStr << std::right << std::setw(11) << curr->child_->departTime_ << " (s)  ";
         repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
         repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;

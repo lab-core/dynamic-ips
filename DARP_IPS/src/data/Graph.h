@@ -31,6 +31,7 @@ public:
     PNode *pairNode_;
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
+    NodeType initialType_;              // initial type (the type maybe change to source)
     float reachTime_;                   // the time that vehicle reach to the node
     float departTime_;                   // the time that vehicle reach to the node
     int nbPassengers_;                  // number of passengers to pick up or drop off

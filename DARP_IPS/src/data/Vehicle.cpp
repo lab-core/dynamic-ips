@@ -73,6 +73,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
+//        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
@@ -80,8 +81,6 @@ void Vehicle::updateState(int epoch, int &epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                if (currentRoute_->routeNodes_[i]->related_Request_->getRequestId() == 260)
-                    std::cout << "HI" << std::endl;
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
@@ -147,8 +146,6 @@ void Vehicle::updateStateTime(float stopTime) {
         onboards_.clear();
         int breakIndex = 0;
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-            if (currentRoute_->routeNodes_[i]->related_Request_->getRequestId() == 260)
-                std::cout << "HI" << std::endl;
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
             currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
             currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
@@ -191,3 +188,4 @@ void Vehicle::updateStateTime(float stopTime) {
         currentRoute_->removeNode(breakIndex);
     }
 }
+

@@ -28,7 +28,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-3";
+    std::string instanceName = "20160622_11-240m-2";
 
     // build the path of input files
     // create output files for epoch results
@@ -54,6 +54,7 @@ int main() {
     for (auto & vehicleObj: mainInst->vehicles_) {
         vehicleObj->solutionRoute_ = std::make_shared<Route>(vehicleObj->vehicleID_);
         vehicleObj->solutionRoute_->addSource(vehicleObj->emptyRoute_->routeNodes_[0], vehicleObj->departTime_, vehicleObj->numPassengers_);
+ //       vehicleObj->solutionRoute_->routeNodes_.back()->reachTime_ = vehicleObj->departTime_;
     }
 
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
@@ -202,6 +203,7 @@ int main() {
 
     StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
 
+
     if (!middleSave && StaticInst->parameters_->mainAlgorithm_ != GREEDY) {
         for (auto &vehicleObj: StaticInst->vehicles_) {
             if (vehicleObj->solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
@@ -228,7 +230,12 @@ int main() {
 
         }
     }
+    // testing the solution route
+    for(auto  &vehicleObj : mainInst->vehicles_)
+        vehicleObj->solutionRoute_->testRoute(vehicleObj, StaticInst->parameters_->mainAlgorithm_ );
+
     std::cout << std::endl << std::endl;
+
     if (!showLog)
         fclose (stdout);
     freopen (inputPaths.getOutputFinalLog().c_str(),"w",stdout);
@@ -245,7 +252,13 @@ int main() {
         std::cout << vehicleObj->solutionRoute_->toString();
     }
     std::cout << "#" << std::endl;
-    std::cout << mainInst->solutionToString();
+    try {
+        std::cout << mainInst->solutionToString();
+    }
+    catch (std::exception e) {
+        std::cout << e.what() << std::endl;
+    }
+
     std::cout << std::left << std::fixed << std::setprecision(2);
     std::cout << "#" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;

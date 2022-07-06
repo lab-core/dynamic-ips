@@ -107,8 +107,11 @@ std::string Instance::solutionToString() {
             double travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
 
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
-            if (travelTime > requests_[i]->maxTravelTime_ )
+            if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
+                Tools::throwException("Trip delay Validation");
+            }
+//
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
         }
         else {
@@ -284,16 +287,20 @@ void Instance::resetRequestsSelectStatus() {
 void Instance::saveSolutionRoutes(const std::string& routeResultDir) {
     std::ofstream myFile;
     myFile.open (routeResultDir);
-    myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
+    myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad" << std::endl;
     for (auto & vehicleObj : vehicles_) {
+        int i = 0;
         for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
             myFile << vehicleObj->vehicleID_ << ",";
             myFile << nodeObj->nodeID_ << ",";
             myFile << nodeObj->requestTime_ << ",";
             myFile << nodeObj->reachTime_ << ",";
-            myFile << nodeObj->type_ << ",";
-            myFile << nodeObj->locationID_ << "\n";
-
+            myFile << nodeObj->initialType_ << ",";
+            myFile << nodeObj->locationID_ << ",";
+            myFile << nodeObj->departTime_ << ",";
+            myFile << nodeObj->nbPassengers_ << ",";
+            myFile << vehicleObj->solutionRoute_->plannedPassengers_[i] << "\n";
+            i++;
         }
     }
     myFile.close();
@@ -303,7 +310,7 @@ void Instance::saveRequestsResults(const std::string& requestResultDir) {
     std::ofstream myFile;
     myFile.open (requestResultDir);
     myFile << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
-              "DropTime, VehicleID" << std::endl;
+              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime" << std::endl;
 
     for (auto & requestObj : requests_) {
         myFile << requestObj->getRequestId() << ",";
@@ -313,7 +320,11 @@ void Instance::saveRequestsResults(const std::string& requestResultDir) {
         myFile << requestObj->earlyPick_ << ",";
         myFile << requestObj->pickTime_ << ",";
         myFile << requestObj->dropTime_ << ",";
-        myFile << requestObj->vehicleID_ << "\n";
+        myFile << requestObj->vehicleID_ << ",";
+        myFile << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
+        myFile << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
+        myFile << requestObj->maxTravelTime_ << ",";
+        myFile << requestObj->minTravelTime_ << "\n";
 /*        if (requests_[i]->requestStatus_ != NO_ACTION) {
             myFile << requests_[i]->pickTime_ << ",";
             myFile << requests_[i]->dropTime_ << "\n";

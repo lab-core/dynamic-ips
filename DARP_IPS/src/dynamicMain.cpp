@@ -28,7 +28,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-3";
+    std::string instanceName = "20160622_11-240m-2";
 
     // build the path of input files
     // create output files for epoch results
@@ -257,6 +257,11 @@ int main() {
             vehicleObj->solutionRoute_->addNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
 
     }
+
+    // testing the solution route
+    for(auto  &vehicleObj : mainInst->vehicles_)
+        vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_->mainAlgorithm_ );
+
     std::cout << std::endl << std::endl;
     if (!showLog)
         fclose (stdout);

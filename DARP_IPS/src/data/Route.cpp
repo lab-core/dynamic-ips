@@ -40,7 +40,8 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
         routeNodes_.push_back(node);
         plannedReachTime_.push_back(departTime);
         plannedPassengers_.push_back(departPassengers);
- //       node->reachTime_ = departTime;
+        if (node->initialType_ == SOURCE)
+            node->reachTime_ = departTime;
         node->departTime_ = departTime;
     }
 }
@@ -48,15 +49,13 @@ void Route::addNode(PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
-            durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
-    if (node->type_ == PICKUP) {
+                      durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
+    if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_->getRequestId());
-        if (reachTime < node->requestTime_)
-            plannedReachTime_.push_back(node->requestTime_);
-        else {
-            plannedReachTime_.push_back(reachTime);
-            totalDelay_ += (reachTime - node->requestTime_);
-        }
+        if (plannedReachTime_.back() < node->requestTime_)
+            reachTime = node->requestTime_ + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
+        plannedReachTime_.push_back(reachTime);
+        totalDelay_ += (reachTime - node->requestTime_);
     }
     else
         plannedReachTime_.push_back(reachTime);
@@ -67,7 +66,7 @@ void Route::addNode(PNode &node, float reachTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     plannedReachTime_.push_back(reachTime);
-    if (node->type_ == PICKUP) {
+    if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_->getRequestId());
         totalDelay_ += (reachTime - node->requestTime_);
     }
@@ -89,7 +88,7 @@ void Route::addNode(PNode &node, float departTime, int departPassengers) {
         float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
                           durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
 
-        if (node->type_ == PICKUP) {
+        if (node->initialType_ == PICKUP) {
             routeRequests_.push_back(node->related_Request_->getRequestId());
             plannedReachTime_.push_back(std::max(node->requestTime_,reachTime));
             totalDelay_ += (plannedReachTime_.back() - node->requestTime_);
@@ -110,7 +109,7 @@ void Route::removeNode(int nodeIndex) {
     routeRequests_.clear();
     totalDelay_ = 0;
     for (int i = 1; i < routeNodes_.size(); ++i) {
-        if (routeNodes_[i]->type_ == PICKUP) {
+        if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_->getRequestId());
             totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
         }
@@ -132,14 +131,15 @@ std::string Route::toString() const {
     repStr << "#" << std::endl;
 
     // print table header
-    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# -----------------------------------------------------------------------------------------------------------" << std::endl;
     repStr << std::left << std::setw(6) << "#      ";
     repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
-    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
-    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
-    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
+    repStr << std::left << std::setw(12) << "NODE_ID" << std::right;
+    repStr << std::right << std::setw(11) << " REACH_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(12) << " DEPART_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(12) << " PLAN_TIME"<< "(s)  ";
     repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# -----------------------------------------------------------------------------------------" << std::endl;
+    repStr << "# -----------------------------------------------------------------------------------------------------------" << std::endl;
 
     // print the source stop pint
     repStr << "#" << std::setw(4) << 1 << "  ";
@@ -147,7 +147,7 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(11) << routeNodes_[0]->nodeID_;
     repStr << std::right << std::setw(11) << routeNodes_[0]->reachTime_ << " (s)  ";
     repStr << std::right << std::setw(11) << routeNodes_[0]->departTime_ << " (s)  ";
- //   repStr << std::right << std::setw(11) << plannedReachTime_[0] << " (s)  ";
+    repStr << std::right << std::setw(11) << plannedReachTime_[0] << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
 
     // print the internal nodes of the route
@@ -156,7 +156,7 @@ std::string Route::toString() const {
         if (routeNodes_[i]->type_ == SINK)
             repStr << std::left << std::setw(27) << "(SINK   ) return";
         else {
-            repStr << "(" << NodeTypeStr[routeNodes_[i]->type_] << ") Request_ID ";
+            repStr << "(" << NodeTypeStr[routeNodes_[i]->initialType_] << ") Request_ID ";
             repStr << std::left << std::setw(6) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
@@ -168,6 +168,7 @@ std::string Route::toString() const {
             repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
         else
             repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
         /*float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
                 routeNodes_[i]->requestTime_;
         if (reachTime > plannedReachTime_[i])
@@ -175,8 +176,83 @@ std::string Route::toString() const {
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 
-    repStr << "===========================================================================================" << std::endl;
+    repStr << "=============================================================================================================" << std::endl;
     return repStr.str();
+}
+
+// this function is for testing the validation of the route
+void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
+    PRoute testRoute = std::make_shared<Route>(vehicleID_);
+    testRoute->addSource(routeNodes_[0], vehicle->solutionRoute_->routeNodes_[0]->reachTime_,
+                         vehicle->solutionRoute_->plannedPassengers_[0]);
+
+    for (int i = 1; i < routeSize_; ++i) {
+        testRoute->addNode(routeNodes_[i]);
+        if (testRoute->routeNodes_.back()->reachTime_ != testRoute->plannedReachTime_.back()){
+            std::cout << "Connectivity constraint violated at node : ";
+            std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
+            Tools::throwException("Route-Validation");
+        }
+
+        // checking request data (pick up and drop off time)
+        if (testRoute->routeNodes_.back()->initialType_ == PICKUP) {
+            if (testRoute->routeNodes_.back()->reachTime_ !=
+                testRoute->routeNodes_.back()->related_Request_->pickTime_) {
+                std::cout << "Request pickup time is not equal to the pick node reach time at node : ";
+                std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
+                Tools::throwException("Route-Validation");
+            }
+        }
+        else if (testRoute->routeNodes_.back()->initialType_ == DROPOFF) {
+            if (testRoute->routeNodes_.back()->reachTime_ !=
+                testRoute->routeNodes_.back()->related_Request_->dropTime_) {
+                std::cout << "Request drop-off time is not equal to the drop node reach time at node : ";
+                std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
+                Tools::throwException("Route-Validation");
+            }
+        }
+        if (mainAlgorithm != GREEDY){
+            if (routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())
+                testRoute->plannedReachTime_.back() = routeNodes_[i]->departTime_;
+        }
+
+        // checking capacity constraints
+        if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
+            std::cout << "Capacity constraint violated at node : " << testRoute->routeNodes_.back()->nodeID_ << std::endl;
+            Tools::throwException("Route-Validation");
+        }
+
+        // checking trip delay constraint
+        if (testRoute->routeNodes_.back()->initialType_ == DROPOFF){
+            float travelTime = testRoute->routeNodes_.back()->related_Request_->dropTime_ -
+                    testRoute->routeNodes_.back()->related_Request_->pickTime_-
+                    testRoute->routeNodes_.back()->related_Request_->deltaTime_;
+            if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
+                std::cout << "Trip delay constraint violated for request : " <<
+                testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
+                Tools::throwException("Route-Validation");
+            }
+        }
+    }
+
+    if (testRoute->totalDelay_ != totalDelay_){
+        std::cout << "Total delay is not the same" << std::endl;
+        Tools::throwException("Route-Validation");
+    }
+    if (testRoute->plannedPassengers_.back() != plannedPassengers_.back()){
+        std::cout << "Final Load is not the same" << std::endl;
+        Tools::throwException("Route-Validation");
+    }
+    if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
+        std::cout << "End time is not the same" << std::endl;
+        Tools::throwException("Route-Validation");
+    }
+
+
+    std::cout << "####################### TEST Route ##########################" << std::endl;
+    std::cout << testRoute->toString() << std::endl;
+    std::cout << "##################### SOLUTION Route ########################" << std::endl;
+    std::cout << toString() << std::endl;
 }
 
 

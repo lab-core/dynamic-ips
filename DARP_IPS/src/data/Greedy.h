@@ -47,7 +47,9 @@ public:
     bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
     PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
     void insertNode(PGreedyLabel &preLabel, PNode &newNode);
-    void removeLabel(PGreedyLabel &Label, float deltaT, float deltaDelay);
+
+    // This function remove the Lable from the list and update the data based on that
+    void removeLabel(PGreedyLabel &label, float deltaT);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
     // this function calculate the reachTime from a Label to a node
     static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;

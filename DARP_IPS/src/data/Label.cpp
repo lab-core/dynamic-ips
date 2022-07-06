@@ -261,8 +261,13 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(pathNodes_[0], vehicle->departTime_, vehicle->numPassengers_);
-    for (int i = 1; i < pathNodes_.size()-1; ++i)
+    for (int i = 1; i < pathNodes_.size()-1; ++i) {
         newRoute->addNode(pathNodes_[i]);
+    }
+    if (totalDelay_ != newRoute->totalDelay_) {
+        std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
+        Tools::throwException("Label convert problem");
+    }
     return newRoute;
 }
 

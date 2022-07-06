@@ -52,6 +52,9 @@ public:
     // Display function
     std::string toString() const;
 
+    // this function is for testing the validation of the route
+    void testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm);
+
     bool equal (Route const &routeObj) {
         if ((this->totalDelay_ == routeObj.totalDelay_)&& (this->routeSize_ == routeObj.routeSize_) &&
                 (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))

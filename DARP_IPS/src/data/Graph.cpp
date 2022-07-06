@@ -25,6 +25,7 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
     nodeStatus_ = DEFINED;
     requestTime_ = relatedRequest->earlyPick_;
     pairNode_ = nullptr;
+    initialType_ = type;
 
     if (type == PICKUP){
         locationID_ = relatedRequest->PickUpID_;
@@ -49,6 +50,7 @@ Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type)
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     pairNode_ = nullptr;
+    initialType_ = type;
 
     if (type == SOURCE)
         nodeID_ = Tools::createNodeID(0, SOURCE);
@@ -69,6 +71,7 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     pairNode_ = nullptr;
+    initialType_ = type;
 
     if (type == SOURCE)
         nodeID_ = Tools::createSourceID(vehicleID, SOURCE);
