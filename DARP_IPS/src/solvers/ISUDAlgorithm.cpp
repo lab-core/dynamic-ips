@@ -95,12 +95,27 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
     ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
     setObjValue();
 
+    std::cout << "Objective after RP: " << this->objValue_ << std::endl;
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "+        Solution Result after RP initialization:       +" << std::endl;
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    for (auto & routeObj : routeSolution_) {
+        std::cout << routeObj->toString();
+    }
+
     CPTime_->start();
     CompPro_->routesToAdd_.clear();
     updateRoutesToAdd(2*pInst->nbRequests_, pInst);
     CompPro_->buildModel(pInst, zSolution_, routeSolution_);
     CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
     setObjValue();
+    std::cout << "Objective after CP: " << this->objValue_ << std::endl;
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "+        Solution Result after CP initialization:       +" << std::endl;
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    for (auto & routeObj : routeSolution_) {
+        std::cout << routeObj->toString();
+    }
     // UPDATE DUAL VALUES AFTER SOLVING CP
     ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
     ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;

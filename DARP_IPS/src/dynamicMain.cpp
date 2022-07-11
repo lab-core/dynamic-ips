@@ -55,14 +55,14 @@ int main() {
         label:
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
-        isudObj->restGeneratedRoutes(mainInst);
+ //       isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         for (auto & vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch, mainInst->parameters_->epochLength_);
             mainInst->nbOnboards_ += (int)vehicleObj->onboards_.size();
-            isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
+ //           isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
 
         // creating a subInstance
@@ -93,6 +93,7 @@ int main() {
                 break;
             default: // CG_CPLEX and CG_ISUD (Column generation approaches)
                 isudObj->initialization(EpochInst, EpochInst->parameters_->emptyStart_);
+ //               isudObj->restGeneratedRoutes(mainInst);
                 // save initial solution
                 EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;

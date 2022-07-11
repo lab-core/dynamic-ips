@@ -131,11 +131,13 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
             for (int r = 0; r < routeIncVar_.getSize(); ++r) {
                 if (Cplex_.getValue(routeIncVar_[r]) > 0) {
+                    std::cout << routeIncVar_[r].getName() << std::endl;
                     routeResult.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                 }
             }
             for (int i = 0; i < zIncVar_.getSize(); ++i) {
                 if (Cplex_.getValue(zIncVar_[i]) > 0) {
+                    std::cout << zIncVar_[i].getName() << std::endl;
                     zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                 }
             }
