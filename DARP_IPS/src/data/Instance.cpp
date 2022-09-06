@@ -70,10 +70,10 @@ std::string Instance::toString() {
 
 std::string Instance::solutionToString() {
     int numServed = 0;
-    double totalWaiting = 0;
-    double totalTripDelay = 0;
+    float totalWaiting = 0;
+    float totalTripDelay = 0;
     double penalty = 0;
-    double idleTime = 0;
+    float idleTime = 0;
 
 
     std::stringstream repStr;
@@ -104,7 +104,7 @@ std::string Instance::solutionToString() {
 
 /*            double travelTime =
                     instGraph_->nodes_[dropID]->reachTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;*/
-            double travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
+            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
 
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ + 0.1){

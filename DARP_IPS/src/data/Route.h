@@ -23,7 +23,7 @@ public:
     static unsigned int routeCount_;            // Counter the number of routes generated
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
-    double totalDelay_;                         // sum of waiting times of the requests served by the route
+    float totalDelay_;                         // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
     std::vector<unsigned int> routeRequests_;   // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node

@@ -33,7 +33,7 @@ public:
     vector<PNode> pathNodes_;                               // list of nodes in the path of the vehicle
     double reducedCost_;
     PNode currentNode_;
-    double totalDelay_;
+    float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;
     std::set<std::string> extendCheck_;

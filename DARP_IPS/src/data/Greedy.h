@@ -31,7 +31,7 @@ public:
     PGreedyLabel source_;       // starting node of the route
     float totalDelay_;
     float departTime_;
-    double idleTime_;
+    float idleTime_;
 
     // Constructor
 public:
