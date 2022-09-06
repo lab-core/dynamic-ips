@@ -13,7 +13,7 @@
 
 
 using namespace std::chrono;
-vector2D<int> durationMatrix_;
+vector2D<float> durationMatrix_;
 
 int main() {
 
@@ -28,7 +28,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150703_14-180m-1";
+    std::string instanceName = "20150706_12-180m-1";
 
     // build the path of input files
     // create output files for epoch results

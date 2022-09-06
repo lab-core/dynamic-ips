@@ -32,7 +32,7 @@ public:
     static void readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest);
 
     // Read duration data file
-    static void readDurations(const std::string& strDurFile, vector2D<int> &durationMat, int nbLocations);
+    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
 
     // Read the parameters datafile
     static void readParameters(const std::string& strParamFile, PInstance &pInstance);

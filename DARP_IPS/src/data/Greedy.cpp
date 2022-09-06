@@ -301,7 +301,7 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     }
                     preDrop = preDrop->child_;
                 }
-                removeLabel(pickLabel, pickDeltaT);
+                removeLabel(pickLabel);
                 std::cout << "GreedyLinkList after deletion" << std::endl;
                 std::cout << toString() << std::endl;
             }
@@ -340,10 +340,7 @@ void LinkedGreedyLabels::insertNode(PGreedyLabel &preLabel, PNode &newNode) {
 }
 
 
-void LinkedGreedyLabels::removeLabel(PGreedyLabel &label, float deltaT) {
-//    if (totalDelay_ < deltaDelay)
-//        std::cout << "error" ;
-//    totalDelay_ -= deltaDelay;
+void LinkedGreedyLabels::removeLabel(PGreedyLabel &label) {
     if (label->currentNode_->type_ == PICKUP) {
         totalDelay_ -= (label->reachTime_ - label->currentNode_->requestTime_);
     }
@@ -353,7 +350,6 @@ void LinkedGreedyLabels::removeLabel(PGreedyLabel &label, float deltaT) {
         label.reset();
     }
     else {
-
         label->child_->parent_ = label->parent_;
         label->parent_->child_ = label->child_;
         updateReachTimes(label->parent_);
@@ -381,9 +377,6 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
     pickLabel->pair_ = dropLabel;
     dropLabel->pair_ = pickLabel;
     dropLabel->travelResource_ = maxDuration - dropLabel->reachTime_ + pickLabel->reachTime_ + pickNode->deltaTime_;
-//    if ((pickLabel->reachTime_ - pickNode->requestTime_))
-//        std::cout << "error" ;
-//    totalDelay_ += (pickLabel->reachTime_ - pickNode->requestTime_);
 }
 
 // this function calculate the reachTime from a Label to a node
@@ -420,7 +413,6 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
         if (currentLabel->departTime_ < currentLabel->child_->currentNode_->requestTime_)
             currentLabel->departTime_ = currentLabel->child_->currentNode_->requestTime_;
-        float childDeltaT = childReachTime - currentLabel->child_->reachTime_;
         if (currentLabel->child_->currentNode_->type_ == PICKUP) {
             float preDelay = currentLabel->child_->reachTime_ - currentLabel->child_->currentNode_->requestTime_;
             float newDelay = childReachTime - currentLabel->child_->currentNode_->requestTime_;

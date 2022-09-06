@@ -234,7 +234,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
 // Read the duration data file
 //************************************************************************
 
-void ReadWrite::readDurations(const std::string& strDurFile, vector2D<int> &durationMat, int nbLocations) {
+void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strDurFile << " >>" << std::endl;

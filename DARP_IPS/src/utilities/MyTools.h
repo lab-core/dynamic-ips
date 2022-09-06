@@ -116,7 +116,7 @@ static const int epochLength = 50;*/
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
 template<class T> using vector3D = std::vector<vector2D<T>>;
-extern vector2D<int> durationMatrix_;
+extern vector2D<float> durationMatrix_;
 
 class PCompare {
 public:

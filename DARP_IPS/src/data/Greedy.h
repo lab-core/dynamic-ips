@@ -48,8 +48,8 @@ public:
     PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
     void insertNode(PGreedyLabel &preLabel, PNode &newNode);
 
-    // This function remove the Lable from the list and update the data based on that
-    void removeLabel(PGreedyLabel &label, float deltaT);
+    // This function remove the Label from the list and update the data based on that
+    void removeLabel(PGreedyLabel &label);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
     // this function calculate the reachTime from a Label to a node
     static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;

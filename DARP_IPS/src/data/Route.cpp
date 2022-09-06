@@ -121,7 +121,6 @@ void Route::removeNode(int nodeIndex) {
 std::string Route::toString() const {
     std::stringstream repStr;
 
-//    repStr << "#" << std::left << std::endl;
     repStr << std::left;
     repStr << "#\t" << std::setw(25) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
     repStr << "#\t" << std::setw(25) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
@@ -169,10 +168,6 @@ std::string Route::toString() const {
         else
             repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
         repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
-        /*float reachTime = durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] +
-                routeNodes_[i]->requestTime_;
-        if (reachTime > plannedReachTime_[i])
-            std::cout << "Hi";*/
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 
