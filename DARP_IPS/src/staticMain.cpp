@@ -13,7 +13,7 @@
 
 
 using namespace std::chrono;
-vector2D<float> durationMatrix_;
+vector2D<int> durationMatrix_;
 
 int main() {
 
