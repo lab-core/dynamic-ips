@@ -388,11 +388,19 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
 
 // this function calculate the reachTime from a Label to a node
 float LinkedGreedyLabels::labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) {
-    if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
-        return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
-    else
+    if (Node->type_ == PICKUP) {
+        if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
+            return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+        else
+            return preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
+                   durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+    }
+    else {
         return preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-                         durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+               durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+    }
+
+
 }
 
 // this function calculate the reachTime from a node to a Label
