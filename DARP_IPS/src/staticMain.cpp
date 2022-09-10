@@ -28,7 +28,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150706_12-180m-1";
+    std::string instanceName = "20150703_14-180m-1";
 
     // build the path of input files
     // create output files for epoch results
@@ -39,6 +39,7 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
+    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbLocations_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
@@ -72,7 +73,6 @@ int main() {
             break;
         case GREEDY:
             GreedyModel->initialization(StaticInst);
-//            GreedyModel->solve(StaticInst);
             GreedyModel->solveInsertion(StaticInst);
             GreedyModel->solutionToRoute(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
@@ -87,6 +87,7 @@ int main() {
                 for (auto & vehicleObj : StaticInst->vehicles_)
                     vehicleObj->solutionRoute_ = vehicleObj->currentRoute_;
             }
+            std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
             break;
         default: // CG_CPLEX and CG_ISUD (Column generation approaches)
 
@@ -266,6 +267,7 @@ int main() {
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
 
     // save vehicle solutions in csv file
     mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());

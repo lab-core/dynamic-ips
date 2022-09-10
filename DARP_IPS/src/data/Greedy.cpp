@@ -31,7 +31,6 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Ve
                                                                   pInst->instGraph_->nodes_[nodeID]->nbPassengers_);
         newDropLabel->parent_ = tail_;
         tail_->child_ = newDropLabel;
-
         newDropLabel->travelResource_ = pInst->instGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
                 dropTime + pInst->instGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
                 pInst->instGraph_->nodes_[nodeID]->deltaTime_;
@@ -48,6 +47,16 @@ LinkedGreedyLabels::LinkedGreedyLabels(const LinkedGreedyLabels &label) {
     tail_ = label.tail_;
     source_ = label.source_;
     totalDelay_ = label.totalDelay_;
+}
+
+LinkedGreedyLabels::~LinkedGreedyLabels() {
+    PGreedyLabel currentLabel = source_;
+    while (currentLabel->child_ != nullptr) {
+        PGreedyLabel nextLabel = currentLabel->child_;
+        currentLabel.reset();
+        currentLabel = nextLabel;
+    }
+    currentLabel.reset();
 }
 
 // this function find a position to insert pickup point and add drop off point at the end
@@ -450,7 +459,7 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
     std::cout << toString() << std::endl;
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
     newRoute->addSource(source_->currentNode_, source_->reachTime_, (*Vehicle_)->numPassengers_);
-    PGreedyLabel  currentLabel = source_->child_;
+    PGreedyLabel currentLabel = source_->child_;
     while (currentLabel != nullptr) {
 //        newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
         newRoute->addNode(currentLabel->currentNode_);
@@ -537,8 +546,6 @@ std::string LinkedGreedyLabels::toString() const {
     repStr << "=================================================================================================================" << std::endl;
     return repStr.str();
 }
-
-
 
 
 insertPosition::insertPosition(PGreedyLabel prePickup, PGreedyLabel preDrop, float deltaDelay,

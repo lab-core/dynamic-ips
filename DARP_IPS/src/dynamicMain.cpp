@@ -8,6 +8,7 @@
 #include "solvers/LabelingSubProblem.h"
 #include "data/Instance.h"
 #include "solvers/MIPSolver.h"
+#include "solvers/GreedyModeler.h"
 
 
 using namespace std::chrono;
@@ -28,7 +29,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20150706_12-180m-1";
 
     // build the path of input files
     // create output files for epoch results
@@ -39,6 +40,9 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
+
+    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
+
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbLocations_ + 1);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
@@ -51,6 +55,7 @@ int main() {
 
     nbReceivedRequest = mainInst->nbOnboards_;
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
+    PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
     while (nbReceivedRequest < mainInst->nbRequests_) {
         label:
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
@@ -90,6 +95,10 @@ int main() {
                     std::cout << EpochInst->vehicles_[v]->currentRoute_->toString();
                 break;
             case GREEDY:
+                GreedyModel->initialization(EpochInst);
+                GreedyModel->solveInsertion(EpochInst);
+                GreedyModel->solutionToRoute(EpochInst);
+                std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
                 break;
             default: // CG_CPLEX and CG_ISUD (Column generation approaches)
                 isudObj->initialization(EpochInst, EpochInst->parameters_->emptyStart_);
@@ -111,18 +120,11 @@ int main() {
                     int maxPick = EpochInst->nbRequests_;
                     float maxReachTime = MAXReachTime;
                     previousObj = isudObj->objValue_;
-                    // sort the list of vehicles
-                    /*sort(EpochInst->vehicles_.begin(), EpochInst->vehicles_.end(),
-                         [](const PVehicle &lhs, const PVehicle &rhs) {
-                             return std::tie(lhs->currentRoute_->routeSize_, lhs->departTime_) <
-                                    std::tie(rhs->currentRoute_->routeSize_, rhs->departTime_);
-                         });*/
                     // start the time
                     subProTime->start();
                     EpochInst->resetRequestsSelectStatus();
                     if (subStartStatus != NOT_RESTRICTED) {
                         if (subStartStatus == NUM_PICK_RESTRICTED)
-                 //           maxPick = EpochInst->nbRequests_;
                             maxPick = (int)floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_)+2;
                         if (subStartStatus == TIME_RESTRICTED)
                             maxReachTime = static_cast<float>(4 * EpochInst->parameters_->epochLength_);
@@ -141,8 +143,9 @@ int main() {
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 EpochInst->resetRequestsSelectStatus();
                                 PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
+                                int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProblem->initSubGraph(EpochInst);
-                                subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
+                                subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, vehicleMaxPick);
                                 subProblem->SolveCPLEX();
                                 std::cout << subProblem->toString();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -160,8 +163,8 @@ int main() {
                         case LABEL_SETTING:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 EpochInst->resetRequestsSelectStatus();
-
-
+                                int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
+                                subProOptions->maxPickup_ = vehicleMaxPick;
                                 PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                                 subProblem->initSubGraph(EpochInst);
                                 subProblem->solveDynamic();
@@ -287,6 +290,7 @@ int main() {
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
 
 
     // save vehicle solutions in csv file

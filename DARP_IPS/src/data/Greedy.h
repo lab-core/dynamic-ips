@@ -37,6 +37,9 @@ public:
 public:
     LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst);
     LinkedGreedyLabels(const LinkedGreedyLabels &label);
+
+    virtual ~LinkedGreedyLabels();
+
     // this function find a position to insert pickup point and add drop off point at the end
     PGreedyLabel findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration) const;
     // this function insert a request based on the pick-up position and add drop off at the end

@@ -11,11 +11,13 @@
 #include "data/Greedy.h"
 
 class GreedyModeler {
+public:
     std::vector<PLinkedGreedyLabels> solutionList_;
+    Tools::Timer *greedyTime_;
 
     //Constructor
-public:
     GreedyModeler();
+    virtual ~GreedyModeler();
 
     void initialization(PInstance &PInst);
     void solve(PInstance &PInst);

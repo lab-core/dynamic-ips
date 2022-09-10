@@ -83,10 +83,10 @@ static const std::vector<std::string> subAlgorithmName = {
         "LABEL_SETTING" };
 
 static const std::vector<std::string> mainAlgorithmName = {
-        "GREEDY    ",
-        "MIP_CPLEX ",
-        "CG_CPLEX  ",
-        "CG_ISUD   "};
+        "GREEDY",
+        "MIP_CPLEX",
+        "CG_CPLEX",
+        "CG_ISUD"};
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
 /*static const std::vector<std::string> nodeTypeName = {

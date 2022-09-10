@@ -23,6 +23,8 @@ class InputPaths {
 protected:
     // input data addresses
     std::string instanceName_;
+    std::string instanceDir_;
+
     std::string input_TripData_;
     std::string input_InstanceData_;
     std::string input_durationData_;
@@ -89,6 +91,7 @@ public:
     void setInstanceData(const std::string &instanceData);
     void setTimeOUt(double timeOUt);
 
+    void initializeOutputs(const std::string &algorithm);
 };
 
 

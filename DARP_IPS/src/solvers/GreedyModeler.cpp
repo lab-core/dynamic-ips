@@ -4,17 +4,32 @@
 
 #include "GreedyModeler.h"
 
-GreedyModeler::GreedyModeler() = default;
+GreedyModeler::GreedyModeler() {
+    greedyTime_ = new Tools::Timer(); greedyTime_->init();
+}
+
+GreedyModeler::~GreedyModeler() {
+    delete greedyTime_;
+
+}
 
 void GreedyModeler::initialization(PInstance &PInst) {
+    greedyTime_->start();
     for (auto & vehicleObj : PInst->vehicles_) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst));
     }
+    greedyTime_->stop();
 }
 
+
 void GreedyModeler::solve(PInstance &PInst) {
+    greedyTime_->start();
     std::vector<float> possibleDelay;
     std::vector<PGreedyLabel> preLabelList;
+
+    // sort the request based on the earliest possible pickup
+    sort(PInst->requests_.begin(), PInst->requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->earlyPick_ > rhs->earlyPick_;});
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             possibleDelay.clear();
@@ -48,9 +63,11 @@ void GreedyModeler::solve(PInstance &PInst) {
                                                      PInst->instGraph_->nodes_[dropID], requestObj->maxTravelTime_);
         }
     }
+    greedyTime_->stop();
 }
 
 void GreedyModeler::solveInsertion(PInstance &PInst) {
+    greedyTime_->start();
     std::vector<float> possibleDelay;
     std::vector<PInsertPosition> positionList;
     for (auto & requestObj : PInst->requests_) {
@@ -85,13 +102,18 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
                                                      PInst->instGraph_->nodes_[dropID], requestObj->maxTravelTime_);
         }
     }
+    greedyTime_->stop();
 }
 void GreedyModeler::solutionToRoute(PInstance &PInst) {
     for (auto & greedySol : solutionList_) {
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ = greedySol->idleTime_;
+        PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_.reset();
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute();
+        greedySol.reset();
     }
+    solutionList_.clear();
 }
+
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing
 // any pick up is followed by the drop-off

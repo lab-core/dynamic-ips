@@ -72,6 +72,7 @@ std::string Instance::solutionToString() {
     int numServed = 0;
     float totalWaiting = 0;
     float totalTripDelay = 0;
+    int totalNumServed = 0;
     double penalty = 0;
     float idleTime = 0;
 
@@ -113,6 +114,7 @@ std::string Instance::solutionToString() {
             }
 //
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
+            totalNumServed ++;
         }
         else {
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
@@ -136,9 +138,9 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# Total trip delay" << " = " << totalTripDelay << " (s)" << std::endl;
     if (numServed != 0) {
         repStr << std::setw(sentenceSize) << "# Average wait time per request" << " = " << totalWaiting/numServed << " (s)" << std::endl;
-        repStr << std::setw(sentenceSize) << "# Average trip delay per request" << " = " << totalTripDelay/numServed << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# Average trip delay per request" << " = " << totalTripDelay/totalNumServed << " (s)" << std::endl;
     }
-    repStr << std::setw(sentenceSize) << "# Number of served requests" << " = " << numServed << std::endl;
+    repStr << std::setw(sentenceSize) << "# Number of unserved requests" << " = " << nbRequests_ - totalNumServed << std::endl;
     repStr << std::setw(sentenceSize) << "# Total number of requests" << " = " << nbRequests_ << std::endl;
     repStr << std::setw(sentenceSize) << "# Average Vehicle idle Time" << " = " << idleTime/nbVehicles_ << std::endl;
     repStr << std::setw(sentenceSize) << "# Final Objective Value" << " = " << penalty + totalWaiting << std::endl;

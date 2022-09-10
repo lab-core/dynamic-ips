@@ -207,7 +207,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
             }
         }
         if (mainAlgorithm != GREEDY){
-            if (routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())
+            if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
                 testRoute->plannedReachTime_.back() = routeNodes_[i]->departTime_;
         }
 
@@ -240,7 +240,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
     }
     if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
         std::cout << "End time is not the same" << std::endl;
-        Tools::throwException("Route-Validation");
+//        Tools::throwException("Route-Validation");
     }
 
 
