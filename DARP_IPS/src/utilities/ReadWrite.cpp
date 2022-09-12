@@ -293,7 +293,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     float alphaParam = -1, betaParam = -1, deltaPram = -1;
     int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false,  sameDepot = false;
-    int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0;
+    int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0;
     int strategy = 0;
 
     while (file.good()) {
@@ -317,6 +317,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "mainAlgorithm "))
             file >> mainAlgorithm;
+
+        else if (strEndWith(title, "warmStart "))
+            file >> initialStart;
 
         else if (strEndWith(title, "isTruncated "))
             file >> isTruncated;
@@ -355,6 +358,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveStart>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
+                                                          static_cast<warmStart>(initialStart),
                                                           bigM, solveTimeLimit, populateTimeLimit);
 }
 

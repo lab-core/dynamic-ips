@@ -74,6 +74,7 @@ enum SubProSolveStart {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRIC
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
 enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
 enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3};
+enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1};
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",
         "PULLING" };
@@ -87,6 +88,11 @@ static const std::vector<std::string> mainAlgorithmName = {
         "MIP_CPLEX",
         "CG_CPLEX",
         "CG_ISUD"};
+
+static const std::vector<std::string> warmStartName = {
+        "GREEDY_START     ",
+        "PREVIOUS_SOLUTION"};
+
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
 /*static const std::vector<std::string> nodeTypeName = {
@@ -245,6 +251,7 @@ public:
     SubProSolveStart SubproSolveStartState_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
+    warmStart initialStart_;
 
 
     //CPLEX Parameters
@@ -256,7 +263,7 @@ public:
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
                MainAlgorithm mainAlgorithm, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-               subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
+               subproblemAlgorithm subAlgorithm, warmStart initialStart, int bigM, int solveTimeLimit, int populateTimeLimit);
 
     virtual ~Parameters();
 
