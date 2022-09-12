@@ -182,7 +182,8 @@ int main() {
  //                       break;
                     }
                     else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                        isudObj->solveISUD(StaticInst, epoch, inputPaths.getOutputEpochIsud());
+                        isudObj->solveISUD(StaticInst, epoch, inputPaths.getOutputEpochIsud(),
+                                           inputPaths.getOutputIncDegreeRdCost());
                         std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
                         for (auto &routeObj: isudObj->routeSolution_)
                             std::cout << routeObj->toString();

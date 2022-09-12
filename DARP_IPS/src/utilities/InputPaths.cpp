@@ -22,17 +22,6 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instanceNa
 
     instanceDir_ = datadir + instanceName + "/";
 
-    // create directory for results
-    /*
-    time_t now = time(nullptr);
-    tm * curr_tm = localtime(&now);
-    char resultFolder[100];
-    strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
-    std::experimental::filesystem::create_directory(instanceDir_ + "Results_" + resultFolder);
-
-    std::string outputDir = instanceDir_ + "Results_" + resultFolder + "/";
-    */
-
     //initialize the file names for trip records and instance data
     input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
     input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
@@ -42,30 +31,6 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instanceNa
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
-
-    //initialize the file names for saving outputs
-    /*output_epochISUD_ = outputDir + "epochSolution_" + instanceName + ".csv";
-    output_epochFinal_ = outputDir + "finalSolution_" + instanceName + ".csv";
-    output_finalLog_ = outputDir + "LogFinalResults_" + instanceName + ".txt";
-    output_solutionLog_ = outputDir + "LogSolution" + ".txt";
-    output_finalRoutes_ = outputDir + "Routes_" + instanceName + ".csv";
-    output_offlineRoutes_ = outputDir + "OfflineRoutes_" + instanceName + ".csv";
-    output_finalRequests_ = outputDir + "Requests_" + instanceName + ".csv";
-    output_MIPStart_ = outputDir + "MIPStart_" + instanceName;
-    output_paramFile_ = outputDir + "Parameters.txt";
-    output_onboards_ = outputDir + "ONBOARDS_" + instanceName + ".txt";
-    output_waitRequests_ = outputDir + "WaitRequests_" + instanceName + ".txt";
-    output_vehicles_ = outputDir + "VEHICLES_" + instanceName + ".txt";
-    output_instance_ = outputDir + "INSTANCE_" + instanceName + ".txt";*/
-
-    // create output files for epoch results
-    /*std::ofstream myFile;
-    myFile.open(output_epochISUD_);
-    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID" << std::endl;
-    myFile.close();
-    myFile.open(output_epochFinal_);
-    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
-    myFile.close();*/
 }
 
 // getters
@@ -93,7 +58,7 @@ const std::string &InputPaths::getOutputOnboards() const { return output_onboard
 const std::string &InputPaths::getOutputWaitRequests() const { return output_waitRequests_;}
 const std::string &InputPaths::getOutputVehicles() const { return output_vehicles_;}
 const std::string &InputPaths::getOutputInstance() const { return output_instance_;}
-
+const std::string &InputPaths::getOutputIncDegreeRdCost() const {return output_incDegree_RDCost_;}
 
 double InputPaths::getTimeOut() const {return timeOut_; }
 
@@ -138,16 +103,22 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceName_ + ".txt";
     output_vehicles_ = outputDir + "VEHICLES_" + instanceName_ + ".txt";
     output_instance_ = outputDir + "INSTANCE_" + instanceName_ + ".txt";
+    output_incDegree_RDCost_ = outputDir + "RouteDegreeCost_" + instanceName_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;
     myFile.open(output_epochISUD_);
-    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID" << std::endl;
+    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID,RouteID" << std::endl;
     myFile.close();
     myFile.open(output_epochFinal_);
     myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
     myFile.close();
+    myFile.open(output_incDegree_RDCost_);
+    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
+    myFile.close();
 }
+
+
 
 
 

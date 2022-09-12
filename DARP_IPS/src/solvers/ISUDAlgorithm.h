@@ -74,7 +74,7 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(int &vehicleID);
 
-    void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir);
+    void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
     void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
 
     // Display function
@@ -87,6 +87,8 @@ public:
 
     void restGeneratedRoutes(PInstance &pInst);
 
+    // function to save the reduced costs and incompatibility degree of the created routes
+    void save_IncDegree_RDCost(const std::string& incDegree_RDCostDir, int epoch, int isudIter);
 };
 
 

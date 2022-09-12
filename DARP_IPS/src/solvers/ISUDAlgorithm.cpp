@@ -304,7 +304,7 @@ void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
 }
 
 
-void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir) {
+void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir) {
     double previousObj = objValue_;
     bool restartAlgorithm = true;
     bool reducedImproved;
@@ -322,6 +322,10 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
             // if RP improve the solution another iteration is done and reducedImproved stay true
             reducedImproved = false;
             updateRoutesToAdd(0, pInst);
+
+            // save Inc degree and reduced cost of the routes
+            save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
+
             if (!ReducedPro_->routesToAdd_.empty()) {
                 std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
                 for (int v = 0; v < pInst->nbVehicles_; ++v)
@@ -363,6 +367,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
 
         updateRoutesToAdd(2*pInst->nbRequests_, pInst);
  //       updateRoutesToAdd(3, pInst);
+        // save Inc degree and reduced cost of the routes
+        save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
         std::cout << "size: " << CompPro_->routesToAdd_.size() << std::endl;
 
         if (!CompPro_->routesToAdd_.empty()) {
@@ -652,6 +658,26 @@ void ISUDAlgorithm::restGeneratedRoutes(PInstance &pInst) {
             generatedRoutes_.insert(std::pair <std::string , PRoute>(vehicleObj->solutionRoute_->name_, vehicleObj->solutionRoute_));
     }*/
 }
+
+// function to save the reduced costs and incompatibility degree of the created routes
+void ISUDAlgorithm::save_IncDegree_RDCost(const string &incDegree_RDCostDir, int epoch, int isudIter) {
+    std::ofstream myFile;
+    myFile.open (incDegree_RDCostDir, std::ofstream::app);
+
+    for (auto & routeListObj : availableRoutes_) {
+        for (auto & routeObj : routeListObj.second) {
+            myFile << epoch << ",";
+            myFile << isudIter << ",";
+            myFile << routeListObj.first << ",";
+            myFile << routeObj->incompatibilityDegree_ << ",";
+            myFile << routeObj->reducedCost_ << ",";
+            myFile << routeObj->getRouteId() << "\n";
+        }
+    }
+    myFile.close();
+}
+
+
 
 
 

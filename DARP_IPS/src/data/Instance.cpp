@@ -369,7 +369,8 @@ void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int
             myFile << nodeObj->requestTime_ << ",";
             myFile << nodeObj->reachTime_ << ",";
             myFile << nodeObj->type_ << ",";
-            myFile << nodeObj->locationID_ << "\n";
+            myFile << nodeObj->locationID_ << ",";
+            myFile << vehicleObj->currentRoute_->getRouteId() << "\n";
         }
     }
     myFile.close();
