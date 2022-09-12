@@ -76,6 +76,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
 //        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
     }
     if (currentRoute_->routeSize_ > 1) {
+        currentRoute_->resetRoute();
         // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
             onboards_.clear();

@@ -206,10 +206,10 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
                 Tools::throwException("Route-Validation");
             }
         }
-        if (mainAlgorithm != GREEDY){
+ //       if (mainAlgorithm != GREEDY){
             if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
                 testRoute->plannedReachTime_.back() = routeNodes_[i]->departTime_;
-        }
+ //       }
 
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
@@ -249,6 +249,17 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
     std::cout << "##################### SOLUTION Route ########################" << std::endl;
     std::cout << toString() << std::endl;
 }
+// This function is to reset the status of the nodes in the route
+void Route::resetRoute() {
+    for (int i = routeSize_-1; i > 0; --i) {
+        routeNodes_[i]->nodeStatus_ = DEFINED;
+        if (routeNodes_[i]->type_ == DROPOFF)
+            routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
+        else if (routeNodes_[i]->type_ == PICKUP)
+            routeNodes_[i]->related_Request_->requestStatus_ = NO_ACTION;
+    }
+}
+
 
 
 

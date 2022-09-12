@@ -181,11 +181,12 @@ void LinkedGreedyLabels::insertRequest(PGreedyLabel &preLabel, PNode &pickNode, 
 /********************* New approach **********************/
 
 bool LinkedGreedyLabels::isInsertPossible(PGreedyLabel &preLabel, PNode &newNode) const {
-    if (preLabel == tail_)
-        return true;
     // check the capacity
     if (preLabel->nbPassengers_ + newNode->nbPassengers_ > (*Vehicle_)->capacity_)
         return false;
+
+    if (preLabel == tail_)
+        return true;
 
     float reachTime = labelToNodeReachTime(preLabel, newNode);
     float deltaT = nodeToLabelReachTime(reachTime, newNode, preLabel->child_) - preLabel->child_->reachTime_;
@@ -250,11 +251,11 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                 float endTime = tail_->reachTime_;
                 float curDelay = totalDelay_;
 
-                std::cout << "GreedyLinkList before checking" << std::endl;
-                std::cout << toString() << std::endl;
+                /*std::cout << "GreedyLinkList before checking" << std::endl;
+                std::cout << toString() << std::endl;*/
                 insertNode(prePick,pickNode);
-                std::cout << "GreedyLinkList after insertion" << std::endl;
-                std::cout << toString() << std::endl;
+                /*std::cout << "GreedyLinkList after insertion" << std::endl;
+                std::cout << toString() << std::endl;*/
                 deltaDelay =  totalDelay_ - curDelay;
                 pickDeltaT = tail_->reachTime_ - endTime;
                 preDrop = prePick->child_;
@@ -311,8 +312,8 @@ PInsertPosition LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &drop
                     preDrop = preDrop->child_;
                 }
                 removeLabel(pickLabel);
-                std::cout << "GreedyLinkList after deletion" << std::endl;
-                std::cout << toString() << std::endl;
+                /*std::cout << "GreedyLinkList after deletion" << std::endl;
+                std::cout << toString() << std::endl;*/
             }
         }
         prePick = prePick->child_;

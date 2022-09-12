@@ -55,6 +55,9 @@ public:
     // this function is for testing the validation of the route
     void testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm);
 
+    // This function is to reset the status of the nodes in the route
+    void resetRoute();
+
     bool equal (Route const &routeObj) {
         if ((this->totalDelay_ == routeObj.totalDelay_)&& (this->routeSize_ == routeObj.routeSize_) &&
                 (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))

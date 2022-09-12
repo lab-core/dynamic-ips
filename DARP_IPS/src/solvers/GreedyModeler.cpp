@@ -61,6 +61,8 @@ void GreedyModeler::solve(PInstance &PInst) {
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             solutionList_[vehicle_ID]->insertRequest(preLabelList[vehicle_ID], PInst->instGraph_->nodes_[pickID],
                                                      PInst->instGraph_->nodes_[dropID], requestObj->maxTravelTime_);
+            std::cout << "final insertion" << std::endl;
+            std::cout << solutionList_[vehicle_ID]->toString() << std::endl;
         }
     }
     greedyTime_->stop();
@@ -72,6 +74,8 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<PInsertPosition> positionList;
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
+            if (requestObj->getRequestId() == 852)
+                std::cout << "stop";
             possibleDelay.clear();
             positionList.clear();
 
