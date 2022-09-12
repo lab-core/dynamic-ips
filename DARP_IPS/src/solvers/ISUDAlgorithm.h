@@ -9,6 +9,7 @@
 #include "solvers/ReducedProblem.h"
 #include "solvers/ComplementPro.h"
 #include "solvers/ZoomReducedProblem.h"
+#include "solvers/GreedyModeler.h"
 
 //---------------------------------------------------------------------------------------------
 //  ISUD algorithm to solve the master problem

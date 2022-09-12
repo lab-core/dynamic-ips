@@ -45,7 +45,7 @@ void ISUDAlgorithm::setObjValue() {
 void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
     ReducedPro_->routesToAdd_.clear();
     isudIter_ = 0;
-//    generatedRoutes_.clear();
+
     for (auto &vehicleObj: pInst->vehicles_) {
         if (vehicleObj->departTime_ != vehicleObj->emptyRoute_->plannedReachTime_[0]) {
             if (vehicleObj->currentRoute_->routeSize_ == 1)
@@ -65,27 +65,44 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
                                                                (vehicleObj->emptyRoute_)));
     }
 
-    // adding new arrival requests to zSolutions
-    for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i) {
-        zSolution_.push_back(pInst->requests_[i]);
-        // set the dual of the new requests
-        pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
-        //       if (routeSolution_.size() == 0) {
-        if (pInst->nbOnboards_ == 0) {
-            for (int v = 0; v < pInst->nbVehicles_; ++v) {
-                // creating an empty route
-                PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
+    if (pInst->parameters_->initialStart_ == GREEDY_START && this->objValue_ != 0){
+        routeSolution_.clear();
+        zSolution_.clear();
+        PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
+        GreedyModel->initialization(pInst);
+        GreedyModel->solveInsertion(pInst);
+        GreedyModel->solutionToRoute(pInst);
+        for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleObj->currentRoute_->resetRoute();
+            generatedRoutes_.insert(std::pair<std::string, PRoute>((vehicleObj->currentRoute_)->name_,
+                                                                   (vehicleObj->currentRoute_)));
+            ReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
+            routeSolution_.push_back(vehicleObj->currentRoute_);
+        }
+    }
+    else {
+        // adding new arrival requests to zSolutions
+        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i) {
+            zSolution_.push_back(pInst->requests_[i]);
+            // set the dual of the new requests
+            pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
+            //       if (routeSolution_.size() == 0) {
+            if (pInst->nbOnboards_ == 0) {
+                for (int v = 0; v < pInst->nbVehicles_; ++v) {
+                    // creating an empty route
+                    PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
 
-                newRoute->addSource(pInst->instGraph_->nodes_[pInst->vehicles_[v]->departID_],
-                                    pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
-                static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
-                for (const auto t: nodeTypesInOrder) {
-                    std::string ID = Tools::createNodeID(pInst->requests_[i]->getRequestId(), t);
-                    newRoute->addNode(pInst->instGraph_->nodes_[ID]);
+                    newRoute->addSource(pInst->instGraph_->nodes_[pInst->vehicles_[v]->departID_],
+                                        pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
+                    static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
+                    for (const auto t: nodeTypesInOrder) {
+                        std::string ID = Tools::createNodeID(pInst->requests_[i]->getRequestId(), t);
+                        newRoute->addNode(pInst->instGraph_->nodes_[ID]);
+                    }
+                    generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));
+                    availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
+                    ReducedPro_->routesToAdd_.push_back(newRoute);
                 }
-                generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));
-                availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
-                ReducedPro_->routesToAdd_.push_back(newRoute);
             }
         }
     }
