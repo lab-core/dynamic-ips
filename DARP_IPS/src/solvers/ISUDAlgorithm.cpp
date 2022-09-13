@@ -365,8 +365,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
         CPTime_->start();
         CP: CompPro_->routesToAdd_.clear();
 
-        updateRoutesToAdd(2*pInst->nbRequests_, pInst);
- //       updateRoutesToAdd(3, pInst);
+//        updateRoutesToAdd(2*pInst->nbRequests_, pInst);
+        updateRoutesToAdd(3, pInst);
         // save Inc degree and reduced cost of the routes
         save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
         std::cout << "size: " << CompPro_->routesToAdd_.size() << std::endl;
@@ -402,7 +402,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                 ZoomPro_->buildModel(pInst, zSolution_, routeSolution_,false);
                 for (auto & vehicleObj : pInst->vehicles_) {
                     for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-                        if (routeObj->incompatibilityDegree_ < 3)
+                        if (routeObj->incompatibilityDegree_ < 5)
                             ZoomPro_->routesToAdd_.push_back(routeObj);
                     }
                 }
