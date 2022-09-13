@@ -375,6 +375,8 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     mainInst->nbRequests_ += (mainInst->nbOnboards_ + mainInst->nbWaiting_);
     mainInst->nbNewRequests_ += mainInst->nbWaiting_;
 
+    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
+
     // write the parameters in file
     std::ofstream myFile;
     myFile.open (inputPaths.getOutputParamFile());

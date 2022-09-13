@@ -29,7 +29,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20150722_10-180m-1";
 
     // build the path of input files
     // create output files for epoch results
@@ -40,8 +40,6 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
-
-    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
 
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbLocations_ + 1);
     if (!showLog)
