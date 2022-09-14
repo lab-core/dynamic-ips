@@ -19,7 +19,7 @@ class ISUDAlgorithm {
 public:
     PReducedProblem ReducedPro_;
     PComplementPro CompPro_;
-    PZoomReducedProblem ZoomPro_;
+    PZoomReducedProblem MIPReducedPro_;
     std::unordered_map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
     std::unordered_map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
 
@@ -39,7 +39,7 @@ public:
     Tools::Timer *isudTime_;
     Tools::Timer *RPTime_;
     Tools::Timer *CPTime_;
-    Tools::Timer *ZOOMTime_;
+    Tools::Timer *isudMIPTime_;
 
 
 
@@ -75,6 +75,7 @@ public:
     void updateReducedCosts(int &vehicleID);
 
     void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
+
     void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
 
     // Display function

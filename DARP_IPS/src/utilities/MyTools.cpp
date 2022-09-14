@@ -224,14 +224,16 @@ namespace Tools {
 
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
-                       MainAlgorithm mainAlgorithm, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
+                       float minImp, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, warmStart initialStart, int bigM, int solveTimeLimit, int populateTimeLimit) :
+                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
-        emptyStart_(emptyStart), mainAlgorithm_(mainAlgorithm), isTruncated_(isTruncated),
+        emptyStart_(emptyStart), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
+        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), isTruncated_(isTruncated),
         MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), SubproSolveStartState_(subproSolveStartState),
-        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), initialStart_(initialStart), bigM_(bigM),
+        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),
         solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit) {
 }
 
@@ -250,7 +252,14 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << std::endl;
     repStr << std::setw(setwLength) << "# empty route at each epoch " << " = " << emptyStart_ << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
+    repStr << std::endl;
+
+    repStr << "# ISUD PARAMETERS" << std::endl;
+    repStr << "#" << std::endl;
     repStr << std::setw(setwLength) << "# warm start " << " = " << warmStartName[initialStart_] << std::endl;
+    repStr << std::setw(setwLength) << "# max MIP compatibility degree " << " = " << MIP_maxIncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# max CP compatibility degree " << " = " << CP_IncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;

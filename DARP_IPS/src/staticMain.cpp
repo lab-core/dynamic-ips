@@ -178,7 +178,7 @@ int main() {
                 }
                 else {
                     if (StaticInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                        isudObj->solveISUDMIP(StaticInst, inputPaths.getOutputEpochIsud());
+                        isudObj->solveISUDMIP(StaticInst,  inputPaths.getOutputEpochIsud());
  //                       break;
                     }
                     else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD){
@@ -266,7 +266,7 @@ int main() {
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->isudMIPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
 

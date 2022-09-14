@@ -290,11 +290,11 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     string title;
 
-    float alphaParam = -1, betaParam = -1, deltaPram = -1;
+    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1;
     int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false,  sameDepot = false;
-    int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0;
-    int strategy = 0;
+    int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0, MIP_maxIncDegree = 0;
+    int strategy = 0, CP_IncDegree = 0;
 
     while (file.good()) {
         readUntilOneOfTwoChar(file, '=','\n', title);
@@ -320,6 +320,15 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
+
+        else if (strEndWith(title, "MIP_maxIncDegree "))
+            file >> MIP_maxIncDegree;
+
+        else if (strEndWith(title, "CP_IncDegree "))
+            file >> CP_IncDegree;
+
+        else if (strEndWith(title, "minImp "))
+            file >> minImp;
 
         else if (strEndWith(title, "isTruncated "))
             file >> isTruncated;
@@ -353,12 +362,13 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     }
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength, sameDepot,
                                                            static_cast<MainAlgorithm>(mainAlgorithm),
+                                                          static_cast<warmStart>(initialStart),
+                                                          MIP_maxIncDegree, CP_IncDegree, minImp,
                                                           isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased,
                                                           static_cast<SubProSolveStart>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          static_cast<warmStart>(initialStart),
                                                           bigM, solveTimeLimit, populateTimeLimit);
 }
 

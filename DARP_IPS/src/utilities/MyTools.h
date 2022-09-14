@@ -112,7 +112,7 @@ static const char *NodeTypeStr[] = {
 
 static const int DECIMALS = 3;          // precision when printing floats
 static const float TimePerMile = 10;   // travel time per mile distance
-static const int sentenceSize = 45;
+static const int sentenceSize = 47;
 
 /*static const float alphaParam_ = 1.5;
 static const float betaParam = 440;
@@ -238,10 +238,14 @@ public:
     float betaParam_{};
     float deltaPram_{};
     int epochLength_{};
-
     bool emptyStart_{};
-
     MainAlgorithm mainAlgorithm_;
+
+    // ISUD parameters
+    warmStart initialStart_;
+    int MIP_maxIncDegree_;
+    int CP_IncDegree_;
+    float minImp_;
 
     // label setting strategies
     bool isTruncated_{};
@@ -251,8 +255,6 @@ public:
     SubProSolveStart SubproSolveStartState_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
-    warmStart initialStart_;
-
 
     //CPLEX Parameters
     int bigM_{};
@@ -261,9 +263,10 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
-               MainAlgorithm mainAlgorithm, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+               MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, float minImp,
+               bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-               subproblemAlgorithm subAlgorithm, warmStart initialStart, int bigM, int solveTimeLimit, int populateTimeLimit);
+               subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
 
     virtual ~Parameters();
 
