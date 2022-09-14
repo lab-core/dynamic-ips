@@ -225,13 +225,13 @@ namespace Tools {
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
                        MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-                       float minImp, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         emptyStart_(emptyStart), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
-        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), isTruncated_(isTruncated),
-        MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
+        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), fixedEpoch_(fixedEpoch),
+        isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), SubproSolveStartState_(subproSolveStartState),
         LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),
         solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit) {
@@ -260,6 +260,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# max MIP compatibility degree " << " = " << MIP_maxIncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# max CP compatibility degree " << " = " << CP_IncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
+    repStr << std::setw(setwLength) << "# fixed epoch " << " = " << fixedEpoch_ << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;

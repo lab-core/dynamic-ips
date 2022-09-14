@@ -1,6 +1,7 @@
 //
-// Created by Ella on 2021-11-28.
+// Created by Elahe Amiri on 2022-09-14.
 //
+
 
 #include "utilities/ReadWrite.h"
 #include "solvers/ISUDAlgorithm.h"
@@ -21,6 +22,7 @@ int main() {
     SubProSolveStart subStartStatus;
     int nbReceivedRequest;
     int epoch = 0;
+    float timer =0;
     float saveTime = 3600;
     bool middleSave = false;
     bool showLog = true;

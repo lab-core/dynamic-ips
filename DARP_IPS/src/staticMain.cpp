@@ -244,15 +244,25 @@ int main() {
 
 
     std::cout << "*************************************************************************************" << std::endl;
-    std::cout << "*********************** FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch << " EPOCHS *********************** " << std::endl;
+    std::cout << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch << " EPOCHS " << std::endl;
+    std::cout << "                               STATIC MODE " << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
+    std::cout << "# " << std::endl;
+    std::cout << "############################   PARAMETERS AND OPTIONS   ############################" << std::endl;
+    std::cout << mainInst->parameters_->toString();
+    std::cout << "# " << std::endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "################################   FINAL ROUTES   ################################" << std::endl;
+    std::cout << "#" << std::left << std::endl;
 
     for (auto & vehicleObj : mainInst->vehicles_) {
         std::cout << "#" << std::left << std::endl;
         std::cout << "#\t" << std::setw(25) << "- IDLE_TIME" << " : " << vehicleObj->idleTime_ << std::endl;
         std::cout << vehicleObj->solutionRoute_->toString();
     }
+    std::cout << std::endl << std::endl;
+    std::cout << "#################################   REQUESTS    #################################" << std::endl;
     std::cout << "#" << std::endl;
     try {
         std::cout << mainInst->solutionToString();

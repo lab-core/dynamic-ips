@@ -292,7 +292,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1;
     int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
-    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false,  sameDepot = false;
+    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, sameDepot = false, fixedEpoch = false;
     int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0, MIP_maxIncDegree = 0;
     int strategy = 0, CP_IncDegree = 0;
 
@@ -330,6 +330,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "minImp "))
             file >> minImp;
 
+        else if (strEndWith(title, "fixedEpoch "))
+            file >> fixedEpoch;
+
         else if (strEndWith(title, "isTruncated "))
             file >> isTruncated;
 
@@ -363,7 +366,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength, sameDepot,
                                                            static_cast<MainAlgorithm>(mainAlgorithm),
                                                           static_cast<warmStart>(initialStart),
-                                                          MIP_maxIncDegree, CP_IncDegree, minImp,
+                                                          MIP_maxIncDegree, CP_IncDegree, minImp, fixedEpoch,
                                                           isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased,
                                                           static_cast<SubProSolveStart>(subproSolveStartState),

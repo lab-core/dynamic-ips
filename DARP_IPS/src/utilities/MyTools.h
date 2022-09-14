@@ -246,6 +246,7 @@ public:
     int MIP_maxIncDegree_;
     int CP_IncDegree_;
     float minImp_;
+    bool fixedEpoch_;
 
     // label setting strategies
     bool isTruncated_{};
@@ -264,7 +265,7 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
                MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, float minImp,
-               bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+               bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
                subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
 

@@ -77,7 +77,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     }
     if (currentRoute_->routeSize_ > 1) {
         currentRoute_->resetRoute();
-        // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
+        // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
             onboards_.clear();
             int breakIndex = 0;
@@ -132,7 +132,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
             emptyRoute_ = currentRoute_;
     }
     else if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)){
-        idleTime_ += startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_;
+        idleTime_ += (startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_);
         departTime_ = startTime_ + static_cast<float>((epoch+1) * epochLength);
         currentRoute_->plannedReachTime_[0] = departTime_;
 //        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
@@ -142,51 +142,69 @@ void Vehicle::updateState(int epoch, int &epochLength) {
 }
 
 void Vehicle::updateStateTime(float stopTime) {
-    // the following constraint is useful for the cases that the vehicle does not have any stop in current epoch
-    if (departTime_ < startTime_ + stopTime) {
-        onboards_.clear();
-        int breakIndex = 0;
-        for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-            currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
-            currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-            currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
-            solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
+    if (solutionRoute_ == nullptr) {
+        solutionRoute_ = std::make_shared<Route>(vehicleID_);
+        solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
+    }
+    if (currentRoute_->routeSize_ > 1) {
+        currentRoute_->resetRoute();
+        // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
+        if (departTime_ < startTime_ + stopTime) {
+            onboards_.clear();
+            int breakIndex = 0;
+            for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+                currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
+                currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
+                solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
 
-            // set request status
-            if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
-                currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
-            }
-
-            else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
-                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
-                currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
-            }
-
-            if ((currentRoute_->plannedReachTime_[i] >= startTime_ + stopTime)||(i == currentRoute_->routeSize_-1)){
-
-                // at depart point the vehicle is ready to leave the stop location and delta time has passed
-                departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
-                if (departTime_ < startTime_ + stopTime) {
-                    idleTime_ += (startTime_ + stopTime - departTime_);
-                    departTime_ = startTime_ + stopTime;
-                    currentRoute_->routeNodes_[i]->departTime_ = departTime_;
+                // set request status
+                if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                    currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
+                    currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
+                    currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
                 }
-                numPassengers_ = currentRoute_->plannedPassengers_[i];
-                departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
-                currentRoute_->routeNodes_[i]->type_ = SOURCE;
-                breakIndex = i;
-                break;
+
+                else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
+                    currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
+                    currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
+                }
+
+                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + stopTime)||(i == currentRoute_->routeSize_-1)){
+
+                    // at depart point the vehicle is ready to leave the stop location and delta time has passed
+                    departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
+
+                    // if we have reached the end of the route, next condition is checked
+                    if (departTime_ < startTime_ + stopTime) {
+                        idleTime_ += (startTime_ + stopTime - departTime_);
+                        departTime_ = startTime_ + stopTime;
+                        currentRoute_->routeNodes_[i]->departTime_ = departTime_;
+                    }
+                    numPassengers_ = currentRoute_->plannedPassengers_[i];
+                    departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
+                    currentRoute_->routeNodes_[i]->type_ = SOURCE;
+                    breakIndex = i;
+                    break;
+                }
             }
-        }
-        for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
-            if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-                currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
-                onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+            for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
+                if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+                    currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
+                    onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                }
             }
+            currentRoute_->removeNode(breakIndex);
         }
-        currentRoute_->removeNode(breakIndex);
+        if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
+            emptyRoute_ = currentRoute_;
+    }
+    else if (departTime_ < startTime_ + stopTime){
+        idleTime_ += (startTime_ + stopTime - departTime_);
+        departTime_ = startTime_ + stopTime;
+        currentRoute_->plannedReachTime_[0] = departTime_;
+        solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
+        solutionRoute_->plannedReachTime_.back() = departTime_;
     }
 }
 
