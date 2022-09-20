@@ -68,13 +68,13 @@ struct insertPosition;
 typedef std::shared_ptr<insertPosition> PInsertPosition;
 // extern PTravelTime travelMat;
 
-
 // SubProblem solution status
 enum SubProSolveStart {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
 enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
 enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3};
-enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1};
+enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2};
+enum InitialDual {LAST_CP = 0, PENALTIES = 1};
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",
         "PULLING" };
@@ -92,6 +92,10 @@ static const std::vector<std::string> mainAlgorithmName = {
 static const std::vector<std::string> warmStartName = {
         "GREEDY_START     ",
         "PREVIOUS_SOLUTION"};
+
+static const std::vector<std::string> InitialDualName = {
+        "LAST_CP  ",
+        "PENALTIES"};
 
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
@@ -114,10 +118,6 @@ static const int DECIMALS = 3;          // precision when printing floats
 static const float TimePerMile = 10;   // travel time per mile distance
 static const int sentenceSize = 47;
 
-/*static const float alphaParam_ = 1.5;
-static const float betaParam = 440;
-static const float deltaPram = 820;
-static const int epochLength = 50;*/
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
@@ -238,8 +238,9 @@ public:
     float betaParam_{};
     float deltaPram_{};
     int epochLength_{};
-    bool emptyStart_{};
+    InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
+    bool addOneRequestColumn_{};
 
     // ISUD parameters
     warmStart initialStart_;
@@ -263,11 +264,12 @@ public:
     int populateTimeLimit_{};
 
     // Constructor and Destructor
-    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
-               MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, float minImp,
-               bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
-               SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-               subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit);
+    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, InitialDual initialDual,
+               MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
+               float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
+               bool isDominanceReleased, SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
+               subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit,
+               bool addOneRequestColumn);
 
     virtual ~Parameters();
 

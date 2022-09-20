@@ -223,18 +223,20 @@ namespace Tools {
 //************************************************************************
 
 // Constructor and Destructor
-Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, bool emptyStart,
+Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, InitialDual initialDual,
                        MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-                       float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
-                       SubProSolveStart subproSolveStartState, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit) :
+                       float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
+                       bool isDominanceReleased, SubProSolveStart subproSolveStartState,
+                       LabelingStrategy LabelingStrategy,
+                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit,
+                       bool addOneRequestColumn) :
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
-        emptyStart_(emptyStart), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
+        initialDual_(initialDual), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
         MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), fixedEpoch_(fixedEpoch),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), SubproSolveStartState_(subproSolveStartState),
-        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),
-        solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit) {
+        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn) {
 }
 
 Parameters::~Parameters() = default;
@@ -250,8 +252,9 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# delta Parameter" << " = " << deltaPram_ << std::endl;
     repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << std::endl;
-    repStr << std::setw(setwLength) << "# empty route at each epoch " << " = " << emptyStart_ << std::endl;
+    repStr << std::setw(setwLength) << "# initial dual solution " << " = " << InitialDualName[initialDual_] << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
+    repStr << std::setw(setwLength) << "# add columns with one request " << " = " << addOneRequestColumn_ << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
