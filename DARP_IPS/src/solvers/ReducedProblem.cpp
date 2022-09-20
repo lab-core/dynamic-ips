@@ -77,33 +77,21 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
 
 
 // this function build the model at the start of each epoch
-void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                                bool emptyStart) {
+void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution) {
 
     // model initialization (defining empty set of constraints and adding objective)
     ResetRPModel();
     int rhs = 1;
     MasterModeler::initializeModel(pInst, rhs);
 
-
- //   MasterModeler::initializeModel(pInst, rhs);
-
-        // adding request columns (z variables)
+    // adding request columns (z variables)
     for (auto & zSol : zSolution)
         addZVar(zSol);
 
     // adding route solution columns
-    for (auto & routeSol : routeSolution) {
-        if (emptyStart) {
-            for (auto & nodeObj : routeSol->routeNodes_) {
-                if (nodeObj->type_ == PICKUP)
-                    addZVar(nodeObj->related_Request_);
-            }
-        }
-        else {
-            addRouteVar(routeSol);
-        }
-    }
+    for (auto & routeSol : routeSolution)
+        addRouteVar(routeSol);
+
 
     //adding new route variables
     for (auto & routeObj : routesToAdd_)

@@ -36,7 +36,7 @@ public:
     void updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution);
 
     // this function build the model at the start of each epoch
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, bool emptyStart);
+    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
      // this function solve the model and remove all columns except than the current base
      virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
