@@ -34,15 +34,18 @@ Request::~Request() = default;
 
 // Getters and Setters
 // This function update penalties based on fixed time epochs for rolling horizon
-void Request::setPenalty(int epoch, PParameters &parameters, float simulationStart) {
+void Request::setPenaltyEpoch(int epoch, PParameters &parameters, float simulationStart) {
     penalty_ = static_cast<float>(parameters->deltaPram_
             * pow(2, (static_cast<float>(parameters->epochLength_ * epoch)
             - (earlyPick_-simulationStart)) / static_cast<float>(10 * parameters->epochLength_)));
+    /*penalty_ = static_cast<float>(parameters->deltaPram_
+                                  * pow(2, (static_cast<float>(10 * epoch)
+                                            - (earlyPick_-simulationStart)) / static_cast<float>(10 * 10)));*/
 }
 // This function update penalties based on elapsed time for any time framework
-void Request::setPenalty(float elapsedTime, PParameters &parameters, float simulationStart) {
+void Request::setPenalty(float elapsedTime, PParameters &parameters, float simulationStart, float length) {
     penalty_ = static_cast<float>(parameters->deltaPram_
-            * pow(2, (elapsedTime - earlyPick_-simulationStart) / static_cast<float>(300)));
+            * pow(2, (elapsedTime - (earlyPick_-simulationStart)) / static_cast<float>(10 * length)));
 }
 unsigned int Request::getRequestId() const {return requestID_;}
 void Request::setMinTravelTime(float minTravelTime) {

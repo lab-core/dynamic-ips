@@ -118,11 +118,12 @@ Graph::Graph(PNode &source, PNode &sink) {
 
 // function for adding node to graph
 void Graph::addNewNode(const PNode &node) {
-    nodes_.insert(std::pair<std::string, PNode> (node->nodeID_, node));
-//    node->setPenalty(0);
-    nodeIDToInt_[node->nodeID_] = nbNodes_;
-    intToNodeID_.push_back(node->nodeID_);
-    nbNodes_++;
+ //   if (node->nodeStatus_ != COMMITTED) {
+        nodes_.insert(std::pair<std::string, PNode> (node->nodeID_, node));
+        nodeIDToInt_[node->nodeID_] = nbNodes_;
+        intToNodeID_.push_back(node->nodeID_);
+        nbNodes_++;
+//    }
 }
 
 void Graph::addRequestToGraph(PRequest &newRequest) {

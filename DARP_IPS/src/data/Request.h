@@ -48,9 +48,9 @@ public:
 
     // Getters and Setters
     // This function update penalties based on fixed time epochs for rolling horizon
-    void setPenalty(int epoch, PParameters &parameters, float simulationStart);
+    void setPenaltyEpoch(int epoch, PParameters &parameters, float simulationStart);
     // This function update penalties based on elapsed time for any time framework
-    void setPenalty(float elapsedTime, PParameters &parameters, float simulationStart);
+    void setPenalty(float elapsedTime, PParameters &parameters, float simulationStart, float length);
     unsigned int getRequestId() const;
     void setMinTravelTime(float minTravelTime);
     void setMaxTravelTime(float &alphaParam, float &betaParam);

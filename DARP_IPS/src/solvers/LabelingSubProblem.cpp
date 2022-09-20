@@ -109,7 +109,6 @@ void LabelingSubProblem::sortSuccessors() {
 void LabelingSubProblem::initialization() {
 
     nbActivated_ = 0;
-    activeNodes_.clear();
     for (auto labelObj: dominatedLabels_)
         labelObj.reset();
     dominatedLabels_.clear();
@@ -129,16 +128,11 @@ void LabelingSubProblem::initialization() {
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->nodes_[(*Vehicle_)->departID_]);
     initialLabel->completedRequests_.resize(requestIDToInt_.size());
-    /*for (int i = 0; i < requestIDToInt_.size(); ++i) {
-        initialLabel->completedRequest_.push_back(0);
-    }*/
 
     initialLabel->requestIDToInt_ = requestIDToInt_;
     // update travel resource for the initial label based on the onboards
     for (auto &nodeID: (*Vehicle_)->onboards_) {
         initialLabel->openNodes_.insert(subGraph_->nodes_[nodeID]);
- //       initialLabel->completedRequests_.insert(subGraph_->nodes_[nodeID]->related_Request_);
-//        initialLabel->completedRequest_[requestIDToInt_[subGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
         initialLabel->completedRequests_[requestIDToInt_[subGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
         float remainedTime = subGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
                              (*Vehicle_)->departTime_ + subGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
@@ -148,14 +142,19 @@ void LabelingSubProblem::initialization() {
     for (int i = 0; i < requestIDToInt_.size(); ++i){
         initialLabel->openRequests_.push_back(initialLabel->completedRequests_[i]);
     }
-//    initialLabel->openRequests_ = initialLabel->completedRequests_;
 
-    subGraph_->nodes_[(*Vehicle_)->departID_]->activeLabels_.push_back(initialLabel);
-//    subGraph_->nodes_[(*Vehicle_)->departID_]->generatedLabels_[initialLabel->completedRequests_.size()].push_back(initialLabel);
-    subGraph_->nodes_[(*Vehicle_)->departID_]->generatedLabels_[initialLabel->nbPickUp_].push_back(initialLabel);
-    subGraph_->nodes_[(*Vehicle_)->departID_]->nbActiveLabels_++;
-    subGraph_->nodes_[(*Vehicle_)->departID_]->bestLabelReduceCost_ = initialLabel->reducedCost_;
-    activeNodes_.push_back(subGraph_->nodes_[(*Vehicle_)->departID_]);
+    /*if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
+        int i = 1;
+        while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
+            initialLabel->extend((*Vehicle_)->currentRoute_->routeNodes_[i]);
+        }
+    }*/
+    initialLabel->currentNode_->activeLabels_.push_back(initialLabel);
+    initialLabel->currentNode_->generatedLabels_[initialLabel->nbPickUp_].push_back(initialLabel);
+    initialLabel->currentNode_->nbActiveLabels_++;
+    initialLabel->currentNode_->bestLabelReduceCost_ = initialLabel->reducedCost_;
+    activeNodes_.clear();
+    activeNodes_.push_back(initialLabel->currentNode_);
     nbActivated_ ++;
 
 }
@@ -553,6 +552,11 @@ void LabelingSubProblem::solveDynamic() {
         bestReducedCost_ = subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_;
         (*Vehicle_)->bestReducedCost_ = bestReducedCost_;
     }
+    nbNegativeColumns_ = 0;
+    for (auto & labelObj : subGraph_->nodes_[(*Vehicle_)->sinkID_]->activeLabels_) {
+        if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)
+            nbNegativeColumns_ ++;
+    }
     std::cout << this->toString() << std::endl;
 }
 
@@ -587,12 +591,12 @@ std::string LabelingSubProblem::toString() const {
         repStr << "# best objective value = " << subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_ << std::endl;
     repStr << "# The solution pool contains = " << subGraph_->nodes_[(*Vehicle_)->sinkID_]->activeLabels_.size() << " solutions." << std::endl;
 
-    int nbValidSolution = 0;
+    /*int nbValidSolution = 0;
     for (auto & labelObj : subGraph_->nodes_[(*Vehicle_)->sinkID_]->activeLabels_) {
         if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)
             nbValidSolution ++;
-    }
-    repStr << "# The solution pool contains = " << nbValidSolution << " solutions with negative reduced cost." << std::endl;
+    }*/
+    repStr << "# The solution pool contains = " << nbNegativeColumns_ << " solutions with negative reduced cost." << std::endl;
     return repStr.str();
 }
 

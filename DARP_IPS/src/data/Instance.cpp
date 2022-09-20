@@ -148,8 +148,8 @@ std::string Instance::solutionToString() {
     return repStr.str();
 }
 
-// function to set the data of the partial instance based on the epoch
-void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, int epoch, int lastRecRequests) {
+// this function update the set of available requests, removed completed requests and update onboards
+void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
 
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
@@ -162,20 +162,20 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     }
     nbNewRequests_ = 0;
 
-
-
+    // add unperformed requests
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
                 instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
                 if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP)
-                    addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_, epoch, mainInst->parameters_, simulationStartTime_);
+                    addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
             }
         }
     }
 
+    // add unscheduled requests
     for (auto & requestObj: penaltyRequests) {
-        addRequest(requestObj, epoch, mainInst->parameters_, simulationStartTime_);
+        addRequest(requestObj);
 
         std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
@@ -183,12 +183,11 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
     }
 
-
+    // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + static_cast<float>((epoch) * mainInst->parameters_->epochLength_) ) {
- //           mainInst->requests_[i]->readEpoch_ = epoch;
+        if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + elapsedTime ) {
             nbNewRequests_++;
-            addRequest(mainInst->requests_[i], epoch, mainInst->parameters_, simulationStartTime_);
+            addRequest(mainInst->requests_[i]);
             std::string pickID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
             std::string dropID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
@@ -216,7 +215,7 @@ void Instance::buildStaticData(const PInstance &mainInst) {
     for (auto & requestObj : mainInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             nbNewRequests_++;
-            addRequest(requestObj, 0, mainInst->parameters_, simulationStartTime_);
+            addRequest(requestObj);
             std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
             std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
@@ -226,11 +225,11 @@ void Instance::buildStaticData(const PInstance &mainInst) {
 }
 
 // function to add requests from previous epochs to the current partial instance
-void Instance::addRequest(PRequest &request, int epoch, PParameters &parameters, float simulationStart) {
+void Instance::addRequest(PRequest &request) {
     nbRequests_++;
     requests_.push_back(request);
-    request->setPenalty(epoch , parameters, simulationStart);
-//    request->setPenalty(epoch - request->readEpoch_, parameters, simulationStart);
+//    request->setPenaltyEpoch(epoch , parameters, simulationStart);
+//    request->setPenaltyEpoch(epoch - request->readEpoch_, parameters, simulationStart);
     nameToRequest_[request->name_] = request;
     request->selectStatus_ = NOT_SELECTED;
 }
@@ -283,6 +282,18 @@ void Instance::sortVehicles(SortVehicle sortBase) {
 void Instance::resetRequestsSelectStatus() {
     for (auto & requestObj: requests_)
         requestObj->selectStatus_ = NOT_SELECTED;
+}
+
+// function to update penalties in rolling horizon approach
+void Instance::updatePenaltiesEpoch(int epoch) {
+    for (auto & requestObj : requests_)
+        requestObj->setPenaltyEpoch(epoch, parameters_, simulationStartTime_);
+}
+
+// function to update penalties in any time approach
+void Instance::updatePenalties(float elapsedTime, float length) {
+    for (auto & requestObj : requests_)
+        requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_, length);
 }
 
 // print solutions in csv files
@@ -445,6 +456,13 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "NUM_LOCATIONS = " << nbLocations_ << std::endl;
     myFile.close();
 }
+
+
+
+
+
+
+
 
 
 

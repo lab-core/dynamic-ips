@@ -21,17 +21,16 @@ int main() {
     double previousObj;
     SubProSolveStart subStartStatus;
     int nbReceivedRequest;
-    int epoch = 0;
-    float timer =0;
-    float saveTime = 3600;
-    bool middleSave = false;
+    float elapsedTime;
     bool showLog = true;
     bool disabledHeuristics;
+    float length = 2;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
+    auto *simulationTime = new Tools::Timer(); simulationTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20160622_11-240m-3";
 
     // build the path of input files
     // create output files for epoch results
@@ -56,16 +55,17 @@ int main() {
     nbReceivedRequest = mainInst->nbOnboards_;
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
     PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
+    simulationTime->start();
     while (nbReceivedRequest < mainInst->nbRequests_) {
-        label:
+        elapsedTime = simulationTime->dSinceInit().count();
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
-        std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
+        std::cout << " ************************ Elapsed Time " << elapsedTime << "  ****************************" << std::endl;
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         for (auto & vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateState(epoch, mainInst->parameters_->epochLength_);
+            vehicleObj->updateStateTime(elapsedTime);
             mainInst->nbOnboards_ += (int)vehicleObj->onboards_.size();
             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
@@ -73,24 +73,15 @@ int main() {
         // creating a subInstance
         PInstance EpochInst = std::make_shared<Instance>(*mainInst);
         // reading the data received in previous epoch
-        EpochInst->buildPartialData(mainInst, isudObj->zSolution_ , epoch, nbReceivedRequest);
+        EpochInst->buildPartialData(mainInst, isudObj->zSolution_ , elapsedTime, nbReceivedRequest);
+        EpochInst->updatePenalties(elapsedTime, length);
         nbReceivedRequest += EpochInst->nbNewRequests_;
         std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
-
-        // saving the status in the middle of running
-        if ((static_cast<float> (epoch*EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
-            EpochInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + static_cast<float>(epoch * EpochInst->parameters_->epochLength_));
-            break;
-        }
-        if (epoch == 0 && nbReceivedRequest == 0) {
-            epoch++;
-            goto label;
-        }
 
         switch(EpochInst->parameters_->mainAlgorithm_) {
             case MIP_CPLEX :
                 MIPSolver(EpochInst, inputPaths);
-                std::cout << "# FINAL SOLUTION OF MIP solution AFTER EPOCH " << epoch << " : " << std::endl;
+                std::cout << "# FINAL SOLUTION OF MIP solution AT TIME " << elapsedTime << " : " << std::endl;
                 for (int v = 0; v < EpochInst->nbVehicles_; ++v)
                     std::cout << EpochInst->vehicles_[v]->currentRoute_->toString();
                 break;
@@ -101,9 +92,9 @@ int main() {
                 std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
                 break;
             default: // CG_CPLEX and CG_ISUD (Column generation approaches)
-                isudObj->initialization(EpochInst, EpochInst->parameters_->emptyStart_);
+                isudObj->initialization(EpochInst);
                 // save initial solution
-                EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
+         //       EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;
 
                 std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
@@ -198,9 +189,9 @@ int main() {
                             break;
                         }
                         else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                            isudObj->solveISUD(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
-                                               inputPaths.getOutputIncDegreeRdCost());
-                            std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
+  //                          isudObj->solveISUD(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
+  //                                             inputPaths.getOutputIncDegreeRdCost());
+                            std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD AT TIME " << elapsedTime << ":" << std::endl;
                             /*for (auto &routeObj: isudObj->routeSolution_)
                                 std::cout << routeObj->toString();*/
                         }
@@ -222,7 +213,7 @@ int main() {
                     EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
                 }
                 isudObj->setObjValue();
-                std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch << " : " << std::endl;
+                std::cout << "# FINAL SOLUTION OF ISUD AT TIME " << elapsedTime << " : " << std::endl;
                 std::cout << isudObj->toString();
                 for (int v = 0; v < mainInst->nbVehicles_; ++v) {
                     std::cout << mainInst->vehicles_[v]->currentRoute_->toString();
@@ -230,11 +221,13 @@ int main() {
                 break;
         }
 
-        EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
+ //       EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
         EpochInst.reset();
-        epoch++;
+//        length = simulationTime->dSinceInit().count() - elapsedTime;
+//        epoch++;
     }
 
+    simulationTime->stop();
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
@@ -273,8 +266,8 @@ int main() {
 
 
     std::cout << "*************************************************************************************" << std::endl;
-    std::cout << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch << " EPOCHS " << std::endl;
-    std::cout << "                               DYNAMIC MODE " << std::endl;
+    std::cout << "                        FINAL VEHICLE ROUTES AFTER TIME " << std::setw(3) << simulationTime->dSinceInit().count() << " EPOCHS " << std::endl;
+    std::cout << "                               ANYTIME MODE " << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
     std::cout << "# " << std::endl;
@@ -307,7 +300,7 @@ int main() {
     mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
     mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
     // save the final route solution
-    mainInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
+//    mainInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
 
     fclose (stdout);
 }

@@ -29,7 +29,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-2";
+    std::string instanceName = "20160622_11-240m-3";
 
     // build the path of input files
     // create output files for epoch results
@@ -70,8 +70,12 @@ int main() {
 
         // creating a subInstance
         PInstance EpochInst = std::make_shared<Instance>(*mainInst);
+
         // reading the data received in previous epoch
-        EpochInst->buildPartialData(mainInst, isudObj->zSolution_ , epoch, nbReceivedRequest);
+        EpochInst->buildPartialData(mainInst, isudObj->zSolution_,
+                                    static_cast<float>((epoch) * mainInst->parameters_->epochLength_),
+                                    nbReceivedRequest);
+        EpochInst->updatePenaltiesEpoch(epoch);
         nbReceivedRequest += EpochInst->nbNewRequests_;
         std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
@@ -99,7 +103,7 @@ int main() {
                 std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
                 break;
             default: // CG_CPLEX and CG_ISUD (Column generation approaches)
-                isudObj->initialization(EpochInst, EpochInst->parameters_->emptyStart_);
+                isudObj->initialization(EpochInst);
                 // save initial solution
                 EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;
@@ -163,16 +167,14 @@ int main() {
                                 EpochInst->resetRequestsSelectStatus();
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProOptions->maxPickup_ = vehicleMaxPick;
+         //                       subProOptions->maxPickup_ = maxPick;
                                 PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                                 subProblem->initSubGraph(EpochInst);
                                 subProblem->solveDynamic();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
-                                if (subProblem->bestReducedCost_ > 0)
-                                    nbNegativeNotFound++;
-                                else
-                                    subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
-                                                                 isudObj->generatedRoutes_);
-//                                subProOptions.reset();
+                                subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
+                                                             isudObj->generatedRoutes_);
+                                nbNegativeNotFound = nbNegativeNotFound + subProblem->nbNegativeColumns_;
                                 subProblem.reset();
                             }
 //                    subStartStatus = NOT_RESTRICTED;
@@ -186,7 +188,7 @@ int main() {
                     subProTime->stop();
                     EpochInst->restVehicleOrder();
                     subProOptions.reset();
-                    if (nbNegativeNotFound == EpochInst->nbVehicles_) {
+                    if (nbNegativeNotFound == 0) {
                         std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
                         break;
                     }

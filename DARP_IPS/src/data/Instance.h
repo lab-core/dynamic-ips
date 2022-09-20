@@ -52,12 +52,13 @@ public:
     std::string toString();
     std::string solutionToString();
 
-    // function to set the data of the partial instance based on the epoch
-    void buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, int epoch, int lastRecRequests);
+    // functions to build the set of requests to be served including:
+    // update the set of available requests, removed completed requests and update onboards
+    void buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
     void buildStaticData(const PInstance &mainInst);
 
     // function to add requests from previous epochs to the current partial instance
-    void addRequest(PRequest &request, int epoch, PParameters &parameters, float simulationStart);
+    void addRequest(PRequest &request);
 
     // setting min travel times of requests based on the distance matrix
     // initializing vehicles empty route and current route
@@ -68,6 +69,12 @@ public:
     void restVehicleOrder();
     void sortVehicles(SortVehicle sortBase);
     void resetRequestsSelectStatus();
+
+    // function to update penalties in rolling horizon approach
+    void updatePenaltiesEpoch(int epoch);
+
+    // function to update penalties in any time approach
+    void updatePenalties(float elapsedTime, float length);
 
     // print solution in csv files
     void saveSolutionRoutes(const std::string& routeResultDir);

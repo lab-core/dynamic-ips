@@ -15,7 +15,7 @@
 
 
 // Different node status and their names
-enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 };
+enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 , COMMITTED = 3};
 /*static const std::vector<std::string> nodeStatusName = {
         "NO_ACTION", "PLANNED  ", "DONE"
 };*/

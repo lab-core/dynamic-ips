@@ -63,6 +63,7 @@ int main() {
     // creating a solvable Instance
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst);
+    StaticInst->updatePenaltiesEpoch(0);
 
     switch(StaticInst->parameters_->mainAlgorithm_) {
         case MIP_CPLEX :
@@ -91,7 +92,7 @@ int main() {
             break;
         default: // CG_CPLEX and CG_ISUD (Column generation approaches)
 
-            isudObj->initialization(StaticInst, StaticInst->parameters_->emptyStart_);
+            isudObj->initialization(StaticInst);
             // save initial solution
             StaticInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
             isudObj->isudIter_ ++;

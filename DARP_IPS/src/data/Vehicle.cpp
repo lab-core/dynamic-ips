@@ -191,9 +191,13 @@ void Vehicle::updateStateTime(float stopTime) {
             for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
                 if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
                     currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
+                    // determine committed nodes
+                    /*if (i < breakIndex + 2)
+                        currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
                     onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
                 }
             }
+
             currentRoute_->removeNode(breakIndex);
         }
         if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
