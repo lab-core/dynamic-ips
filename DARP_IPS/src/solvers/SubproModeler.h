@@ -17,6 +17,7 @@ public:
     std::vector<PRequest> subRequests_;     // List of requests
     std::set<PRequest> onboardRequests_;
     double bestReducedCost_;
+    int nbNegativeColumns_;
 
     // Constructor and Destructor
     explicit SubproModeler(PVehicle &vehicle);
