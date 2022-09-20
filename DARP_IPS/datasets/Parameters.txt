@@ -3,15 +3,24 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 30
-emptyStart = 0
-mainAlgorithm = 0
+epochLength = 5
+InitialDual = 0
+mainAlgorithm = 3
+addOneRequestColumn = 0
+
+# ISUD PARAMETERS
+#
+warmStart = 1
+MIP_maxIncDegree = 4
+CP_IncDegree = 3
+minImp = 0.0025
+fixedEpoch = 0
 
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 0
 MaxLabel = 150
-isDominanceReleased = 0`
+isDominanceReleased = 1`
 isSuccessorsLimited = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
