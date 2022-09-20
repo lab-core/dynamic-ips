@@ -53,7 +53,7 @@ public:
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
-    void initialization(PInstance &pInst, bool emptyStart);
+    void initialization(PInstance &pInst);
 
     // function to create M2 matrix for each column in the current solution
     static Eigen::MatrixXd calcM2Matrix(PRoute &solColumn);

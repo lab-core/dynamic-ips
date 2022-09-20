@@ -42,7 +42,7 @@ void ISUDAlgorithm::setObjValue() {
 
 // this function create initial routes serving only one request and fill zSolution_ with available requests
 // Reduced problem is also solved to initialized dual costs
-void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
+void ISUDAlgorithm::initialization(PInstance &pInst) {
     ReducedPro_->routesToAdd_.clear();
     isudIter_ = 0;
 
@@ -52,12 +52,12 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
                 vehicleObj->emptyRoute_ = vehicleObj->currentRoute_;
             else {
                 std::string routeName = vehicleObj->emptyRoute_->name_;
+                // define new empty route and remove the old one
                 vehicleObj->setEmptyRoute(pInst);
                 generatedRoutes_[routeName].reset();
                 generatedRoutes_.erase(routeName);
             }
         }
-
         ReducedPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
         generatedRoutes_.insert(std::pair<std::string, PRoute>((vehicleObj->currentRoute_)->name_,
                                                                (vehicleObj->currentRoute_)));
@@ -65,7 +65,26 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
                                                                (vehicleObj->emptyRoute_)));
     }
 
-    if (pInst->parameters_->initialStart_ == GREEDY_START && this->objValue_ != 0){
+    // create a feasible integer solution at the start of epoch or simulation
+    if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
+        for (auto &requestObj : pInst->requests_)
+            zSolution_.push_back(requestObj);
+        routeSolution_.clear();
+        for (auto &vehicleObj: pInst->vehicles_) {
+            routeSolution_.push_back(vehicleObj->emptyRoute_);
+        }
+    }
+    else if (pInst->parameters_->initialStart_ == PRE_SOLUTION){
+        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i)
+            zSolution_.push_back(pInst->requests_[i]);
+        if (objValue_ == 0){
+            routeSolution_.clear();
+            for (auto &vehicleObj: pInst->vehicles_) {
+                routeSolution_.push_back(vehicleObj->emptyRoute_);
+            }
+        }
+    }
+    else if (pInst->parameters_->initialStart_ == GREEDY_START){
         routeSolution_.clear();
         zSolution_.clear();
         PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
@@ -80,37 +99,45 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
             routeSolution_.push_back(vehicleObj->currentRoute_);
         }
     }
-    else {
+
+    if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
         // adding new arrival requests to zSolutions
         for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i) {
-            zSolution_.push_back(pInst->requests_[i]);
-            // set the dual of the new requests
-            pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
-            //       if (routeSolution_.size() == 0) {
-            if (pInst->nbOnboards_ == 0) {
-                for (int v = 0; v < pInst->nbVehicles_; ++v) {
-                    // creating an empty route
-                    PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
+            // creating routes with only one request
+            for (int v = 0; v < pInst->nbVehicles_; ++v) {
+                // creating an empty route
+                PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
 
-                    newRoute->addSource(pInst->instGraph_->nodes_[pInst->vehicles_[v]->departID_],
-                                        pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
-                    static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
-                    for (const auto t: nodeTypesInOrder) {
-                        std::string ID = Tools::createNodeID(pInst->requests_[i]->getRequestId(), t);
-                        newRoute->addNode(pInst->instGraph_->nodes_[ID]);
-                    }
-                    generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));
-                    availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
-                    ReducedPro_->routesToAdd_.push_back(newRoute);
+                newRoute->addSource(pInst->instGraph_->nodes_[pInst->vehicles_[v]->departID_],
+                                    pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
+                static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
+                for (const auto t: nodeTypesInOrder) {
+                    std::string ID = Tools::createNodeID(pInst->requests_[i]->getRequestId(), t);
+                    newRoute->addNode(pInst->instGraph_->nodes_[ID]);
                 }
+                generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));
+                availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
+                ReducedPro_->routesToAdd_.push_back(newRoute);
             }
         }
     }
+
+    // set the duals of unserved requests based on penalties
+    if (pInst->parameters_->initialDual_ == PENALTIES){
+        for (auto &requestObj: pInst->requests_)
+            requestObj->dual_ = requestObj->penalty_;
+        for (auto &vehicleObj: pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    } else {
+        for (auto &requestObj: zSolution_)
+            requestObj->dual_ = requestObj->penalty_;
+    }
+
     std::cout << "# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------" << std::endl;
     isudTime_->start();
     RPTime_->start();
-    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_, emptyStart);
-    if (this->objValue_ == 0) {
+    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
+    if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)) {
         ReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
         setObjValue();
     }
@@ -120,18 +147,19 @@ void ISUDAlgorithm::initialization(PInstance &pInst, bool emptyStart) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
                       << std::endl;
+//            requestObj->dual_ = requestObj->penalty_;
         }
     }
     for (auto &vehicleObj: pInst->vehicles_) {
         std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
     }
     std::cout << "Objective after RP: " << this->objValue_ << std::endl;
-    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     std::cout << "+        Solution Result after RP initialization:       +" << std::endl;
     std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     for (auto & routeObj : routeSolution_) {
         std::cout << routeObj->toString();
-    }
+    }*/
 
     RPTime_->stop();
     isudTime_->stop();
@@ -334,7 +362,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                 // SOLVE BY MIP
                 MIPReducedPro_->routesToAdd_.clear();
                 MIPReducedPro_->routesToAdd_ = ReducedPro_->routesToAdd_;
-                MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, false);
+                MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
 
                 /*CompPro_->fractionalZ_.clear();
                 MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);*/
@@ -401,7 +429,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                 }
                 else {
                     restartAlgorithm = false;
-                    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
+                    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
                 }
 //                restartAlgorithm = false;
             }
@@ -434,11 +462,11 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                     }
                     else {
                         restartAlgorithm = false;
-                        ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
+                        ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
                     }
                 }
                 previousObj = objValue_;
-                ReducedPro_->buildModel(pInst, zSolution_, routeSolution_,false);
+                ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
                 std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;
                 /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 std::cout << "+         Solution Result after CP improve:        +" << std::endl;
@@ -462,7 +490,7 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, const string& isudSolutionDir
     // improve by solving the Reduced problem
 
     MIPReducedPro_->routesToAdd_.clear();
-    MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, false);
+    MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
