@@ -3,7 +3,7 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 5
+epochLength = 2
 InitialDual = 0
 mainAlgorithm = 3
 addOneRequestColumn = 0

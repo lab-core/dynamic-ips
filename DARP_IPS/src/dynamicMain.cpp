@@ -29,7 +29,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-3";
+    std::string instanceName = "20160622_11-240m-4";
 
     // build the path of input files
     // create output files for epoch results
@@ -108,10 +108,10 @@ int main() {
                 EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;
 
-                std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
+                /*std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
                 for (auto & vehicleObj : EpochInst->vehicles_) {
                     std::cout << vehicleObj->currentRoute_->toString();
-                }
+                }*/
                 if (!EpochInst->parameters_->isSuccessorsLimited_ && !EpochInst->parameters_->isTruncated_)
                     disabledHeuristics = true;
                 else
