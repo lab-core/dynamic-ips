@@ -72,6 +72,8 @@ int main() {
         std::cout << "           LAST RE-OPTIMIZATION TIME: " << lastLength << std::endl;
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLength << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
+        if (epoch == 54)
+            std::cout << "stop";
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
