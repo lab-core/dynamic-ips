@@ -19,6 +19,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
 //    departID_ = Tools::createNodeID(0, SOURCE);
 //    sinkID_ = Tools::createNodeID(0, SINK);
     dual_=0;
+    CPDual_ = 0;
     bestReducedCost_ = 9999;
     idleTime_ = 0;
     startTime_ = departTime;
@@ -49,6 +50,11 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
 void Vehicle::setCurrentRoute(PRoute &currentRoute) {
     currentRoute_ = currentRoute;
 }
+
+void Vehicle::resetBestReducedCost() {
+    bestReducedCost_ = 9999;
+}
+
 
 
 // Display function
@@ -141,7 +147,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     }
 }
 
-void Vehicle::updateStateTime(float stopTime) {
+void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
@@ -149,7 +155,7 @@ void Vehicle::updateStateTime(float stopTime) {
     if (currentRoute_->routeSize_ > 1) {
         currentRoute_->resetRoute();
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < startTime_ + stopTime) {
+        if (departTime_ < startTime_ + elapsedTime) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -170,15 +176,15 @@ void Vehicle::updateStateTime(float stopTime) {
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
                 }
 
-                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + stopTime)||(i == currentRoute_->routeSize_-1)){
+                if ((currentRoute_->plannedReachTime_[i] >= startTime_ + elapsedTime) || (i == currentRoute_->routeSize_ - 1)){
 
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedReachTime_[i] + currentRoute_->routeNodes_[i]->deltaTime_;
 
                     // if we have reached the end of the route, next condition is checked
-                    if (departTime_ < startTime_ + stopTime) {
-                        idleTime_ += (startTime_ + stopTime - departTime_);
-                        departTime_ = startTime_ + stopTime;
+                    if (departTime_ < startTime_ + elapsedTime) {
+                        idleTime_ += (startTime_ + elapsedTime - departTime_);
+                        departTime_ = startTime_ + elapsedTime;
                         currentRoute_->routeNodes_[i]->departTime_ = departTime_;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
@@ -191,10 +197,12 @@ void Vehicle::updateStateTime(float stopTime) {
             for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
                 if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
                     currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
+                    onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
                     // determine committed nodes
                     /*if (i < breakIndex + 2)
                         currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
-                    onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                    if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
+                        currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;
                 }
             }
 
@@ -203,12 +211,13 @@ void Vehicle::updateStateTime(float stopTime) {
         if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
-    else if (departTime_ < startTime_ + stopTime){
-        idleTime_ += (startTime_ + stopTime - departTime_);
-        departTime_ = startTime_ + stopTime;
+    else if (departTime_ < startTime_ + elapsedTime){
+        idleTime_ += (startTime_ + elapsedTime - departTime_);
+        departTime_ = startTime_ + elapsedTime;
         currentRoute_->plannedReachTime_[0] = departTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
         solutionRoute_->plannedReachTime_.back() = departTime_;
     }
 }
+
 

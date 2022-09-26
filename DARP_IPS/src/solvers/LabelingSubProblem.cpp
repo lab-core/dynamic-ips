@@ -143,12 +143,12 @@ void LabelingSubProblem::initialization() {
         initialLabel->openRequests_.push_back(initialLabel->completedRequests_[i]);
     }
 
-    /*if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
+    if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
             initialLabel->extend((*Vehicle_)->currentRoute_->routeNodes_[i]);
         }
-    }*/
+    }
     initialLabel->currentNode_->activeLabels_.push_back(initialLabel);
     initialLabel->currentNode_->generatedLabels_[initialLabel->nbPickUp_].push_back(initialLabel);
     initialLabel->currentNode_->nbActiveLabels_++;
@@ -280,7 +280,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
                         activeNodes_.erase(activeNodes_.begin() + j);
                     else {
-                        for (unsigned int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
+                        for (int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
                             if (activeNodes_[j]->activeLabels_[l]->status_ != ACTIVE)
                                 activeNodes_[j]->activeLabels_.erase(activeNodes_[j]->activeLabels_.begin() + l);
                             else {
@@ -378,7 +378,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
 //***************************************************************************************//
 void LabelingSubProblem::solveDynamic_pushing() {
     // create initial label
-    int nbActive;
+    int nbActive = 0;
     while(true) {
         // create initial label
         initialization();
@@ -557,7 +557,7 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
-    std::cout << this->toString() << std::endl;
+//    std::cout << this->toString() << std::endl;
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, std::unordered_map<std::string, PRoute> &generatedRoutes) {

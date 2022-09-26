@@ -27,6 +27,7 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     pickTime_ = MAXReachTime;
     dropTime_ = MAXReachTime;
     dual_ = 0;
+    CPDual_ = 0;
     minTravelTime_ = 0;
 }
 

@@ -73,8 +73,10 @@ public:
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(int &vehicleID);
+    void updateReducedCosts(PInstance &pInst, int &vehicleID);
 
     void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
+    void solveISUD2(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
 
     void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
 

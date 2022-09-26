@@ -26,10 +26,15 @@ int main() {
     bool showLog = true;
     bool disabledHeuristics;
 
+    float elapsedTime = 0;
+    float avgLengthOut;
+    float lastLengthOut;
+
+    auto *simulationTime = new Tools::Timer(); simulationTime->init();
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160622_11-240m-4";
+    std::string instanceName = "20160603_11-30m1";
 
     // build the path of input files
     // create output files for epoch results
@@ -54,10 +59,21 @@ int main() {
     nbReceivedRequest = mainInst->nbOnboards_;
     std::shared_ptr<ISUDAlgorithm> isudObj = std::make_shared<ISUDAlgorithm>();
     PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
+    simulationTime->start();
     while (nbReceivedRequest < mainInst->nbRequests_) {
         label:
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
-        std::cout << " *****************************  epoch " << std::setw(3) << epoch << "  *****************************" << std::endl;
+
+        elapsedTime = simulationTime->dSinceInit().count();
+        std::cout << "*************************************************************************************" << std::endl;
+        std::cout << "                        ELAPSED TIME: " << elapsedTime << std::endl;
+        std::cout << "                               EPOCH: " << epoch << std::endl;
+        std::cout << "           LAST RE-OPTIMIZATION TIME: " << lastLengthOut << std::endl;
+        std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLengthOut << std::endl;
+        std::cout << "*************************************************************************************" << std::endl;
+        if (epoch == 179){
+            std::cout << "stop";
+        }
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
@@ -166,8 +182,8 @@ int main() {
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 EpochInst->resetRequestsSelectStatus();
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
-                                subProOptions->maxPickup_ = vehicleMaxPick;
-         //                       subProOptions->maxPickup_ = maxPick;
+         //                       subProOptions->maxPickup_ = vehicleMaxPick;
+                                subProOptions->maxPickup_ = maxPick;
                                 PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
                                 subProblem->initSubGraph(EpochInst);
                                 subProblem->solveDynamic();
@@ -198,11 +214,12 @@ int main() {
                             break;
                         }
                         else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                            isudObj->solveISUD(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
+                            isudObj->solveISUD2(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
                                                inputPaths.getOutputIncDegreeRdCost());
                             std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
                             /*for (auto &routeObj: isudObj->routeSolution_)
                                 std::cout << routeObj->toString();*/
+                            break;
                         }
                     }
                     if (previousObj == isudObj->objValue_) {
@@ -224,17 +241,32 @@ int main() {
                 isudObj->setObjValue();
                 std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch << " : " << std::endl;
                 std::cout << isudObj->toString();
-                for (int v = 0; v < mainInst->nbVehicles_; ++v) {
+                /*for (int v = 0; v < mainInst->nbVehicles_; ++v) {
                     std::cout << mainInst->vehicles_[v]->currentRoute_->toString();
-                }
+                }*/
                 break;
         }
 
         EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
-        EpochInst.reset();
+
         epoch++;
+
+        // print epoch runTime to file
+        lastLengthOut = simulationTime->dSinceInit().count() - elapsedTime;
+        avgLengthOut = simulationTime->dSinceInit().count() / epoch;
+        std::ofstream myFile;
+        myFile.open (inputPaths.getOutputEpochRunTime(), std::ofstream::app);
+        myFile << epoch << ",";
+        myFile << lastLengthOut << ",";
+        myFile << avgLengthOut << ",";
+        myFile << EpochInst->nbRequests_ << ",";
+        myFile << EpochInst->instGraph_->nbNodes_ - 2*EpochInst->nbVehicles_ << "\n";
+        myFile.close();
+
+        EpochInst.reset();
     }
 
+    simulationTime->stop();
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {

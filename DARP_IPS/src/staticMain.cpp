@@ -21,14 +21,15 @@ int main() {
     double previousObj;
     SubProSolveStart subStartStatus;
     int epoch = 0;
-    float saveTime = 3600;
+    float saveTime = 5400;
     bool middleSave = false;
     bool showLog = true;
+    float length = 0;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150706_12-180m-1";
+    std::string instanceName = "20160603_11-30m1";
 
     // build the path of input files
     // create output files for epoch results
@@ -81,7 +82,7 @@ int main() {
                 std::cout << vehicleObj->currentRoute_->toString();
             if (middleSave) {
                 for (auto & vehicleObj: StaticInst->vehicles_)
-                    vehicleObj->updateStateTime(saveTime);
+                    vehicleObj->updateStateTime(saveTime, length);
                 StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime);
             }
             else {

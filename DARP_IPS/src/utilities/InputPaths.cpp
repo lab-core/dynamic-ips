@@ -59,6 +59,7 @@ const std::string &InputPaths::getOutputWaitRequests() const { return output_wai
 const std::string &InputPaths::getOutputVehicles() const { return output_vehicles_;}
 const std::string &InputPaths::getOutputInstance() const { return output_instance_;}
 const std::string &InputPaths::getOutputIncDegreeRdCost() const {return output_incDegree_RDCost_;}
+const std::string &InputPaths::getOutputEpochRunTime() const {return output_epochRunTime_;}
 
 double InputPaths::getTimeOut() const {return timeOut_; }
 
@@ -104,6 +105,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     output_vehicles_ = outputDir + "VEHICLES_" + instanceName_ + ".txt";
     output_instance_ = outputDir + "INSTANCE_" + instanceName_ + ".txt";
     output_incDegree_RDCost_ = outputDir + "RouteDegreeCost_" + instanceName_ + ".csv";
+    output_epochRunTime_ = outputDir + "EpochRuntime_" + instanceName_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;
@@ -116,7 +118,12 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     myFile.open(output_incDegree_RDCost_);
     myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
     myFile.close();
+    myFile.open(output_epochRunTime_);
+    myFile << "Epoch, RunTime, avgRunTime, nbRequests, nbNodes" << std::endl;
+    myFile.close();
 }
+
+
 
 
 

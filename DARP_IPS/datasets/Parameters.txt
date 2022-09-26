@@ -3,8 +3,8 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 2
-InitialDual = 0
+epochLength = 10
+InitialDual = 1
 mainAlgorithm = 3
 addOneRequestColumn = 0
 
@@ -12,7 +12,7 @@ addOneRequestColumn = 0
 #
 warmStart = 1
 MIP_maxIncDegree = 4
-CP_IncDegree = 3
+CP_IncDegree = 14
 minImp = 0.0025
 fixedEpoch = 0
 
@@ -23,7 +23,7 @@ MaxLabel = 150
 isDominanceReleased = 1`
 isSuccessorsLimited = 0
 SubproSolveStartState = 2
-LabelingStrategy = 0
+LabelingStrategy = 1
 subproblemAlgorithm = 1
 
 # CPLEX PARAMETERS

@@ -37,8 +37,9 @@ public:
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
-    SubSelectionStatus selectStatus_;            // status of the request based on previous solution of sub problems
+    SubSelectionStatus selectStatus_;   // status of the request based on previous solution of sub problems
     double dual_;
+    double CPDual_;
     int vehicleID_;                     // the vehicle that serve the request
 
     // Constructor and Destructor

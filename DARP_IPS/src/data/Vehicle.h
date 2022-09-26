@@ -29,6 +29,7 @@ public:
     PRoute solutionRoute_;
     PRoute emptyRoute_;
     double dual_;
+    double CPDual_;
     double bestReducedCost_;
     float idleTime_;
 
@@ -42,6 +43,7 @@ public:
     void setDepartTime(float departTime);
     void setEmptyRoute(PInstance &pInst);
     void setCurrentRoute(PRoute &currentRoute);
+    void resetBestReducedCost();
 
     // Display function
     std::string toString() const;
@@ -50,7 +52,7 @@ public:
     // update the situation of nodes and ride requests
 
     void updateState(int epoch, int &epochLength);
-    void updateStateTime(float stopTime);
+    void updateStateTime(float elapsedTime, float &epochLength);
 };
 
 

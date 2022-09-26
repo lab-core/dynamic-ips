@@ -45,8 +45,14 @@ public:
     // this function build the model at each iteration
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
+    // this function update the model and variables
+    void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+
     // this function solve the model
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+
+    void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     std::unordered_map<std::string , PRoute> &generatedRoutes);
 
     // this function check the situation of the CP solution to be column disjoint

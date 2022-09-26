@@ -166,9 +166,12 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP)
+  //              instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP){
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
+                    instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+                }
             }
         }
     }

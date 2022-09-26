@@ -22,7 +22,7 @@ ReducedProblem::ReducedProblem() : MasterModeler() {
 void ReducedProblem::ResetRPModel() {
 
     try {
-        int modelExist = 0;
+        /*int modelExist = 0;
         for (int r = (int)routeVar_.getSize()-1; r >= 0; --r) {
             routeVar_[r].end();
             routeVar_.remove(r,1);
@@ -36,8 +36,14 @@ void ReducedProblem::ResetRPModel() {
         if (modelExist == 1) {
             Model_.remove(requestConst_);
             Model_.remove(vehicleConst_);
-        }
+        }*/
 
+        routeVar_.endElements();
+        routeVar_.clear();
+        zVar_.endElements();
+        zVar_.clear();
+        Model_.remove(requestConst_);
+        Model_.remove(vehicleConst_);
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
@@ -123,6 +129,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
                 int rowIndex = requestToOrder_[requestObj->getRequestId()];
                 requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                 requestObj->dual_ = requestDuals_[rowIndex];
+                requestObj->CPDual_ = requestDuals_[rowIndex];
                 std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
                           << std::endl;
             }
@@ -132,6 +139,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         for (auto &vehicleObj: pInst->vehicles_) {
             vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
             vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
             std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
         }
 

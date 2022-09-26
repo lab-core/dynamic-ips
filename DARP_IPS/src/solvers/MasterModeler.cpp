@@ -40,6 +40,9 @@ void MasterModeler::updateRequestOrder(PInstance &pInst) {
 void MasterModeler::clearModel() {
     Model_.end();
     std::cout << "The Model is destroyed" << std::endl;
+    Model_ = IloModel(env_);
+    objFunction_ = IloMinimize(env_);
+    Model_.add(objFunction_);
 }
 
 // Display function

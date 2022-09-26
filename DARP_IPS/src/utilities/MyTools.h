@@ -91,7 +91,8 @@ static const std::vector<std::string> mainAlgorithmName = {
 
 static const std::vector<std::string> warmStartName = {
         "GREEDY_START     ",
-        "PREVIOUS_SOLUTION"};
+        "PREVIOUS_SOLUTION",
+        "EMPTY_START      "};
 
 static const std::vector<std::string> InitialDualName = {
         "LAST_CP  ",

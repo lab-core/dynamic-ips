@@ -49,6 +49,7 @@ protected:
     std::string output_vehicles_;
     std::string output_instance_;
     std::string output_incDegree_RDCost_;
+    std::string output_epochRunTime_;
 
     double timeOut_ = 3600;
 
@@ -84,6 +85,7 @@ public:
     const std::string &getOutputVehicles() const;
     const std::string &getOutputInstance() const;
     const std::string &getOutputIncDegreeRdCost() const;
+    const std::string &getOutputEpochRunTime() const;
 
 
     double getTimeOut() const;
