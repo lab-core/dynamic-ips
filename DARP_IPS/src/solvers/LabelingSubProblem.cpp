@@ -86,7 +86,8 @@ void LabelingSubProblem::sortSuccessors() {
                         distanceToOnboard /= (*Vehicle_)->onboards_.size();
                         subGraph_->nodes_[pickID]->travelTimeFromNode_ += distanceToOnboard;
                     }*/
-                    nodeObj.second->successors_.push_back(subGraph_->nodes_[pickID]);
+                    if (subGraph_->nodes_[pickID]->nodeStatus_ != COMMITTED)
+                        nodeObj.second->successors_.push_back(subGraph_->nodes_[pickID]);
                 }
             }
             sort(nodeObj.second->successors_.begin(),nodeObj.second->successors_.end(),[](const PNode &lhs, const PNode &rhs){
@@ -147,6 +148,9 @@ void LabelingSubProblem::initialization() {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
             initialLabel->extend((*Vehicle_)->currentRoute_->routeNodes_[i]);
+            i++;
+            if (i == (*Vehicle_)->currentRoute_->routeSize_ - 1)
+                break;
         }
     }
     initialLabel->currentNode_->activeLabels_.push_back(initialLabel);

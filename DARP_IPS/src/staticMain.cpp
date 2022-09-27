@@ -21,15 +21,15 @@ int main() {
     double previousObj;
     SubProSolveStart subStartStatus;
     int epoch = 0;
-    float saveTime = 5400;
-    bool middleSave = false;
+    float saveTime = 3600;
+    bool middleSave = true;
     bool showLog = true;
     float length = 0;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-30m1";
+    std::string instanceName = "20160603_11-120m";
 
     // build the path of input files
     // create output files for epoch results

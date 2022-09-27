@@ -34,7 +34,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-30m1";
+    std::string instanceName = "20160603_11-60m1";
 
     // build the path of input files
     // create output files for epoch results
@@ -219,7 +219,7 @@ int main() {
                             std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
                             /*for (auto &routeObj: isudObj->routeSolution_)
                                 std::cout << routeObj->toString();*/
-                            break;
+ //                           break;
                         }
                     }
                     if (previousObj == isudObj->objValue_) {

@@ -10,7 +10,7 @@ addOneRequestColumn = 0
 
 # ISUD PARAMETERS
 #
-warmStart = 1
+warmStart = 2
 MIP_maxIncDegree = 4
 CP_IncDegree = 14
 minImp = 0.0025
@@ -23,7 +23,7 @@ MaxLabel = 150
 isDominanceReleased = 1`
 isSuccessorsLimited = 0
 SubproSolveStartState = 2
-LabelingStrategy = 1
+LabelingStrategy = 0
 subproblemAlgorithm = 1
 
 # CPLEX PARAMETERS
