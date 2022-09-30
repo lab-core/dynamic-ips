@@ -61,13 +61,9 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
             }
         }
-        int nbRequests = 0;
-        for (auto & requestObj: pInst->requests_) {
-            if (requestObj->requestStatus_ == NO_ACTION)
-                nbRequests++;
-        }
-        std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+        std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
                   << " are selected to served." << std::endl;
+        Cplex_.clearModel();
     }
     catch (IloException& e) {
         std::cout << e << std::endl;

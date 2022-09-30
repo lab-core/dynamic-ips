@@ -199,6 +199,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         else
             break;
     }
+    updateRequestOrder();
 }
 
 void Instance::buildStaticData(const PInstance &mainInst) {
@@ -234,7 +235,7 @@ void Instance::addRequest(PRequest &request) {
 //    request->setPenaltyEpoch(epoch , parameters, simulationStart);
 //    request->setPenaltyEpoch(epoch - request->readEpoch_, parameters, simulationStart);
     nameToRequest_[request->name_] = request;
-    request->selectStatus_ = NOT_SELECTED;
+    updateRequestOrder();
 }
 
 
@@ -282,10 +283,6 @@ void Instance::sortVehicles(SortVehicle sortBase) {
     }
 }
 
-void Instance::resetRequestsSelectStatus() {
-    for (auto & requestObj: requests_)
-        requestObj->selectStatus_ = NOT_SELECTED;
-}
 
 // function to update penalties in rolling horizon approach
 void Instance::updatePenaltiesEpoch(int epoch) {
@@ -297,6 +294,19 @@ void Instance::updatePenaltiesEpoch(int epoch) {
 void Instance::updatePenalties(float elapsedTime, float length) {
     for (auto & requestObj : requests_)
         requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_, length);
+}
+
+//determine an order for requests to use in CPLEX modeling
+void Instance::updateRequestOrder() {
+    orderToRequest_.clear();
+    requestToOrder_.clear();
+
+    int orderCounter = 0;
+    for (auto & requestObj : requests_){
+        requestToOrder_[requestObj->getRequestId()] = orderCounter;
+        orderToRequest_.push_back(requestObj->getRequestId());
+        orderCounter++;
+    }
 }
 
 // print solutions in csv files
@@ -459,6 +469,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "NUM_LOCATIONS = " << nbLocations_ << std::endl;
     myFile.close();
 }
+
+
 
 
 

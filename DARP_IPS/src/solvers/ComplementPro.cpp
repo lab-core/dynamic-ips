@@ -10,42 +10,55 @@ ComplementPro::ComplementPro() : MasterModeler() {
     routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
     zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
     status_ = NOT_SOLVED;
+
+    CPRestTime_ = new Tools::Timer(); CPRestTime_->init();
+    CPInitialTime_ = new Tools::Timer(); CPInitialTime_->init();
+    CPAddVarTime_ = new Tools::Timer(); CPAddVarTime_->init();
 }
 
 // this function initialized the model and define empty set of constraints
 void ComplementPro::initializeCPModel(PInstance &pInst) {
+    CPInitialTime_->start();
     int rhs = 0;
     initializeModel(pInst, rhs);
     normalConst_ = IloRangeArray(env_,1,1.0,1.0);
     Model_.add(normalConst_);
+    CPInitialTime_->stop();
 }
 
 // this function adds zVar to the model
 void ComplementPro::addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign) {
+
     if (sign == NEGATIVE)
         MasterModeler::addZVar(zVar, request, sign);
     else if (sign == POSITIVE) {
+        CPAddVarTime_->start();
         IloNumVar numVar = IloNumVar(objFunction_(request->penalty_) +
                                      requestConst_[requestToOrder_[request->getRequestId()]](1) +
                                      normalConst_[0](1));
         numVar.setName(request->name_);
         zVar.add(numVar);
+        CPAddVarTime_->stop();
     }
 }
 
 // this function adds routeVar to the model
 void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign) {
+
     if (sign == NEGATIVE)
         MasterModeler::addRouteVar(routeVar, newRoute, sign);
     else {
         IloNumArray columnVar(env_, (signed) orderToRequest_.size());
         MasterModeler::createPattern(columnVar, newRoute, POSITIVE);
+        CPAddVarTime_->start();
         IloNumVar numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
                                      + vehicleConst_[newRoute->vehicleID_](1)
                                      + normalConst_[0](newRoute->incompatibilityDegree_));
         numVar.setName(newRoute->name_);
         routeVar.add(numVar);
+        CPAddVarTime_->stop();
     }
+
 }
 
 // this function build the model at each iteration
@@ -162,19 +175,18 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
             for (int r = 0; r < routeIncVar_.getSize(); ++r) {
                 if (Cplex_.getValue(routeIncVar_[r]) > 0) {
-                    std::cout << routeIncVar_[r].getName() << std::endl;
+ //                   std::cout << routeIncVar_[r].getName() << std::endl;
                     routeResult.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                 }
             }
             for (int i = 0; i < zIncVar_.getSize(); ++i) {
                 if (Cplex_.getValue(zIncVar_[i]) > 0) {
-                    std::cout << zIncVar_[i].getName() << std::endl;
+//                    std::cout << zIncVar_[i].getName() << std::endl;
                     zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                 }
             }
 
             if (isColumnDisjoint(zResult, routeResult, requestToOrder_, pInst->nbVehicles_)) {
-
 
                 // remove outgoing variable
                 for (int r = (int)routeSolVar_.getSize() - 1; r >= 0; --r) {
@@ -232,6 +244,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         } else
             status_ = POSITIVE_VALUE;
     }
+    Cplex_.clearModel();
 }
 
 void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
@@ -257,7 +270,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
         requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
         vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
-        std::cout << "COMPLEMENTARY DUALS:" << std::endl;
+//        std::cout << "COMPLEMENTARY DUALS:" << std::endl;
         for (auto &requestObj: pInst->requests_) {
             if (requestObj->requestStatus_ == NO_ACTION) {
                 int rowIndex = requestToOrder_[requestObj->getRequestId()];
@@ -269,7 +282,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
 
         }
 
-        std::cout << "VEHICLE DUALS:" << std::endl;
+//        std::cout << "VEHICLE DUALS:" << std::endl;
         for (auto &vehicleObj: pInst->vehicles_) {
             vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
             vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
@@ -293,14 +306,14 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             // determine incoming variables
             for (int r = (int)routeIncVar_.getSize() - 1; r >= 0; --r) {
                 if (Cplex_.getValue(routeIncVar_[r]) > 0) {
-                    std::cout << routeIncVar_[r].getName() << std::endl;
+//                    std::cout << routeIncVar_[r].getName() << std::endl;
                     routeResult.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                     InRouteVar.push_back(r);
                 }
             }
             for (int i = (int)zIncVar_.getSize() - 1; i >= 0; --i) {
                 if (Cplex_.getValue(zIncVar_[i]) > 0) {
-                    std::cout << zIncVar_[i].getName() << std::endl;
+//                    std::cout << zIncVar_[i].getName() << std::endl;
                     zResult.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                     InRequestVar.push_back(i);
                 }
@@ -379,6 +392,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
         } else
             status_ = POSITIVE_VALUE;
     }
+    Cplex_.clearModel();
 }
 
 // this function check the situation of the CP solution to be column disjoint
@@ -417,6 +431,7 @@ std::string ComplementPro::toString() const {
 }
 
 void ComplementPro::ResetCPModel() {
+    CPRestTime_->start();
     try {
         /*int modelExist = 0;
         for (int r = (int)routeSolVar_.getSize() - 1; r >= 0; --r) {
@@ -457,11 +472,12 @@ void ComplementPro::ResetCPModel() {
         Model_.remove(requestConst_);
         Model_.remove(vehicleConst_);
         Model_.remove(normalConst_);
+
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
     }
-
+    CPRestTime_->stop();
 }
 
 

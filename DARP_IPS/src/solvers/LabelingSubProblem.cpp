@@ -572,13 +572,13 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
             generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
  //       }
     }
-    if (!availableRoutes.empty()) {
+    /*if (!availableRoutes.empty()) {
         for (auto &nodeObj: availableRoutes[0]->routeNodes_) {
             if (nodeObj->type_ == PICKUP) {
                 nodeObj->related_Request_->selectStatus_ = SELECTED;
             }
         }
-    }
+    }*/
 }
 
 std::string LabelingSubProblem::toString() const {

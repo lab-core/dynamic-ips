@@ -261,6 +261,18 @@ void Route::resetRoute() {
 }
 
 
+/*void Route::createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
+                              std::unordered_map<int, int> &incVehicleToOrder) {
+    fullPattern_ = Eigen::MatrixXd::Zero((int) incRequestToOrder.size() + (int) incVehicleToOrder.size(),1);
+    for (auto & requestObj : routeRequests_) {
+        if (incRequestToOrder.count(requestObj) > 0)
+            fullPattern_(incRequestToOrder[requestObj], 0) = 1;
+    }
+    if (incVehicleToOrder.count(vehicleID_)>0)
+        fullPattern_(incVehicleToOrder[vehicleID_],0) = 1;
+}*/
+
+
 
 
 

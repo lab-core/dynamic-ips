@@ -41,6 +41,9 @@ public:
     PGraph instGraph_;
     PParameters parameters_;
 
+    vector<unsigned int> orderToRequest_;
+    std::unordered_map<unsigned int, int> requestToOrder_;
+
     // Constructor and Destructor
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
              std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph);
@@ -68,13 +71,15 @@ public:
     // function to sort vehicles based on ID
     void restVehicleOrder();
     void sortVehicles(SortVehicle sortBase);
-    void resetRequestsSelectStatus();
 
     // function to update penalties in rolling horizon approach
     void updatePenaltiesEpoch(int epoch);
 
     // function to update penalties in any time approach
     void updatePenalties(float elapsedTime, float length);
+
+    //determine an order for requests to use in CPLEX modeling
+    void updateRequestOrder();
 
     // print solution in csv files
     void saveSolutionRoutes(const std::string& routeResultDir);
@@ -84,6 +89,7 @@ public:
     // save the current route of the vehicles (current solution of ISUD)
     void saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
+
 };
 
 

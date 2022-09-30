@@ -23,7 +23,6 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     char *name2 = new char[255];
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
-    selectStatus_ = NOT_SELECTED;
     pickTime_ = MAXReachTime;
     dropTime_ = MAXReachTime;
     dual_ = 0;
@@ -36,17 +35,19 @@ Request::~Request() = default;
 // Getters and Setters
 // This function update penalties based on fixed time epochs for rolling horizon
 void Request::setPenaltyEpoch(int epoch, PParameters &parameters, float simulationStart) {
-    penalty_ = static_cast<float>(parameters->deltaPram_
-            * pow(2, (static_cast<float>(parameters->epochLength_ * epoch)
-            - (earlyPick_-simulationStart)) / static_cast<float>(10 * parameters->epochLength_)));
     /*penalty_ = static_cast<float>(parameters->deltaPram_
-                                  * pow(2, (static_cast<float>(10 * epoch)
-                                            - (earlyPick_-simulationStart)) / static_cast<float>(10 * 10)));*/
+            * pow(2, (static_cast<float>(parameters->epochLength_ * epoch)
+            - (earlyPick_-simulationStart)) / static_cast<float>(10 * parameters->epochLength_)));*/
+    penalty_ = static_cast<float>(parameters->deltaPram_
+                                  * pow(2, (static_cast<float>(parameters->epochLength_ * epoch)
+                                            - (earlyPick_-simulationStart)) / static_cast<float>(10 * 30)));
 }
 // This function update penalties based on elapsed time for any time framework
 void Request::setPenalty(float elapsedTime, PParameters &parameters, float simulationStart, float length) {
+    /*penalty_ = static_cast<float>(parameters->deltaPram_
+            * pow(2, (elapsedTime - (earlyPick_-simulationStart)) / static_cast<float>(10 * length)));*/
     penalty_ = static_cast<float>(parameters->deltaPram_
-            * pow(2, (elapsedTime - (earlyPick_-simulationStart)) / static_cast<float>(10 * length)));
+                                  * pow(2, (elapsedTime - (earlyPick_-simulationStart)) / static_cast<float>(10 * 30)));
 }
 unsigned int Request::getRequestId() const {return requestID_;}
 void Request::setMinTravelTime(float minTravelTime) {

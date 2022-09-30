@@ -22,14 +22,14 @@ int main() {
     SubProSolveStart subStartStatus;
     int epoch = 0;
     float saveTime = 3600;
-    bool middleSave = true;
+    bool middleSave = false;
     bool showLog = true;
     float length = 0;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-120m";
+    std::string instanceName = "20160603_11-60m1";
 
     // build the path of input files
     // create output files for epoch results
@@ -115,7 +115,7 @@ int main() {
                      });
                 // start the time
                 subProTime->start();
-                StaticInst->resetRequestsSelectStatus();
+     //           StaticInst->resetRequestsSelectStatus();
                 if (subStartStatus != NOT_RESTRICTED) {
                     if (subStartStatus == NUM_PICK_RESTRICTED)
                         maxPick = floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_ );
@@ -129,7 +129,6 @@ int main() {
                     //*************************************************************//
                     case CPLEX:
                         for (auto &vehicleObj: StaticInst->vehicles_) {
-                            StaticInst->resetRequestsSelectStatus();
                             PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                             subProblem->initSubGraph(StaticInst);
                             subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
@@ -148,7 +147,6 @@ int main() {
                         //*************************************************************//
                     case LABEL_SETTING:
                         for (auto &vehicleObj: StaticInst->vehicles_) {
-                            StaticInst->resetRequestsSelectStatus();
                             PSolverOption subProOptions = std::make_shared<solverOption>(maxReachTime, maxPick,
                                                                                          StaticInst->parameters_);
                             if (isudObj->isudIter_> 1)

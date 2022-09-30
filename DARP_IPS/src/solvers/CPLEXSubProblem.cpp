@@ -329,8 +329,8 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
                             if (i != sinkIndex) {
      //                           newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]], uVal[i], wVal[i]);
                                 newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]]);
-                                if (s == 0)
-                                    newRoute->routeNodes_.back()->related_Request_->selectStatus_ = SELECTED;
+                                /*if (s == 0)
+                                    newRoute->routeNodes_.back()->related_Request_->selectStatus_ = SELECTED;*/
                             }
                             /*if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
                                 (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;*/

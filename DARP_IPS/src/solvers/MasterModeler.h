@@ -48,7 +48,7 @@ public:
     virtual ~MasterModeler();
 
     // this function reset the model based the current set of routes and changed the set of constraints (size)
-    void updateRequestOrder(PInstance &pInst);
+//    void updateRequestOrder(PInstance &pInst);
 
     // this function clear all objects from the model at the start of each epoch
     void clearModel();

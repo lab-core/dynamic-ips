@@ -34,7 +34,7 @@ int main() {
     auto *simulationTime = new Tools::Timer(); simulationTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-30m1";
+    std::string instanceName = "20160603_11-30m";
 
     // build the path of input files
     // create output files for epoch results
@@ -62,8 +62,10 @@ int main() {
     simulationTime->start();
     while (nbReceivedRequest < mainInst->nbRequests_) {
         epoch ++;
-        lastLength = 1 + (int)floor(simulationTime->dSinceInit().count() - elapsedTime);
-        elapsedTime = simulationTime->dSinceInit().count();
+  //      lastLength = 1 + (int)floor(simulationTime->dSinceInit().count() - elapsedTime);
+        lastLength = 1 + (int)floor(isudObj->isudTime_->dSinceStart().count() + (subProTime->dSinceStart().count())/mainInst->nbVehicles_);
+  //      elapsedTime = simulationTime->dSinceInit().count();
+        elapsedTime = isudObj->isudTime_->dSinceInit().count() + (subProTime->dSinceInit().count())/mainInst->nbVehicles_;
         avgLength = 1 + (int)floor(elapsedTime / epoch);
         subStartStatus = mainInst->parameters_->SubproSolveStartState_;
         std::cout << "*************************************************************************************" << std::endl;
@@ -127,7 +129,6 @@ int main() {
                     previousObj = isudObj->objValue_;
                     // start the time
                     subProTime->start();
-                    EpochInst->resetRequestsSelectStatus();
                     if (subStartStatus != NOT_RESTRICTED) {
                         if (subStartStatus == NUM_PICK_RESTRICTED)
                             maxPick = (int)floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_)+2;
@@ -146,7 +147,6 @@ int main() {
                         //*************************************************************//
                         case CPLEX:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
-                                EpochInst->resetRequestsSelectStatus();
                                 PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProblem->initSubGraph(EpochInst);
@@ -167,7 +167,7 @@ int main() {
                             //*************************************************************//
                         case LABEL_SETTING:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
-                                EpochInst->resetRequestsSelectStatus();
+ //                               EpochInst->resetRequestsSelectStatus();
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                           //      subProOptions->maxPickup_ = vehicleMaxPick;
                                 subProOptions->maxPickup_ = maxPick;

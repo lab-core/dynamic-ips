@@ -34,7 +34,7 @@ int main() {
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-60m1";
+    std::string instanceName = "20160603_11-30m";
 
     // build the path of input files
     // create output files for epoch results
@@ -71,9 +71,7 @@ int main() {
         std::cout << "           LAST RE-OPTIMIZATION TIME: " << lastLengthOut << std::endl;
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLengthOut << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
-        if (epoch == 179){
-            std::cout << "stop";
-        }
+
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
@@ -140,7 +138,7 @@ int main() {
                     previousObj = isudObj->objValue_;
                     // start the time
                     subProTime->start();
-                    EpochInst->resetRequestsSelectStatus();
+  //                  EpochInst->resetRequestsSelectStatus();
                     if (subStartStatus != NOT_RESTRICTED) {
                         if (subStartStatus == NUM_PICK_RESTRICTED)
                             maxPick = (int)floor(EpochInst->nbRequests_ / EpochInst->nbVehicles_)+2;
@@ -159,7 +157,6 @@ int main() {
                         //*************************************************************//
                         case CPLEX:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
-                                EpochInst->resetRequestsSelectStatus();
                                 PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProblem->initSubGraph(EpochInst);
@@ -180,7 +177,6 @@ int main() {
                             //*************************************************************//
                         case LABEL_SETTING:
                             for (auto &vehicleObj: EpochInst->vehicles_) {
-                                EpochInst->resetRequestsSelectStatus();
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
          //                       subProOptions->maxPickup_ = vehicleMaxPick;
                                 subProOptions->maxPickup_ = maxPick;
@@ -214,7 +210,7 @@ int main() {
                             break;
                         }
                         else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                            isudObj->solveISUD2(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
+                            isudObj->solveISUD3(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
                                                inputPaths.getOutputIncDegreeRdCost());
                             std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD FOR EPOCH " << epoch << ":" << std::endl;
                             /*for (auto &routeObj: isudObj->routeSolution_)
@@ -330,6 +326,15 @@ int main() {
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << "#" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP SOLVE" << " = " << isudObj->RPSolveTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP SOLVE" << " = " << isudObj->CPSolveTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP BUILD" << " = " << isudObj->RPBuildTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP BUILD" << " = " << isudObj->CPBuildTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP RESET" << " = " << isudObj->CompPro_->CPRestTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP INITIAL" << " = " << isudObj->CompPro_->CPInitialTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP ADDVAR" << " = " << isudObj->CompPro_->CPAddVarTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << "#" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON MIP ISUD" << " = " << isudObj->isudMIPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;

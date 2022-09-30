@@ -31,6 +31,7 @@ public:
     double reducedCost_;
     int incompatibilityDegree_;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
+//    Eigen::MatrixXd fullPattern_;
 
     // Constructor and Destructor
     Route(int vehicleId);
@@ -66,6 +67,9 @@ public:
             return false;
     }
 
+    // this function is for creating the column pattern from the route for CPLEX or IncDegree
+    /*void createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
+                           std::unordered_map<int, int> &incVehicleToOrder);*/
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {

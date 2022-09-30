@@ -126,7 +126,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         std::cout << "REDUCED DUALS:" << std::endl;
         for (auto &requestObj: pInst->requests_) {
             if (requestObj->requestStatus_ == NO_ACTION) {
-                int rowIndex = requestToOrder_[requestObj->getRequestId()];
+//                int rowIndex = requestToOrder_[requestObj->getRequestId()];
+                int rowIndex = pInst->requestToOrder_[requestObj->getRequestId()];
                 requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                 requestObj->dual_ = requestDuals_[rowIndex];
                 requestObj->CPDual_ = requestDuals_[rowIndex];
@@ -187,6 +188,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
         std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
         << " are selected to served." << std::endl;
+        Cplex_.clearModel();
     }
     catch (IloException& e) {
         std::cout << e << std::endl;

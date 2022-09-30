@@ -28,7 +28,8 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
 
     // adding available nodes based on the penalty
     for (auto & requestObj : pInst->requests_) {
-        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->selectStatus_ == NOT_SELECTED)) {
+//        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->selectStatus_ == NOT_SELECTED)) {
+        if (requestObj->requestStatus_ == NO_ACTION) {
             float minWait = (*Vehicle_)->departTime_ +
                             durationMatrix_[pInst->instGraph_->nodes_[(*Vehicle_)->departID_]->locationID_]
                             [pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]

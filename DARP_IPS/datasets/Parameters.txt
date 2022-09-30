@@ -10,7 +10,7 @@ addOneRequestColumn = 0
 
 # ISUD PARAMETERS
 #
-warmStart = 2
+warmStart = 1
 MIP_maxIncDegree = 4
 CP_IncDegree = 14
 minImp = 0.0025

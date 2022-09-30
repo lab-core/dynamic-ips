@@ -302,4 +302,5 @@ struct solverOption {
     void disableHeuristics();
     bool areHeuristicsDisabled() const;
 };
+
 #endif //_MYTOOLS_H

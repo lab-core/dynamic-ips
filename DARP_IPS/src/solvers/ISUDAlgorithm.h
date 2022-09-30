@@ -41,6 +41,13 @@ public:
     Tools::Timer *CPTime_;
     Tools::Timer *isudMIPTime_;
 
+    Tools::Timer *RPSolveTime_;
+    Tools::Timer *CPSolveTime_;
+
+    Tools::Timer *RPBuildTime_;
+    Tools::Timer *CPBuildTime_;
+
+
 
 
     // Constructor and Destructor
@@ -66,6 +73,7 @@ public:
     // function to calculate incompatibility degree of a route
     void calcIncompatibility(PRoute &route);
     void calcIncompatibilityFull(PRoute &route);
+    void calcIncompatibilityMatrix();
 
     // this function update the incompatibility degree of availableRoutes and
     // order them based on the incompatibility degree and reduced cost
@@ -77,6 +85,7 @@ public:
 
     void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
     void solveISUD2(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
+    void solveISUD3(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
 
     void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
 
@@ -92,6 +101,9 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(const std::string& incDegree_RDCostDir, int epoch, int isudIter);
+
+//    void updatePatterns(PInstance &pInst);
+//    void updateFullPattern();
 };
 
 
