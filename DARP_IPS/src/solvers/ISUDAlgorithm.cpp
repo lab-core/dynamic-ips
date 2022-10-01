@@ -25,7 +25,6 @@ ISUDAlgorithm::ISUDAlgorithm() {
     CPBuildTime_ = new Tools::Timer(); CPBuildTime_->init();
 
     isudMIPTime_ = new Tools::Timer(); isudMIPTime_->init();
-    improveIter_ = 0;
     isudIter_ = 0;
 }
 
@@ -420,7 +419,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
             updateRoutesToAdd(0, pInst);
 
             // save Inc degree and reduced cost of the routes
-            save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
+ //           save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
 
             if (!ReducedPro_->routesToAdd_.empty()) {
                 std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
@@ -466,7 +465,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
 
         updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
         // save Inc degree and reduced cost of the routes
-        save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
+ //       save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
         std::cout << "size: " << CompPro_->routesToAdd_.size() << std::endl;
 
         if (!CompPro_->routesToAdd_.empty()) {
@@ -529,7 +528,6 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, const string& isudSol
                 pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
 
                 isudIter_++;
-                improveIter_++;
                 restartAlgorithm = true;
                 ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
                 ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
@@ -593,7 +591,7 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, const string &isudSo
     updateRoutesToAdd(0, pInst);
 
     // save Inc degree and reduced cost of the routes
-    save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
+ //   save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
 
     if (!ReducedPro_->routesToAdd_.empty()) {
         std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
@@ -625,7 +623,7 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, const string &isudSo
     CP: CompPro_->routesToAdd_.clear();
     updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
     // save Inc degree and reduced cost of the routes
-    save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
+ //   save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
     std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
     CPBuildTime_->start();
     CompPro_->buildModel(pInst, zSolution_, routeSolution_);
@@ -657,7 +655,6 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, const string &isudSo
                 pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
 
                 isudIter_++;
-                improveIter_++;
                 restartAlgorithm = true;
                 ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
                 ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
@@ -688,152 +685,139 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, const string &isudSo
 
 void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, const string &isudSolutionDir,
                                const string &incDegree_RDCostDir) {
+    isudTime_->start();
     double previousObj = objValue_;
     bool restartAlgorithm = true;
-    bool reducedImproved;
-    bool CPImproved = true;
-    isudTime_->start();
-    // improve by solving the Reduced problem
+    bool isCPImproved = true;
+    bool isCPBuilt = false;
+    int CPCounter;
 
-    while (restartAlgorithm) {
-        // when the CP find integer the whole loop is repeated
+    while (restartAlgorithm){
         restartAlgorithm = false;
-        reducedImproved = true;
-
-        while (reducedImproved) {
-            RPTime_->start();
-            ReducedPro_->routesToAdd_.clear();
-            // if RP improve the solution another iteration is done and reducedImproved stay true
-            reducedImproved = false;
-            // update reduced cost if needed
-            if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES)){
-                for (auto & vehicleObj : pInst->vehicles_)
-                    updateReducedCosts(pInst, vehicleObj->vehicleID_);
-            }
-            updateRoutesToAdd(0, pInst);
-
-            // save Inc degree and reduced cost of the routes
-            save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
-
-            if (!ReducedPro_->routesToAdd_.empty()) {
-                std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
-                for (int v = 0; v < pInst->nbVehicles_; ++v)
-                    ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-
-                // SOLVE BY MIP
-                MIPReducedPro_->routesToAdd_.clear();
-                MIPReducedPro_->routesToAdd_ = ReducedPro_->routesToAdd_;
-                MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
-                MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-                setObjValue();
-                if (previousObj != objValue_) {
-                    pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
-                    isudIter_++;
-                    reducedImproved = false;
-                    previousObj = objValue_;
-                    std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
-                }
-            }
-            RPTime_->stop();
-        }
-
-        // improve the solution by solving complementary Problem
-        CPTime_->start();
-        CP: CompPro_->routesToAdd_.clear();
-
-        updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
-        // save Inc degree and reduced cost of the routes
-        save_IncDegree_RDCost(incDegree_RDCostDir, epoch, isudIter_);
-        std::cout << "size: " << CompPro_->routesToAdd_.size() << std::endl;
-
-        if (!CompPro_->routesToAdd_.empty()) {
-
-            std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
-            CompPro_->buildModel(pInst, zSolution_, routeSolution_);
-            CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-            setObjValue();
-            // UPDATE DUAL VALUES AFTER SOLVING CP
-            ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
-            ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
-            bool findNegative = false;
-            for (auto & vehicleObj : pInst->vehicles_) {
+        /************************************************************************************************/
+        //                                     REDUCED PROBLEM
+        /************************************************************************************************/
+        RPTime_->start();
+        CPCounter = 0;
+        ReducedPro_->routesToAdd_.clear();
+        // update reduced costs if needed only at the start of epoch, there is another update after CP
+        if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
+            for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
-                if (vehicleObj->bestReducedCost_ < 0)
-                    findNegative = true;
-            }
-            if (!findNegative)
-                restartAlgorithm = false;
+        }
+        // solve RP with MIP solver
+        CompPro_->fractionalZ_.clear();
+        solveRP_MIP(pInst, 0, isudSolutionDir);
 
-            if (CompPro_->status_ == FRACTIONAL) {
-                std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
-                /*solveISUDMIP(pInst , isudSolutionDir);
-                if ((previousObj - objValue_)/previousObj >= pInst->parameters_->minImp_) {
-                    previousObj = objValue_;
-                    std::cout << "restarting CP after MIP improve" << std::endl;
-                    goto CP;
-                }
-                else {
-                    restartAlgorithm = false;
-                    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
-                }*/
-                restartAlgorithm = false;
-            }
-            else if (CompPro_->status_ == POSITIVE_VALUE) {
-                std::cout << "# The Algorithm can not find further direction of descent and terminated" << std::endl;
-                restartAlgorithm = false;
-            }
-            else if (CompPro_->status_ == INFEASIBLE) {
-                std::cout << "# The Algorithm failed to optimized and terminated" << std::endl;
-                restartAlgorithm = false;
-            }
-            else {
-                std::cout << "# The Complementary Problems solved and find integer direction. " << std::endl;
+        // if objective improves, the CP is build
+        if (previousObj != objValue_){
+            pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
+            isudIter_++;
+            previousObj = objValue_;
+            std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
+            CPTime_->start();
+            CompPro_->routesToAdd_.clear();
+            updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
+            std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
+            CompPro_->buildModel(pInst, zSolution_, routeSolution_);
+            isCPBuilt = true;
+            CPTime_->stop();
+        }
+        RPTime_->stop();
+        /************************************************************************************************/
+        //                                     COMPLEMENTARY PROBLEM
+        /************************************************************************************************/
+        CPTime_->start();
+        if (!isCPBuilt){
+            CompPro_->routesToAdd_.clear();
+            updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
+            std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
+            CompPro_->buildModel(pInst, zSolution_, routeSolution_);
+        }
+        while (isCPImproved){
+            isCPImproved = false;
+            if (!CompPro_->routesToAdd_.empty()) {
+                std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
+                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 setObjValue();
-                pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
 
-                isudIter_++;
-                improveIter_++;
-                restartAlgorithm = true;
-                ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
-                ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
-                /*if ((previousObj - objValue_)/previousObj < pInst->parameters_->minImp_){
-                    std::cout << "# The CP does not yield a sufficient improve!! " << std::endl;
-                    CompPro_->fractionalZ_.clear();
-                    solveISUDMIP(pInst , isudSolutionDir);
+                if (CompPro_->status_ == FRACTIONAL) {
+                    std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
+                    solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, isudSolutionDir);
                     if ((previousObj - objValue_)/previousObj >= pInst->parameters_->minImp_) {
                         previousObj = objValue_;
+                        pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
+                        isudIter_++;
                         std::cout << "restarting CP after MIP improve" << std::endl;
-                        goto CP;
+                        isCPImproved = true;
+                        CompPro_->routesToAdd_.clear();
+                        updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
+                        std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
+                        CompPro_->buildModel(pInst, zSolution_, routeSolution_);
+                        isCPBuilt = true;
                     }
                     else {
-                        restartAlgorithm = false;
-                        ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
                     }
-                }*/
-                previousObj = objValue_;
-                ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
-                std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;
-                if (!findNegative)
-                    restartAlgorithm = false;
-            }
+                    /*if (CPCounter == 0) {
+                        restartAlgorithm = false;
+                        break;
+                    }*/
+                }
+                else if (CompPro_->status_ == POSITIVE_VALUE) {
+                    std::cout << "# The Algorithm can not find further direction of descent and terminated" << std::endl;
 
+                    isCPImproved = false;
+                    if (CPCounter == 0) {
+                        restartAlgorithm = false;
+                        break;
+                    }
+                }
+                else if (CompPro_->status_ == INFEASIBLE) {
+                    std::cout << "# The Algorithm failed to optimized and terminated" << std::endl;
+                    isCPImproved = false;
+                    if (CPCounter == 0) {
+                        restartAlgorithm = false;
+                        break;
+                    }
+                }
+                else {
+                    std::cout << "# The Complementary Problems solved and find integer direction. " << std::endl;
+                    setObjValue();
+                    std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;
+                    pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
+                    previousObj = objValue_;
+                    isudIter_++;
+                    isCPImproved = true;
+                    CPCounter++;
+                }
+            }
         }
         CPTime_->stop();
+        ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
+        ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
+        bool findNegative = false;
+        for (auto & vehicleObj : pInst->vehicles_) {
+            updateReducedCosts(pInst, vehicleObj->vehicleID_);
+            if (vehicleObj->bestReducedCost_ < 0)
+                findNegative = true;
+        }
+        if (!findNegative)
+            restartAlgorithm = false;
     }
-
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
-
 }
 void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, const string& isudSolutionDir) {
-
     isudMIPTime_->start();
+    double previousObj = objValue_;
     // improve by solving the Reduced problem
 
     MIPReducedPro_->routesToAdd_.clear();
-    RPBuildTime_->start();
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
-    RPBuildTime_->stop();
 
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
@@ -841,12 +825,8 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, const string& isudSolutionDir
                 MIPReducedPro_->routesToAdd_.push_back(routeObj);
         }
     }
-    RPBuildTime_->start();
     MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
-    RPBuildTime_->stop();
-    RPSolveTime_->start();
     MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-    RPSolveTime_->stop();
     setObjValue();
 
     /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -855,20 +835,41 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, const string& isudSolutionDir
     for (auto & routeObj : routeSolution_) {
         std::cout << routeObj->toString();
     }*/
+    if (previousObj != objValue_){
+        isudIter_++;
+        std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
+        CPTime_->start();
+        CompPro_->routesToAdd_.clear();
+        updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
+        std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
+        CompPro_->buildModel(pInst, zSolution_, routeSolution_);
+        CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
+        setObjValue();
+        CPTime_->stop();
+        // UPDATE DUAL VALUES AFTER SOLVING CP
+        ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
+        ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
 
-    CompPro_->routesToAdd_.clear();
-    updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
-    CPBuildTime_->start();
-    CompPro_->buildModel(pInst, zSolution_, routeSolution_);
-    CPBuildTime_->stop();
-    CPSolveTime_->start();
-    CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
-    CPSolveTime_->stop();
-    setObjValue();
-    // UPDATE DUAL VALUES AFTER SOLVING CP
-    ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
-    ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
+    }
+    isudMIPTime_->stop();
+}
 
+void ISUDAlgorithm::solveRP_MIP(PInstance &pInst, int compDegree, const string &isudSolutionDir) {
+    isudMIPTime_->start();
+    // improve by solving the Reduced problem
+    MIPReducedPro_->routesToAdd_.clear();
+    ReducedPro_->routesToAdd_.clear();
+    MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
+    updateRoutesToAdd(compDegree, pInst);
+    for (int v = 0; v < pInst->nbVehicles_; ++v)
+        ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+    MIPReducedPro_->routesToAdd_ = ReducedPro_->routesToAdd_;
+    if (!MIPReducedPro_->routesToAdd_.empty()){
+        std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE REDUCED PROBLEM" << std::endl;
+        MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
+        MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
+        setObjValue();
+    }
     isudMIPTime_->stop();
 }
 
@@ -1043,6 +1044,8 @@ void ISUDAlgorithm::save_IncDegree_RDCost(const string &incDegree_RDCostDir, int
     }
     myFile.close();
 }
+
+
 
 /*void ISUDAlgorithm::updatePatterns(PInstance &pInst) {
     for (auto & routeObj: generatedRoutes_){

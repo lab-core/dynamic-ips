@@ -33,7 +33,6 @@ public:
     std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
     std::unordered_map<int, int> incVehicleToOrder_;
 
-    int improveIter_;
     int isudIter_;
     double objValue_;
     Tools::Timer *isudTime_;
@@ -88,6 +87,7 @@ public:
     void solveISUD3(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
 
     void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
+    void solveRP_MIP(PInstance &pInst, int compDegree, const string& isudSolutionDir);
 
     // Display function
     std::string toString() const;

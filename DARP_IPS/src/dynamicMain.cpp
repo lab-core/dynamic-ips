@@ -217,6 +217,7 @@ int main() {
                                 std::cout << routeObj->toString();*/
  //                           break;
                         }
+                        }
                     }
                     if (previousObj == isudObj->objValue_) {
                         if (!disabledHeuristics) {

@@ -74,8 +74,6 @@ int main() {
         std::cout << "           LAST RE-OPTIMIZATION TIME: " << lastLength << std::endl;
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLength << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
-        if (epoch == 54)
-            std::cout << "stop";
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
@@ -121,6 +119,7 @@ int main() {
                     disabledHeuristics = true;
                 else
                     disabledHeuristics = false;
+
                 while (true) {
                     int nbNegativeNotFound = 0;
 
@@ -201,7 +200,7 @@ int main() {
                             break;
                         }
                         else if (mainInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                            isudObj->solveISUD2(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
+                            isudObj->solveISUD3(EpochInst, epoch, inputPaths.getOutputEpochIsud(),
                                                inputPaths.getOutputIncDegreeRdCost());
                             std::cout << "# SOLUTION ROUTES AFTER SOLVING ISUD AT TIME " << elapsedTime << ":" << std::endl;
                             /*for (auto &routeObj: isudObj->routeSolution_)
@@ -211,7 +210,7 @@ int main() {
                     }
                     if (previousObj == isudObj->objValue_) {
                         if (!disabledHeuristics) {
-//                            subProOptions->disableHeuristics();
+                            subProOptions->disableHeuristics();
                             disabledHeuristics = true;
                         }
                         else {

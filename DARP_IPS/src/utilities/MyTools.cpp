@@ -303,7 +303,7 @@ solverOption::~solverOption() = default;
 
 void solverOption::disableHeuristics() {
     isTruncated_ = false;
-    isDominanceReleased_ = false;
+    isDominanceReleased_ = true;
     isSuccessorsLimited_ = false;
 }
 
