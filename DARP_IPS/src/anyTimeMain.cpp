@@ -210,7 +210,7 @@ int main() {
                     }
                     if (previousObj == isudObj->objValue_) {
                         if (!disabledHeuristics) {
-                            subProOptions->disableHeuristics();
+//                            subProOptions->disableHeuristics();
                             disabledHeuristics = true;
                         }
                         else {

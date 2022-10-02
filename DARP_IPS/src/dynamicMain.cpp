@@ -217,7 +217,6 @@ int main() {
                                 std::cout << routeObj->toString();*/
  //                           break;
                         }
-                        }
                     }
                     if (previousObj == isudObj->objValue_) {
                         if (!disabledHeuristics) {
@@ -327,15 +326,6 @@ int main() {
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << "#" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP SOLVE" << " = " << isudObj->RPSolveTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP SOLVE" << " = " << isudObj->CPSolveTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP BUILD" << " = " << isudObj->RPBuildTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP BUILD" << " = " << isudObj->CPBuildTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP RESET" << " = " << isudObj->CompPro_->CPRestTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP INITIAL" << " = " << isudObj->CompPro_->CPInitialTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP ADDVAR" << " = " << isudObj->CompPro_->CPAddVarTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << "#" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON MIP ISUD" << " = " << isudObj->isudMIPTime_->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
     std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;

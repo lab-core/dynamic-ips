@@ -303,7 +303,7 @@ solverOption::~solverOption() = default;
 
 void solverOption::disableHeuristics() {
     isTruncated_ = false;
-    isDominanceReleased_ = true;
+    isDominanceReleased_ = false;
     isSuccessorsLimited_ = false;
 }
 
@@ -317,7 +317,7 @@ solverOption::solverOption(float maxReachTime, int maxPickup, PParameters &MainP
 }
 
 bool solverOption::areHeuristicsDisabled() const {
-    if (isTruncated_ || isDominanceReleased_||isSuccessorsLimited_)
+    if (isTruncated_ || isSuccessorsLimited_)
         return false;
     else
         return true;

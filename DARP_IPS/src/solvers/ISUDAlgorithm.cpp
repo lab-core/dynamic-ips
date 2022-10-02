@@ -708,14 +708,15 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, const string &isudSo
         // solve RP with MIP solver
         CompPro_->fractionalZ_.clear();
         solveRP_MIP(pInst, 0, isudSolutionDir);
-
+        RPTime_->stop();
         // if objective improves, the CP is build
         if (previousObj != objValue_){
+            CPTime_->start();
             pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
             isudIter_++;
             previousObj = objValue_;
             std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
-            CPTime_->start();
+
             CompPro_->routesToAdd_.clear();
             updateRoutesToAdd(pInst->parameters_->CP_IncDegree_, pInst);
             std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
@@ -723,7 +724,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, const string &isudSo
             isCPBuilt = true;
             CPTime_->stop();
         }
-        RPTime_->stop();
+
         /************************************************************************************************/
         //                                     COMPLEMENTARY PROBLEM
         /************************************************************************************************/
@@ -743,7 +744,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, const string &isudSo
 
                 if (CompPro_->status_ == FRACTIONAL) {
                     std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
-                    solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, isudSolutionDir);
+                    /*solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, isudSolutionDir);
                     if ((previousObj - objValue_)/previousObj >= pInst->parameters_->minImp_) {
                         previousObj = objValue_;
                         pInst->saveISUDRoutes(isudSolutionDir, epoch, isudIter_);
@@ -761,11 +762,11 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, const string &isudSo
                             restartAlgorithm = false;
                             break;
                         }
-                    }
-                    /*if (CPCounter == 0) {
+                    }*/
+                    if (CPCounter == 0) {
                         restartAlgorithm = false;
                         break;
-                    }*/
+                    }
                 }
                 else if (CompPro_->status_ == POSITIVE_VALUE) {
                     std::cout << "# The Algorithm can not find further direction of descent and terminated" << std::endl;
