@@ -25,6 +25,9 @@ public:
 
     // calculation of penalties and initialization of the subgraph
     void initSubGraph(PInstance &pInst);
+
+    void initSubGraph2(PInstance &pInst);
+
 };
 
 
