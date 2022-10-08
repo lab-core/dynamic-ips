@@ -29,10 +29,6 @@ public:
     IloRangeArray normalConst_;
     SolutionStatus status_;
 
-    Tools::Timer *CPRestTime_;
-    Tools::Timer *CPInitialTime_;
-    Tools::Timer *CPAddVarTime_;
-
     // Constructor and Destructor
     ComplementPro();
 
@@ -68,6 +64,7 @@ public:
 
     // this function initialized the model and define empty set of constraints
     void ResetCPModel();
+    void restartCp();
 };
 
 

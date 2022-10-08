@@ -13,8 +13,10 @@
 ReducedProblem::ReducedProblem() : MasterModeler() {
 
     // defining variable
-    zVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
-    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
+//    zVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
+//    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
+    zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
+    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
 }
 
 
@@ -245,6 +247,11 @@ bool ReducedProblem::isColumnRepeat(vector<PRoute> &routeSet, PRoute &newRoute,
             return true;
     }
     return false;
+}
+
+void ReducedProblem::restartRP() {
+    zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
+    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
 }
 
 

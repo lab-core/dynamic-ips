@@ -50,6 +50,7 @@ public:
 
     // Display function
     std::string toString() const override;
+    void restartRP();
 };
 
 

@@ -5,25 +5,19 @@
 #include "ComplementPro.h"
 ComplementPro::ComplementPro() : MasterModeler() {
 
-    routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
-    zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
-    routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
-    zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, ILOFLOAT);
+    routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     status_ = NOT_SOLVED;
-
-    CPRestTime_ = new Tools::Timer(); CPRestTime_->init();
-    CPInitialTime_ = new Tools::Timer(); CPInitialTime_->init();
-    CPAddVarTime_ = new Tools::Timer(); CPAddVarTime_->init();
 }
 
 // this function initialized the model and define empty set of constraints
 void ComplementPro::initializeCPModel(PInstance &pInst) {
-    CPInitialTime_->start();
     int rhs = 0;
     initializeModel(pInst, rhs);
     normalConst_ = IloRangeArray(env_,1,1.0,1.0);
     Model_.add(normalConst_);
-    CPInitialTime_->stop();
 }
 
 // this function adds zVar to the model
@@ -32,13 +26,11 @@ void ComplementPro::addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign
     if (sign == NEGATIVE)
         MasterModeler::addZVar(zVar, request, sign);
     else if (sign == POSITIVE) {
-        CPAddVarTime_->start();
         IloNumVar numVar = IloNumVar(objFunction_(request->penalty_) +
                                      requestConst_[requestToOrder_[request->getRequestId()]](1) +
                                      normalConst_[0](1));
         numVar.setName(request->name_);
         zVar.add(numVar);
-        CPAddVarTime_->stop();
     }
 }
 
@@ -50,13 +42,11 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
     else {
         IloNumArray columnVar(env_, (signed) orderToRequest_.size());
         MasterModeler::createPattern(columnVar, newRoute, POSITIVE);
-        CPAddVarTime_->start();
         IloNumVar numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
                                      + vehicleConst_[newRoute->vehicleID_](1)
                                      + normalConst_[0](newRoute->incompatibilityDegree_));
         numVar.setName(newRoute->name_);
         routeVar.add(numVar);
-        CPAddVarTime_->stop();
     }
 
 }
@@ -431,7 +421,6 @@ std::string ComplementPro::toString() const {
 }
 
 void ComplementPro::ResetCPModel() {
-    CPRestTime_->start();
     try {
         /*int modelExist = 0;
         for (int r = (int)routeSolVar_.getSize() - 1; r >= 0; --r) {
@@ -477,7 +466,15 @@ void ComplementPro::ResetCPModel() {
     catch (IloException& e) {
         std::cout << e << std::endl;
     }
-    CPRestTime_->stop();
+}
+
+void ComplementPro::restartCp() {
+    env_.end();
+    routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    status_ = NOT_SOLVED;
 }
 
 

@@ -17,7 +17,7 @@
 
 class ISUDAlgorithm {
 public:
-    PReducedProblem ReducedPro_;
+//    PReducedProblem ReducedPro_;
     PComplementPro CompPro_;
     PZoomReducedProblem MIPReducedPro_;
     std::unordered_map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
@@ -39,15 +39,6 @@ public:
     Tools::Timer *RPTime_;
     Tools::Timer *CPTime_;
     Tools::Timer *isudMIPTime_;
-
-    Tools::Timer *RPSolveTime_;
-    Tools::Timer *CPSolveTime_;
-
-    Tools::Timer *RPBuildTime_;
-    Tools::Timer *CPBuildTime_;
-
-
-
 
     // Constructor and Destructor
     ISUDAlgorithm();

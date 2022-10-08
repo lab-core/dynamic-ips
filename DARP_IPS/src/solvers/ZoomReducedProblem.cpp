@@ -28,7 +28,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Model_.add(IloConversion(env_, zVar_, ILOINT));
         Model_.add(IloConversion(env_, routeVar_, ILOINT));
 
-        env_.out() << routeVar_[0].getType();
+        std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
 //        env_.out() << Model_;
         Cplex_.solve();
@@ -77,4 +77,5 @@ std::string ZoomReducedProblem::toString() const {
     repStr << MasterModeler::toString();
     return repStr.str();
 }
+
 
