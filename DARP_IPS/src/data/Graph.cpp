@@ -79,6 +79,22 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
         nodeID_ = Tools::createSourceID(vehicleID, SINK);
 }
 
+Node::Node(const PNode &oldNode) {
+    nodeID_ = oldNode->nodeID_;
+    related_Request_ = oldNode->related_Request_;
+    pairNodeID_ = oldNode->pairNodeID_;
+
+    locationID_ = oldNode->locationID_;
+    type_ = oldNode->type_;
+    initialType_ = oldNode->initialType_;
+    reachTime_ = oldNode->reachTime_;
+    departTime_ = oldNode->departTime_;
+    nbPassengers_ = oldNode->nbPassengers_;
+    deltaTime_ = oldNode->deltaTime_;
+    nodeStatus_ = oldNode->nodeStatus_;
+    requestTime_ = oldNode->requestTime_;
+}
+
 // this function return the index in of the first label in the active labels of the node whose reduced cost
 // is grater than the newLabel
 unsigned int Node::getLabelListIndex(PLabel &newLabel) {
@@ -93,6 +109,7 @@ unsigned int Node::getLabelListIndex(PLabel &newLabel) {
         return activeLabels_.size();
     }
 }
+
 
 
 

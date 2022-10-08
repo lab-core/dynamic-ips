@@ -59,6 +59,7 @@ public:
     // this function check whether the label is originated from a dominated parent or not
     bool haveDominatedParent() const;
     PRoute labelToRoute(PVehicle &vehicle);
+    PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
     // Display function
     std::string toString() const;
 

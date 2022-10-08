@@ -21,6 +21,9 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     nbActivated_ = 0;
 }
 LabelingSubProblem::~LabelingSubProblem() {
+    dominatedLabels_.clear();
+    activeNodes_.clear();
+    nodesOrder_.clear();
     solverOptions_.reset();
 }
 
@@ -110,13 +113,13 @@ void LabelingSubProblem::sortSuccessors() {
 void LabelingSubProblem::initialization() {
 
     nbActivated_ = 0;
-    for (auto labelObj: dominatedLabels_)
-        labelObj.reset();
+    /*for (auto labelObj: dominatedLabels_)
+        labelObj.reset();*/
     dominatedLabels_.clear();
     // clear active lists
     for (auto &nodeID: subGraph_->intToNodeID_) {
-        for (auto labelObj: subGraph_->nodes_[nodeID]->activeLabels_)
-            labelObj.reset();
+        /*for (auto labelObj: subGraph_->nodes_[nodeID]->activeLabels_)
+            labelObj.reset();*/
         subGraph_->nodes_[nodeID]->activeLabels_.clear();
         subGraph_->nodes_[nodeID]->bestLabelReduceCost_ = INFINITY;
         subGraph_->nodes_[nodeID]->nbActiveLabels_ = 0;
@@ -160,7 +163,7 @@ void LabelingSubProblem::initialization() {
     activeNodes_.clear();
     activeNodes_.push_back(initialLabel->currentNode_);
     nbActivated_ ++;
-
+    initialLabel.reset();
 }
 
 void LabelingSubProblem::labelExtend(PLabel &parentLabel, PNode &outNode, std::vector<PNode> &activeNodeList) {
@@ -219,6 +222,7 @@ void LabelingSubProblem::labelDrop(PLabel &parentLabel, vector<PNode> &activeNod
             selectedLabel->currentNode_->nbActiveLabels_--;
             nbActivated_--;
         }
+        selectedLabel.reset();
     }
 }
 
@@ -334,6 +338,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
                                             activeNodes_.push_back(currentNode);
                                         }
                                     }
+                                    selectedLabel.reset();
                                 } else {
                                     activeNodes_[j]->activeLabels_[l]->status_ = DOMINATED;
                                     activeNodes_[j]->nbActiveLabels_--;
@@ -449,6 +454,7 @@ void LabelingSubProblem::solveDynamic_pushing() {
                     }
                 }
             }
+            currentNode.reset();
         }
         if (!solverOptions_->areHeuristicsDisabled()) {
             if (subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_ >= -0.0001)
@@ -581,6 +587,17 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
     }*/
 }
 
+void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes,
+                                          std::unordered_map<std::string, PRoute> &generatedRoutes, PInstance &pInst) {
+    for (auto & labelObj : subGraph_->nodes_[vehicle->sinkID_]->activeLabels_) {
+        //      if (labelObj->reducedCost_ - vehicle->dual_ <= 0) {
+        PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
+        availableRoutes.push_back(newRoute);
+        generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
+        //       }
+    }
+}
+
 std::string LabelingSubProblem::toString() const {
     std::stringstream repStr;
     repStr << std::endl;
@@ -603,8 +620,6 @@ std::string LabelingSubProblem::toString() const {
     repStr << "# The solution pool contains = " << nbNegativeColumns_ << " solutions with negative reduced cost." << std::endl;
     return repStr.str();
 }
-
-
 
 
 void truncateLabelList(PNode &node, int MaxLabel) {

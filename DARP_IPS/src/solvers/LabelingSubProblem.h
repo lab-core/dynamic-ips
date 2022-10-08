@@ -31,6 +31,7 @@ public:
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
+
     ~LabelingSubProblem() override;
 
     // this function sort the list of nodes based of their dual values
@@ -50,6 +51,8 @@ public:
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes);
+    void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, std::unordered_map<std::string ,
+                          PRoute> &generatedRoutes, PInstance & pInst);
     // Display function
     std::string toString() const;
 };

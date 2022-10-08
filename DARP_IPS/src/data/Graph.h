@@ -53,6 +53,7 @@ public:
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
     Node(int locationID, NodeType type);
     Node(int locationID, NodeType type, int vehicleID);
+    Node(const PNode& oldNode);
 
     virtual ~Node();
 
@@ -85,6 +86,9 @@ public:
     void addRequestToGraph(PRequest &newRequest);
 //    void addNewRequestToGraph(PInstance &pInstance);
 };
+
+
+
 typedef std::shared_ptr<Graph> PGraph;
 
 // function to calculate travel time between two node

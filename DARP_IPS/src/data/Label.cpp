@@ -271,6 +271,20 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
     return newRoute;
 }
 
+PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
+    PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
+    newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
+    newRoute->addSource(pInst->instGraph_->nodes_[pathNodes_[0]->nodeID_], vehicle->departTime_, vehicle->numPassengers_);
+    for (int i = 1; i < pathNodes_.size()-1; ++i) {
+        newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]->nodeID_]);
+    }
+    if (totalDelay_ != newRoute->totalDelay_) {
+        std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
+        Tools::throwException("Label convert problem");
+    }
+    return newRoute;
+}
+
 std::string Label::toString() const {
     std::stringstream repStr;
 
@@ -295,3 +309,5 @@ std::string Label::toString() const {
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
+
+
