@@ -24,6 +24,8 @@ protected:
     // input data addresses
     std::string instanceName_;
     std::string instanceDir_;
+    std::string outputDir_;
+    std::string instanceNameOut_;
 
     std::string input_TripData_;
     std::string input_InstanceData_;
@@ -50,6 +52,8 @@ protected:
     std::string output_instance_;
     std::string output_incDegree_RDCost_;
     std::string output_epochRunTime_;
+    std::string output_trip_;
+
 
     double timeOut_ = 3600;
 
@@ -87,6 +91,10 @@ public:
     const std::string &getOutputIncDegreeRdCost() const;
     const std::string &getOutputEpochRunTime() const;
 
+    const std::string &getInstanceNameOut() const;
+
+    const std::string &getOutputTrip() const;
+
 
     double getTimeOut() const;
 
@@ -97,6 +105,9 @@ public:
     void setTimeOUt(double timeOUt);
 
     void initializeOutputs(const std::string &algorithm);
+
+    // this function create a directory to build a new instance
+    void makeInstanceOutput(std::string instNum);
 };
 
 

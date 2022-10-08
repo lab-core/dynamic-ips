@@ -60,7 +60,8 @@ const std::string &InputPaths::getOutputVehicles() const { return output_vehicle
 const std::string &InputPaths::getOutputInstance() const { return output_instance_;}
 const std::string &InputPaths::getOutputIncDegreeRdCost() const {return output_incDegree_RDCost_;}
 const std::string &InputPaths::getOutputEpochRunTime() const {return output_epochRunTime_;}
-
+const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
+const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
 double InputPaths::getTimeOut() const {return timeOut_; }
 
 // setters
@@ -88,24 +89,20 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
     std::experimental::filesystem::create_directory(instanceDir_ + algorithm + "_" + resultFolder);
 
-    std::string outputDir = instanceDir_ + algorithm + "_" + resultFolder + "/";
+    outputDir_ = instanceDir_ + algorithm + "_" + resultFolder + "/";
 
     //initialize the file names for saving outputs
-    output_epochISUD_ = outputDir + "epochSolution_" + instanceName_ + ".csv";
-    output_epochFinal_ = outputDir + "finalSolution_" + instanceName_ + ".csv";
-    output_finalLog_ = outputDir + "LogFinalResults_" + instanceName_ + ".txt";
-    output_solutionLog_ = outputDir + "LogSolution" + ".txt";
-    output_finalRoutes_ = outputDir + "Routes_" + instanceName_ + ".csv";
-    output_offlineRoutes_ = outputDir + "OfflineRoutes_" + instanceName_ + ".csv";
-    output_finalRequests_ = outputDir + "Requests_" + instanceName_ + ".csv";
-    output_MIPStart_ = outputDir + "MIPStart_" + instanceName_;
-    output_paramFile_ = outputDir + "Parameters.txt";
-    output_onboards_ = outputDir + "ONBOARDS_" + instanceName_ + ".txt";
-    output_waitRequests_ = outputDir + "WaitRequests_" + instanceName_ + ".txt";
-    output_vehicles_ = outputDir + "VEHICLES_" + instanceName_ + ".txt";
-    output_instance_ = outputDir + "INSTANCE_" + instanceName_ + ".txt";
-    output_incDegree_RDCost_ = outputDir + "RouteDegreeCost_" + instanceName_ + ".csv";
-    output_epochRunTime_ = outputDir + "EpochRuntime_" + instanceName_ + ".csv";
+    output_epochISUD_ = outputDir_ + "epochSolution_" + instanceName_ + ".csv";
+    output_epochFinal_ = outputDir_ + "finalSolution_" + instanceName_ + ".csv";
+    output_finalLog_ = outputDir_ + "LogFinalResults_" + instanceName_ + ".txt";
+    output_solutionLog_ = outputDir_ + "LogSolution" + ".txt";
+    output_finalRoutes_ = outputDir_ + "Routes_" + instanceName_ + ".csv";
+    output_offlineRoutes_ = outputDir_ + "OfflineRoutes_" + instanceName_ + ".csv";
+    output_finalRequests_ = outputDir_ + "Requests_" + instanceName_ + ".csv";
+    output_MIPStart_ = outputDir_ + "MIPStart_" + instanceName_;
+    output_paramFile_ = outputDir_ + "Parameters.txt";
+    output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
+    output_epochRunTime_ = outputDir_ + "EpochRuntime_" + instanceName_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;
@@ -122,6 +119,21 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     myFile << "Epoch, RunTime, avgRunTime, nbRequests, nbNodes" << std::endl;
     myFile.close();
 }
+
+void InputPaths::makeInstanceOutput(std::string instNum) {
+    instanceNameOut_ = instanceName_ + "_" + instNum;
+    std::experimental::filesystem::create_directory(outputDir_ + instanceNameOut_);
+    std::string outputDir = outputDir_ + instanceNameOut_ + "/";
+    output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
+    output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
+    output_vehicles_ = outputDir + "VEHICLES_" + instanceNameOut_ + ".txt";
+    output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
+    output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
+}
+
+
+
+
 
 
 

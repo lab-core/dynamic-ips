@@ -92,9 +92,9 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     std::vector<PVehicle> vehicles;
     int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1;
     float departTime = -1, endTime = -1;
-//    double departLatitude = -1, departLongitude, sinkLatitude = -1, sinkLongitude = -1;
 
-
+    // add this only when I want to use less vehicles
+//    pInstance->nbVehicles_ = 75;
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
