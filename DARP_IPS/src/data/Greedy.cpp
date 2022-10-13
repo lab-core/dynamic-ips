@@ -456,8 +456,8 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
 }
 // this function convert a greedyLabel list to a route
 PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
-    std::cout << "GreedyLinkList before converting to the route" << std::endl;
-    std::cout << toString() << std::endl;
+    /*std::cout << "GreedyLinkList before converting to the route" << std::endl;
+    std::cout << toString() << std::endl;*/
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
     newRoute->addSource(source_->currentNode_, source_->reachTime_, (*Vehicle_)->numPassengers_);
     PGreedyLabel currentLabel = source_->child_;
@@ -487,8 +487,8 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
         }
         currentLabel = currentLabel->child_;
     }
-    std::cout << "Created route from the GreedyLinkList" << std::endl;
-    std::cout << newRoute->toString() << std::endl;
+    /*std::cout << "Created route from the GreedyLinkList" << std::endl;
+    std::cout << newRoute->toString() << std::endl;*/
     return newRoute;
 }
 
