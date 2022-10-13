@@ -453,14 +453,30 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
             myFile << std::setw(10) << requestObj->DropOffID_;
             myFile << std::setw(10) << requestObj->earlyPick_ << "\n";
         }
-        else if (requestObj->earlyPick_ > simulationStart)
+        /*else if (requestObj->earlyPick_ > simulationStart)
+            nbRequests++;*/
+    }
+    myFile.close();
+
+    // print trip requests (requests that are not received yet)
+    myFile.open (inputPaths.getOutputTrip(), std::ofstream::app);
+    myFile << "COLUMNS\n\n" << "passenger_count\n" << "pickup_ID\n" << "dropoff_ID\n" << "request_time_sec\n\n";
+    myFile << "REQUESTS_INFO" << std::endl;
+
+    for (auto & requestObj: requests_) {
+        if (requestObj->earlyPick_ > simulationStart) {
+            myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
+            myFile << std::setw(10) << requestObj->PickUpID_;
+            myFile << std::setw(10) << requestObj->DropOffID_;
+            myFile << std::setw(10) << requestObj->earlyPick_ << "\n";
             nbRequests++;
+        }
     }
     myFile.close();
 
     // print instance
     myFile.open (inputPaths.getOutputInstance(), std::ofstream::app);
-    myFile << "INSTANCE = " << inputPaths.getInstanceName() << std::endl << std::endl;
+    myFile << "INSTANCE = " << inputPaths.getInstanceNameOut() << std::endl << std::endl;
     myFile << "SIMULATION_START = " << simulationStart << std::endl << std::endl;
     myFile << "NUM_VEHICLES = " << nbVehicles_ << std::endl;
     myFile << "NUM_ONBOARDS = " << nbOnboards << std::endl;
