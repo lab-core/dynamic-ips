@@ -32,9 +32,22 @@ int main() {
 
     auto *simulationTime = new Tools::Timer(); simulationTime->init();
     auto *subProTime = new Tools::Timer(); subProTime->init();
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool();
 
     std::string dataDir = "datasets/";
     std::string instanceName = "20160603_11-30m";
+//    std::string instanceName = "20160603_11-60m1";
+//      std::string instanceName = "20160606_11-60m";
+//    std::string instanceName = "20150703_13-120m_2";
+//    std::string instanceName = "20150706_20-120m_1";
+//    std::string instanceName = "20150714_08-120m_1";
+//    std::string instanceName = "20150722_10-120m_1";
+//    std::string instanceName = "20150730_12-120m_1";
+//    std::string instanceName = "20160603_11-120m_1";
+//    std::string instanceName = "20160606_12-120m_1";
+//    std::string instanceName = "20160614_12-120m_1";
+//    std::string instanceName = "20160622_12-120m_1";
+//    std::string instanceName = "20160630_08-120m_1";
 
     // build the path of input files
     // create output files for epoch results
@@ -72,6 +85,8 @@ int main() {
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLengthOut << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
 
+        if (epoch == 1110)
+            std::cout << "stop";
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
@@ -160,7 +175,7 @@ int main() {
                                 PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProblem->initSubGraph(EpochInst);
-                                subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, vehicleMaxPick);
+                                subProblem->BuildModelCPLEX(isudObj->MIPReducedPro_->requestToOrder_, vehicleMaxPick);
                                 subProblem->SolveCPLEX();
                                 std::cout << subProblem->toString();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -176,19 +191,33 @@ int main() {
                             //         L A B E L S E T T IN G    M E T H O D
                             //*************************************************************//
                         case LABEL_SETTING:
+                            // defining subproblems
+                            std::vector<PLabelingSubPro> subProblems;
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
-         //                       subProOptions->maxPickup_ = vehicleMaxPick;
+                                //                       subProOptions->maxPickup_ = vehicleMaxPick;
                                 subProOptions->maxPickup_ = maxPick;
-                                PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
-                                subProblem->initSubGraph(EpochInst);
-                                subProblem->solveDynamic();
-                                isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
-                                subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
-                                                             isudObj->generatedRoutes_);
+                                subProblems.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj,
+                                                                                              subProOptions));
+                                isudObj->availableRoutes_[(*subProblems.back()->Vehicle_)->vehicleID_].clear();
+                            }
+                            // initializing and solving subproblems
+                            for (auto &subProblem: subProblems){
+                                Tools::Job job([&]() {
+                                    subProblem->initSubGraph2(EpochInst);
+                                    subProblem->solveDynamic();
+                                    subProblem->SolutionToRoutes((*subProblem->Vehicle_),
+                                                                 isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_],
+                                                                 isudObj->generatedRoutes_, EpochInst);
+                                });
+                                pPool->run(job);
+                            }
+                            pPool->wait();
+                            for (auto &subProblem: subProblems){
                                 nbNegativeNotFound = nbNegativeNotFound + subProblem->nbNegativeColumns_;
                                 subProblem.reset();
                             }
+                            subProblems.clear();
 //                    subStartStatus = NOT_RESTRICTED;
                     }
 
@@ -259,6 +288,8 @@ int main() {
         myFile << EpochInst->instGraph_->nbNodes_ - 2*EpochInst->nbVehicles_ << "\n";
         myFile.close();
 
+        EpochInst->instGraph_.reset();
+        EpochInst->parameters_.reset();
         EpochInst.reset();
     }
 
@@ -305,6 +336,8 @@ int main() {
     std::cout << "                               DYNAMIC MODE " << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
+    std::cout << std::left << std::fixed << std::setprecision(2);
+    std::cout << std::setw(30) << "# NUMBER OF VEHICLES" << " = " << mainInst->nbVehicles_ << std::endl;
     std::cout << "# " << std::endl;
     std::cout << "############################   PARAMETERS AND OPTIONS   ############################" << std::endl;
     std::cout << mainInst->parameters_->toString();
@@ -338,4 +371,6 @@ int main() {
     mainInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch);
 
     fclose (stdout);
+    isudObj.reset();
+    std::cout << "END";
 }
