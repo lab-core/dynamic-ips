@@ -4,7 +4,7 @@ alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
 epochLength = 5
-InitialDual = 1
+InitialDual = 0
 mainAlgorithm = 3
 addOneRequestColumn = 0
 
@@ -22,6 +22,7 @@ isTruncated = 0
 MaxLabel = 150
 isDominanceReleased = 1`
 isSuccessorsLimited = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 1

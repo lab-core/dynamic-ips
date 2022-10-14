@@ -45,6 +45,8 @@ public:
     void labelDrop(PLabel &parentLabel, std::vector<PNode> &activeNodeList);
     bool isLabelAdded(PLabel &newLabel, PNode &outNode);
     void solveDynamic_pushing();
+    // this function is the same as normal pushing strategy, but it does not do a pick after drops
+    void solveDynamic_pushingDrop();
     void solveDynamic_pulling();
     void solveDynamic_pulling1();
     void solveDynamic();

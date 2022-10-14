@@ -293,6 +293,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1;
     int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, fixedEpoch = false;
+    bool isPickDropPossible = false;
     int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0, MIP_maxIncDegree = 0;
     int strategy = 0, CP_IncDegree = 0, initialDual = 0;
     bool addOneRequestColumn = false;
@@ -349,6 +350,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "isSuccessorsLimited "))
             file >> isSuccessorsLimited;
 
+        else if (strEndWith(title, "isDropPickPossible "))
+            file >> isPickDropPossible;
+
         else if (strEndWith(title, "SubproSolveStartState "))
             file >> subproSolveStartState;
 
@@ -373,7 +377,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, minImp, fixedEpoch,
                                                           isTruncated, maxLabel, isSuccessorsLimited,
-                                                          isDominanceReleased,
+                                                          isDominanceReleased, isPickDropPossible,
                                                           static_cast<SubProSolveStart>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),

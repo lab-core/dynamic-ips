@@ -153,6 +153,10 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
 }
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
+    /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_){
+        if (otherLabel->pathNodes_.size() == 2)
+            return false;
+    }*/
     /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
 //        if (this->completedRequests_ == otherLabel->completedRequests_) {
         if (this->completedRequest_ == otherLabel->completedRequest_) {

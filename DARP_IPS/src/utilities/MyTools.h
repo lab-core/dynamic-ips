@@ -100,6 +100,10 @@ static const std::vector<std::string> warmStartName = {
 static const std::vector<std::string> InitialDualName = {
         "LAST_CP  ",
         "PENALTIES"};
+static const std::vector<std::string> SubProSolveStartName = {
+        "NOT_RESTRICTED",
+        "TIME_RESTRICTED",
+        "NUM_PICK_RESTRICTED"};
 
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };

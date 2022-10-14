@@ -12,16 +12,16 @@
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, InitialDual initialDual,
                        MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
                        float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
-                       bool isDominanceReleased, SubProSolveStart subproSolveStartState,
-                       LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit,
-                       bool addOneRequestColumn) :
+                       bool isDominanceReleased, bool isDropPickPossible, SubProSolveStart subproSolveStartState,
+                       LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit,
+                       int populateTimeLimit, bool addOneRequestColumn) :
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         initialDual_(initialDual), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
         MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), fixedEpoch_(fixedEpoch),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
-        isDominanceReleased_(isDominanceReleased), SubproSolveStartState_(subproSolveStartState),
-        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), bigM_(bigM),solveTimeLimit_(solveTimeLimit),
+        isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
+        SubproSolveStartState_(subproSolveStartState), LabelingStrategy_(LabelingStrategy),
+        subAlgorithm_(subAlgorithm), bigM_(bigM),solveTimeLimit_(solveTimeLimit),
         populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn) {
 }
 
@@ -58,7 +58,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
-    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubproSolveStartState_ << std::endl;
+    repStr << std::setw(setwLength) << "# Is Pickup allowd after Drop " << " = " << isDropPickPossible_ << std::endl;
+    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveStartState_] << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::endl;
@@ -80,10 +81,11 @@ std::string Parameters::toString() const {
 //-----------------------------------------------------------------------------
 
 solverOption::solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
-                           bool isSuccessorsLimited, LabelingStrategy labelingStrategy) : maxReachTime_(maxReachTime),
-                                                                                          maxPickup_(maxPickup), isTruncated_(isTruncated), MaxLabel_(maxLabel),
-                                                                                          isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
-                                                                                          LabelingStrategy_(labelingStrategy) {}
+                           bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy) :
+                           maxReachTime_(maxReachTime), maxPickup_(maxPickup), isTruncated_(isTruncated),
+                           MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
+                           isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
+                           LabelingStrategy_(labelingStrategy) {}
 
 solverOption::~solverOption() = default;
 
@@ -100,6 +102,7 @@ solverOption::solverOption(float maxReachTime, int maxPickup, PParameters &MainP
     isDominanceReleased_ = MainParams->isDominanceReleased_;
     LabelingStrategy_ = MainParams->LabelingStrategy_;
     isSuccessorsLimited_ = MainParams->isSuccessorsLimited_;
+    isDropPickPossible_ = MainParams->isDropPickPossible_;
 }
 
 bool solverOption::areHeuristicsDisabled() const {
