@@ -6,6 +6,7 @@
 #define _REQUEST_H
 
 #include "utilities/MyTools.h"
+#include "Parameters.h"
 
 //---------------------------------------------------------------------------------------------
 //  request class
