@@ -19,8 +19,6 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
                                                                                         type_(type), pairNodeID_(std::move(pairNodeID)) {
     reachTime_ = 0;
     departTime_ = 0;
-    nbActiveLabels_ = 0;
-    travelTimeFromNode_ = 0;
     deltaTime_ = relatedRequest->deltaTime_;
     nodeStatus_ = DEFINED;
     requestTime_ = relatedRequest->earlyPick_;
@@ -35,6 +33,8 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNo
         locationID_ = relatedRequest->DropOffID_;
         nbPassengers_ = (-1) * relatedRequest->nbPassengers_;
     }
+    nbActiveLabels_ = 0;
+    travelTimeFromNode_ = 0;
     bestLabelReduceCost_ = INFINITY;
 }
 
@@ -93,6 +93,9 @@ Node::Node(const PNode &oldNode) {
     deltaTime_ = oldNode->deltaTime_;
     nodeStatus_ = oldNode->nodeStatus_;
     requestTime_ = oldNode->requestTime_;
+    nbActiveLabels_ = 0;
+    travelTimeFromNode_ = 0;
+    bestLabelReduceCost_ = INFINITY;
 }
 
 // this function return the index in of the first label in the active labels of the node whose reduced cost
