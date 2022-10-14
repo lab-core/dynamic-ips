@@ -6,6 +6,7 @@ set(SOURCE_FILES
         Graph.cpp
         Route.cpp
         Label.cpp
-        Greedy.cpp)
+        Greedy.cpp
+        Parameters.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
