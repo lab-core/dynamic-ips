@@ -94,7 +94,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     float departTime = -1, endTime = -1;
 
     // add this only when I want to use less vehicles
-//    pInstance->nbVehicles_ = 75;
+    pInstance->nbVehicles_ = 45;
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);

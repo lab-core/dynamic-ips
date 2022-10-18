@@ -25,10 +25,12 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instanceNa
     //initialize the file names for trip records and instance data
     input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
     input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
-    input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
+ //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
+    input_durationData_ = datadir + "edge_time_matrix.txt";
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = datadir + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
+//    input_vehicleFile_ = datadir + "vehicles_2000_7.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }

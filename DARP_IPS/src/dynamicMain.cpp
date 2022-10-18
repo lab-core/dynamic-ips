@@ -35,19 +35,9 @@ int main() {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-30m";
-//    std::string instanceName = "20160603_11-60m1";
-//      std::string instanceName = "20160606_11-60m";
-//    std::string instanceName = "20150703_13-120m_2";
-//    std::string instanceName = "20150706_20-120m_1";
-//    std::string instanceName = "20150714_08-120m_1";
-//    std::string instanceName = "20150722_10-120m_1";
-//    std::string instanceName = "20150730_12-120m_1";
-//    std::string instanceName = "20160603_11-120m_1";
-//    std::string instanceName = "20160606_12-120m_1";
-//    std::string instanceName = "20160614_12-120m_1";
-//    std::string instanceName = "20160622_12-120m_1";
-//    std::string instanceName = "20160630_08-120m_1";
+//    std::string instanceName = "20160222_17-120m_2";
+    std::string instanceName = "20160613_17-120m_2";
+
 
     // build the path of input files
     // create output files for epoch results
@@ -59,7 +49,7 @@ int main() {
     std::cout << std::endl;
     std::cout << mainInst->toString();
 
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbLocations_ + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, mainInst->nbLocations_);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
 
@@ -85,7 +75,7 @@ int main() {
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLengthOut << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
 
-        if (epoch == 1110)
+        if (epoch == 15)
             std::cout << "stop";
         isudObj->restGeneratedRoutes(mainInst);
 

@@ -23,13 +23,15 @@ int main() {
     int epoch = 0;
     float saveTime = 3600;
     bool middleSave = false;
-    bool showLog = true;
+    std::string instNum = "2";
+    bool showLog = false;
     float length = 0;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20160603_11-60m1";
+//    std::string instanceName = "20160222_17-120m_2";
+    std::string instanceName = "20160613_17-120m_2";
 
     // build the path of input files
     // create output files for epoch results
@@ -41,7 +43,7 @@ int main() {
     std::cout << std::endl;
     std::cout << mainInst->toString();
     inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, 2 * mainInst->nbLocations_ + 1);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, mainInst->nbLocations_);
     if (!showLog)
         freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
 
@@ -81,6 +83,7 @@ int main() {
             for (auto & vehicleObj : StaticInst->vehicles_)
                 std::cout << vehicleObj->currentRoute_->toString();
             if (middleSave) {
+                inputPaths.makeInstanceOutput(instNum);
                 for (auto & vehicleObj: StaticInst->vehicles_)
                     vehicleObj->updateStateTime(saveTime, length);
                 StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime);
@@ -131,7 +134,7 @@ int main() {
                         for (auto &vehicleObj: StaticInst->vehicles_) {
                             PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                             subProblem->initSubGraph(StaticInst);
-                            subProblem->BuildModelCPLEX(isudObj->ReducedPro_->requestToOrder_, maxPick);
+                            subProblem->BuildModelCPLEX(isudObj->MIPReducedPro_->requestToOrder_, maxPick);
                             subProblem->SolveCPLEX();
                             std::cout << subProblem->toString();
                             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -248,8 +251,11 @@ int main() {
     std::cout << "                               STATIC MODE " << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
+    std::cout << std::left << std::fixed << std::setprecision(2);
+    std::cout << std::setw(30) << "# NUMBER OF VEHICLES" << " = " << mainInst->nbVehicles_ << std::endl;
     std::cout << "# " << std::endl;
     std::cout << "############################   PARAMETERS AND OPTIONS   ############################" << std::endl;
+
     std::cout << mainInst->parameters_->toString();
     std::cout << "# " << std::endl;
     std::cout << std::endl << std::endl;
