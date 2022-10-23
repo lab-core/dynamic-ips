@@ -22,7 +22,7 @@ public:
     int numPassengers_;                     // number of passengers in the vehicle
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
-    std::vector<PRoute> generatedRoutes_;   // list of generated routes
+//    std::vector<PRoute> generatedRoutes_;   // list of generated routes
     std::string departID_;
     std::string sinkID_;
     PRoute currentRoute_;

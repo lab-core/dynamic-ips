@@ -139,8 +139,9 @@ Graph::Graph(PNode &source, PNode &sink) {
 // function for adding node to graph
 void Graph::addNewNode(const PNode &node) {
 //    if (node->nodeStatus_ != COMMITTED) {
-        nodes_.insert(std::pair<std::string, PNode> (node->nodeID_, node));
-        nodeIDToInt_[node->nodeID_] = nbNodes_;
+        nodes_.emplace(std::pair<std::string, PNode> (node->nodeID_, node));
+ //       nodeIDToInt_[node->nodeID_] = nbNodes_;
+        node->nodeIndex_ = nbNodes_;
         intToNodeID_.push_back(node->nodeID_);
         nbNodes_++;
 //    }

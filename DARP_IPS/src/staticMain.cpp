@@ -21,17 +21,17 @@ int main() {
     double previousObj;
     SubProSolveStart subStartStatus;
     int epoch = 0;
-    float saveTime = 3600;
+    float saveTime = 5400;
     bool middleSave = false;
-    std::string instNum = "2";
+    std::string instNum = "3";
     bool showLog = false;
     float length = 0;
 
     auto *subProTime = new Tools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-//    std::string instanceName = "20160222_17-120m_2";
-    std::string instanceName = "20160613_17-120m_2";
+//    std::string instanceName = "20160222_17-120m_3";
+    std::string instanceName = "20160613_17-120m_3";
 
     // build the path of input files
     // create output files for epoch results
@@ -134,7 +134,7 @@ int main() {
                         for (auto &vehicleObj: StaticInst->vehicles_) {
                             PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                             subProblem->initSubGraph(StaticInst);
-                            subProblem->BuildModelCPLEX(isudObj->MIPReducedPro_->requestToOrder_, maxPick);
+                            subProblem->BuildModelCPLEX(maxPick);
                             subProblem->SolveCPLEX();
                             std::cout << subProblem->toString();
                             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -142,7 +142,7 @@ int main() {
                                 nbNegativeNotFound ++;
                             }
                             else
-                                subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_], isudObj->generatedRoutes_);
+                                subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_]);
                         }
 
                         //*************************************************************//
@@ -161,8 +161,7 @@ int main() {
                             if (subProblem->bestReducedCost_ > 0)
                                 nbNegativeNotFound++;
                             else
-                                subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_],
-                                                             isudObj->generatedRoutes_);
+                                subProblem->SolutionToRoutes(vehicleObj, isudObj->availableRoutes_[vehicleObj->vehicleID_]);
                         }
 //                    subStartStatus = NOT_RESTRICTED;
                 }

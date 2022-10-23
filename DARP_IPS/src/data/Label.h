@@ -22,28 +22,32 @@ public:
     int load_;                                              // consume capacity of the vehicle
     float passedTime_;                                      // accumulated time of the path
     PVehicle *vehicle_;                                     // the vehicle for which the route has created
-    PLabel parent_;                                        // a pointer to the parent of the label
-    std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
-    std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
+//    PLabel parent_;                                        // a pointer to the parent of the label
+//    std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
+    std::vector<float> travelResources_;
+//    std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
+    std::vector<PNode> openNode_;
 //    std::set<PRequest> completedRequests_;                  // set of completed requests
 //    std::vector<int> completedRequest_;
     std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
-    std::unordered_map<unsigned int, int> requestIDToInt_;
+//    std::unordered_map<unsigned int, int> requestIDToInt_;
     vector<PNode> pathNodes_;                               // list of nodes in the path of the vehicle
     double reducedCost_;
     PNode currentNode_;
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;
-    std::set<std::string> extendCheck_;
+//    std::set<std::string> extendCheck_;
     bool isDropped_;
-
+    int nbUsed_;
 
 
     // Constructor and Destructor
     Label(PVehicle *vehicle, PNode &source);
     Label(const Label &label);
+    void copyLabel(const Label &label);
+
     virtual ~Label();
     // Getters and Setters
     unsigned int getLabelId() const;

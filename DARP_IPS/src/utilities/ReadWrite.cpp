@@ -202,7 +202,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
-
             for (int r = 0; r < nbRequest; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;

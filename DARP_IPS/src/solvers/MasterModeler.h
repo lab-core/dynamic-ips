@@ -37,8 +37,9 @@ public:
     IloRangeArray requestConst_;
     IloRangeArray vehicleConst_;
 
+
     vector<unsigned int> orderToRequest_;
-    std::unordered_map<unsigned int, int> requestToOrder_;
+//    std::unordered_map<unsigned int, int> requestToOrder_;
 
     std::vector<PRoute> routesToAdd_;
 

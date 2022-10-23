@@ -28,6 +28,7 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     dual_ = 0;
     CPDual_ = 0;
     minTravelTime_ = 0;
+    taskIndex_ = requestID_;
 }
 
 Request::~Request() = default;

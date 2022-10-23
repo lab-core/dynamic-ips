@@ -20,9 +20,10 @@ public:
 //    PReducedProblem ReducedPro_;
     PComplementPro CompPro_;
     PZoomReducedProblem MIPReducedPro_;
-    std::unordered_map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
-    std::unordered_map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
-
+//    std::unordered_map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
+//    std::unordered_map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
+    vector2D<PRoute> availableRoutes_;
+    int nbRoutes_;
 
     // Solution containers
     std::vector<PRoute> routeSolution_;
@@ -30,8 +31,9 @@ public:
 
 
     Eigen::MatrixXd incMatrix_;                                     // incompatibility matrix
-    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
+//    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
     std::unordered_map<int, int> incVehicleToOrder_;
+    int nbCoveredTasks_;
 
     int isudIter_;
     double objValue_;

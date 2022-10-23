@@ -41,6 +41,9 @@ public:
     double dual_;
     double CPDual_;
     int vehicleID_;                     // the vehicle that serve the request
+    int taskIndex_;
+    int taskIndexLabel_;
+    int taskIncIndex_;
 
     // Constructor and Destructor
     Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);

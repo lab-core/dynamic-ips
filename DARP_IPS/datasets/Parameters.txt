@@ -20,7 +20,7 @@ fixedEpoch = 0
 #
 isTruncated = 0
 MaxLabel = 150
-isDominanceReleased = 1`
+isDominanceReleased = 0`
 isSuccessorsLimited = 0
 isDropPickPossible = 1
 SubproSolveStartState = 2

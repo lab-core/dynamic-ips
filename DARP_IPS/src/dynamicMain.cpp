@@ -32,10 +32,10 @@ int main() {
 
     auto *simulationTime = new Tools::Timer(); simulationTime->init();
     auto *subProTime = new Tools::Timer(); subProTime->init();
-    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool();
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(8);
 
     std::string dataDir = "datasets/";
-//    std::string instanceName = "20160222_17-120m_2";
+//    std::string instanceName = "20160222_17-120m_3";
     std::string instanceName = "20160613_17-120m_2";
 
 
@@ -75,17 +75,17 @@ int main() {
         std::cout << "        AVERAGE RE-OPTIMIZATION TIME: " << avgLengthOut << std::endl;
         std::cout << "*************************************************************************************" << std::endl;
 
-        if (epoch == 15)
-            std::cout << "stop";
         isudObj->restGeneratedRoutes(mainInst);
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
+        isudObj->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto & vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch, mainInst->parameters_->epochLength_);
             mainInst->nbOnboards_ += (int)vehicleObj->onboards_.size();
             isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
+        isudObj->nbRoutes_ = 0;
 
         // creating a subInstance
         PInstance EpochInst = std::make_shared<Instance>(*mainInst);
@@ -165,7 +165,7 @@ int main() {
                                 PCplexSubPro subProblem = std::make_shared<CPLEXSubProblem>(vehicleObj);
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 subProblem->initSubGraph(EpochInst);
-                                subProblem->BuildModelCPLEX(isudObj->MIPReducedPro_->requestToOrder_, vehicleMaxPick);
+                                subProblem->BuildModelCPLEX(vehicleMaxPick);
                                 subProblem->SolveCPLEX();
                                 std::cout << subProblem->toString();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -173,7 +173,7 @@ int main() {
                                     nbNegativeNotFound ++;
                                 }
                                 else
-                                    subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_], isudObj->generatedRoutes_);
+                                    subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_]);
                                 subProblem.reset();
                             }
 
@@ -182,6 +182,8 @@ int main() {
                             //*************************************************************//
                         case LABEL_SETTING:
                             // defining subproblems
+                            isudObj->nbRoutes_ = 0;
+                            EpochInst->updateTaskIndexLabeling();
                             std::vector<PLabelingSubPro> subProblems;
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
@@ -196,16 +198,18 @@ int main() {
                                 Tools::Job job([&]() {
                                     subProblem->initSubGraph2(EpochInst);
                                     subProblem->solveDynamic();
-                                    subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                                                 isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_],
-                                                                 isudObj->generatedRoutes_, EpochInst);
+
                                 });
                                 pPool->run(job);
                             }
                             pPool->wait();
                             for (auto &subProblem: subProblems){
+                                subProblem->SolutionToRoutes((*subProblem->Vehicle_),
+                                                             isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
+                                isudObj->nbRoutes_ += isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
                                 nbNegativeNotFound = nbNegativeNotFound + subProblem->nbNegativeColumns_;
                                 subProblem.reset();
+
                             }
                             subProblems.clear();
 //                    subStartStatus = NOT_RESTRICTED;

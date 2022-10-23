@@ -408,7 +408,7 @@ namespace Tools {
     //                     ThreadsPool implementation
     //************************************************************************
 
-    int ThreadsPool::maxGlobalThreads_ = 1;
+    int ThreadsPool::maxGlobalThreads_ = 8;
     int ThreadsPool::nGlobalThreadsAvailable_ = ThreadsPool::maxGlobalThreads_;
     bool ThreadsPool::settingMaxGlobalThreads_ = false;
     std::mutex ThreadsPool::mThreadMutex_;
@@ -481,7 +481,7 @@ namespace Tools {
     }
 
     PThreadsPool ThreadsPool::newThreadsPool() {
-        setMaxGlobalThreadsToMax();
+//        setMaxGlobalThreadsToMax();
         return newThreadsPool(maxGlobalThreads_);
     }
 
@@ -497,6 +497,7 @@ namespace Tools {
 
     ThreadsPool::ThreadsPool(int nThreads):
             pThreadsPool_(nullptr), nActivePtr_(0) {
+ //       setMaxGlobalThreadsToMax();
         if (nThreads <= maxGlobalThreads_) {
             maxThreads_ = nThreads;
         } else {

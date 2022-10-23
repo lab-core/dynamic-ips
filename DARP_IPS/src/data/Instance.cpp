@@ -17,6 +17,8 @@ Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int
                    instGraph_(mainGraph) {
     nbNewRequests_ = nbRequests;
     std::cout << "Instance created!"<< std::endl;
+    requests_.reserve(nbRequests + nbOnboards);
+    vehicles.reserve(nbVehicles);
 }
 
 
@@ -31,6 +33,7 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     instGraph_ = std::make_shared<Graph>();
     nbOnboards_ = mainInst.nbOnboards_;
     nbLocations_ = mainInst.nbLocations_;
+    requests_.reserve(mainInst.requests_.size());
 }
 Instance::~Instance() {
     instGraph_.reset();
@@ -235,7 +238,7 @@ void Instance::addRequest(PRequest &request) {
 //    request->setPenaltyEpoch(epoch , parameters, simulationStart);
 //    request->setPenaltyEpoch(epoch - request->readEpoch_, parameters, simulationStart);
     nameToRequest_[request->name_] = request;
-    updateRequestOrder();
+ //   updateRequestOrder();
 }
 
 
@@ -299,11 +302,12 @@ void Instance::updatePenalties(float elapsedTime, float length) {
 //determine an order for requests to use in CPLEX modeling
 void Instance::updateRequestOrder() {
     orderToRequest_.clear();
-    requestToOrder_.clear();
+//    requestToOrder_.clear();
 
     int orderCounter = 0;
     for (auto & requestObj : requests_){
-        requestToOrder_[requestObj->getRequestId()] = orderCounter;
+//        requestToOrder_[requestObj->getRequestId()] = orderCounter;
+        requestObj->taskIndex_ = orderCounter;
         orderToRequest_.push_back(requestObj->getRequestId());
         orderCounter++;
     }
@@ -484,6 +488,16 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "NUM_REQUESTS = " << nbRequests << std::endl;
     myFile << "NUM_LOCATIONS = " << nbLocations_ << std::endl;
     myFile.close();
+}
+
+void Instance::updateTaskIndexLabeling() {
+    int orderCounter = 0;
+    sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});
+    for (auto & requestObj : requests_){
+        requestObj->taskIndexLabel_ = orderCounter;
+        orderCounter++;
+    }
 }
 
 

@@ -41,13 +41,15 @@ public:
     double bestLabelReduceCost_;        // smallest reduced cost af active vehicles
     int nbActiveLabels_;                // Number of active labels in labeling approach
     std::vector<PNode> successors_;
-    std::set<PNode> predecessor_;
+//    std::set<PNode> predecessor_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
+    int nodeIndex_;
 
 
     std::vector<PLabel> activeLabels_;
     // generatedLabels_ save the labels based on the number of completed requests in different spaces
-    std::map<int, std::vector<PLabel>> generatedLabels_;
+//    std::map<int, std::vector<PLabel>> generatedLabels_;
+    vector2D<PLabel> generatedLabel_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
@@ -71,7 +73,7 @@ class Graph {
 public:
     int nbNodes_;
     std::unordered_map<std::string,PNode> nodes_;
-    std::unordered_map<std::string, int> nodeIDToInt_;
+//    std::unordered_map<std::string, int> nodeIDToInt_;
     std::vector<std::string> intToNodeID_;
 
 

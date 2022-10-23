@@ -22,8 +22,7 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
         addZVar(zRequest);
 }
 
-void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                    std::unordered_map<std::string, PRoute> &generatedRoutes) {
+void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     try {
         Model_.add(IloConversion(env_, zVar_, ILOINT));
         Model_.add(IloConversion(env_, routeVar_, ILOINT));
@@ -50,9 +49,11 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 
         for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
-                routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
+                routeSolution.push_back(compRoutes_[r]);
+                pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                /*routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
                 pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(
-                        generatedRoutes[routeVar_[r].getName()]);
+                        generatedRoutes[routeVar_[r].getName()]);*/
             }
         }
 

@@ -19,6 +19,8 @@ public:
     IloNumVarArray routeVar_;
     IloNumVarArray zVar_;
 
+    std::vector<PRoute> compRoutes_;
+
     // Constructor and Destructor
     ReducedProblem();
 

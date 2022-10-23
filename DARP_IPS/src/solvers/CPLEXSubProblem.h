@@ -34,11 +34,11 @@ public:
     ~CPLEXSubProblem() override;
 
     // Build and solve the subProblem with CPLEX
-    void BuildModelCPLEX(std::unordered_map<unsigned int, int>& requestToOrder, int maxPickUp);
+    void BuildModelCPLEX(int maxPickUp);
     void SolveCPLEX();
 
     // function to convert solution to routes and save them in vehicle object
-    void SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes);
+    void SolutionToRoutes(std::vector<PRoute> &availableRoutes);
 
     // Display function
     std::string toString() const;

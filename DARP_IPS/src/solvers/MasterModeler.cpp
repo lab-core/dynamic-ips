@@ -56,13 +56,13 @@ std::string MasterModeler::toString() const {
 // function to create pattern from routes
 void MasterModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
     if (sign == POSITIVE) {
-        for (auto & requestID : route->routeRequests_) {
-            pattern[requestToOrder_[requestID]] = 1;
+        for (auto & requestObj : route->routeRequests_) {
+            pattern[requestObj->taskIndex_] = 1;
         }
     }
     else if (sign == NEGATIVE) {
-        for (auto & requestID : route->routeRequests_) {
-            pattern[requestToOrder_[requestID]] = -1;
+        for (auto & requestObj : route->routeRequests_) {
+            pattern[requestObj->taskIndex_] = -1;
         }
     }
 }
@@ -74,10 +74,10 @@ void MasterModeler::addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sig
         IloNumVar numVar;
         if (sign == POSITIVE)
             numVar = IloNumVar(objFunction_(request->penalty_) +
-                               requestConst_[requestToOrder_[request->getRequestId()]](1));
+                               requestConst_[request->taskIndex_](1));
         else
             numVar = IloNumVar(objFunction_(-request->penalty_) +
-                               requestConst_[requestToOrder_[request->getRequestId()]](-1));
+                               requestConst_[request->taskIndex_](-1));
         numVar.setName(request->name_);
         zVar.add(numVar);
     }
@@ -105,7 +105,7 @@ void MasterModeler::addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarS
 void MasterModeler::initializeModel(PInstance &pInst, int rhs) {
 // update order of requests
 //    updateRequestOrder(pInst);
-    requestToOrder_ = pInst->requestToOrder_;
+//    requestToOrder_ = pInst->requestToOrder_;
     orderToRequest_ = pInst->orderToRequest_;
 
     // define and add objective

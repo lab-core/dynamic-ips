@@ -25,7 +25,8 @@ public:
     int vehicleID_;                             // the vehicle for which the route has created
     float totalDelay_;                         // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
-    std::vector<unsigned int> routeRequests_;   // list of requests served by the route
+//    std::vector<unsigned int> routeRequests_;   // list of requests served by the route
+    std::vector<PRequest> routeRequests_;   // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
     double reducedCost_;
@@ -39,7 +40,7 @@ public:
 
     // Getters and Setters
     unsigned int getRouteId() const;
-    void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual, std::unordered_map<unsigned int, int>& requestToOrder);
+    void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual);
 
     // these functions are used to add nodes to the routes
     void addSource(PNode &node, float departTime, int departPassengers);

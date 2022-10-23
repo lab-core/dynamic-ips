@@ -42,6 +42,7 @@ void ReducedProblem::ResetRPModel() {
 
         routeVar_.endElements();
         routeVar_.clear();
+        compRoutes_.clear();
         zVar_.endElements();
         zVar_.clear();
         Model_.remove(requestConst_);
@@ -55,6 +56,7 @@ void ReducedProblem::ResetRPModel() {
 // this function adds routeVar to the model
 void ReducedProblem::addRouteVar(PRoute &newRoute) {
         MasterModeler::addRouteVar(routeVar_, newRoute, POSITIVE);
+        compRoutes_.push_back(newRoute);
 }
 
 // this function adds zVar to the model used for the routes that served only one request
@@ -97,13 +99,18 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         addZVar(zSol);
 
     // adding route solution columns
-    for (auto & routeSol : routeSolution)
+    compRoutes_.reserve(routeSolution.size()+routesToAdd_.size());
+    for (auto & routeSol : routeSolution){
         addRouteVar(routeSol);
+    }
+
 
 
     //adding new route variables
-    for (auto & routeObj : routesToAdd_)
+    for (auto & routeObj : routesToAdd_) {
         addRouteVar(routeObj);
+ //       compRoutes_.push_back(routeObj);
+    }
 //    env_.out() << Model_;
 }
 
@@ -129,7 +136,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         for (auto &requestObj: pInst->requests_) {
             if (requestObj->requestStatus_ == NO_ACTION) {
 //                int rowIndex = requestToOrder_[requestObj->getRequestId()];
-                int rowIndex = pInst->requestToOrder_[requestObj->getRequestId()];
+//                int rowIndex = pInst->requestToOrder_[requestObj->getRequestId()];
+                int rowIndex = requestObj->taskIndex_;
                 requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                 requestObj->dual_ = requestDuals_[rowIndex];
                 requestObj->CPDual_ = requestDuals_[rowIndex];
@@ -206,7 +214,7 @@ bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute
     selectedRoutes.push_back(newRoute);
     for (int r = 0; r < selectedRoutes.size(); ++r) {
         for (int i = 0; i < selectedRoutes[r]->routeRequests_.size(); ++i)
-            A(requestToOrder[selectedRoutes[r]->routeRequests_[i]], r) = 1;
+            A(selectedRoutes[r]->routeRequests_[i]->taskIndex_, r) = 1;
     }
     Eigen::MatrixXd ATA = A.transpose()*A;
     // setting diagonal elements to zero
@@ -235,13 +243,13 @@ bool ReducedProblem::isColumnRepeat(vector<PRoute> &routeSet, PRoute &newRoute,
                                     std::unordered_map<unsigned int, int> &requestToOrder) {
     Eigen::MatrixXd newCol = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), 1);
 
-    for (auto & requestID : newRoute->routeRequests_)
-        newCol(requestToOrder[requestID], 0) = 1;
+    for (auto & requestObj : newRoute->routeRequests_)
+        newCol(requestObj->taskIndex_, 0) = 1;
 
     for (auto & routeObj : routeSet) {
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), 1);
-        for (auto & requestID : routeObj->routeRequests_) {
-            A(requestToOrder[requestID], 0) = 1;
+        for (auto & requestObj : routeObj->routeRequests_) {
+            A(requestObj->taskIndex_, 0) = 1;
         }
         if (newCol == A)
             return true;

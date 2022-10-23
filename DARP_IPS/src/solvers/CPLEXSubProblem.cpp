@@ -21,15 +21,17 @@ CPLEXSubProblem::~CPLEXSubProblem() {
 // Build the SUb Problem model with CPLEX
 //************************************************************************
 
-void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& requestToOrder, int maxPickUp)
+void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 {
     // Definition of variables
     X = IloNumVar2D(env_, subGraph_->nbNodes_);
     U = IloNumVarArray(env_, subGraph_->nbNodes_, 0, IloInfinity, ILOFLOAT);
     W = IloNumVarArray(env_, subGraph_->nbNodes_, 0, IloInfinity, ILOFLOAT);
 
-    int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
-    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];
+    /*int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
+    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];*/
+    int sourceIndex = subGraph_->nodes_[(*Vehicle_)->departID_]->nodeIndex_;
+    int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         X[i] = IloNumVarArray(env_, subGraph_->nbNodes_, 0.0, 1.0, ILOBOOL);
@@ -38,7 +40,8 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& req
     // define objective
     IloExpr objExpr(env_);
     for (auto & requestObj : subRequests_) {
-        int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)];
+//        int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)];
+        int nodeIndex = subGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->nodeIndex_;
         objExpr += (U[nodeIndex] - requestObj->earlyPick_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
             objExpr -= (X[nodeIndex][j] * requestObj->dual_);
@@ -56,7 +59,8 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& req
     // add this constraint to be sure that each request is served at most once
     for (auto & requestObj : subRequests_) {
         std::string nodeID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-        int nodeIndex = subGraph_->nodeIDToInt_[nodeID];
+ //       int nodeIndex = subGraph_->nodeIDToInt_[nodeID];
+        int nodeIndex = subGraph_->nodes_[nodeID]->nodeIndex_;
 
         IloExpr exprV(env_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
@@ -103,10 +107,12 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& req
 
     for (auto & requestObj : subRequests_) {
         std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-        int pickIndex = subGraph_->nodeIDToInt_[pickID];
+  //      int pickIndex = subGraph_->nodeIDToInt_[pickID];
+        int pickIndex = subGraph_->nodes_[pickID]->nodeIndex_;
 
         std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
-        int dropIndex = subGraph_->nodeIDToInt_[dropID];
+//        int dropIndex = subGraph_->nodeIDToInt_[dropID];
+        int dropIndex = subGraph_->nodes_[dropID]->nodeIndex_;
 
         // constraints 5c -------------------
         IloExpr expr5(env_);
@@ -186,13 +192,16 @@ void CPLEXSubProblem::BuildModelCPLEX(std::unordered_map<unsigned int, int>& req
         // constraints 6c -------------------
         IloExpr expr6(env_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-            expr6 += X[j][subGraph_->nodeIDToInt_[onboardID]];
+  //          expr6 += X[j][subGraph_->nodeIDToInt_[onboardID]];
+            expr6 += X[j][subGraph_->nodes_[onboardID]->nodeIndex_];
         }
         SubProModel_.add(expr6 == 1);
 
         // constraints 12c -------------------
         IloExpr expr12(env_);
-        expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
+        /*expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
+                 - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;*/
+        expr12 = U[subGraph_->nodes_[onboardID]->nodeIndex_] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
                  - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
 
 //        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
@@ -244,7 +253,7 @@ void CPLEXSubProblem::SolveCPLEX() {
 }
 
 // function to convert solution to routes and save them in vehicle object
-void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std::unordered_map<std::string , PRoute> &generatedRoutes) {
+void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
     try {
 
 //        availableRoutes.clear();
@@ -309,8 +318,8 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
 
 
                 // creating the route
-                int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
-                int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];
+                int sourceIndex = subGraph_->nodes_[(*Vehicle_)->departID_]->nodeIndex_;
+                int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
 //                (*Vehicle_)->generatedRoutes_.emplace_back(std::make_shared<Route>((*Vehicle_)->vehicleID_));
                 PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
 
@@ -340,7 +349,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes, std
                     }
                 }
                 availableRoutes.push_back(newRoute);
-                generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
+ //               generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
                 /*for (int r = 0; r < availableRoutes.size(); ++r) {
                     if (newRoute == availableRoutes[r]) {
                         isRepeated = true;

@@ -18,6 +18,7 @@ class ComplementPro : public MasterModeler{
 public:
     // Variables
     IloNumVarArray routeIncVar_;
+    vector<PRoute> IncRoute_;
     IloNumVarArray zIncVar_;
     IloNumVarArray routeSolVar_;
     IloNumVarArray zSolVar_;
@@ -49,15 +50,16 @@ public:
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function solve the model
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+    /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
+    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
-    void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+    /*void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
+    void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function check the situation of the CP solution to be column disjoint
-    static bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults,
-                          std::unordered_map<unsigned int, int>& requestToOrder, int nbVehicle);
+    bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
 
     // Display function
     std::string toString() const override;

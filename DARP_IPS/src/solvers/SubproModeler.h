@@ -15,9 +15,10 @@ public:
     PVehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
     std::vector<PRequest> subRequests_;     // List of requests
-    std::set<PRequest> onboardRequests_;
+//    std::set<PRequest> onboardRequests_;
     double bestReducedCost_;
     int nbNegativeColumns_;
+    int nbTotalRequest_;
 
     // Constructor and Destructor
     explicit SubproModeler(PVehicle &vehicle);

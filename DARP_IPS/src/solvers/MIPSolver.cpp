@@ -33,7 +33,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     for (int i = 0; i < PInst->nbRequests_; ++i) {
         objExpr += Z[i] * PInst->requests_[i]->penalty_;
         for (int v = 0; v < PInst->nbVehicles_; ++v) {
-            int nodeIndex = PInst->instGraph_->nodeIDToInt_[Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP)];
+            int nodeIndex = PInst->instGraph_->nodes_[Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP)]->nodeIndex_;
             objExpr += (U[v][nodeIndex] - PInst->requests_[i]->earlyPick_);
         }
     }
@@ -47,7 +47,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     // constraints 2a -------------------
     for (int i = 0; i < PInst->nbRequests_; ++i) {
         std::string nodeID = Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
-        int nodeIndex = PInst->instGraph_->nodeIDToInt_[nodeID];
+        int nodeIndex = PInst->instGraph_->nodes_[nodeID]->nodeIndex_;
 
         IloExpr expr2(env);
         expr2 += Z[i];
@@ -73,8 +73,8 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
 
     for (int v = 0; v < PInst->nbVehicles_; ++v) {
-        int sourceIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->departID_];
-        int sinkIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->sinkID_];
+        int sourceIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->departID_]->nodeIndex_;
+        int sinkIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->sinkID_]->nodeIndex_;
         // add these constraints for just solving the extraction problem of variables
         /*IloExpr exprP(env);
         for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
@@ -120,10 +120,10 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
         for (auto & requestObj: PInst->requests_) {
             std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            int pickIndex = PInst->instGraph_->nodeIDToInt_[pickID];
+            int pickIndex = PInst->instGraph_->nodes_[pickID]->nodeIndex_;
 
             std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
-            int dropIndex = PInst->instGraph_->nodeIDToInt_[dropID];
+            int dropIndex = PInst->instGraph_->nodes_[dropID]->nodeIndex_;
 
             // constraints 6a -------------------
             IloExpr expr6(env);
@@ -187,13 +187,13 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             // constraints 7a -------------------
             IloExpr expr7(env);
             for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
-                expr7 += X[v][j][PInst->instGraph_->nodeIDToInt_[onboardID]];
+                expr7 += X[v][j][PInst->instGraph_->nodes_[onboardID]->nodeIndex_];
             }
             MIPModel.add(expr7 == 1);
 
             // constraints 13a -------------------
             IloExpr expr13(env);
-            expr13 = U[v][PInst->instGraph_->nodeIDToInt_[onboardID]] - PInst->instGraph_->nodes_[onboardID]->related_Request_->pickTime_
+            expr13 = U[v][PInst->instGraph_->nodes_[onboardID]->nodeIndex_] - PInst->instGraph_->nodes_[onboardID]->related_Request_->pickTime_
                      - PInst->instGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
             MIPModel.add(expr13 <= PInst->instGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
             MIPModel.add(expr13 >= PInst->instGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
@@ -373,8 +373,8 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             }
 
             // creating the route
-            int sourceIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->departID_];
-            int sinkIndex = PInst->instGraph_->nodeIDToInt_[PInst->vehicles_[v]->sinkID_];
+            int sourceIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->departID_]->nodeIndex_;
+            int sinkIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->sinkID_]->nodeIndex_;
             PRoute newRoute = std::make_shared<Route>(PInst->vehicles_[v]->vehicleID_);
 
             newRoute->addSource(PInst->instGraph_->nodes_[PInst->vehicles_[v]->departID_],

@@ -11,8 +11,9 @@ class ZoomReducedProblem : public ReducedProblem {
 public:
 
     void updateModel(PInstance &pInst, std::vector<PRequest> &fractionalZ);
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                   std::unordered_map<std::string , PRoute> &generatedRoutes);
+    /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                   std::unordered_map<std::string , PRoute> &generatedRoutes);*/
+    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // Display function
     std::string toString() const override;

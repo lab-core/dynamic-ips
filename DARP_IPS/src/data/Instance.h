@@ -42,7 +42,6 @@ public:
     PParameters parameters_;
 
     vector<unsigned int> orderToRequest_;
-    std::unordered_map<unsigned int, int> requestToOrder_;
 
     // Constructor and Destructor
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
@@ -80,6 +79,8 @@ public:
 
     //determine an order for requests to use in CPLEX modeling
     void updateRequestOrder();
+    //determine an order for requests in labeling procedure
+    void updateTaskIndexLabeling();
 
     // print solution in csv files
     void saveSolutionRoutes(const std::string& routeResultDir);
