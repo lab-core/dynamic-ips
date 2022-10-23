@@ -23,7 +23,7 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
     {
         std::cout << "While trying to read the file " << strInstanceFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     // attributes to read data file and initialize instance
@@ -85,7 +85,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
         std::cout << "While trying to read the file " << strTripsFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
 
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     string title;
@@ -111,8 +111,8 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(
                         sinkID, SINK, vehicleID));
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime, endTime,
-                                                                            Tools::createSourceID(vehicleID, SOURCE),
-                                                                            Tools::createSourceID(vehicleID, SINK)));
+                                                                            myTools::createSourceID(vehicleID, SOURCE),
+                                                                            myTools::createSourceID(vehicleID, SINK)));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
             }
         }
@@ -132,7 +132,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
         std::cout << "While trying to read the file " << strTripsFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
 
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     string title;
@@ -167,7 +167,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
                 pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
-                std::string dropID = Tools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
                 pInstance->vehicles_[vehicleID]->onboards_.push_back(dropID);
                 pInstance->vehicles_[vehicleID]->numPassengers_+= pInstance->requests_.back()->nbPassengers_;
                 pInstance->instGraph_->nodes_[dropID]->nodeStatus_ = PLANNED;
@@ -193,7 +193,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
         std::cout << "While trying to read the file " << strTripsFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
 
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     string title;
@@ -243,7 +243,7 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
         std::cout << "While trying to read the file " << strDurFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
 
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     durationMat.clear();
@@ -284,7 +284,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         std::cout << "While trying to read the file " << strParamFile << std::endl;
         std::cout << "The input file was not opened properly!" << std::endl;
 
-        throw Tools::myException("The input file was not opened properly!", __LINE__);
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
     string title;

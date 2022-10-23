@@ -53,9 +53,9 @@ Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type)
     initialType_ = type;
 
     if (type == SOURCE)
-        nodeID_ = Tools::createNodeID(0, SOURCE);
+        nodeID_ = myTools::createNodeID(0, SOURCE);
     else if (type == SINK)
-        nodeID_ = Tools::createNodeID(0, SINK);
+        nodeID_ = myTools::createNodeID(0, SINK);
 }
 
 Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationID), type_(type) {
@@ -74,9 +74,9 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
     initialType_ = type;
 
     if (type == SOURCE)
-        nodeID_ = Tools::createSourceID(vehicleID, SOURCE);
+        nodeID_ = myTools::createSourceID(vehicleID, SOURCE);
     else if (type == SINK)
-        nodeID_ = Tools::createSourceID(vehicleID, SINK);
+        nodeID_ = myTools::createSourceID(vehicleID, SINK);
 }
 
 Node::Node(const PNode &oldNode) {
@@ -150,8 +150,8 @@ void Graph::addNewNode(const PNode &node) {
 void Graph::addRequestToGraph(PRequest &newRequest) {
     // create pickup node and drop off nodes
 
-    std::string pickID = Tools::createNodeID(newRequest->getRequestId(), PICKUP);
-    std::string dropID = Tools::createNodeID(newRequest->getRequestId(), DROPOFF);
+    std::string pickID = myTools::createNodeID(newRequest->getRequestId(), PICKUP);
+    std::string dropID = myTools::createNodeID(newRequest->getRequestId(), DROPOFF);
 
     addNewNode(std::make_shared<Node>(pickID, newRequest, PICKUP, dropID));
     addNewNode(std::make_shared<Node>(dropID, newRequest, DROPOFF, pickID));
@@ -162,8 +162,8 @@ void Graph::addRequestToGraph(PRequest &newRequest) {
 /*void Graph::addNewRequestToGraph(PInstance &pInstance) {
 // create pickup node and drop off nodes
 
-    std::string pickID = Tools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
-    std::string dropID = Tools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+    std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+    std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
 
     addNewNode(std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP, dropID));
     addNewNode(std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF, pickID));
@@ -172,14 +172,14 @@ void Graph::addRequestToGraph(PRequest &newRequest) {
 }*/
 
 /*double calcTravelTime(PNode startNode, PNode endNode) {
-    double dist = Tools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
+    double dist = myTools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
                                       endNode->locLatitude_, endNode->locLongitude_);
     return dist * TimePerMile;
 }*/
 
 // function to calculate travel time of the fastest route between two node
 /*float queryTravelTime(PNode startNode, PNode endNode) {
-    double travelTime = Tools::queryTravelTime(startNode->locLatitude_, startNode->locLongitude_,
+    double travelTime = myTools::queryTravelTime(startNode->locLatitude_, startNode->locLongitude_,
                                       endNode->locLatitude_, endNode->locLongitude_);
     return travelTime;
 }*/

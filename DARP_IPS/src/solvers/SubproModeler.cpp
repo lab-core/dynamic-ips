@@ -40,11 +40,11 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             float minWait = (*Vehicle_)->departTime_ +
                             durationMatrix_[pInst->instGraph_->nodes_[(*Vehicle_)->departID_]->locationID_]
-                            [pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
+                            [pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
                             - requestObj->earlyPick_;
             if (minWait <= requestObj->penalty_) {
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]);
-                subGraph_->addNewNode(pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), DROPOFF)]);
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]);
+                subGraph_->addNewNode(pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), DROPOFF)]);
 
                 // adding available requests
                 subRequests_.push_back(requestObj);
@@ -71,11 +71,11 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             float minWait = (*Vehicle_)->departTime_ +
                             durationMatrix_[pInst->instGraph_->nodes_[(*Vehicle_)->departID_]->locationID_]
-                            [pInst->instGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
+                            [pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
                             - requestObj->earlyPick_;
             if (minWait <= requestObj->penalty_) {
-                std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-                std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+                std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+                std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
                 subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->nodes_[pickID]));
                 subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->nodes_[dropID]));
                 subGraph_->nodes_[pickID]->pairNode_ = & subGraph_->nodes_[dropID];

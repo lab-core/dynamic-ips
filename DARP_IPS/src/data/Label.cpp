@@ -254,7 +254,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                     else
                     {
 //                        if (this->completedRequest_ >= otherLabel->completedRequest_)
-                        if (Tools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                        if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
                             /*if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
                                               otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))*/
                             return true;
@@ -294,8 +294,8 @@ bool Label::isEliminated(PGraph &graph) {
     }
 
     /*for (auto & requestObj: openRequests_) {
-        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
         float travelDuration = passedTime_ - openReachTime_[pickID] + (*currentNode_)->deltaTime_ +
                                durationMatrix_[(*currentNode_)->locationID_][graph->nodes_[dropID]->locationID_];
@@ -349,7 +349,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
     }
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
-        Tools::throwException("Label convert problem");
+        myTools::throwException("Label convert problem");
     }
     return newRoute;
 }
@@ -363,7 +363,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     }
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
-        Tools::throwException("Label convert problem");
+        myTools::throwException("Label convert problem");
     }
     return newRoute;
 }

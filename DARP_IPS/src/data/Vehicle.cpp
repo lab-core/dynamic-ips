@@ -16,8 +16,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
                  std::string sinkID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
                  endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)) {
     numPassengers_ = 0;
-//    departID_ = Tools::createNodeID(0, SOURCE);
-//    sinkID_ = Tools::createNodeID(0, SINK);
+//    departID_ = myTools::createNodeID(0, SOURCE);
+//    sinkID_ = myTools::createNodeID(0, SINK);
     dual_=0;
     CPDual_ = 0;
     bestReducedCost_ = 9999;

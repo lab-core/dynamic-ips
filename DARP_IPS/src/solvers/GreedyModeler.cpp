@@ -5,7 +5,7 @@
 #include "GreedyModeler.h"
 
 GreedyModeler::GreedyModeler() {
-    greedyTime_ = new Tools::Timer(); greedyTime_->init();
+    greedyTime_ = new myTools::Timer(); greedyTime_->init();
 }
 
 GreedyModeler::~GreedyModeler() {
@@ -35,8 +35,8 @@ void GreedyModeler::solve(PInstance &PInst) {
             possibleDelay.clear();
             preLabelList.clear();
 
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
             for (auto & GreedyObj : solutionList_){
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
@@ -79,8 +79,8 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
             possibleDelay.clear();
             positionList.clear();
 
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
             for (auto & GreedyObj : solutionList_){
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
@@ -126,8 +126,8 @@ void GreedySolver_noShare(PInstance &PInst) {
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             possibleDelay.clear();
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
             for (auto &vehicleObj: PInst->vehicles_) {
                 float requestPickTime = vehicleObj->currentRoute_->plannedReachTime_.back() +

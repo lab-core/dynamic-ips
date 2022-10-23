@@ -186,7 +186,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
         if (testRoute->routeNodes_.back()->reachTime_ != testRoute->plannedReachTime_.back()){
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
-            Tools::throwException("Route-Validation");
+            myTools::throwException("Route-Validation");
         }
 
         // checking request data (pick up and drop off time)
@@ -195,7 +195,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
                 testRoute->routeNodes_.back()->related_Request_->pickTime_) {
                 std::cout << "Request pickup time is not equal to the pick node reach time at node : ";
                 std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
-                Tools::throwException("Route-Validation");
+                myTools::throwException("Route-Validation");
             }
         }
         else if (testRoute->routeNodes_.back()->initialType_ == DROPOFF) {
@@ -203,7 +203,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
                 testRoute->routeNodes_.back()->related_Request_->dropTime_) {
                 std::cout << "Request drop-off time is not equal to the drop node reach time at node : ";
                 std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
-                Tools::throwException("Route-Validation");
+                myTools::throwException("Route-Validation");
             }
         }
  //       if (mainAlgorithm != GREEDY){
@@ -214,7 +214,7 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
             std::cout << "Capacity constraint violated at node : " << testRoute->routeNodes_.back()->nodeID_ << std::endl;
-            Tools::throwException("Route-Validation");
+            myTools::throwException("Route-Validation");
         }
 
         // checking trip delay constraint
@@ -225,22 +225,22 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
                 testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
-                Tools::throwException("Route-Validation");
+                myTools::throwException("Route-Validation");
             }
         }
     }
 
     if (testRoute->totalDelay_ != totalDelay_){
         std::cout << "Total delay is not the same" << std::endl;
-        Tools::throwException("Route-Validation");
+        myTools::throwException("Route-Validation");
     }
     if (testRoute->plannedPassengers_.back() != plannedPassengers_.back()){
         std::cout << "Final Load is not the same" << std::endl;
-        Tools::throwException("Route-Validation");
+        myTools::throwException("Route-Validation");
     }
     if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
         std::cout << "End time is not the same" << std::endl;
-//        Tools::throwException("Route-Validation");
+//        myTools::throwException("Route-Validation");
     }
 
 

@@ -27,7 +27,7 @@ int main() {
     bool showLog = false;
     float length = 0;
 
-    auto *subProTime = new Tools::Timer(); subProTime->init();
+    auto *subProTime = new myTools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
 //    std::string instanceName = "20160222_17-120m_3";

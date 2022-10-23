@@ -40,7 +40,7 @@ void LabelingSubProblem::sortNodes() {
 
     // add pickup nodes
     for (auto &requestObj : subRequests_) {
-        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         nodesOrder_.push_back(subGraph_->nodes_[pickID]);
 //        requestIDToInt_[requestObj->getRequestId()] = counter;
 //        counter++;
@@ -48,7 +48,7 @@ void LabelingSubProblem::sortNodes() {
     // add drop off points
     for (auto &requestObj : subRequests_) {
         if (requestObj->dual_ >= 0) {
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
             subGraph_->intToNodeID_.push_back(dropID);
         }
     }
@@ -72,7 +72,7 @@ void LabelingSubProblem::sortSuccessors() {
         if (nodeObj.second->type_ != SINK){
             nodeObj.second->successors_.clear();
             for (auto &requestObj : subRequests_) {
-                std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+                std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
                 if (nodeObj.second->nodeID_ != pickID) {
                     subGraph_->nodes_[pickID]->travelTimeFromNode_ = durationMatrix_[nodeObj.second->locationID_][subGraph_->nodes_[pickID]->locationID_];
                     /*if (!(*Vehicle_)->onboards_.empty()) {

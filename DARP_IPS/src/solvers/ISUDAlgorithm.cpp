@@ -14,11 +14,11 @@ ISUDAlgorithm::ISUDAlgorithm() {
     CompPro_ = std::make_shared<ComplementPro>();
     MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
     objValue_ = 0;
-    isudTime_ = new Tools::Timer(); isudTime_->init();
-    RPTime_ = new Tools::Timer(); RPTime_->init();
-    CPTime_ = new Tools::Timer(); CPTime_->init();
+    isudTime_ = new myTools::Timer(); isudTime_->init();
+    RPTime_ = new myTools::Timer(); RPTime_->init();
+    CPTime_ = new myTools::Timer(); CPTime_->init();
 
-    isudMIPTime_ = new Tools::Timer(); isudMIPTime_->init();
+    isudMIPTime_ = new myTools::Timer(); isudMIPTime_->init();
     isudIter_ = 0;
 }
 
@@ -122,7 +122,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
                                     pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
                 static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
                 for (const auto t: nodeTypesInOrder) {
-                    std::string ID = Tools::createNodeID(pInst->requests_[i]->getRequestId(), t);
+                    std::string ID = myTools::createNodeID(pInst->requests_[i]->getRequestId(), t);
                     newRoute->addNode(pInst->instGraph_->nodes_[ID]);
                 }
 //                generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));

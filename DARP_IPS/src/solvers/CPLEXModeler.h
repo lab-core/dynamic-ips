@@ -8,7 +8,7 @@
 #include "data/Route.h"
 
 //-----------------------------------------------------------------------------
-//  Tools to create a cplex program
+//  myTools to create a cplex program
 //-----------------------------------------------------------------------------
 
 typedef IloArray<IloNumVarArray> IloNumVar2D;		// 2-dim array of variables

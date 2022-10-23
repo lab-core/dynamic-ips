@@ -37,10 +37,10 @@ public:
 
     int isudIter_;
     double objValue_;
-    Tools::Timer *isudTime_;
-    Tools::Timer *RPTime_;
-    Tools::Timer *CPTime_;
-    Tools::Timer *isudMIPTime_;
+    myTools::Timer *isudTime_;
+    myTools::Timer *RPTime_;
+    myTools::Timer *CPTime_;
+    myTools::Timer *isudMIPTime_;
 
     // Constructor and Destructor
     ISUDAlgorithm();

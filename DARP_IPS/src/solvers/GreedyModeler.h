@@ -13,7 +13,7 @@
 class GreedyModeler {
 public:
     std::vector<PLinkedGreedyLabels> solutionList_;
-    Tools::Timer *greedyTime_;
+    myTools::Timer *greedyTime_;
 
     //Constructor
     GreedyModeler();

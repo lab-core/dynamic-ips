@@ -467,13 +467,13 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
         if (newRoute->plannedReachTime_.back() != currentLabel->reachTime_) {
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << newRoute->routeNodes_.back()->nodeID_ << std::endl;
-            Tools::throwException("Route-Validation");
+            myTools::throwException("Route-Validation");
         }
         if (currentLabel->parent_->departTime_ != currentLabel->parent_->reachTime_) {
             if (currentLabel->parent_->departTime_ != currentLabel->currentNode_->requestTime_){
                 std::cout << "Depart time violated at node : ";
                 std::cout << currentLabel->parent_->currentNode_->nodeID_ << std::endl;
-                Tools::throwException("Route-Validation");
+                myTools::throwException("Route-Validation");
             }
         }
         newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;

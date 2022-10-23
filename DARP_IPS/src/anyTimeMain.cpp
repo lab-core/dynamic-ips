@@ -10,6 +10,7 @@
 #include "data/Instance.h"
 #include "solvers/MIPSolver.h"
 #include "solvers/GreedyModeler.h"
+#include "utilities/Tools.h"
 
 
 using namespace std::chrono;
@@ -31,8 +32,8 @@ int main() {
     float lastLengthOut;
     float fixedLength = 10;
 
-    auto *subProTime = new Tools::Timer(); subProTime->init();
-    auto *simulationTime = new Tools::Timer(); simulationTime->init();
+    auto *subProTime = new myTools::Timer(); subProTime->init();
+    auto *simulationTime = new myTools::Timer(); simulationTime->init();
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(7);
 
     std::string dataDir = "datasets/";

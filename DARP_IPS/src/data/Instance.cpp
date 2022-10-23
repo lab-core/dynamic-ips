@@ -113,7 +113,7 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
-                Tools::throwException("Trip delay Validation");
+                myTools::throwException("Trip delay Validation");
             }
 //
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
@@ -183,8 +183,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     for (auto & requestObj: penaltyRequests) {
         addRequest(requestObj);
 
-        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
     }
@@ -194,8 +194,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + elapsedTime ) {
             nbNewRequests_++;
             addRequest(mainInst->requests_[i]);
-            std::string pickID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
         }
@@ -223,8 +223,8 @@ void Instance::buildStaticData(const PInstance &mainInst) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             nbNewRequests_++;
             addRequest(requestObj);
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
         }

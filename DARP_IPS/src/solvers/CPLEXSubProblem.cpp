@@ -40,8 +40,8 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
     // define objective
     IloExpr objExpr(env_);
     for (auto & requestObj : subRequests_) {
-//        int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)];
-        int nodeIndex = subGraph_->nodes_[Tools::createNodeID(requestObj->getRequestId(), PICKUP)]->nodeIndex_;
+//        int nodeIndex = subGraph_->nodeIDToInt_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)];
+        int nodeIndex = subGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]->nodeIndex_;
         objExpr += (U[nodeIndex] - requestObj->earlyPick_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
             objExpr -= (X[nodeIndex][j] * requestObj->dual_);
@@ -58,7 +58,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 
     // add this constraint to be sure that each request is served at most once
     for (auto & requestObj : subRequests_) {
-        std::string nodeID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string nodeID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
  //       int nodeIndex = subGraph_->nodeIDToInt_[nodeID];
         int nodeIndex = subGraph_->nodes_[nodeID]->nodeIndex_;
 
@@ -106,11 +106,11 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
     SubProModel_.add(U[sinkIndex] <= (*Vehicle_)->endTime_);
 
     for (auto & requestObj : subRequests_) {
-        std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
   //      int pickIndex = subGraph_->nodeIDToInt_[pickID];
         int pickIndex = subGraph_->nodes_[pickID]->nodeIndex_;
 
-        std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 //        int dropIndex = subGraph_->nodeIDToInt_[dropID];
         int dropIndex = subGraph_->nodes_[dropID]->nodeIndex_;
 
@@ -296,14 +296,14 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                 double newObj = 0;
 
                 for (int i = 0; i < subRequests_.size(); ++i) {
-                    int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
+                    int nodeIndex = subGraph_->nodeIDToInt_[myTools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
                     newObj += (uVal[nodeIndex] - subRequests_[i]->earlyPick_);
                     std::cout << "Request U: " << subRequests_[i]->getRequestId() << " :: ";
                     std::cout << uVal[nodeIndex] << "--" << subRequests_[i]->earlyPick_ << std::endl;
                 }
                 std::cout << "new object delay: " << newObj << std::endl;
                 for (int i = 0; i < subRequests_.size(); ++i) {
-                    int nodeIndex = subGraph_->nodeIDToInt_[Tools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
+                    int nodeIndex = subGraph_->nodeIDToInt_[myTools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
                     for (int j = 0; j < subGraph_->nbNodes_; ++j) {
                         newObj -= (xVal[nodeIndex][j] * subRequests_[i]->dual_);
                         if (xVal[nodeIndex][j] > 0) {

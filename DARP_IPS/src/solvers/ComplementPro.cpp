@@ -121,7 +121,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
         std::cout << "Failed to optimize the problem" << std::endl;
-//        throw Tools::myException("the Complementary model is infeasible!!!", __LINE__);
+//        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
     }
 
     else {
@@ -249,7 +249,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
         std::cout << "Failed to optimize the problem" << std::endl;
-//        throw Tools::myException("the Complementary model is infeasible!!!", __LINE__);
+//        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
     }
 
     else {

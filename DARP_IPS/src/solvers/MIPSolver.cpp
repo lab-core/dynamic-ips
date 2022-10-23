@@ -33,7 +33,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     for (int i = 0; i < PInst->nbRequests_; ++i) {
         objExpr += Z[i] * PInst->requests_[i]->penalty_;
         for (int v = 0; v < PInst->nbVehicles_; ++v) {
-            int nodeIndex = PInst->instGraph_->nodes_[Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP)]->nodeIndex_;
+            int nodeIndex = PInst->instGraph_->nodes_[myTools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP)]->nodeIndex_;
             objExpr += (U[v][nodeIndex] - PInst->requests_[i]->earlyPick_);
         }
     }
@@ -46,7 +46,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
     // constraints 2a -------------------
     for (int i = 0; i < PInst->nbRequests_; ++i) {
-        std::string nodeID = Tools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
+        std::string nodeID = myTools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
         int nodeIndex = PInst->instGraph_->nodes_[nodeID]->nodeIndex_;
 
         IloExpr expr2(env);
@@ -119,10 +119,10 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
         MIPModel.add(U[v][sinkIndex] <= PInst->vehicles_[v]->endTime_);
 
         for (auto & requestObj: PInst->requests_) {
-            std::string pickID = Tools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
             int pickIndex = PInst->instGraph_->nodes_[pickID]->nodeIndex_;
 
-            std::string dropID = Tools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
             int dropIndex = PInst->instGraph_->nodes_[dropID]->nodeIndex_;
 
             // constraints 6a -------------------
