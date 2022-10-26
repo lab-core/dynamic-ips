@@ -94,7 +94,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     float departTime = -1, endTime = -1;
 
     // add this only when I want to use less vehicles
-    pInstance->nbVehicles_ = 45;
+//    pInstance->nbVehicles_ = 45;
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
@@ -461,6 +461,36 @@ bool ReadWrite::strEndWith(const std::string& sentence, const std::string& word)
     else {
         string endOfSentence = sentence.substr(lenSentence-lenWord, lenWord);
         return (!strcmp(word.c_str(), endOfSentence.c_str()));
+    }
+}
+
+void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::string> &fileNames, int nbInstances) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strInstanceNameFile << " >>" << std::endl;
+    file.open(strInstanceNameFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strInstanceNameFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+    std::string instName = "";
+
+    // add this only when I want to use less vehicles
+//    pInstance->nbVehicles_ = 45;
+    while (file.good()) {
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
+        if (strEndWith(title, "INSTANCE")) {
+            for (int i = 0; i < nbInstances; ++i) {
+                file >> instName;
+                fileNames.push_back(instName);
+            }
+        }
     }
 }
 

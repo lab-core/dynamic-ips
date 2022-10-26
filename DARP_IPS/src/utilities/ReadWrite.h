@@ -51,6 +51,9 @@ public:
 
     // check if a string (sentence) ends with a given substring (word)
     static bool strEndWith(const std::string& sentence, const std::string& word);
+
+    // Read the parameters datafile
+    static void readInstNames(const std::string& strInstanceNameFile, std::vector<std::string> &fileNames, int nbInstances);
 };
 
 
