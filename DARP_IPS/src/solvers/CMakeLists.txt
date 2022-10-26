@@ -10,6 +10,7 @@ set(SOURCE_FILES
         LabelingSubProblem.cpp
         SubproModeler.cpp
         ZoomReducedProblem.cpp
-        GreedyModeler.cpp)
+        GreedyModeler.cpp
+        solver.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
