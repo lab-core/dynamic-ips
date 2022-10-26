@@ -11,6 +11,8 @@ ComplementPro::ComplementPro() : MasterModeler() {
     zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     status_ = NOT_SOLVED;
     IncRoute_.clear();
+    fractionalZ_.clear();
+    fractionalRoutes_.clear();
 }
 
 // this function initialized the model and define empty set of constraints
@@ -237,6 +239,8 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                     }
                 }
             }
+            routeResult.clear();
+            zResult.clear();
         } else
             status_ = POSITIVE_VALUE;
     }
@@ -390,6 +394,8 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     }
                 }
             }
+            routeResult.clear();
+            zResult.clear();
         } else
             status_ = POSITIVE_VALUE;
     }

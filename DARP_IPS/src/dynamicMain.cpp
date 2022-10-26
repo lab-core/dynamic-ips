@@ -36,8 +36,8 @@ int main() {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(8);
 
     std::string dataDir = "datasets/";
-//    std::string instanceName = "20160222_17-120m_3";
-    std::string instanceName = "20160613_17-120m_2";
+    std::string instanceName = "20160222_17-120m_3";
+//    std::string instanceName = "20160613_17-120m_3";
 
 
     // build the path of input files
@@ -117,9 +117,7 @@ int main() {
                     std::cout << EpochInst->vehicles_[v]->currentRoute_->toString();
                 break;
             case GREEDY:
-                GreedyModel->initialization(EpochInst);
-                GreedyModel->solveInsertion(EpochInst);
-                GreedyModel->solutionToRoute(EpochInst);
+                GreedyModel->GreedySolver(EpochInst);
                 std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
                 break;
             default: // CG_CPLEX and CG_ISUD (Column generation approaches)
@@ -127,11 +125,6 @@ int main() {
                 // save initial solution
                 EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudObj->isudIter_);
                 isudObj->isudIter_ ++;
-
-                /*std::cout << "# VEHICLE ROUTES AFTER INITIALIZATION: " << std::endl;
-                for (auto & vehicleObj : EpochInst->vehicles_) {
-                    std::cout << vehicleObj->currentRoute_->toString();
-                }*/
                 if (!EpochInst->parameters_->isSuccessorsLimited_ && !EpochInst->parameters_->isTruncated_)
                     disabledHeuristics = true;
                 else

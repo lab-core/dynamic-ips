@@ -34,6 +34,8 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
+//    if (labelID_ == 2046)
+//        std::cout << "stop";
     status_ = ACTIVE;
     load_ = label.load_;
     passedTime_ = label.passedTime_;
@@ -77,7 +79,9 @@ void Label::copyLabel(const Label &label) {
     isDropped_ = false;
     nbUsed_ = 1;
 }
-Label::~Label() = default;
+Label::~Label() {
+    delete name_;
+}
 
 unsigned int Label::getLabelId() const {
     return labelID_;
@@ -395,6 +399,7 @@ std::string Label::toString() const {
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
+
 
 
 

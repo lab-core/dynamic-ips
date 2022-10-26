@@ -34,24 +34,15 @@ void Vehicle::setDepartTime(float departTime) {
 
 // this function create an empty route and set it as the CurrentRoute_, used in initialization
 void Vehicle::setEmptyRoute(PInstance &pInst) {
-    PRoute newRoute = std::make_shared<Route>(vehicleID_);
-    newRoute->addSource(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);
+ //   emptyRoute_.reset();
+    emptyRoute_ = std::make_shared<Route>(vehicleID_);
+    emptyRoute_->addSource(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);
 
     if (!onboards_.empty()) {
- //       if (currentRoute_ == nullptr) {
-            for (auto &nodeID: onboards_) {
-                newRoute->addNode(pInst->instGraph_->nodes_[nodeID]);
-            }
- //       }
-        /*else {
-            for (auto & node: currentRoute_->routeNodes_){
-                if (node->type_ == DROPOFF && node->related_Request_->requestStatus_ == ON_BOARD){
-                    newRoute->addNode(node);
-                }
-            }
-        }*/
+        for (auto &nodeID: onboards_) {
+            emptyRoute_->addNode(pInst->instGraph_->nodes_[nodeID]);
+        }
     }
-    emptyRoute_ = newRoute;
 }
 
 void Vehicle::setCurrentRoute(PRoute &currentRoute) {

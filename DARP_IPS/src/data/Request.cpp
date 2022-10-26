@@ -31,7 +31,9 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     taskIndex_ = requestID_;
 }
 
-Request::~Request() = default;
+Request::~Request() {
+    delete name_;
+}
 
 // Getters and Setters
 // This function update penalties based on fixed time epochs for rolling horizon

@@ -161,7 +161,6 @@ void LabelingSubProblem::initialization() {
     activeNodes_.clear();
     activeNodes_.push_back(initialLabel->currentNode_);
     nbActivated_ ++;
-    initialLabel.reset();
 }
 
 void LabelingSubProblem::labelExtend2(PLabel &parentLabel, PNode &outNode) {
@@ -250,7 +249,7 @@ void LabelingSubProblem::labelDrop(PLabel &parentLabel, vector<PNode> &activeNod
             selectedLabel->currentNode_->nbActiveLabels_--;
             nbActivated_--;
         }*/
-        selectedLabel.reset();
+ //       selectedLabel.reset();
     }
 }
 
@@ -368,7 +367,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
                                             activeNodes_.push_back(currentNode);
                                         }
                                     }
-                                    selectedLabel.reset();
+   //                                 selectedLabel.reset();
                                 } else {
                                     activeNodes_[j]->activeLabels_[l]->status_ = DOMINATED;
                                     activeNodes_[j]->nbActiveLabels_--;

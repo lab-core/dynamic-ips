@@ -35,9 +35,9 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
 }
-Instance::~Instance() {
+/*Instance::~Instance() {
     instGraph_.reset();
-}
+}*/
 
 // Display function
 std::string Instance::toString() {

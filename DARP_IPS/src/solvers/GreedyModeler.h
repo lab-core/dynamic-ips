@@ -23,6 +23,7 @@ public:
     void solve(PInstance &PInst);
     void solveInsertion(PInstance &PInst);
     void solutionToRoute(PInstance &PInst);
+    void GreedySolver(PInstance &PInst);
 };
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing

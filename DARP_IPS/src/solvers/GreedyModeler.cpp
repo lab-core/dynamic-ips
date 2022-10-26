@@ -118,6 +118,12 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
     solutionList_.clear();
 }
 
+void GreedyModeler::GreedySolver(PInstance &PInst) {
+    initialization(PInst);
+    solveInsertion(PInst);
+    solutionToRoute(PInst);
+}
+
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing
 // any pick up is followed by the drop-off

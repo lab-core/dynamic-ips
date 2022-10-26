@@ -47,7 +47,7 @@ public:
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
              std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph);
     Instance(const Instance &mainInst);
-    virtual ~Instance();
+//    virtual ~Instance();
 
 
     // Display function

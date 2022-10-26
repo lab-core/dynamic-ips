@@ -22,7 +22,9 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
 }
-Route::~Route() = default;
+Route::~Route(){
+    delete name_;
+};
 
 // Getters and Setters
 unsigned int Route::getRouteId() const {return routeID_;}
