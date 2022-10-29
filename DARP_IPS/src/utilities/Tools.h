@@ -11,7 +11,7 @@
 #include <list>
 #include <functional>
 #include <iostream>
-#include "utilities/MyTools.h"
+#include "MyTools.h"
 
 namespace Tools{
     // Create a pool of threads that can be used to run functions in parallel.
@@ -228,8 +228,8 @@ namespace Tools{
 
     public:
         static int getNGlobalThreadsAvailable();
-
         static int getMaxGlobalThreads();
+        int getNThreadsAvailable();
 
         // if maximum number of threads decreases,
         // wait for some to be released if wait is true.

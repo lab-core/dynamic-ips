@@ -11,6 +11,7 @@ using std::thread;
 //************************************************************************
 
 namespace Tools {
+    int ThreadsPool::maxGlobalThreads_ = 8;
     PThreadsPool::~PThreadsPool() {
         if (get())
             get()->removePtr();
@@ -204,7 +205,6 @@ namespace Tools {
 //                     ThreadsPool implementation
 //************************************************************************
 
-    int ThreadsPool::maxGlobalThreads_ = 8;
     int ThreadsPool::nGlobalThreadsAvailable_ = ThreadsPool::maxGlobalThreads_;
     bool ThreadsPool::settingMaxGlobalThreads_ = false;
     std::mutex ThreadsPool::mThreadMutex_;
@@ -216,6 +216,10 @@ namespace Tools {
 
     int ThreadsPool::getMaxGlobalThreads() {
         return maxGlobalThreads_;
+    }
+
+    int ThreadsPool::getNThreadsAvailable(){
+        return nThreadsAvailable_;
     }
 
     int ThreadsPool::setMaxGlobalThreadsToMax(bool wait) {
