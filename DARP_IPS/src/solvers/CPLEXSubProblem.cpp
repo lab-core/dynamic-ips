@@ -255,13 +255,11 @@ void CPLEXSubProblem::SolveCPLEX() {
 // function to convert solution to routes and save them in vehicle object
 void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
     try {
-
-//        availableRoutes.clear();
         for (int s = 0; s < SubProbCplex_.getSolnPoolNsolns(); ++s) {
-//            bool isRepeated = false;
 
             // extracting the value of variables in each solution
             if (SubProbCplex_.getObjValue(s) < 0) {
+                nbNegativeColumns_++;
 //                isRepeated = 0;
                 IloNumArray uVal(env_);
                 IloNumArray wVal(env_);
@@ -316,17 +314,12 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                 newObj -= (*Vehicle_)->dual_;
                 std::cout << "new object final: " << newObj << std::endl;*/
 
-
                 // creating the route
                 int sourceIndex = subGraph_->nodes_[(*Vehicle_)->departID_]->nodeIndex_;
                 int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
-//                (*Vehicle_)->generatedRoutes_.emplace_back(std::make_shared<Route>((*Vehicle_)->vehicleID_));
                 PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
 
                 // adding the source node of the route
-                /*(*Vehicle_)->generatedRoutes_.back()->reducedCost_ = SubProbCplex_.getObjValue(s);
-                (*Vehicle_)->generatedRoutes_.back()->addNode(subGraph_->nodes_[(*Vehicle_)->departID_],
-                                                              (*Vehicle_)->departTime_, (*Vehicle_)->nbPassengers_);*/
                 newRoute->reducedCost_ = SubProbCplex_.getObjValue(s);
                 newRoute->addSource(subGraph_->nodes_[(*Vehicle_)->departID_],
                                                               (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);
@@ -336,20 +329,14 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
                         if (xVal[currentNodeIndex][i] > 0.9) {
                             if (i != sinkIndex) {
-     //                           newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]], uVal[i], wVal[i]);
                                 newRoute->addNode(subGraph_->nodes_[subGraph_->intToNodeID_[i]]);
-                                /*if (s == 0)
-                                    newRoute->routeNodes_.back()->related_Request_->selectStatus_ = SELECTED;*/
                             }
-                            /*if ((s == 0)&&(newRoute->routeNodes_.back()->nodeID_ != (*Vehicle_)->sinkID_))
-                                (*newRoute->routeNodes_.back()->related_Request_)->selectStatus_ = SELECTED;*/
                             currentNodeIndex = i;
                             break;
                         }
                     }
                 }
                 availableRoutes.push_back(newRoute);
- //               generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
                 /*for (int r = 0; r < availableRoutes.size(); ++r) {
                     if (newRoute == availableRoutes[r]) {
                         isRepeated = true;

@@ -29,7 +29,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 
         std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
-//        env_.out() << Model_;
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.solve();
 
         // printing solution status

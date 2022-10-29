@@ -122,7 +122,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     try {
 
         Cplex_ = IloCplex(Model_);
-//        env_.out() << Model_;
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.solve();
 
         // getting dual values
