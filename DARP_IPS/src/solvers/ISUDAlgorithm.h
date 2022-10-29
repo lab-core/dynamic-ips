@@ -84,6 +84,8 @@ public:
 
     // Display function
     std::string toString() const;
+    std::string toStringTimersTotal() const;
+    std::string toStringTimersAvg(int epoch) const;
 
     // function to evaluate available routes and find proper ones to be added to the models
     void updateRoutesToAdd(int compDegree, PInstance &pInst);

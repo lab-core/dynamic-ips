@@ -218,4 +218,28 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
     }
 }
 
+// this function is called at the end of algorithm to set the final stos of the solution based on final epoch
+void Vehicle::finalizeSolutionRoutes(PInstance & pInst) {
+    if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
+        for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+            currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
+            currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
+            currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedReachTime_[i];
+            solutionRoute_->addNode(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i]);
+
+            if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
+                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
+            }
+            else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF) {
+                currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
+            }
+        }
+    }
+    else
+        solutionRoute_->addNode(pInst->instGraph_->nodes_[sinkID_]);
+}
+
 

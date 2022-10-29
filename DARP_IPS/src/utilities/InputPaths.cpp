@@ -29,8 +29,8 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instanceNa
     input_durationData_ = datadir + "edge_time_matrix.txt";
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = datadir + "Parameters.txt";
-//    input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFile_ = datadir + "/manhattan-vehicles/vehicles_2000_7.txt";
+    input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
+//    input_vehicleFile_ = datadir + "/manhattan-vehicles/vehicles_2000_7.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
@@ -104,7 +104,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     output_MIPStart_ = outputDir_ + "MIPStart_" + instanceName_;
     output_paramFile_ = outputDir_ + "Parameters.txt";
     output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
-    output_epochRunTime_ = outputDir_ + "EpochRuntime_" + instanceName_ + ".csv";
+    output_epochRunTime_ = outputDir_ + "epochRuntime_" + instanceName_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;

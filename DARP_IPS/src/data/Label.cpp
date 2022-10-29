@@ -125,6 +125,7 @@ void Label:: extend(PNode &outNode) {
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
         passedTime_ = reachTime;
 
+
     }
     else if (outNode->type_ == PICKUP){
  //       extendCheck_.insert(outNode->nodeID_);
@@ -139,6 +140,7 @@ void Label:: extend(PNode &outNode) {
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
+
 
         if (reachTime < outNode->requestTime_){
             passedTime_ = outNode->requestTime_;
@@ -226,49 +228,23 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
 }
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
-    /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_){
-        if (otherLabel->pathNodes_.size() == 2)
-            return false;
-    }*/
-    /*if (this->currentNode_->nodeID_ == (*vehicle_)->sinkID_) {
-//        if (this->completedRequests_ == otherLabel->completedRequests_) {
-        if (this->completedRequest_ == otherLabel->completedRequest_) {
-            if (this->reducedCost_ == otherLabel->reducedCost_) {
-                if (this->passedTime_ >= otherLabel->passedTime_)
-                    return true;
-                else
-                    return false;
-            }
-            else if (this->reducedCost_ > otherLabel->reducedCost_)
-                return true;
-        }
-        else
-            return false;
-    }*/
-
-//    else {
-        if (this->passedTime_ >= otherLabel->passedTime_) {
-            if (this->reducedCost_ >= otherLabel->reducedCost_) {
-                if (this->openRequests_ == otherLabel->openRequests_) {
-                    if (solverOption->isDominanceReleased_) {
+    if (this->passedTime_ >= otherLabel->passedTime_) {
+        if (this->reducedCost_ >= otherLabel->reducedCost_) {
+            if (this->openRequests_ == otherLabel->openRequests_) {
+                if (solverOption->isDominanceReleased_) {
+                    if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
                         return true;
-                        /*if (this->completedRequests_.size() >= otherLabel->completedRequests_.size())
-                            return true;*/
-                    }
-                    else
-                    {
-//                        if (this->completedRequest_ >= otherLabel->completedRequest_)
-                        if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                            /*if (std::includes(this->completedRequests_.begin(), this->completedRequests_.end(),
-                                              otherLabel->completedRequests_.begin(), otherLabel->completedRequests_.end()))*/
-                            return true;
-                        }
-                    }
-
                 }
+                else
+                {
+                    if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                        return true;
+                    }
+                }
+
             }
         }
- //   }
+    }
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost

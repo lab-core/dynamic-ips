@@ -19,7 +19,7 @@ int main() {
 
     // definition of the solution Parameters
     double previousObj;
-    SubProSolveStart subStartStatus;
+    SubProSolveMode subStartStatus;
     int epoch = 0;
     float saveTime = 5400;
     bool middleSave = false;
@@ -30,7 +30,7 @@ int main() {
     auto *subProTime = new myTools::Timer(); subProTime->init();
 
     std::string dataDir = "datasets/";
-    std::string instanceName = "20150706_07-180m";
+    std::string instanceName = "20160222_17-120m_3";
 
     // build the path of input files
     // create output files for epoch results
@@ -51,7 +51,7 @@ int main() {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
         mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
-    subStartStatus = mainInst->parameters_->SubproSolveStartState_;
+    subStartStatus = mainInst->parameters_->SubproSolveMode_;
 
     // initialize vehicle routes at source
     for (auto & vehicleObj: mainInst->vehicles_) {
@@ -65,7 +65,8 @@ int main() {
     // creating a solvable Instance
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst);
-    StaticInst->updatePenaltiesEpoch(0);
+    PSolverOption subProOptions = std::make_shared<solverOption>(StaticInst->parameters_);
+    StaticInst->updatePenalties(0);
 
     switch(StaticInst->parameters_->mainAlgorithm_) {
         case MIP_CPLEX :
@@ -75,9 +76,7 @@ int main() {
                 std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();
             break;
         case GREEDY:
-            GreedyModel->initialization(StaticInst);
-            GreedyModel->solveInsertion(StaticInst);
-            GreedyModel->solutionToRoute(StaticInst);
+            GreedyModel->GreedySolver(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
             for (auto & vehicleObj : StaticInst->vehicles_)
                 std::cout << vehicleObj->currentRoute_->toString();
@@ -149,8 +148,7 @@ int main() {
                         //*************************************************************//
                     case LABEL_SETTING:
                         for (auto &vehicleObj: StaticInst->vehicles_) {
-                            PSolverOption subProOptions = std::make_shared<solverOption>(maxReachTime, maxPick,
-                                                                                         StaticInst->parameters_);
+                            subProOptions->updateOptions(maxReachTime, maxPick);
                             if (isudObj->isudIter_> 1)
                                 subProOptions->disableHeuristics();
                             PLabelingSubPro subProblem = std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions);
@@ -246,7 +244,7 @@ int main() {
 
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch << " EPOCHS " << std::endl;
-    std::cout << "                               STATIC MODE " << std::endl;
+    std::cout << "                              " <<  solutionModeName[mainInst->parameters_->solutionMode_] << std::endl;
     std::cout << "*************************************************************************************" << std::endl;
     std::cout << std::endl << std::endl;
     std::cout << std::left << std::fixed << std::setprecision(2);
@@ -277,12 +275,11 @@ int main() {
 
     std::cout << std::left << std::fixed << std::setprecision(2);
     std::cout << "#" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudObj->isudTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON RP IMPROVEMENT" << " = " << isudObj->RPTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON CP IMPROVEMENT" << " = " << isudObj->CPTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON ZOOM IMPROVEMENT" << " = " << isudObj->isudMIPTime_->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# TOTAL TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << isudObj->toStringTimersTotal();
+    std::cout << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
+    std::cout << isudObj->toStringTimersAvg(epoch);
+    std::cout << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProTime->dSinceInit().count()/epoch << " (s)" << std::endl;
 
     // save vehicle solutions in csv file
     mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());

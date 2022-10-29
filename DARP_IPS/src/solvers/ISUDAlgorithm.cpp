@@ -97,9 +97,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
         routeSolution_.clear();
         zSolution_.clear();
         PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
-        GreedyModel->initialization(pInst);
-        GreedyModel->solveInsertion(pInst);
-        GreedyModel->solutionToRoute(pInst);
+        GreedyModel->GreedySolver(pInst);
         for (auto &vehicleObj: pInst->vehicles_) {
             vehicleObj->currentRoute_->resetRoute();
             /*generatedRoutes_.insert(std::pair<std::string, PRoute>((vehicleObj->currentRoute_)->name_,
@@ -925,16 +923,47 @@ std::string ISUDAlgorithm::toString() const {
 
     std::stringstream repStr;
     repStr << "#" << std::endl;
-    repStr << "# Total waiting time plus the penalty    = " << objValue_ << std::endl;
-    repStr << "# Number of requests that are not served = " << zSolution_.size() << std::endl;
+    repStr << std::left << std::fixed << std::setprecision(2);
+    repStr << "# TOTAL OBJECTIVE (WAITING TIMES + PENALTIES) = " << objValue_ << std::endl;
+    repStr << "# NUMBER OF UNSERVED REQUESTS                 = " << zSolution_.size() << std::endl;
     repStr << "#" << std::endl;
-    repStr << "# Time spent on ISUD improvement         = " << isudTime_->dSinceInit().count() << " (seconds)" << std::endl;
-    repStr << "# Time spent on RP improvement         = " << RPTime_->dSinceInit().count() << " (seconds)" << std::endl;
-    repStr << "# Time spent on CP improvement         = " << CPTime_->dSinceInit().count() << " (seconds)" << std::endl;
-    repStr << "# Time spent on ZOOM improvement         = " << isudMIPTime_->dSinceInit().count() << " (seconds)" << std::endl;
+
+    repStr << "# TIME SPENT ON ISUD IMPROVEMENT              = " << isudTime_->dSinceStart().count() << " (s)" << std::endl;
+    repStr << "# TIME SPENT ON RP IMPROVEMENT                = " << RPTime_->dSinceStart().count() << " (s)" << std::endl;
+    repStr << "# TIME SPENT ON CP IMPROVEMENT                = " << CPTime_->dSinceStart().count() << " (s)" << std::endl;
+    repStr << "# TIME SPENT ON MIP ISUD                      = " << isudMIPTime_->dSinceStart().count() << " (s)" << std::endl;
+
     /*for (auto & routeObj : routeSolution_) {
         repStr << routeObj->toString();
     }*/
+    return repStr.str();
+}
+
+std::string ISUDAlgorithm::toStringTimersTotal() const {
+    std::stringstream repStr;
+    repStr << std::left << std::fixed << std::setprecision(2);
+    repStr << "#" << std::endl;
+    repStr << "# -------------------   TOTAL ISUD RUN TIMES   -------------------" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MIP ISUD" << " = " << isudMIPTime_->dSinceInit().count() << " (s)" << std::endl;
+
+    return repStr.str();
+}
+
+std::string ISUDAlgorithm::toStringTimersAvg(int epoch) const {
+    std::stringstream repStr;
+    repStr << std::left << std::fixed << std::setprecision(2);
+    repStr << "#" << std::endl;
+    repStr << "# -------------   AVERAGE ISUD RUN TIMES PER EPOCH   -------------" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ISUD IMPROVEMENT" << " = " << isudTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MIP ISUD" << " = " << isudMIPTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
+
     return repStr.str();
 }
 
@@ -1096,6 +1125,8 @@ void ISUDAlgorithm::save_IncDegree_RDCost(const string &incDegree_RDCostDir, int
     }
     myFile.close();
 }
+
+
 
 
 

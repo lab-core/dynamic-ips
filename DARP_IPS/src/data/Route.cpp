@@ -48,6 +48,7 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
     }
 }
 void Route::addNode(PNode &node) {
+
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     float reachTime = plannedReachTime_.back() + routeNodes_.back()->deltaTime_ +
@@ -208,10 +209,11 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
                 myTools::throwException("Route-Validation");
             }
         }
- //       if (mainAlgorithm != GREEDY){
-            if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
+        if (mainAlgorithm != GREEDY){
+//            if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
+            if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back()))
                 testRoute->plannedReachTime_.back() = routeNodes_[i]->departTime_;
- //       }
+        }
 
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
@@ -242,14 +244,14 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
     }
     if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
         std::cout << "End time is not the same" << std::endl;
-//        myTools::throwException("Route-Validation");
+        myTools::throwException("Route-Validation");
     }
 
 
-    std::cout << "####################### TEST Route ##########################" << std::endl;
+    /*std::cout << "####################### TEST Route ##########################" << std::endl;
     std::cout << testRoute->toString() << std::endl;
     std::cout << "##################### SOLUTION Route ########################" << std::endl;
-    std::cout << toString() << std::endl;
+    std::cout << toString() << std::endl;*/
 }
 // This function is to reset the status of the nodes in the route
 void Route::resetRoute() {

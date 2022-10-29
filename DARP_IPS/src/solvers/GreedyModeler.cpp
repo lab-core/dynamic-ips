@@ -10,7 +10,6 @@ GreedyModeler::GreedyModeler() {
 
 GreedyModeler::~GreedyModeler() {
     delete greedyTime_;
-
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {

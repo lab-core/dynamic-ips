@@ -53,6 +53,9 @@ public:
 
     void updateState(int epoch, int &epochLength);
     void updateStateTime(float elapsedTime, float &epochLength);
+
+    // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
+    void finalizeSolutionRoutes(PInstance & pInst);
 };
 
 

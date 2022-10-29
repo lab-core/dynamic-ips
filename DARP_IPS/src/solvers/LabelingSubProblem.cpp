@@ -107,8 +107,7 @@ void LabelingSubProblem::initialization() {
 
     activeNodes_.reserve(subGraph_->nbNodes_);
     nbActivated_ = 0;
-    /*for (auto labelObj: dominatedLabels_)
-        labelObj.reset();*/
+
     dominatedLabels_.clear();
     // clear active lists
     for (auto &nodeID: subGraph_->intToNodeID_) {
@@ -127,18 +126,13 @@ void LabelingSubProblem::initialization() {
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->nodes_[(*Vehicle_)->departID_]);
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
-
-//    initialLabel->requestIDToInt_ = requestIDToInt_;
     // update travel resource for the initial label based on the onboards
     for (auto &nodeID: (*Vehicle_)->onboards_) {
- //       initialLabel->openNodes_.insert(subGraph_->nodes_[nodeID]);
         initialLabel->openNode_.push_back(subGraph_->nodes_[nodeID]);
- //       initialLabel->completedRequests_[requestIDToInt_[subGraph_->nodes_[nodeID]->related_Request_->getRequestId()]] = 1;
         initialLabel->completedRequests_[subGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_] = 1;
         float remainedTime = subGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
                              (*Vehicle_)->departTime_ + subGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
                              subGraph_->nodes_[nodeID]->related_Request_->deltaTime_;
- //       initialLabel->travelResource_.insert(std::pair<std::string, float>(nodeID, remainedTime));
         initialLabel->travelResources_[subGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_] = remainedTime;
     }
     for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){

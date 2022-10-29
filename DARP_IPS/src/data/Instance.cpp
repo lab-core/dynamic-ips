@@ -35,6 +35,20 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
 }
+
+void Instance::resetInstance() {
+    nbRequests_ = 0;
+    nbNewRequests_ = 0;
+    nbWaiting_ = 0;
+    instGraph_ = std::make_shared<Graph>();
+
+    requests_.clear();
+    nameToRequest_.clear();
+    orderToRequest_.clear();
+    instGraph_->nodes_.clear();
+    instGraph_->intToNodeID_.clear();
+}
+
 /*Instance::~Instance() {
     instGraph_.reset();
 }*/
@@ -137,17 +151,22 @@ std::string Instance::solutionToString() {
         idleTime += vehicleObj->idleTime_;
     }
     repStr << std::left << std::fixed << std::setprecision(2);
-    repStr << std::setw(sentenceSize) << "# Total waiting time before pickup" << " = " << totalWaiting << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# Total trip delay" << " = " << totalTripDelay << " (s)" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(sentenceSize) << "# FINAL OBJECTIVE VALUE" << " = " << penalty + totalWaiting << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL WAIT TIME" << " = " << totalWaiting << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# NUMBER OF UNSERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
+    repStr << "#" << std::endl;
+    repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
+
     if (numServed != 0) {
-        repStr << std::setw(sentenceSize) << "# Average wait time per request" << " = " << totalWaiting/numServed << " (s)" << std::endl;
-        repStr << std::setw(sentenceSize) << "# Average trip delay per request" << " = " << totalTripDelay/totalNumServed << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/numServed << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/totalNumServed << " (s)" << std::endl;
     }
-    repStr << std::setw(sentenceSize) << "# Number of unserved requests" << " = " << nbRequests_ - totalNumServed << std::endl;
-    repStr << std::setw(sentenceSize) << "# Total number of requests" << " = " << nbRequests_ << std::endl;
-    repStr << std::setw(sentenceSize) << "# Average Vehicle idle Time" << " = " << idleTime/nbVehicles_ << std::endl;
-    repStr << std::setw(sentenceSize) << "# Final Objective Value" << " = " << penalty + totalWaiting << std::endl;
-    std::cout << "#" << std::endl;
+
+    repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/nbVehicles_ << std::endl;
+    repStr << "#" << std::endl;
     return repStr.str();
 }
 
@@ -288,15 +307,15 @@ void Instance::sortVehicles(SortVehicle sortBase) {
 
 
 // function to update penalties in rolling horizon approach
-void Instance::updatePenaltiesEpoch(int epoch) {
+/*void Instance::updatePenaltiesEpoch(int epoch) {
     for (auto & requestObj : requests_)
-        requestObj->setPenaltyEpoch(epoch, parameters_, simulationStartTime_);
-}
+        requestObj->setPenalty(parameters_->epochLength_ * epoch, parameters_, simulationStartTime_);
+}*/
 
 // function to update penalties in any time approach
-void Instance::updatePenalties(float elapsedTime, float length) {
+void Instance::updatePenalties(float elapsedTime) {
     for (auto & requestObj : requests_)
-        requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_, length);
+        requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_);
 }
 
 //determine an order for requests to use in CPLEX modeling
@@ -499,6 +518,8 @@ void Instance::updateTaskIndexLabeling() {
         orderCounter++;
     }
 }
+
+
 
 
 

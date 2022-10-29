@@ -6,6 +6,7 @@
 #define _INSTANCE_H
 
 #include "utilities/MyTools.h"
+#include "utilities/Tools.h"
 #include "data/Vehicle.h"
 #include "data/Request.h"
 #include "data/Graph.h"
@@ -18,6 +19,7 @@
 //-----------------------------------------------------------------------------
 
 enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3};
+extern Tools::PThreadsPool pPool;
 
 
 // I consider 10 seconds for each passenger to pickup or drop off
@@ -38,15 +40,17 @@ public:
     int nbLocations_;                           // Number of stop locations
     std::vector<PRequest> requests_;            // List of requests
     std::unordered_map<std::string , PRequest> nameToRequest_;
+    vector<unsigned int> orderToRequest_;
     PGraph instGraph_;
     PParameters parameters_;
 
-    vector<unsigned int> orderToRequest_;
+
 
     // Constructor and Destructor
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
              std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph);
     Instance(const Instance &mainInst);
+    void resetInstance();
 //    virtual ~Instance();
 
 
@@ -72,10 +76,10 @@ public:
     void sortVehicles(SortVehicle sortBase);
 
     // function to update penalties in rolling horizon approach
-    void updatePenaltiesEpoch(int epoch);
+//    void updatePenaltiesEpoch(int epoch);
 
     // function to update penalties in any time approach
-    void updatePenalties(float elapsedTime, float length);
+    void updatePenalties(float elapsedTime);
 
     //determine an order for requests to use in CPLEX modeling
     void updateRequestOrder();
