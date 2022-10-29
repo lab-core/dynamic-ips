@@ -94,7 +94,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     float departTime = -1, endTime = -1;
 
     // add this only when I want to use less vehicles
-//    pInstance->nbVehicles_ = 45;
+    pInstance->nbVehicles_ = 45;
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
@@ -221,7 +221,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
                 pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
-                pInstance->requests_.back()->setPenaltyEpoch(0, pInstance->parameters_, pInstance->simulationStartTime_);
+                pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
             }
         }
     }
@@ -289,12 +289,14 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     string title;
 
-    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1;
-    int epochLength = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1, maxLabel = -1;
+    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1;
+    int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
+    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, fixedEpoch = false;
     bool isPickDropPossible = false;
-    int subAlgorithm = 0, subproSolveStartState = 0 , mainAlgorithm = 0, initialStart = 0, MIP_maxIncDegree = 0;
-    int strategy = 0, CP_IncDegree = 0, initialDual = 0;
+    int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
+    int solutionMode = -1;
+
     bool addOneRequestColumn = false;
 
     while (file.good()) {
@@ -312,6 +314,14 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "epochLength "))
             file >> epochLength;
 
+        else if (strEndWith(title, "penaltyL "))
+            file >> penaltyL;
+
+        else if (strEndWith(title, "committedTime "))
+            file >> committedTime;
+
+        else if (strEndWith(title, "nbThreads "))
+            file >> nbThreads;
 
         else if (strEndWith(title, "InitialDual "))
             file >> initialDual;
@@ -321,6 +331,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "addOneRequestColumn "))
             file >> addOneRequestColumn;
+
+        else if (strEndWith(title, "solutionMode "))
+            file >> solutionMode;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -371,16 +384,18 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
             file >> populateTimeLimit;
     }
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
+                                                          penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm),
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, minImp, fixedEpoch,
                                                           isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased, isPickDropPossible,
-                                                          static_cast<SubProSolveStart>(subproSolveStartState),
+                                                          static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn);
+                                                          bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
+                                                          static_cast<SolutionMode>(solutionMode));
 }
 
 // function that open all input files and create the main instance

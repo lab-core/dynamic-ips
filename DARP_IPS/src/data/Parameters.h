@@ -17,9 +17,13 @@ public:
     float betaParam_{};
     float deltaPram_{};
     int epochLength_{};
+    int penaltyL_{};
+    float committedTime_{};
+    int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
     bool addOneRequestColumn_{};
+    SolutionMode solutionMode_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -34,7 +38,7 @@ public:
     bool isDominanceReleased_{};
     bool isSuccessorsLimited_{};
     bool isDropPickPossible_{};
-    SubProSolveStart SubproSolveStartState_;
+    SubProSolveMode SubproSolveMode_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
 
@@ -44,12 +48,12 @@ public:
     int populateTimeLimit_{};
 
     // Constructor and Destructor
-    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, InitialDual initialDual,
-               MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-               float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
-               bool isDominanceReleased, bool isDropPickPossible, SubProSolveStart subproSolveStartState,
-               LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit,
-               int populateTimeLimit, bool addOneRequestColumn);
+    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL, float committedTime,
+               int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, warmStart initialStart,
+               int MIP_maxIncDegree, int CP_IncDegree, float minImp, bool fixedEpoch, bool isTruncated, int maxLabel,
+               bool isSuccessorsLimited, bool isDominanceReleased, bool isDropPickPossible,
+               SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm,
+               int bigM, int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode);
 
     virtual ~Parameters();
 
@@ -76,7 +80,8 @@ struct solverOption {
     solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
                  bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
-    solverOption(float maxReachTime, int maxPickup, PParameters &MainParams);
+    solverOption(PParameters &MainParams);
+    void updateOptions(float maxReachTime, int maxPickup);
 
     virtual ~solverOption();
     void disableHeuristics();

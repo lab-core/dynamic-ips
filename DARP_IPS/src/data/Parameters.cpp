@@ -9,20 +9,21 @@
 //************************************************************************
 
 // Constructor and Destructor
-Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, InitialDual initialDual,
-                       MainAlgorithm mainAlgorithm, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-                       float minImp, bool fixedEpoch, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
-                       bool isDominanceReleased, bool isDropPickPossible, SubProSolveStart subproSolveStartState,
-                       LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit,
-                       int populateTimeLimit, bool addOneRequestColumn) :
-        alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
-        initialDual_(initialDual), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
+Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
+                       float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
+                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, float minImp, bool fixedEpoch,
+                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
+                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit,
+                       bool addOneRequestColumn, SolutionMode solutionMode):
+        alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength), penaltyL_(penaltyL),
+        committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
         MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), fixedEpoch_(fixedEpoch),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        SubproSolveStartState_(subproSolveStartState), LabelingStrategy_(LabelingStrategy),
-        subAlgorithm_(subAlgorithm), bigM_(bigM),solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn) {
+        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy),
+        subAlgorithm_(subAlgorithm), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
 }
 
 Parameters::~Parameters() = default;
@@ -37,10 +38,16 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# alpha Parameter " << " = " << alphaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# delta Parameter" << " = " << deltaPram_ << std::endl;
-    repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << std::endl;
+    if (solutionMode_ == DYNAMIC)
+        repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << " (s)" << std::endl;
+    if (solutionMode_ == ANYTIME)
+        repStr << std::setw(setwLength) << "# time to commit stops " << " = " << committedTime_ << " (s)" << std::endl;
+    repStr << std::setw(setwLength) << "# penalty epoch Length " << " = " << penaltyL_ << std::endl;
+    repStr << std::setw(setwLength) << "# number of threads " << " = " << nbThreads_ << std::endl;
     repStr << std::setw(setwLength) << "# initial dual solution " << " = " << InitialDualName[initialDual_] << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
-    repStr << std::setw(setwLength) << "# add columns with one request " << " = " << addOneRequestColumn_ << std::endl;
+    repStr << std::setw(setwLength) << "# add columns with one request" << " = " << addOneRequestColumn_ << std::endl;
+    repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -59,7 +66,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowd after Drop " << " = " << isDropPickPossible_ << std::endl;
-    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveStartState_] << std::endl;
+    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveMode_] << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::endl;
@@ -95,8 +102,7 @@ void solverOption::disableHeuristics() {
     isSuccessorsLimited_ = false;
 }
 
-solverOption::solverOption(float maxReachTime, int maxPickup, PParameters &MainParams): maxReachTime_(maxReachTime),
-                                                                                        maxPickup_(maxPickup) {
+solverOption::solverOption(PParameters &MainParams) {
     isTruncated_ = MainParams->isTruncated_;
     MaxLabel_ = MainParams->MaxLabel_;
     isDominanceReleased_ = MainParams->isDominanceReleased_;
@@ -105,9 +111,16 @@ solverOption::solverOption(float maxReachTime, int maxPickup, PParameters &MainP
     isDropPickPossible_ = MainParams->isDropPickPossible_;
 }
 
+void solverOption::updateOptions(float maxReachTime, int maxPickup) {
+    maxReachTime_ = maxReachTime;
+    maxPickup_ = maxPickup;
+}
+
 bool solverOption::areHeuristicsDisabled() const {
-    if (isTruncated_ || isSuccessorsLimited_)
+    if (isTruncated_ || isSuccessorsLimited_ || isDominanceReleased_)
         return false;
     else
         return true;
 }
+
+
