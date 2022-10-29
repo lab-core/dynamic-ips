@@ -20,16 +20,17 @@
 #include <cstdlib>
 #include <cstdio>
 #include "Eigen/Dense"
+#include "Tools.h"
 #include <set>
 #include <queue>
 #include <algorithm>
 #include <valarray>
-#include "utilities/MyTools.h"
 
 
 using std::string;
 using std::vector;
 using std::chrono::high_resolution_clock;
+
 //-----------------------------------------------------------------------------
 //  Definition of useful tools and data types
 //-----------------------------------------------------------------------------
@@ -70,10 +71,11 @@ typedef std::shared_ptr<insertPosition> PInsertPosition;
 // extern PTravelTime travelMat;
 
 // SubProblem solution status
-enum SubProSolveStart {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
+enum SubProSolveMode {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
 enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
 enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3};
+enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2};
 enum InitialDual {LAST_CP = 0, PENALTIES = 1};
 static const std::vector<std::string> LabelingStrategyName = {
@@ -95,12 +97,17 @@ static const std::vector<std::string> warmStartName = {
         "PREVIOUS_SOLUTION",
         "EMPTY_START      "};
 
+static const std::vector<std::string> solutionModeName = {
+        "STATIC MODE ",
+        "DYNAMIC MODE",
+        "ANYTIME MODE"};
+
 static const std::vector<std::string> InitialDualName = {
         "LAST_CP  ",
         "PENALTIES"};
 static const std::vector<std::string> SubProSolveStartName = {
-        "NOT_RESTRICTED",
-        "TIME_RESTRICTED",
+        "NOT_RESTRICTED     ",
+        "TIME_RESTRICTED    ",
         "NUM_PICK_RESTRICTED"};
 
 // Different node types and their names
