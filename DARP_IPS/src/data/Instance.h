@@ -19,8 +19,6 @@
 //-----------------------------------------------------------------------------
 
 enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3};
-extern Tools::PThreadsPool pPool;
-
 
 // I consider 10 seconds for each passenger to pickup or drop off
 #define TimePerPassenger 0         			// service time (time to pickup or drop off) per passenger

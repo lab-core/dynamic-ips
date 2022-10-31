@@ -32,6 +32,7 @@ protected:
     std::string input_durationData_;
     std::string input_MIPStart_;
     std::string input_paramFile_;
+    std::string input_vehicleFileGeneral_;
     std::string input_vehicleFile_;
     std::string input_onboardsFile_;
     std::string input_waitRequests_;
@@ -61,7 +62,7 @@ public:
 
     // Constructors
     InputPaths();
-    InputPaths(const std::string& datadir, const std::string& instanceName, double timeOUt = 3600.0);
+    InputPaths(const std::string& datadir, const std::string& instFolder, const std::string& instanceName);
 
     // getters
     const std::string &getInstanceName() const;
@@ -71,6 +72,7 @@ public:
     const std::string &getInputMipStart() const;
     const std::string &getInputParamFile() const;
     const std::string &getInputVehicleFile() const;
+    const std::string &getInputVehicleFileGeneral() const;
     const std::string &getInputOnboardsFile() const;
     const std::string &getInputWaitRequests() const;
 
@@ -104,7 +106,7 @@ public:
     void setInstanceData(const std::string &instanceData);
     void setTimeOUt(double timeOUt);
 
-    void initializeOutputs(const std::string &algorithm);
+    void initializeOutputs(const std::string &algorithm, const std::string &solutionMode);
 
     // this function create a directory to build a new instance
     void makeInstanceOutput(std::string instNum);

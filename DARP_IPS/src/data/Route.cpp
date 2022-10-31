@@ -243,8 +243,8 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
         myTools::throwException("Route-Validation");
     }
     if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
-        std::cout << "End time is not the same" << std::endl;
-        myTools::throwException("Route-Validation");
+//        std::cout << "End time is not the same" << std::endl;
+//        myTools::throwException("Route-Validation");
     }
 
 

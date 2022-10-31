@@ -73,8 +73,6 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<PInsertPosition> positionList;
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
-            if (requestObj->getRequestId() == 852)
-                std::cout << "stop";
             possibleDelay.clear();
             positionList.clear();
 

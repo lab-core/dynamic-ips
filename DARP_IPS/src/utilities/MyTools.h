@@ -98,9 +98,9 @@ static const std::vector<std::string> warmStartName = {
         "EMPTY_START      "};
 
 static const std::vector<std::string> solutionModeName = {
-        "STATIC MODE ",
-        "DYNAMIC MODE",
-        "ANYTIME MODE"};
+        "STATIC",
+        "DYNAMIC",
+        "ANYTIME"};
 
 static const std::vector<std::string> InitialDualName = {
         "LAST_CP  ",

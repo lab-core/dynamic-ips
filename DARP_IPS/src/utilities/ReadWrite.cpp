@@ -94,7 +94,8 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     float departTime = -1, endTime = -1;
 
     // add this only when I want to use less vehicles
-    pInstance->nbVehicles_ = 45;
+//    pInstance->nbVehicles_ = 150;
+
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
@@ -401,17 +402,23 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 // function that open all input files and create the main instance
 PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-    ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), mainInst);
     ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-    if (mainInst->nbOnboards_ > 0)
+//    mainInst->nbOnboards_ = 0;
+    if (mainInst->nbOnboards_ > 0){
+        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), mainInst);
         ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), mainInst);
+    }
+    else
+        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), mainInst);
+
     if (mainInst->nbWaiting_ > 0)
         ReadWrite::readTripRequests(inputPaths.getInputWaitRequests(), mainInst, mainInst->nbWaiting_);
     ReadWrite::readTripRequests(inputPaths.getInputTripData(), mainInst, mainInst->nbRequests_);
     mainInst->nbRequests_ += (mainInst->nbOnboards_ + mainInst->nbWaiting_);
     mainInst->nbNewRequests_ += mainInst->nbWaiting_;
 
-    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_]);
+    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_],
+                                 solutionModeName[mainInst->parameters_->solutionMode_]);
 
     // write the parameters in file
     std::ofstream myFile;
@@ -422,6 +429,29 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     return mainInst;
 }
 
+// function that open all input files and update main instance data
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance) {
+    if (pInstance->nbOnboards_ > 0){
+        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), pInstance);
+        ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance);
+    }
+    else
+        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
+    if (pInstance->nbWaiting_ > 0)
+        ReadWrite::readTripRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_);
+    ReadWrite::readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
+    pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
+    pInstance->nbNewRequests_ += pInstance->nbWaiting_;
+
+    inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
+                                 solutionModeName[pInstance->parameters_->solutionMode_]);
+
+    // write the parameters in file
+    std::ofstream myFile;
+    myFile.open (inputPaths.getOutputParamFile());
+    myFile << pInstance->parameters_->toString();
+    myFile.close();
+}
 
 // Parsing functions
 // Useful for reading a file stream until meeting the separating character
@@ -498,24 +528,10 @@ void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::str
     // add this only when I want to use less vehicles
 //    pInstance->nbVehicles_ = 45;
     while (file.good()) {
-//        readUntilChar(file, '\n', title);
-        readUntilOneOfTwoChar(file, '\n', '\r', title);
-        if (strEndWith(title, "INSTANCE")) {
-            for (int i = 0; i < nbInstances; ++i) {
-                file >> instName;
-                fileNames.push_back(instName);
-            }
+        for (int i = 0; i < nbInstances; ++i) {
+            file >> instName;
+            fileNames.push_back(instName);
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
 

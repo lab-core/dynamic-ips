@@ -155,6 +155,8 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# FINAL OBJECTIVE VALUE" << " = " << penalty + totalWaiting << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL WAIT TIME" << " = " << totalWaiting << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
+    repStr << "#" << std::endl;
     repStr << std::setw(sentenceSize) << "# NUMBER OF UNSERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
     repStr << "#" << std::endl;

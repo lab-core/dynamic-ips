@@ -5,12 +5,16 @@
 #ifndef _SOLVER_H
 #define _SOLVER_H
 
+#include "data/Instance.h"
 #include "solvers/ISUDAlgorithm.h"
 #include "solvers/CPLEXSubProblem.h"
 #include "solvers/LabelingSubProblem.h"
-#include "data/Instance.h"
 #include "solvers/MIPSolver.h"
 #include "solvers/GreedyModeler.h"
+#include "utilities/Tools.h"
+#include "utilities/MyTools.h"
+
+// extern Tools::PThreadsPool pPool;
 
 class solver {
 public:
@@ -30,9 +34,13 @@ public:
 
     myTools::Timer *simulationTime_;
     myTools::Timer *subProblemTime_;
+    myTools::Timer *preprocessTime_;
+
 
 
     solver(PInstance & mainInst);
+
+    virtual ~solver();
 
     // this function is to solve the epoch instance with CG using ISUD
     void solveCG_ISUD(PInstance & EpochInst, InputPaths &inputPaths);
@@ -44,7 +52,7 @@ public:
     void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths);
 
     // this function is to solve the main instance in static mode
-    void staticSolver(PInstance & mainInst, InputPaths &inputPaths);
+    void staticSolver(PInstance & mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime);
 
     // function to print epoch runTime to file
     void saveRuntimes(PInstance & EpochInst, const std::string& EpochRunTimeDir);

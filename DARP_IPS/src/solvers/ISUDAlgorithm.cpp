@@ -178,8 +178,8 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
     RPTime_->stop();
     isudTime_->stop();
     std::cout << std::left;
-    std::cout << std::setw(sentenceSize) << "# TIME SPENT ON ISUD INITIALIZATION " << "=" << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
-    std::cout << std::setw(sentenceSize) << "# NUMBER OF RECEIVED REQUESTS " << "=" << pInst->nbNewRequests_ << std::endl;
+    std::cout << "# TIME SPENT ON ISUD INITIALIZATION =" << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    std::cout << "# NUMBER OF RECEIVED REQUESTS       =" << pInst->nbNewRequests_ << std::endl;
 }
 
 // function to create M2 matrix for each column in the current solution

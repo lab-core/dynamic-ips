@@ -33,7 +33,7 @@ int main() {
 
     auto *subProTime = new myTools::Timer(); subProTime->init();
     auto *simulationTime = new myTools::Timer(); simulationTime->init();
-    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(7);
+
 
     std::string dataDir = "datasets/";
     std::string instanceName = "20160222_17-120m_2";
@@ -48,6 +48,7 @@ int main() {
     PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
     std::cout << std::endl;
     std::cout << mainInst->toString();
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(mainInst->parameters_->nbThreads_);
 
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_,  mainInst->nbLocations_);
     if (!showLog)
@@ -116,7 +117,7 @@ int main() {
                     disabledHeuristics = false;*/
 
                 while (true) {
-                    int nbNegativeNotFound = 0;
+                    int nbNegativeFound = 0;
 
                     int maxPick = EpochInst->nbRequests_;
                     float maxReachTime = MAXReachTime;
@@ -148,7 +149,7 @@ int main() {
                                 std::cout << subProblem->toString();
                                 isudObj->availableRoutes_[vehicleObj->vehicleID_].clear();
                                 if (subProblem->bestReducedCost_ >= -0.0001) {
-                                    nbNegativeNotFound ++;
+                                    nbNegativeFound ++;
                                 }
                                 else
                                     subProblem->SolutionToRoutes(isudObj->availableRoutes_[vehicleObj->vehicleID_]);
@@ -161,8 +162,8 @@ int main() {
                         case LABEL_SETTING:
                             // defining subproblems
                             isudObj->nbRoutes_ = 0;
-                            std::vector<PLabelingSubPro> subProblems;
                             EpochInst->updateTaskIndexLabeling();
+                            std::vector<PLabelingSubPro> subProblems;
                             for (auto &vehicleObj: EpochInst->vehicles_) {
                                 int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
                                 //                       subProOptions->maxPickup_ = vehicleMaxPick;
@@ -176,19 +177,19 @@ int main() {
                                 Tools::Job job([&]() {
                                     subProblem->initSubGraph2(EpochInst);
                                     subProblem->solveDynamic();
+
                                 });
                                 pPool->run(job);
                             }
                             pPool->wait();
                             for (auto &subProblem: subProblems){
                                 subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                                             isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_],EpochInst);
+                                                             isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
                                 isudObj->nbRoutes_ += isudObj->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
-                                nbNegativeNotFound = nbNegativeNotFound + subProblem->nbNegativeColumns_;
-                                subProblem.reset();
+                                nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
+
                             }
-                            subProblems.clear();
-//                    subStartStatus = NOT_RESTRICTED;
+                            break;
                     }
 
                     std::cout << "# ============================================================" << std::endl;
@@ -198,7 +199,7 @@ int main() {
                     std::cout << "#" << std::endl;
                     subProTime->stop();
                     EpochInst->restVehicleOrder();
-                    if (nbNegativeNotFound == 0) {
+                    if (nbNegativeFound == 0) {
                         std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
                         break;
                     }

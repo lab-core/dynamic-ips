@@ -17,10 +17,10 @@ InputPaths::InputPaths() {
     input_durationData_ = "";
 }
 
-InputPaths::InputPaths(const std::string& datadir, const std::string& instanceName, double timeOUt)
-        : instanceName_(instanceName), timeOut_(timeOUt) {
+InputPaths::InputPaths(const std::string& datadir, const std::string& instFolder, const std::string& instanceName)
+        : instanceName_(instanceName) {
 
-    instanceDir_ = datadir + "Instances/" + instanceName + "/";
+    instanceDir_ = datadir + instFolder + "/" + instanceName + "/";
 
     //initialize the file names for trip records and instance data
     input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
@@ -30,7 +30,7 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instanceNa
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = datadir + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-//    input_vehicleFile_ = datadir + "/manhattan-vehicles/vehicles_2000_7.txt";
+    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_7.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
@@ -43,6 +43,7 @@ const std::string &InputPaths::getInputDurationData() const {return input_durati
 const std::string &InputPaths::getInputMipStart() const { return input_MIPStart_; }
 const std::string &InputPaths::getInputParamFile() const { return input_paramFile_; }
 const std::string &InputPaths::getInputVehicleFile() const {return input_vehicleFile_;}
+const std::string &InputPaths::getInputVehicleFileGeneral() const {return input_vehicleFileGeneral_;}
 const std::string &InputPaths::getInputOnboardsFile() const {return input_onboardsFile_;}
 const std::string &InputPaths::getInputWaitRequests() const { return input_waitRequests_;}
 
@@ -83,15 +84,15 @@ void InputPaths::setTimeOUt(double timeOUt) {
     InputPaths::timeOut_ = timeOUt;
 }
 
-void InputPaths::initializeOutputs(const std::string &algorithm) {
+void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode) {
     // create directory for results
     time_t now = time(nullptr);
     tm * curr_tm = localtime(&now);
     char resultFolder[100];
     strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
-    std::experimental::filesystem::create_directory(instanceDir_ + algorithm + "_" + resultFolder);
+    std::experimental::filesystem::create_directory(instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder);
 
-    outputDir_ = instanceDir_ + algorithm + "_" + resultFolder + "/";
+    outputDir_ = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
 
     //initialize the file names for saving outputs
     output_epochISUD_ = outputDir_ + "epochSolution_" + instanceName_ + ".csv";
@@ -118,7 +119,8 @@ void InputPaths::initializeOutputs(const std::string &algorithm) {
     myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
     myFile.close();
     myFile.open(output_epochRunTime_);
-    myFile << "Epoch, RunTime, avgRunTime, nbRequests, nbNodes" << std::endl;
+    myFile << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, RP_Runtime, "
+              "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime" << std::endl;
     myFile.close();
 }
 
