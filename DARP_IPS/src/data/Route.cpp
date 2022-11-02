@@ -23,7 +23,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     name_ = name2;
 }
 Route::~Route(){
-    delete name_;
+    delete[] name_;
 };
 
 // Getters and Setters

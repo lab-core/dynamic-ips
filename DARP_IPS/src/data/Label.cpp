@@ -34,8 +34,6 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
-//    if (labelID_ == 2046)
-//        std::cout << "stop";
     status_ = ACTIVE;
     load_ = label.load_;
     passedTime_ = label.passedTime_;
@@ -80,7 +78,9 @@ void Label::copyLabel(const Label &label) {
     nbUsed_ = 1;
 }
 Label::~Label() {
-    delete name_;
+    openNode_.clear();
+    pathNodes_.clear();
+    delete[] name_;
 }
 
 unsigned int Label::getLabelId() const {
@@ -92,10 +92,6 @@ bool Label::operator () (const Label &rhs) const {
 }
 
 void Label:: extend(PNode &outNode) {
-    if (outNode->type_== DROPOFF && outNode->related_Request_->getRequestId() == 95){
-        if (this->currentNode_->related_Request_->getRequestId() == 78)
-            std::cout << "stop";
-    }
 
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[currentNode_->locationID_][outNode->locationID_]+ currentNode_->deltaTime_;

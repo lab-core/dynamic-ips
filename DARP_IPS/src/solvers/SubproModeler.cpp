@@ -14,8 +14,10 @@ SubproModeler::~SubproModeler() {
     for (auto & node : subGraph_->nodes_){
  //       node.second->predecessor_.clear();
         node.second->successors_.clear();
-        node.second->generatedLabel_.clear();
         node.second->activeLabels_.clear();
+        node.second->generatedLabel_.clear();
+        node.second->related_Request_.reset();
+        node.second->pairNode_ = nullptr;
     }
     subGraph_->nodes_.clear();
     subGraph_.reset();

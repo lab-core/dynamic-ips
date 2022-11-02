@@ -416,9 +416,6 @@ void LabelingSubProblem::solveDynamic_pushing() {
 
 
         while (!activeNodes_.empty()) {
-
-            if (activeNodes_.empty())
-                std::cout << "stop" << std::endl;
             sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
                 return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
 
@@ -524,7 +521,8 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                 truncateLabelList(currentNode, solverOptions_->MaxLabel_);
             }
             while (!currentNode->activeLabels_.empty()){
-                if (currentNode->activeLabels_.back()->status_ != ACTIVE)
+                if ((currentNode->activeLabels_.back()->status_ != ACTIVE)||
+                    (currentNode->activeLabels_.back()->currentNode_->nodeID_ != currentNode->nodeID_ && currentNode->activeLabels_.back()->nbUsed_ == 1))
                     currentNode->activeLabels_.pop_back();
                 else {
                     // if the heuristics are node disabled, we are not allowed to dominate labels with dominated parents

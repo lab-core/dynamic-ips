@@ -34,7 +34,7 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
 }
 
 Request::~Request() {
-    delete name_;
+    delete[] name_;
 }
 
 // Getters and Setters

@@ -107,6 +107,8 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> endTime;
                 file >> departID;
                 file >> sinkID;
+                if (departTime < pInstance->simulationStartTime_)
+                    departTime = pInstance->simulationStartTime_;
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(
                         departID, SOURCE, vehicleID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(
