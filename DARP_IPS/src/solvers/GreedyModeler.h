@@ -2,8 +2,8 @@
 // Created by Ella on 5/25/2022.
 //
 
-#ifndef _GREEDYMODELER_H
-#define _GREEDYMODELER_H
+#ifndef GREEDYMODELER_H
+#define GREEDYMODELER_H
 
 
 #include "data/Instance.h"
@@ -30,4 +30,4 @@ public:
 // any pick up is followed by the drop-off
 void GreedySolver_noShare(PInstance& PInst);
 
-#endif //_GREEDYMODELER_H
+#endif //GREEDYMODELER_H

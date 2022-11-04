@@ -4,8 +4,8 @@
 
 #pragma once
 
-#ifndef _LABELINGSUBPROBLEM_H
-#define _LABELINGSUBPROBLEM_H
+#ifndef LABELINGSUBPROBLEM_H
+#define LABELINGSUBPROBLEM_H
 
 #include "solvers/SubproModeler.h"
 #include "data/Label.h"
@@ -61,4 +61,4 @@ public:
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
 void truncateLabelList(PNode &node, int MaxLabel);
 
-#endif //_LABELINGSUBPROBLEM_H
+#endif //LABELINGSUBPROBLEM_H

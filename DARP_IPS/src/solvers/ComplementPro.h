@@ -2,8 +2,8 @@
 // Created by Ella on 2021-11-17.
 //
 
-#ifndef _COMPLEMENTPRO_H
-#define _COMPLEMENTPRO_H
+#ifndef COMPLEMENTPRO_H
+#define COMPLEMENTPRO_H
 
 #include "solvers/MasterModeler.h"
 
@@ -70,4 +70,4 @@ public:
 };
 
 
-#endif //_COMPLEMENTPRO_H
+#endif //COMPLEMENTPRO_H

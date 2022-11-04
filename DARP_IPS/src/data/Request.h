@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-13.
 //
 
-#ifndef _REQUEST_H
-#define _REQUEST_H
+#ifndef REQUEST_H
+#define REQUEST_H
 
 #include "utilities/MyTools.h"
 #include "Parameters.h"
@@ -64,4 +64,4 @@ public:
 
 inline bool operator == (const PRequest &lhs, const PRequest &rhs) {return (lhs->getRequestId() == rhs->getRequestId()); }
 
-#endif //_REQUEST_H
+#endif //REQUEST_H

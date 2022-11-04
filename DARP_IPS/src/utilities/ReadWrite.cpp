@@ -423,10 +423,14 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
                                  solutionModeName[mainInst->parameters_->solutionMode_]);
 
     // write the parameters in file
-    std::ofstream myFile;
+    Tools::LogOutput parameterStream(inputPaths.getOutputParamFile());
+    parameterStream << mainInst->saveSolutionRoutes();
+    parameterStream.close();
+
+    /*std::ofstream myFile;
     myFile.open (inputPaths.getOutputParamFile());
     myFile << mainInst->parameters_->toString();
-    myFile.close();
+    myFile.close();*/
 
     return mainInst;
 }
@@ -525,7 +529,7 @@ void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::str
     }
 
     string title;
-    std::string instName = "";
+    std::string instName;
 
     // add this only when I want to use less vehicles
 //    pInstance->nbVehicles_ = 45;

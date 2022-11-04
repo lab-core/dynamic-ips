@@ -2,8 +2,8 @@
 // Created by Ella on 2021-12-15.
 //
 
-#ifndef _TRAVELTIME_H
-#define _TRAVELTIME_H
+#ifndef TRAVELTIME_H
+#define TRAVELTIME_H
 
 #include "utilities/MyTools.h"
 #include "data/Graph.h"
@@ -29,4 +29,4 @@ public:
 };
 
 
-#endif //_TRAVELTIME_H
+#endif //TRAVELTIME_H

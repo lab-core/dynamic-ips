@@ -2,15 +2,15 @@
 // Created by Ella on 2021-09-06.
 //
 
-#ifndef _INPUTPATHS_H
-#define _INPUTPATHS_H
+#ifndef INPUTPATHS_H
+#define INPUTPATHS_H
 
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING 1
 
 #include <sstream>
 #include <string>
 #include <ctime>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 
 
@@ -40,8 +40,11 @@ protected:
     // output data addresses
     std::string output_epochISUD_;
     std::string output_epochFinal_;
-    std::string output_finalLog_;
+    std::string output_epochRunTime_;
+    std::string output_epochResults_;
+
     std::string output_solutionLog_;
+    std::string output_finalLog_;
     std::string output_finalRoutes_;
     std::string output_finalRequests_;
     std::string output_MIPStart_;
@@ -52,7 +55,6 @@ protected:
     std::string output_vehicles_;
     std::string output_instance_;
     std::string output_incDegree_RDCost_;
-    std::string output_epochRunTime_;
     std::string output_trip_;
 
 
@@ -78,6 +80,8 @@ public:
 
     const std::string &getOutputEpochIsud() const;
     const std::string &getOutputEpochFinal() const;
+    const std::string &getOutputEpochResults() const;
+
     const std::string &getOutputFinalLog() const;
     const std::string &getOutputSolutionLog() const;
     const std::string &getOutputFinalRoutes() const;
@@ -92,6 +96,7 @@ public:
     const std::string &getOutputInstance() const;
     const std::string &getOutputIncDegreeRdCost() const;
     const std::string &getOutputEpochRunTime() const;
+
 
     const std::string &getInstanceNameOut() const;
 
@@ -113,4 +118,4 @@ public:
 };
 
 
-#endif //_INPUTPATHS_H
+#endif //INPUTPATHS_H

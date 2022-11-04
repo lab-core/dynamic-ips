@@ -3,8 +3,8 @@
 //
 
 
-#ifndef _SUBPROMODELER_H
-#define _SUBPROMODELER_H
+#ifndef SUBPROMODELER_H
+#define SUBPROMODELER_H
 
 #include "utilities/MyTools.h"
 #include "data/Graph.h"
@@ -32,4 +32,4 @@ public:
 };
 
 
-#endif //_SUBPROMODELER_H
+#endif //SUBPROMODELER_H

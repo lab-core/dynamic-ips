@@ -27,13 +27,14 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Model_.add(IloConversion(env_, zVar_, ILOINT));
         Model_.add(IloConversion(env_, routeVar_, ILOINT));
 
-        std::cout << routeVar_[0].getType() << std::endl;
+  //      std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setOut(env_.getNullStream());
         Cplex_.solve();
 
         // printing solution status
-        std::cout << toString();
+ //       std::cout << toString();
 
         // saving the result and remove out of base variables
         zSolution.clear();
@@ -62,8 +63,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
             }
         }
-        std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
-                  << " are selected to served." << std::endl;
+        /*std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+                  << " are selected to served." << std::endl;*/
         Cplex_.clearModel();
     }
     catch (IloException& e) {

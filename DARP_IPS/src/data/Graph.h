@@ -2,8 +2,8 @@
 // Created by Ella on 2021-10-04.
 //
 
-#ifndef _GRAPH_H
-#define _GRAPH_H
+#ifndef GRAPH_H
+#define GRAPH_H
 
 #include "data/Instance.h"
 #include "data/Label.h"
@@ -100,4 +100,4 @@ typedef std::shared_ptr<Graph> PGraph;
 //float queryTravelTime(PNode startNode, PNode endNode);
 
 
-#endif //_GRAPH_H
+#endif //GRAPH_H

@@ -2,8 +2,8 @@
 // Created by Ella on 5/20/2022.
 //
 
-#ifndef _GREEDY_H
-#define _GREEDY_H
+#ifndef GREEDY_H
+#define GREEDY_H
 
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
@@ -83,4 +83,4 @@ struct insertPosition {
     void updatePosition (const PGreedyLabel &prePickup, const PGreedyLabel &preDrop, float deltaDelay, float deltaLength);
 };
 
-#endif //_GREEDY_H
+#endif //GREEDY_H

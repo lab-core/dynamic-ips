@@ -2,8 +2,8 @@
 // Created by Ella on 2021-11-17.
 //
 
-#ifndef _MASTERMODELER_H
-#define _MASTERMODELER_H
+#ifndef MASTERMODELER_H
+#define MASTERMODELER_H
 
 
 #include "solvers/CPLEXModeler.h"
@@ -58,7 +58,7 @@ public:
     std::string toString() const;
 
     // function to create pattern from routes
-    void createPattern (IloNumArray& pattern, PRoute &route, VarSign sign);
+    static void createPattern (IloNumArray& pattern, PRoute &route, VarSign sign);
 
     // this function initialized the model
     void initializeModel(PInstance &pInst, int rhs);
@@ -72,4 +72,4 @@ public:
 };
 
 
-#endif //_MASTERMODELER_H
+#endif //MASTERMODELER_H

@@ -42,8 +42,11 @@ public:
     myTools::Timer *CPTime_;
     myTools::Timer *isudMIPTime_;
 
+    Tools::LogOutput* pLogIsudResultsStream_;
+    Tools::LogOutput* pLogIterSolutionStream_;
+
     // Constructor and Destructor
-    ISUDAlgorithm();
+    explicit ISUDAlgorithm(InputPaths &inputPaths);
 
     virtual ~ISUDAlgorithm();
 
@@ -75,12 +78,12 @@ public:
     void updateReducedCosts(int &vehicleID);
     void updateReducedCosts(PInstance &pInst, int &vehicleID);
 
-    void solveISUD(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
-    void solveISUD2(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
-    void solveISUD3(PInstance &pInst, int epoch, const string& isudSolutionDir, const string& incDegree_RDCostDir);
+    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
-    void solveISUDMIP(PInstance &pInst, const string& isudSolutionDir);
-    void solveRP_MIP(PInstance &pInst, int compDegree, const string& isudSolutionDir);
+    void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
+    void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
 
     // Display function
     std::string toString() const;
@@ -95,7 +98,9 @@ public:
     void restGeneratedRoutes(PInstance &pInst);
 
     // function to save the reduced costs and incompatibility degree of the created routes
-    void save_IncDegree_RDCost(const std::string& incDegree_RDCostDir, int epoch, int isudIter);
+    void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
+    void save_ISUDResults(int epoch, InputPaths &inputPaths, std::string model, int nbColumns);
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns);
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();

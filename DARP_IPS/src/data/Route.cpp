@@ -24,7 +24,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
 }
 Route::~Route(){
     delete[] name_;
-};
+}
 
 // Getters and Setters
 unsigned int Route::getRouteId() const {return routeID_;}

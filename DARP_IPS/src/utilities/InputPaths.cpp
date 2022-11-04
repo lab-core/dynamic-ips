@@ -50,6 +50,7 @@ const std::string &InputPaths::getInputWaitRequests() const { return input_waitR
 
 const std::string &InputPaths::getOutputEpochIsud() const { return output_epochISUD_;}
 const std::string &InputPaths::getOutputEpochFinal() const { return output_epochFinal_; }
+const std::string &InputPaths::getOutputEpochResults() const {return output_epochResults_;}
 const std::string &InputPaths::getOutputFinalLog() const { return output_finalLog_; }
 const std::string &InputPaths::getOutputSolutionLog() const { return output_solutionLog_; }
 const std::string &InputPaths::getOutputFinalRoutes() const { return output_finalRoutes_; }
@@ -90,7 +91,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     tm * curr_tm = localtime(&now);
     char resultFolder[100];
     strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
-    std::experimental::filesystem::create_directory(instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder);
+    std::__fs::filesystem::create_directory(instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder);
 
     outputDir_ = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
 
@@ -106,27 +107,33 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_paramFile_ = outputDir_ + "Parameters.txt";
     output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
     output_epochRunTime_ = outputDir_ + "epochRuntime_" + instanceName_ + ".csv";
+    output_epochResults_ = outputDir_ + "epochResults_" + instanceName_ + ".csv";
 
     // create output files for epoch results
-    std::ofstream myFile;
-    myFile.open(output_epochISUD_);
+ //   std::ofstream myFile;
+    /*myFile.open(output_epochISUD_);
     myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID,RouteID" << std::endl;
-    myFile.close();
-    myFile.open(output_epochFinal_);
+    myFile.close();*/
+    /*myFile.open(output_epochFinal_);
     myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
-    myFile.close();
-    myFile.open(output_incDegree_RDCost_);
-    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
-    myFile.close();
-    myFile.open(output_epochRunTime_);
+    myFile.close();*/
+
+    /*myFile.open(output_epochRunTime_);
     myFile << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, RP_Runtime, "
               "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime" << std::endl;
-    myFile.close();
+    myFile.close();*/
+    /*myFile.open(output_epochResults_);
+    myFile << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue" << std::endl;
+    myFile.close();*/
+
+    /*myFile.open(output_incDegree_RDCost_);
+    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
+    myFile.close();*/
 }
 
 void InputPaths::makeInstanceOutput(std::string instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
-    std::experimental::filesystem::create_directory(outputDir_ + instanceNameOut_);
+    std::__fs::filesystem::create_directory(outputDir_ + instanceNameOut_);
     std::string outputDir = outputDir_ + instanceNameOut_ + "/";
     output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
@@ -134,6 +141,8 @@ void InputPaths::makeInstanceOutput(std::string instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
+
 
 
 

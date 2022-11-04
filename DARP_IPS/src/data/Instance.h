@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-12.
 //
 
-#ifndef _INSTANCE_H
-#define _INSTANCE_H
+#ifndef INSTANCE_H
+#define INSTANCE_H
 
 #include "utilities/MyTools.h"
 #include "utilities/Tools.h"
@@ -86,14 +86,18 @@ public:
 
     // print solution in csv files
     void saveSolutionRoutes(const std::string& routeResultDir);
+    std::string saveSolutionRoutes();
     void saveRequestsResults(const std::string& requestResultDir);
+    std::string saveRequestsResults();
     // save the solution route of the vehicles (current solution of ISUD)
     void saveEpochRoutes(const std::string& finalSolutionDir , int epoch);
+    std::string saveEpochRoutes(int epoch);
     // save the current route of the vehicles (current solution of ISUD)
     void saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter);
+    std::string saveISUDRoutes(int epoch, int isudIter);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
 
 };
 
 
-#endif //_INSTANCE_H
+#endif //INSTANCE_H

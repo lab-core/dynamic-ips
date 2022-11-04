@@ -4,24 +4,42 @@
 
 #include "solver.h"
 
-solver::solver(PInstance & mainInst) {
+solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     elapsedTime_ = 0;
     SubproEpochTime_ = 0;
     epoch_ = 0;
 
-    isudObj_ = std::make_shared<ISUDAlgorithm>();
+    isudObj_ = std::make_shared<ISUDAlgorithm>(inputPaths);
     GreedyModel_ = std::make_shared<GreedyModeler>();
     subProOptions_ = std::make_shared<solverOption>(mainInst->parameters_);
 
     simulationTime_ = new myTools::Timer(); simulationTime_->init();
     subProblemTime_ = new myTools::Timer(); subProblemTime_->init();
     preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
+
+    isudEpochTime_ = 0;
+    RPEpochTime_ = 0;
+    CPEpochTime_ = 0;
+    isudMIPEpochTime_ = 0;
+    avgEpochRuntime_ = 0;
+    epochRuntime_ = 0;
+
+    pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
+    (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, RP_Runtime, "
+                              "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime" << std::endl;
+
+    pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
+    (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
 }
 
 solver::~solver() {
     delete simulationTime_;
     delete subProblemTime_;
     delete preprocessTime_;
+    pLogRunTimesStream_->close();
+    pLogEpochSolutionStream_->close();
+    delete pLogRunTimesStream_;
+    delete pLogEpochSolutionStream_;
 }
 
 void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
@@ -32,14 +50,15 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
 
     isudObj_->initialization(EpochInst);
     // save initial solution
-    EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
+//    EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
+    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
 
     SubproEpochTime_ = 0;
-    isudEpochTime_ = 0;
+    /*isudEpochTime_ = 0;
     RPEpochTime_ = 0;
     CPEpochTime_ = 0;
-    isudMIPEpochTime_ = 0;
+    isudMIPEpochTime_ = 0;*/
 
     while (true) {
         nbNegativeFound = 0;
@@ -89,45 +108,44 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
 
         }
 
-        std::cout << "# ==============================================================" << std::endl;
+        /*std::cout << "# ==============================================================" << std::endl;
         std::cout << "# TIME SPENT ON SOLVING SUBPROBLEMS =";
         std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;
         std::cout << "# ==============================================================" << std::endl;
-        std::cout << "#" << std::endl;
+        std::cout << "#" << std::endl;*/
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
-            std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
+  //          std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
             break;
         }
         else {
             if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                isudObj_->solveISUDMIP(EpochInst, inputPaths.getOutputEpochIsud());
+                isudObj_->solveISUDMIP(EpochInst, inputPaths);
 
-                isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
+                /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
                 RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
                 CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();
+                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
 
                 break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                isudObj_->solveISUD3(EpochInst, epoch_, inputPaths.getOutputEpochIsud(),
-                                    inputPaths.getOutputIncDegreeRdCost());
+                isudObj_->solveISUD3(EpochInst, epoch_, inputPaths);
 
-                isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
+                /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
                 RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
                 CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();
+                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
 
                 if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                     break;
             }
         }
         if (previousObj == isudObj_->objValue_) {
-            std::cout
+            /*std::cout
                     << " *****************************  The Column Generation Terminated!  *****************************"
-                    << std::endl;
+                    << std::endl;*/
             break;
         }
     }  // end of CG while
@@ -135,11 +153,12 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
     }
     isudObj_->setObjValue();
-    std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
-    std::cout << isudObj_->toString();
+//    std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
+//    std::cout << isudObj_->toString();
 
-    EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
+//    EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
 
+    (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
 }
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
@@ -162,10 +181,10 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
         preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "*************************************************************************************"<< std::endl;
+        /*std::cout << "*************************************************************************************"<< std::endl;
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "*************************************************************************************"<< std::endl;*/
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -186,19 +205,24 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
                                     nbReceivedRequest);
         EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
-        std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
+     //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         if (epoch_ == 0 && nbReceivedRequest == 0) {
             preprocessTime_->stop();
             simulationTime_->stop();
-            saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+ //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        solveCG_ISUD(EpochInst,inputPaths);
+        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD)
+            solveCG_ISUD(EpochInst,inputPaths);
+        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+            GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
-        saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+//        saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
 
@@ -227,10 +251,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
         preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "*************************************************************************************"<< std::endl;
+        /*std::cout << "*************************************************************************************"<< std::endl;
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "*************************************************************************************"<< std::endl;*/
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -249,19 +273,24 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
         EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
-        std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
+     //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         if (epoch_ == 0 && nbReceivedRequest == 0) {
             simulationTime_->stop();
             preprocessTime_->stop();
-            saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+ //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        solveCG_ISUD(EpochInst,inputPaths);
+        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD)
+            solveCG_ISUD(EpochInst,inputPaths);
+        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+            GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
-        saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+ //       saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
+        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
 
@@ -332,14 +361,15 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
                 isudObj_->initialization(StaticInst);
                 // save initial solution
-                StaticInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
+            //    StaticInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
+                (*isudObj_->pLogIterSolutionStream_) << StaticInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
                 isudObj_->isudIter_++;
 
                 SubproEpochTime_ = 0;
-                isudEpochTime_ = 0;
+                /*isudEpochTime_ = 0;
                 RPEpochTime_ = 0;
                 CPEpochTime_ = 0;
-                isudMIPEpochTime_ = 0;
+                isudMIPEpochTime_ = 0;*/
 
                 while (true) {
                     nbNegativeFound = 0;
@@ -380,34 +410,33 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                     subProblemTime_->stop();
                     SubproEpochTime_ += subProblemTime_->dSinceStart().count();
                     if (nbNegativeFound == 0) {
-                        std::cout
+                        /*std::cout
                                 << " *****************************  The Column Generation Terminated!  *****************************"
-                                << std::endl;
+                                << std::endl;*/
                         break;
                     } else {
                         if (StaticInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                            isudObj_->solveISUDMIP(StaticInst, inputPaths.getOutputEpochIsud());
+                            isudObj_->solveISUDMIP(StaticInst, inputPaths);
 
-                            isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
+                            /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
                             RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
                             CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();
+                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
 
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD) {
-                            isudObj_->solveISUD3(StaticInst, epoch_, inputPaths.getOutputEpochIsud(),
-                                                 inputPaths.getOutputIncDegreeRdCost());
+                            isudObj_->solveISUD3(StaticInst, epoch_, inputPaths);
 
-                            isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
+                            /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
                             RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
                             CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();
+                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
-                        std::cout
+                        /*std::cout
                                 << " *****************************  The Column Generation Terminated!  *****************************"
-                                << std::endl;
+                                << std::endl;*/
                         break;
                     }
                 }  // end of CG while
@@ -418,7 +447,8 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                 std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
                 std::cout << isudObj_->toString();
 
-                StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
+ //               StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
+                (*pLogEpochSolutionStream_) << StaticInst->saveEpochRoutes( epoch_);
                 simulationTime_->stop();
             }
             else {
@@ -434,13 +464,15 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
             vehicleObj->finalizeSolutionRoutes(mainInst);
         }
     }
-    StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
+//    StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
+    (*pLogEpochSolutionStream_) << StaticInst->saveEpochRoutes( epoch_);
 }
 
 // function to print epoch runTime to file
 void solver::saveRuntimes(PInstance & EpochInst, const string &EpochRunTimeDir) {
     epochRuntime_ = simulationTime_->dSinceStart().count();
     avgEpochRuntime_ = simulationTime_->dSinceInit().count() / (epoch_ + 1);
+
     std::ofstream myFile;
     myFile.open (EpochRunTimeDir, std::ofstream::app);
     myFile << epoch_ << ",";
@@ -451,14 +483,47 @@ void solver::saveRuntimes(PInstance & EpochInst, const string &EpochRunTimeDir) 
     myFile << simulationTime_->dSinceInit().count() << ",";
 
     // isud Times
-    myFile << isudEpochTime_ << ",";
-    myFile << RPEpochTime_ << ",";
-    myFile << CPEpochTime_ << ",";
-    myFile << isudMIPEpochTime_ << ",";
+    myFile << isudObj_->isudTime_->dSinceInit().count() - isudEpochTime_ << ",";
+    myFile << isudObj_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
+    myFile << isudObj_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
+    myFile << isudObj_->isudMIPTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
+
+    isudEpochTime_ = isudObj_->isudTime_->dSinceInit().count();
+    RPEpochTime_ = isudObj_->RPTime_->dSinceInit().count();
+    CPEpochTime_ = isudObj_->CPTime_->dSinceInit().count();
+    isudMIPEpochTime_ = isudObj_->isudMIPTime_->dSinceInit().count();
 
     myFile << SubproEpochTime_ << ",";
     myFile << preprocessTime_ ->dSinceStart().count()<< "\n";
     myFile.close();
+}
+
+std::string solver::saveRuntimes(PInstance &EpochInst) {
+    std::stringstream repStr;
+    epochRuntime_ = simulationTime_->dSinceStart().count();
+    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / (epoch_ + 1);
+
+    repStr << epoch_ << ",";
+    repStr << EpochInst->nbRequests_ << ",";
+    repStr << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ",";
+    repStr << epochRuntime_ << ",";
+    repStr << avgEpochRuntime_ << ",";
+    repStr << simulationTime_->dSinceInit().count() << ",";
+
+    // isud Times
+    repStr << isudObj_->isudTime_->dSinceInit().count() - isudEpochTime_ << ",";
+    repStr << isudObj_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
+    repStr << isudObj_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
+    repStr << isudObj_->isudMIPTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
+
+    isudEpochTime_ = isudObj_->isudTime_->dSinceInit().count();
+    RPEpochTime_ = isudObj_->RPTime_->dSinceInit().count();
+    CPEpochTime_ = isudObj_->CPTime_->dSinceInit().count();
+    isudMIPEpochTime_ = isudObj_->isudMIPTime_->dSinceInit().count();
+
+    repStr << SubproEpochTime_ << ",";
+    repStr << preprocessTime_ ->dSinceStart().count()<< "\n";
+    return repStr.str();
 }
 
 std::string solver::toString(PInstance & mainInst) const {
@@ -494,5 +559,7 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     return repStr.str();
 }
+
+
 
 

@@ -2,8 +2,8 @@
 // Created by Ella on 2021-10-26.
 //
 
-#ifndef _ROUTE_H
-#define _ROUTE_H
+#ifndef ROUTE_H
+#define ROUTE_H
 
 #include "data/Graph.h"
 #include <ilcplex/ilocplex.h>
@@ -35,7 +35,7 @@ public:
 //    Eigen::MatrixXd fullPattern_;
 
     // Constructor and Destructor
-    Route(int vehicleId);
+    explicit Route(int vehicleId);
     virtual ~Route();
 
     // Getters and Setters
@@ -82,5 +82,5 @@ inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
             );
 }
 
-#endif //_ROUTE_H
+#endif //ROUTE_H
 

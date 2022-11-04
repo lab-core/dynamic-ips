@@ -78,8 +78,8 @@ void Label::copyLabel(const Label &label) {
     nbUsed_ = 1;
 }
 Label::~Label() {
-    openNode_.clear();
-    pathNodes_.clear();
+//    openNode_.clear();
+//    pathNodes_.clear();
     delete[] name_;
 }
 
@@ -303,7 +303,7 @@ bool Label::isEliminated(PGraph &graph) {
 }
 
 // this function check whether the label is originated from a dominated parent or not
-bool Label::haveDominatedParent() const {
+bool Label::haveDominatedParent() {
     /*PLabel  childLabel = parent_;
     if (childLabel != nullptr) {
         while (childLabel->parent_ != nullptr) {

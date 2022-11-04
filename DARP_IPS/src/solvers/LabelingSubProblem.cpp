@@ -20,12 +20,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     nbGenerated_ = 0;
     nbActivated_ = 0;
 }
-LabelingSubProblem::~LabelingSubProblem() {
-    dominatedLabels_.clear();
-    activeNodes_.clear();
-    nodesOrder_.clear();
-    solverOptions_.reset();
-}
+LabelingSubProblem::~LabelingSubProblem() = default;
 
 // this function sort the list of nodes based of their dual values
 void LabelingSubProblem::sortNodes() {
@@ -149,6 +144,7 @@ void LabelingSubProblem::initialization() {
         }
     }
     initialLabel->currentNode_->activeLabels_.push_back(initialLabel);
+    initialLabel->currentNode_->generatedLabel_.resize(solverOptions_->maxPickup_ + 1);
     initialLabel->currentNode_->generatedLabel_[initialLabel->nbPickUp_].push_back(initialLabel);
     initialLabel->currentNode_->nbActiveLabels_++;
     initialLabel->currentNode_->bestLabelReduceCost_ = initialLabel->reducedCost_;
@@ -292,7 +288,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, PNode &outNode) {
 
 void LabelingSubProblem::solveDynamic_pulling1() {
     // create initial label
-    int nbActive = 0;
+    int nbActive;
     while(true) {
         // create initial label
         initialization();
@@ -409,7 +405,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
 //***************************************************************************************//
 void LabelingSubProblem::solveDynamic_pushing() {
     // create initial label
-    int nbActive = 0;
+    int nbActive;
     while(true) {
         // create initial label
         initialization();
@@ -501,7 +497,7 @@ void LabelingSubProblem::solveDynamic_pushing() {
 
 void LabelingSubProblem::solveDynamic_pushingDrop() {
 // create initial label
-    int nbActive = 0;
+    int nbActive;
     while(true) {
         // create initial label
         initialization();

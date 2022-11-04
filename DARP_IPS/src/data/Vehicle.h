@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-08.
 //
 
-#ifndef _VEHICLE_H
-#define _VEHICLE_H
+#ifndef VEHICLE_H
+#define VEHICLE_H
 
 #include "data/Route.h"
 
@@ -55,9 +55,9 @@ public:
     void updateStateTime(float elapsedTime, float &epochLength);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
-    void finalizeSolutionRoutes(PInstance & pInst);
+    void finalizeSolutionRoutes(PInstance & pInst) const;
 };
 
 
 
-#endif //_VEHICLE_H
+#endif //VEHICLE_H

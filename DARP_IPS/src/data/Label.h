@@ -2,8 +2,8 @@
 // Created by Ella on 2/22/2022.
 //
 
-#ifndef _LABEL_H
-#define _LABEL_H
+#ifndef LABEL_H
+#define LABEL_H
 
 
 #include "utilities/MyTools.h"
@@ -61,7 +61,7 @@ public:
     // this function examine the label to be sure that it leads to a route with negative reduced cost
     bool isEliminated(PGraph &graph);
     // this function check whether the label is originated from a dominated parent or not
-    bool haveDominatedParent() const;
+    static bool haveDominatedParent() ;
     PRoute labelToRoute(PVehicle &vehicle);
     PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
     // Display function
@@ -71,4 +71,4 @@ public:
 
 inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNodes_.size() < rhs->pathNodes_.size()); }
 
-#endif //_LABEL_H
+#endif //LABEL_H

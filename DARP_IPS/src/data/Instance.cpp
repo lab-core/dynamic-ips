@@ -163,11 +163,11 @@ std::string Instance::solutionToString() {
     repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
 
     if (numServed != 0) {
-        repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/numServed << " (s)" << std::endl;
-        repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/totalNumServed << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(totalNumServed) << " (s)" << std::endl;
     }
 
-    repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/nbVehicles_ << std::endl;
+    repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
     return repStr.str();
 }
@@ -357,6 +357,27 @@ void Instance::saveSolutionRoutes(const std::string& routeResultDir) {
     myFile.close();
 }
 
+std::string Instance::saveSolutionRoutes() {
+    std::stringstream repStr;
+    repStr << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad" << std::endl;
+    for (auto & vehicleObj : vehicles_) {
+        int i = 0;
+        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
+            repStr << vehicleObj->vehicleID_ << ",";
+            repStr << nodeObj->nodeID_ << ",";
+            repStr << nodeObj->requestTime_ << ",";
+            repStr << nodeObj->reachTime_ << ",";
+            repStr << nodeObj->initialType_ << ",";
+            repStr << nodeObj->locationID_ << ",";
+            repStr << nodeObj->departTime_ << ",";
+            repStr << nodeObj->nbPassengers_ << ",";
+            repStr << vehicleObj->solutionRoute_->plannedPassengers_[i] << "\n";
+            i++;
+        }
+    }
+    return repStr.str();
+}
+
 void Instance::saveRequestsResults(const std::string& requestResultDir) {
     std::ofstream myFile;
     myFile.open (requestResultDir);
@@ -389,6 +410,28 @@ void Instance::saveRequestsResults(const std::string& requestResultDir) {
 }
 
 
+std::string Instance::saveRequestsResults() {
+    std::stringstream repStr;
+    repStr << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
+              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime" << std::endl;
+
+    for (auto & requestObj : requests_) {
+        repStr << requestObj->getRequestId() << ",";
+        repStr << requestObj->nbPassengers_ << ",";
+        repStr << requestObj->PickUpID_ << ",";
+        repStr << requestObj->DropOffID_ << ",";
+        repStr << requestObj->earlyPick_ << ",";
+        repStr << requestObj->pickTime_ << ",";
+        repStr << requestObj->dropTime_ << ",";
+        repStr << requestObj->vehicleID_ << ",";
+        repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
+        repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
+        repStr << requestObj->maxTravelTime_ << ",";
+        repStr << requestObj->minTravelTime_ << "\n";
+    }
+    return repStr.str();
+}
+
 void Instance::saveEpochRoutes(const std::string& finalSolutionDir , int epoch) {
     std::ofstream myFile;
     myFile.open (finalSolutionDir, std::ofstream::app);
@@ -404,6 +447,22 @@ void Instance::saveEpochRoutes(const std::string& finalSolutionDir , int epoch) 
         }
     }
     myFile.close();
+}
+
+std::string Instance::saveEpochRoutes(int epoch) {
+    std::stringstream repStr;
+    for (auto & vehicleObj : vehicles_) {
+        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
+            repStr << epoch << ",";
+            repStr << vehicleObj->vehicleID_ << ",";
+            repStr << nodeObj->nodeID_ << ",";
+            repStr << nodeObj->requestTime_ << ",";
+            repStr << nodeObj->reachTime_ << ",";
+            repStr << nodeObj->type_ << ",";
+            repStr << nodeObj->locationID_ << "\n";
+        }
+    }
+    return repStr.str();
 }
 
 void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter) {
@@ -423,6 +482,24 @@ void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int
         }
     }
     myFile.close();
+}
+
+std::string Instance::saveISUDRoutes(int epoch, int isudIter) {
+    std::stringstream repStr;
+    for (auto & vehicleObj : vehicles_) {
+        for (auto & nodeObj : vehicleObj->currentRoute_->routeNodes_) {
+            repStr << epoch << ",";
+            repStr << isudIter << ",";
+            repStr << vehicleObj->vehicleID_ << ",";
+            repStr << nodeObj->nodeID_ << ",";
+            repStr << nodeObj->requestTime_ << ",";
+            repStr << nodeObj->reachTime_ << ",";
+            repStr << nodeObj->type_ << ",";
+            repStr << nodeObj->locationID_ << ",";
+            repStr << vehicleObj->currentRoute_->getRouteId() << "\n";
+        }
+    }
+    return repStr.str();
 }
 
 void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
@@ -520,6 +597,10 @@ void Instance::updateTaskIndexLabeling() {
         orderCounter++;
     }
 }
+
+
+
+
 
 
 

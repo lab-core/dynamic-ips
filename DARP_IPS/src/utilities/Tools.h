@@ -275,6 +275,136 @@ namespace Tools{
 
     };
 
+
+    // Instantiate an obect of this class to write directly in the attribute log
+// file.
+// The class can be initialized with an arbitrary width if all the outputs must
+// have the same minimum width. Precision can be set to force a maximum width
+// as far as floating numbers are concerned.
+//
+    class LogOutput
+    {
+    private:
+        std::ostream* pLogStream_;
+        int width_;
+        int precision_;
+        std::string logName_="";
+
+    public:
+        LogOutput(std::string logName, bool append = false):width_(0), precision_(5), logName_(logName) {
+            if (logName.empty()) {
+                pLogStream_ = &(std::cout);
+            }
+            else if(append) {
+                pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::app);
+            }
+            else {
+                pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::out);
+            }
+            // logStream_.open(logName.c_str(), std::fstream::out);
+        }
+        LogOutput(std::string logName, int width, bool append = false):width_(width), precision_(5), logName_(logName) {
+            if(append) {
+                pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::app);
+            }
+            else
+                pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::out);
+            // logStream_.open(logName.c_str(), std::fstream::out);
+        }
+
+        ~LogOutput() {
+            if (!logName_.empty() && pLogStream_)
+                delete pLogStream_;
+            pLogStream_ = NULL;
+        }
+
+        void close() {
+            std::ofstream* pStream = dynamic_cast<std::ofstream*>(pLogStream_);
+            if (pStream) {
+                if (pStream->is_open()) pStream->close();
+            }
+            else pLogStream_ = NULL;
+        }
+
+        // switch from unformatted to formatted inputs and reversely
+        //
+        void switchToFormatted(int width) {
+            width_ = width;
+        }
+        void switchToUnformatted() {
+            width_=0;
+        }
+
+        // set flags in the log stream
+        //
+        void setFlags(std::ios_base::fmtflags flag) {pLogStream_->flags(flag);}
+
+        // modify the precision used to write in the stream
+        //
+        void setPrecision(int precision) {precision_=precision;}
+
+        // modify the width of the fields
+        //
+        void setWidth(int width) {width_ = width;}
+
+        void endl() {(*pLogStream_) << std::endl;}
+
+        // redefine the output function
+        //
+        template<typename T>
+        LogOutput& operator<<(const T& output)
+        {
+            pLogStream_->width(width_);
+            pLogStream_->unsetf ( std::ios::floatfield );
+            pLogStream_->precision(precision_);
+            (*pLogStream_) << std::left << std::setprecision(5) << output;
+
+            return *this;
+        }
+
+        // write in the command window as well as in the log file
+        //
+        template<typename T>
+        void print(const T& output) {
+            (*pLogStream_) << output;
+            std::cout << output;
+        }
+
+        LogOutput& operator<<(std::ostream& (*func)(std::ostream&)) {
+
+            func(*pLogStream_);
+            return *this;
+        }
+    };
+
+// Can be used to create an output stream that writes with a
+// constant width in all future calls of << operator
+//
+    class FormattedOutput
+    {
+    private:
+        int width;
+        std::ostream& stream_obj;
+
+    public:
+        FormattedOutput(std::ostream& obj, int w): width(w), stream_obj(obj) {}
+
+        template<typename T>
+        FormattedOutput& operator<<(const T& output)
+        {
+            stream_obj.width(width);
+            stream_obj << output;
+
+            return *this;
+        }
+
+        FormattedOutput& operator<<(std::ostream& (*func)(std::ostream&))
+        {
+            func(stream_obj);
+            return *this;
+        }
+    };
+
 } // Tools namespace
 
 

@@ -8,6 +8,7 @@ SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&vehicle) {
     subGraph_ = std::make_shared<Graph>();
     bestReducedCost_ = 9999;
     nbNegativeColumns_ = 0;
+    nbTotalRequest_ = 0;
 }
 
 SubproModeler::~SubproModeler() {
@@ -16,8 +17,8 @@ SubproModeler::~SubproModeler() {
         node.second->successors_.clear();
         node.second->activeLabels_.clear();
         node.second->generatedLabel_.clear();
-        node.second->related_Request_.reset();
-        node.second->pairNode_ = nullptr;
+//        node.second->related_Request_.reset();
+//        node.second->pairNode_ = nullptr;
     }
     subGraph_->nodes_.clear();
     subGraph_.reset();

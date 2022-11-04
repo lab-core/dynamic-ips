@@ -2,8 +2,8 @@
 // Created by Elahe Amiri on 2022-10-13.
 //
 
-#ifndef _PARAMETERS_H
-#define _PARAMETERS_H
+#ifndef PARAMETERS_H
+#define PARAMETERS_H
 
 #include "utilities/MyTools.h"
 
@@ -80,7 +80,7 @@ struct solverOption {
     solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
                  bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
-    solverOption(PParameters &MainParams);
+    explicit solverOption(PParameters &MainParams);
     void updateOptions(float maxReachTime, int maxPickup);
 
     virtual ~solverOption();
@@ -89,4 +89,4 @@ struct solverOption {
 };
 
 
-#endif //_PARAMETERS_H
+#endif //PARAMETERS_H

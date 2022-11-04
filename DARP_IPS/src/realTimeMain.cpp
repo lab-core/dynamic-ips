@@ -12,11 +12,11 @@
 
 using namespace std::chrono;
 vector2D<float> durationMatrix_;
-float saveTime = 3600;
+float saveTime = 7200;
 bool middleSave = false;
 
 int main(int argc, char** argv) {
-    bool showLog = true;
+    std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string instFolder = "capInstances";
     std::string instanceNamefile = "datasets/InstanceNames1.txt";
@@ -25,9 +25,9 @@ int main(int argc, char** argv) {
 
     std::cout << "Number of arguments = " << argc << std::endl;
 
-    for (int i = 0; i < 12; i++){
+    for (int i = 0; i < 1; i++){
  //   for (int i = 1; i < argc; ++i) {
-        std::string instanceName = instNames[i];
+        std::string instanceName = "20160222_17-120m_3";
 //        std::string instanceName = argv[i];
 //        std::cout << "Instance : " << argv[i] << std::endl;
 
@@ -39,18 +39,15 @@ int main(int argc, char** argv) {
         std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
     //    PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-        mainInst->nbOnboards_ = 0;
-        mainInst->nbVehicles_ = 70;
+ //       mainInst->nbOnboards_ = 0;
+ //       mainInst->nbVehicles_ = 2000;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
         ReadWrite::readDatafiles(inputPaths, mainInst);
         std::cout << mainInst->toString();
         ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, mainInst->nbLocations_);
 
-        if (!showLog)
-            freopen (inputPaths.getOutputSolutionLog().c_str(),"w",stdout);
-
         // create solver
-        std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst);
+        std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
 
         if (mainInst->parameters_->solutionMode_ == DYNAMIC)
             instanceSolver->dynamicSolver(mainInst, inputPaths);
@@ -64,17 +61,26 @@ int main(int argc, char** argv) {
             vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_->mainAlgorithm_ );
 
         std::cout << std::endl << std::endl;
-        if (!showLog)
-            fclose (stdout);
 
         // print final solution to txt file
-        std::ofstream myFile;
+        Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
+        finalStream << instanceSolver->toString(mainInst);
+        finalStream.close();
+        /*std::ofstream myFile;
         myFile.open (inputPaths.getOutputFinalLog());
         myFile << instanceSolver->toString(mainInst);
-        myFile.close();
+        myFile.close();*/
 
-        mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
-        mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
+        Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
+        solutionRoutesStream << mainInst->saveSolutionRoutes();
+        solutionRoutesStream.close();
+
+        Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
+        requestResultsStream << mainInst->saveRequestsResults();
+        requestResultsStream.close();
+
+ //       mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
+ //       mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
         // save the final route solution
     }
 }

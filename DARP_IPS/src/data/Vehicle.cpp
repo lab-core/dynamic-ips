@@ -219,7 +219,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
 }
 
 // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
-void Vehicle::finalizeSolutionRoutes(PInstance & pInst) {
+void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;

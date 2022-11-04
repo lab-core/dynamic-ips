@@ -2,8 +2,8 @@
 // Created by Elahe Amiri on 2022-10-26.
 //
 
-#ifndef _SOLVER_H
-#define _SOLVER_H
+#ifndef SOLVER_H
+#define SOLVER_H
 
 #include "data/Instance.h"
 #include "solvers/ISUDAlgorithm.h"
@@ -35,10 +35,11 @@ public:
     myTools::Timer *simulationTime_;
     myTools::Timer *subProblemTime_;
     myTools::Timer *preprocessTime_;
+    Tools::LogOutput* pLogRunTimesStream_;
+    Tools::LogOutput* pLogEpochSolutionStream_;
 
 
-
-    solver(PInstance & mainInst);
+    solver(PInstance & mainInst, InputPaths &inputPaths);
 
     virtual ~solver();
 
@@ -56,6 +57,7 @@ public:
 
     // function to print epoch runTime to file
     void saveRuntimes(PInstance & EpochInst, const std::string& EpochRunTimeDir);
+    std::string saveRuntimes(PInstance & EpochInst);
 
 
     // Display results
@@ -63,4 +65,4 @@ public:
 };
 
 
-#endif //_SOLVER_H
+#endif //SOLVER_H

@@ -52,7 +52,14 @@ LinkedGreedyLabels::LinkedGreedyLabels(const LinkedGreedyLabels &label) {
 LinkedGreedyLabels::~LinkedGreedyLabels() {
     PGreedyLabel currentLabel = source_;
     while (currentLabel->child_ != nullptr) {
+        currentLabel->pair_.reset();
+        currentLabel->parent_.reset();
+        currentLabel = currentLabel->child_;
+    }
+    currentLabel = source_;
+    while (currentLabel->child_ != nullptr) {
         PGreedyLabel nextLabel = currentLabel->child_;
+        currentLabel->child_.reset();
         currentLabel.reset();
         currentLabel = nextLabel;
     }

@@ -121,6 +121,7 @@ void ComplementPro::updateModel(PInstance &pInst, vector<PRequest> &zSolution, v
 void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     Cplex_ = IloCplex(Model_);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+    Cplex_.setOut(env_.getNullStream());
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
         std::cout << "Failed to optimize the problem" << std::endl;
@@ -130,7 +131,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
     else {
 
         // printing solution status
-        std::cout << MasterModeler::toString();
+  //      std::cout << MasterModeler::toString();
 
         // getting dual values
         requestDuals_.clear();
@@ -216,8 +217,8 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
                     if (requestObj->requestStatus_ == NO_ACTION)
                         nbRequests++;
                 }
-                std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-                          << " are selected to served." << std::endl;
+                /*std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+                          << " are selected to served." << std::endl;*/
             }
             else
             {
@@ -251,6 +252,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     Cplex_ = IloCplex(Model_);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+    Cplex_.setOut(env_.getNullStream());
 
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
@@ -261,7 +263,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
     else {
 
         // printing solution status
-        std::cout << MasterModeler::toString();
+ //       std::cout << MasterModeler::toString();
 
         // getting dual values
         requestDuals_.clear();
@@ -374,13 +376,13 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     if (requestObj->requestStatus_ == NO_ACTION)
                         nbRequests++;
                 }
-                std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-                          << " are selected to served." << std::endl;
+                /*std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+                          << " are selected to served." << std::endl;*/
             }
             else
             {
                 status_ = FRACTIONAL;
-                std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
+   //             std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
                 fractionalRoutes_.clear();
                 fractionalZ_.clear();
                 // add incoming variables
@@ -467,20 +469,24 @@ void ComplementPro::ResetCPModel() {
             Model_.remove(normalConst_);
         }*/
 
-
-        routeSolVar_.endElements();
-        routeSolVar_.clear();
+        bool isModelExist = false;
+        if (routeSolVar_.getSize() > 0)
+            isModelExist = true;
+        if (isModelExist) {
+            routeSolVar_.endElements();
+            routeSolVar_.clear();
 //        SolRoute_.clear();
-        zSolVar_.endElements();
-        zSolVar_.clear();
-        routeIncVar_.endElements();
-        routeIncVar_.clear();
-        IncRoute_.clear();
-        zIncVar_.endElements();
-        zIncVar_.clear();
-        Model_.remove(requestConst_);
-        Model_.remove(vehicleConst_);
-        Model_.remove(normalConst_);
+            zSolVar_.endElements();
+            zSolVar_.clear();
+            routeIncVar_.endElements();
+            routeIncVar_.clear();
+            IncRoute_.clear();
+            zIncVar_.endElements();
+            zIncVar_.clear();
+            Model_.remove(requestConst_);
+            Model_.remove(vehicleConst_);
+            Model_.remove(normalConst_);
+        }
 
     }
     catch (IloException& e) {

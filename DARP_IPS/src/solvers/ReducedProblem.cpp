@@ -41,13 +41,18 @@ void ReducedProblem::ResetRPModel() {
             Model_.remove(vehicleConst_);
         }*/
 
-        routeVar_.endElements();
-        routeVar_.clear();
-        compRoutes_.clear();
-        zVar_.endElements();
-        zVar_.clear();
-        Model_.remove(requestConst_);
-        Model_.remove(vehicleConst_);
+        bool isModelExist = false;
+        if (routeVar_.getSize() > 0)
+            isModelExist = true;
+        if (isModelExist){
+            routeVar_.endElements();
+            routeVar_.clear();
+            compRoutes_.clear();
+            zVar_.endElements();
+            zVar_.clear();
+            Model_.remove(requestConst_);
+            Model_.remove(vehicleConst_);
+        }
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
@@ -123,6 +128,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setOut(env_.getNullStream());
         Cplex_.solve();
 
         // getting dual values
@@ -156,7 +162,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
 
         // printing solution status
-        std::cout << toString();
+  //      std::cout << toString();
 
         // saving the result and remove out of base variables
         zSolution.clear();
@@ -197,8 +203,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
             if (requestObj->requestStatus_ == NO_ACTION)
                 nbRequests++;
         }
-        std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-        << " are selected to served." << std::endl;
+        /*std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+        << " are selected to served." << std::endl;*/
         Cplex_.clearModel();
     }
     catch (IloException& e) {
