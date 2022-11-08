@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libDARP_IPS.a CMakeFiles/DARP_IPS.dir/realTimeMain.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libDARP_IPS.a

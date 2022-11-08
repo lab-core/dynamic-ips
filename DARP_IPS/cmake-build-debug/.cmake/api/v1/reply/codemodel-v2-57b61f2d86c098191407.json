@@ -1,0 +1,166 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8.2"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4
+					],
+					"jsonFile" : "directory-src-Debug-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/data",
+					"jsonFile" : "directory-src.data-Debug-72e9df1050045df1bc7b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/data",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src/utilities",
+					"jsonFile" : "directory-src.utilities-Debug-dcdbed25411b592e7570.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/utilities",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/solvers",
+					"jsonFile" : "directory-src.solvers-Debug-c54ba9fced79eb52629b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/solvers",
+					"targetIndexes" : 
+					[
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "DARP_IPS",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "DARP_IPS::@145eef247bfb46b6828c",
+					"jsonFile" : "target-DARP_IPS-Debug-d9e3c9b191e449eb6af2.json",
+					"name" : "DARP_IPS",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "data::@e5ccf62099f28249f155",
+					"jsonFile" : "target-data-Debug-37d0406a38c6dde624c6.json",
+					"name" : "data",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_DARP::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_DARP-Debug-b75e9a1434364bde3a43.json",
+					"name" : "realtime_DARP",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "solvers::@02f782cf707058e3539c",
+					"jsonFile" : "target-solvers-Debug-8592ed2f459727f8b578.json",
+					"name" : "solvers",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "utilities::@f462118c54b1f42474f1",
+					"jsonFile" : "target-utilities-Debug-e06c7dc68bbe83a40bd1.json",
+					"name" : "utilities",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug",
+		"source" : "/Users/ella/Projects/dynamic-ips/DARP_IPS"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}

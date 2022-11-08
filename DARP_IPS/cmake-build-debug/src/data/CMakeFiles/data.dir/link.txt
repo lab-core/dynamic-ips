@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libdata.a CMakeFiles/data.dir/Vehicle.cpp.o CMakeFiles/data.dir/Instance.cpp.o CMakeFiles/data.dir/Request.cpp.o CMakeFiles/data.dir/Graph.cpp.o CMakeFiles/data.dir/Route.cpp.o CMakeFiles/data.dir/Label.cpp.o CMakeFiles/data.dir/Greedy.cpp.o CMakeFiles/data.dir/Parameters.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libdata.a

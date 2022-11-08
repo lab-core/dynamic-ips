@@ -1,0 +1,15 @@
+"/Users/ella/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/222.4345.21/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug -DCPLEX_STUDIO_DIR:PATH=CPLEX_STUDIO_DIR-NOTFOUND -G "CodeBlocks - Unix Makefiles" -S /Users/ella/Projects/dynamic-ips/DARP_IPS -B /Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug
+lib/x86-64_osx/static_piclib/x86-64_darwin9_gcc4.0/static_pic
+Found studio dirs: /Applications/CPLEX_Studio221
+-- Found CPLEX Studio: /Applications/CPLEX_Studio221
+-- Detected CPLEX version 
+-- Could NOT find CPLEX_CP (missing: CPLEX_CP_LIBRARY CPLEX_CP_LIBRARY_DEBUG CPLEX_CP_INCLUDE_DIR) 
+-----CPLEX IS FOUND-----
+-----CPLEX CONCERT IS FOUND-----
+-----CPLEX ILOCPLEX IS FOUND-----
+-- System: Darwin-21.6.0
+-- Build type: Debug
+-- Compiler version: 14.0.0.14000029
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug
