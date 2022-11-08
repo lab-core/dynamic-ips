@@ -5,11 +5,12 @@ from Dataset import *
 
 
 def main(name):
+    manhattan_districts = Network()
+    manhattan_districts.read_network_data('manhattan-geo', location_to_cell_file='location_to_cell',
+                                          edge_time_matrix_file='edge_time_matrix', stop_matrix_file='stop_matrix')
+    vf.plot_districts(district_network=manhattan_districts,print_id=True,add_legend=True, file_name="districts")
     for files in uf.create_file_names():
         day_dataset = Dataset(files)
-        manhattan_districts = Network()
-        manhattan_districts.read_network_data('manhattan-geo', location_to_cell_file='location_to_cell',
-                                              edge_time_matrix_file='edge_time_matrix', stop_matrix_file='stop_matrix')
         day_dataset.prepare_dataset(network=manhattan_districts, capacity=4)
         vf.show_request_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
         day_dataset.limit_time_dataset(start_hr=8, end_hr=19)

@@ -18,18 +18,16 @@ bool middleSave = false;
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
-    std::string instFolder = "capInstances";
-    std::string instanceNamefile = "datasets/InstanceNames1.txt";
-    std::vector<std::string> instNames;
-    ReadWrite::readInstNames(instanceNamefile, instNames , 24);
+    std::string instFolder = "test";
+  //  std::string instanceNamefile = "datasets/InstanceNames1.txt";
+  //  std::vector<std::string> instNames;
+  //  ReadWrite::readInstNames(instanceNamefile, instNames , 24);
 
     std::cout << "Number of arguments = " << argc << std::endl;
 
-    for (int i = 0; i < 1; i++){
- //   for (int i = 1; i < argc; ++i) {
-        std::string instanceName = "20160222_17-120m_3";
-//        std::string instanceName = argv[i];
-//        std::cout << "Instance : " << argv[i] << std::endl;
+  //  for (int i = 1; i < argc; ++i) {
+        std::string instanceName = argv[1];
+        std::cout << "Instance : " << argv[1]  << std::endl;
 
         // build the path of input files
         // create output files for epoch results
@@ -37,10 +35,7 @@ int main(int argc, char** argv) {
 
         // Read data files and initialize instance and parameters in output path
         std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
-    //    PInstance mainInst = ReadWrite::createMainInstance(inputPaths);
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
- //       mainInst->nbOnboards_ = 0;
- //       mainInst->nbVehicles_ = 2000;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
         ReadWrite::readDatafiles(inputPaths, mainInst);
         std::cout << mainInst->toString();
@@ -82,5 +77,5 @@ int main(int argc, char** argv) {
  //       mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
  //       mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
         // save the final route solution
-    }
+ //   }
 }
