@@ -106,7 +106,6 @@ find_package(Threads)
 # CPLEX
 
 set(CPLEX_DIR ${CPLEX_STUDIO_DIR_}/cplex)
-
 # Find the CPLEX include directory.
 find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h PATHS ${CPLEX_DIR}/include)
 

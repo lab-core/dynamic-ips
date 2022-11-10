@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8.2)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
+#set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 project(DARP_IPS)
 
 # this code is to solve the following warning
@@ -43,7 +43,7 @@ if (UNIX)
     if (APPLE)
         set (EIGEN_DIR "/Applications/eigen-3.4.0")
     else()
-        set (EIGEN_DIR "/home/elamib/Documents/eigen-3.4.0")
+        set (EIGEN_DIR /home/elamib/Documents/eigen-3.4.0 /home/ella/eigen-3.4.0)
     endif()
 else()
     set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
