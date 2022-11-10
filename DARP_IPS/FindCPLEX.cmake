@@ -16,7 +16,7 @@ include(FindPackageHandleStandardArgs)
 #   ~/Applications/IBM/ILOG/CPLEX_Studio<edition>124 - Mac OS X
 #   C:\Program Files\IBM\ILOG\CPLEX_Studio<edition>124 - Windows
 if (UNIX)
-    set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG /home/elamib/Documents/ibm/ILOG /home/ibm/cplex-studio/22.1)
+    set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG /home/elamib/Documents/ibm/ILOG /home/ibm/cplex-studio/22.1/cplex)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set(CPLEX_ARCH x86-64)
     else ()
