@@ -594,7 +594,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         CPTime_->stop();
     }
 
- //   std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
 }
 
@@ -706,7 +706,7 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPat
             findNegative = true;
     }
 
-//    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
 }
 
@@ -854,7 +854,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         if (!findNegative)
             restartAlgorithm = false;
     }
- //   std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
 }
 void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {

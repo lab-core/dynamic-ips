@@ -181,10 +181,10 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
         preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        /*std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "*************************************************************************************"<< std::endl;
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;*/
+        std::cout << "*************************************************************************************"<< std::endl;
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -216,7 +216,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD)
+        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
             solveCG_ISUD(EpochInst,inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
@@ -284,7 +284,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD)
+        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
             solveCG_ISUD(EpochInst,inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);

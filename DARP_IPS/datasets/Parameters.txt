@@ -8,7 +8,7 @@ penaltyL = 30
 committedTime = 10
 nbThreads = 8
 InitialDual = 1
-mainAlgorithm = 3
+mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 1
 
@@ -26,7 +26,7 @@ isTruncated = 0
 MaxLabel = 150
 isDominanceReleased = 0`
 isSuccessorsLimited = 0
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 1

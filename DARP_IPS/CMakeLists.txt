@@ -4,8 +4,7 @@ set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 project(DARP_IPS)
 
 # this code is to solve the following warning
-# CMake Warning (dev) at The package name passed to `find_package_handle_stand
-ard_args`
+# CMake Warning (dev) at The package name passed to `find_package_handle_standard_args`
 # (CPLEX CONCERT) does not match the name of the calling package (CPLEX).
 # This can lead to problems in calling code that expects `find_package` result variables (e.g., `_FOUND`)
 # to follow a certain pattern. Call Stack (most recent call first):

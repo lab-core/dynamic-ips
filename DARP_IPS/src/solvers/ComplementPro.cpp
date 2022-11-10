@@ -121,7 +121,7 @@ void ComplementPro::updateModel(PInstance &pInst, vector<PRequest> &zSolution, v
 void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     Cplex_ = IloCplex(Model_);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-    Cplex_.setOut(env_.getNullStream());
+  //  Cplex_.setOut(env_.getNullStream());
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
         std::cout << "Failed to optimize the problem" << std::endl;
@@ -252,7 +252,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     Cplex_ = IloCplex(Model_);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-    Cplex_.setOut(env_.getNullStream());
+ //   Cplex_.setOut(env_.getNullStream());
 
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;

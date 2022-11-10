@@ -19,13 +19,14 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string instFolder = "test";
-  //  std::string instanceNamefile = "datasets/InstanceNames1.txt";
-  //  std::vector<std::string> instNames;
-  //  ReadWrite::readInstNames(instanceNamefile, instNames , 24);
+//    std::string instanceNamefile = "datasets/InstanceNames.txt";
+//    std::vector<std::string> instNames;
+//    ReadWrite::readInstNames(instanceNamefile, instNames , 24);
 
     std::cout << "Number of arguments = " << argc << std::endl;
-
+//    for (auto & fileName : instNames){
   //  for (int i = 1; i < argc; ++i) {
+//        std::string instanceName = fileName;
         std::string instanceName = argv[1];
         std::cout << "Instance : " << argv[1]  << std::endl;
 
@@ -77,5 +78,5 @@ int main(int argc, char** argv) {
  //       mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
  //       mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
         // save the final route solution
- //   }
+//    }
 }

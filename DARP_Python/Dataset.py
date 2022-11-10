@@ -22,7 +22,9 @@ class Dataset(object):
         self.origin = dt.utcnow()
         self.nb_trip_per_district = nb_trip_per_district
         self.start_hr = 7
-        self.end_hr = 10
+        self.start_min = 0
+        self.end_hr = 9
+        self.end_min = 0
 
     def read_dataset_data(self):
         """ read data """
@@ -71,25 +73,40 @@ class Dataset(object):
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
         self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec']]
 
-    def limit_time_instance(self, start_hr, end_hr):
-        self.start_hr = start_hr
-        self.end_hr = end_hr
+    def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
+        if start_hr is not None:
+            self.start_hr = start_hr
+        if end_hr is not None:
+            self.end_hr = end_hr
+        if start_min is not None:
+            self.start_min = start_min
+        if end_min is not None:
+            self.end_min = end_min
 
-        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, start_hr, end_hr)
+        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr,
+                                                                       self.start_min, self.end_min)
         self.calculate_times_seconds()
         self.instance = self.instance[self.instance.request_time_sec >= start_seconds]
         self.instance = self.instance[self.instance.request_time_sec < end_seconds]
         print("\nThe number of data records after time limit:", len(self.instance.index))
 
-    def limit_time_dataset(self, start_hr, end_hr):
-        self.start_hr = start_hr
-        self.end_hr = end_hr
-        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, start_hr, end_hr)
+    def limit_time_dataset(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
+        if start_hr is not None:
+            self.start_hr = start_hr
+        if end_hr is not None:
+            self.end_hr = end_hr
+        if start_min is not None:
+            self.start_min = start_min
+        if end_min is not None:
+            self.end_min = end_min
+        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr,
+                                                                       self.start_min, self.end_min)
         self.calculate_times_seconds()
         self.dataset = self.dataset[self.dataset.request_time_sec >= start_seconds]
         self.dataset = self.dataset[self.dataset.request_time_sec < end_seconds]
         print("\nThe number of data records after time limit:", len(self.dataset.index))
         self.update_state()
+        self.instance = self.dataset
 
     def update_state(self):
         self.nb_requests = len(self.dataset.index)
@@ -160,7 +177,7 @@ class Dataset(object):
         # selected_records = selected_records[selected_records.dropoff_district == c.OUT_BOUND]
         self.nb_trip_per_district.append(len(selected_records))
 
-    def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None):
+    def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None):
         self.read_dataset_data()
         if capacity is not None:
             self.split_requests(capacity)
@@ -168,11 +185,13 @@ class Dataset(object):
             self.add_district_id(network)
             self.calculate_trip_per_district(network)
         if start_hr is not None:
-            self.limit_time_dataset(start_hr, end_hr)
+            self.limit_time_dataset(start_hr, end_hr, start_min, end_min)
 
     def save_instance(self, nb_vehicles=None):
-        period_start, period_end = uf.calculate_time_from_origin(self.origin, self.start_hr, self.end_hr)
-        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr)
+        period_start, period_end = uf.calculate_time_from_origin(self.origin, self.start_hr, self.end_hr,
+                                                                 self.start_min, self.end_min)
+        start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr,
+                                                                 self.start_min, self.end_min)
 
         file_name = period_start.strftime("%Y%m%d") + "_" + period_start.strftime("%H") + "-" + str(
             int((period_end - period_start).seconds / 60)) + "m"

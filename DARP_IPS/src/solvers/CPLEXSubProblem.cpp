@@ -217,7 +217,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 void CPLEXSubProblem::SolveCPLEX() {
     try {
         SubProbCplex_ = IloCplex(SubProModel_);
-        SubProbCplex_.setOut(env_.getNullStream());
+   //     SubProbCplex_.setOut(env_.getNullStream());
 
         // set the Parameters
         SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);

@@ -684,7 +684,7 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
-//    std::cout << this->toString() << std::endl;
+   // std::cout << this->toString() << std::endl;
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes) {

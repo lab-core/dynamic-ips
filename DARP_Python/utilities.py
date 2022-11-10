@@ -5,18 +5,27 @@ import constants as c
 import datetime as dtime
 
 
-def create_vehicle_dataset(vehicle_file):
+def create_vehicle_dataset(vehicle_file, districts=None):
     # read data
     f = open(c.VEHICLES_DIR + vehicle_file + ".json")
     df_vehicles = json.load(f)
     f.close()
-
+    source_ids = []
+    if districts is not None:
+        for item in districts:
+            for cell in item.cells:
+                source_ids.append(int(cell[0]))
+    source_ids = sorted(source_ids)
     # covert data to matrix
     vehicle_data = []
     for i in range(len(df_vehicles)):
+        source_id = df_vehicles[i]['start_stop_id']
+
+        if districts is not None:
+            source_id = source_ids[i%len(source_ids)]
         vehicle_data.append(
-            [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, df_vehicles[i]['start_stop_id'],
-             df_vehicles[i]['start_stop_id']])
+            [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id])
+
     df_vehicles = pd.DataFrame(vehicle_data,
                                columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID'])
 
@@ -47,17 +56,17 @@ def create_file_names():
     return file_names
 
 
-def calculate_time_from_origin(time_origin, start_hr, end_hr):
+def calculate_time_from_origin(time_origin, start_hr, end_hr, start_min, end_min):
     year = time_origin.year
     month = time_origin.month
     day = time_origin.day
-    period_start = dtime.datetime(year, month, day, start_hr, 0, 0)
-    period_end = dtime.datetime(year, month, day, end_hr, 0, 0)
+    period_start = dtime.datetime(year, month, day, start_hr, start_min, 0)
+    period_end = dtime.datetime(year, month, day, end_hr, end_min, 0)
     return period_start, period_end
 
 
-def calculate_time_from_origin_sec(time_origin, start_hr, end_hr):
-    period_start, period_end = calculate_time_from_origin(time_origin, start_hr, end_hr)
+def calculate_time_from_origin_sec(time_origin, start_hr, end_hr, start_min, end_min):
+    period_start, period_end = calculate_time_from_origin(time_origin, start_hr, end_hr, start_min, end_min)
     start_seconds = (period_start - time_origin).total_seconds()
     end_seconds = (period_end - time_origin).total_seconds()
     return start_seconds, end_seconds

@@ -209,11 +209,11 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
                 myTools::throwException("Route-Validation");
             }
         }
-        if (mainAlgorithm != GREEDY){
+ //       if (mainAlgorithm != GREEDY){
 //            if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
             if ((routeNodes_[i]->departTime_ != testRoute->plannedReachTime_.back()))
                 testRoute->plannedReachTime_.back() = routeNodes_[i]->departTime_;
-        }
+//        }
 
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
