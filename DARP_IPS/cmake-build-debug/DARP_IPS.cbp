@@ -4,7 +4,7 @@
 	<Project>
 		<Option title="DARP_IPS"/>
 		<Option makefile_is_custom="1"/>
-		<Option compiler="gcc"/>
+		<Option compiler="clang"/>
 		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\data\;CMake Files\src\utilities\;CMake Files\src\solvers\;"/>
 		<Build>
 			<Target title="all">
@@ -22,7 +22,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
@@ -47,7 +47,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
@@ -92,7 +92,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -116,7 +116,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -140,7 +140,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -164,7 +164,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/data"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -188,7 +188,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -212,7 +212,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/utilities"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -236,7 +236,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/solvers"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
@@ -260,7 +260,7 @@
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/solvers"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
 					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
 					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
