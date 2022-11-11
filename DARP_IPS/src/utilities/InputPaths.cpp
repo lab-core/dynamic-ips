@@ -93,8 +93,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
     std::string folder_name = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder;
     char *path = const_cast<char *>(folder_name.c_str());
-    if (mkdir(path, 0777) == -1)
-        std::cout << "Error :  " << strerror(errno) << std::endl;
+    int check = mkdir(path, 0777);
 
 //  std::__fs::filesystem::create_directory(instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder);
 
@@ -140,9 +139,9 @@ void InputPaths::makeInstanceOutput(std::string instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
     std::string folder_name = outputDir_ + instanceNameOut_;
     char *path = const_cast<char *>(folder_name.c_str());
-    if (mkdir(path, 0777) == -1)
-        std::cout << "Error :  " << strerror(errno) << std::endl;
- //   std::__fs::filesystem::create_directory(outputDir_ + instanceNameOut_);
+    int check = mkdir(path, 0777);
+
+    //   std::__fs::filesystem::create_directory(outputDir_ + instanceNameOut_);
     std::string outputDir = outputDir_ + instanceNameOut_ + "/";
     output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
