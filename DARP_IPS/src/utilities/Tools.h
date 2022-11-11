@@ -12,6 +12,7 @@
 #include <functional>
 #include <iostream>
 #include "MyTools.h"
+#include <condition_variable>
 
 namespace Tools{
     // Create a pool of threads that can be used to run functions in parallel.
