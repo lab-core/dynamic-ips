@@ -6,7 +6,7 @@ CXX_DEFINES = -DIL_STD
 
 CXX_INCLUDES = -I/Applications/eigen-3.4.0 -I/Users/ella/Projects/dynamic-ips/DARP_IPS/src -isystem /Applications/CPLEX_Studio221/cplex/include -isystem /Applications/CPLEX_Studio221/concert/include
 
-CXX_FLAGSx86_64 =  -pthread -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14
+CXX_FLAGSx86_64 =  -std=c++11 -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14
 
-CXX_FLAGS =  -pthread -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14
+CXX_FLAGS =  -std=c++11 -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++14
 
