@@ -227,6 +227,9 @@ CPLEX_CP_INCLUDE_DIR:PATH=CPLEX_CP_INCLUDE_DIR-NOTFOUND
 //Path to a library.
 CPLEX_CP_LIBRARY:FILEPATH=CPLEX_CP_LIBRARY-NOTFOUND
 
+//The directory containing a CMake configuration file for CPLEX.
+CPLEX_DIR:PATH=CPLEX_DIR-NOTFOUND
+
 //Path to a file.
 CPLEX_ILOCPLEX_INCLUDE_DIR:PATH=/Applications/CPLEX_Studio221/cplex/include
 
@@ -256,6 +259,9 @@ DARP_IPS_SOURCE_DIR:STATIC=/Users/ella/Projects/dynamic-ips/DARP_IPS
 
 //Path to a program.
 ProcessorCount_cmd_sysctl:FILEPATH=/usr/sbin/sysctl
+
+//The directory containing a CMake configuration file for Thread.
+Thread_DIR:PATH=Thread_DIR-NOTFOUND
 
 
 ########################

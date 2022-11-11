@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12.2)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
-#set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 project(DARP_IPS)
 
 # this code is to solve the following warning
@@ -77,4 +77,4 @@ add_executable(realtime_DARP src/realTimeMain.cpp)
 #target_link_libraries(dynamic_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
 #target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
 #target_link_libraries(anytime_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-target_link_libraries(realtime_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
+target_link_libraries(realtime_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex pthread)

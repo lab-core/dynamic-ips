@@ -237,6 +237,11 @@
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 5,
+				"fragment" : "-lpthread",
+				"role" : "libraries"
+			},
+			{
 				"backtrace" : 7,
 				"fragment" : "src/data/libdata.a",
 				"role" : "libraries"
