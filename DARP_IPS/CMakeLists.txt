@@ -10,7 +10,7 @@ project(DARP_IPS)
 # to follow a certain pattern. Call Stack (most recent call first):
 # This warning is for project developers.  Use -Wno-dev to suppress it.
 
-set(CMAKE_CXX_FLAGS "-pthread")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 endif()

@@ -116,7 +116,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-pthread -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+					"fragment" : " -pthread -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
 				},
 				{
 					"fragment" : "-std=gnu++14"
