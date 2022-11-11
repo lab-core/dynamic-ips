@@ -44,25 +44,25 @@
 			{
 				"command" : 2,
 				"file" : 1,
-				"line" : 21,
+				"line" : 22,
 				"parent" : 3
 			},
 			{
 				"command" : 2,
 				"file" : 1,
-				"line" : 27,
+				"line" : 28,
 				"parent" : 3
 			},
 			{
 				"command" : 3,
 				"file" : 1,
-				"line" : 52,
+				"line" : 53,
 				"parent" : 3
 			},
 			{
 				"command" : 3,
 				"file" : 1,
-				"line" : 69,
+				"line" : 70,
 				"parent" : 3
 			}
 		]
@@ -73,7 +73,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+					"fragment" : "-pthread -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
 				},
 				{
 					"fragment" : "-std=gnu++14"
