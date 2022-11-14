@@ -1,15 +1,20 @@
-"/Users/ella/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/222.4345.21/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug -DCPLEX_STUDIO_DIR:PATH=CPLEX_STUDIO_DIR-NOTFOUND -G "CodeBlocks - Unix Makefiles" -S /Users/ella/Projects/dynamic-ips/DARP_IPS -B /Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug
-lib/x86-64_osx/static_piclib/x86-64_darwin9_gcc4.0/static_pic
-Found studio dirs: /Applications/CPLEX_Studio221
--- Found CPLEX Studio: /Applications/CPLEX_Studio221
+/home/amirelah/.cache/JetBrains/RemoteDev/dist/68305831d57ea_CLion-2022.2.4/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" -S /home/amirelah/Projects/dynamic-ips/DARP_IPS -B /home/amirelah/Projects/dynamic-ips/DARP_IPS
+lib/x86-64_sles10_4.1/static_piclib/x86-64_linux/static_pic
+Found studio dirs: 
+Found studio dirs: 
+Found studio dirs: 
+Found studio dirs: /home/ibm/cplex-studio/22.1/cplex
+-- Found CPLEX Studio: /home/ibm/cplex-studio/22.1/cplex
 -- Detected CPLEX version 
--- Could NOT find CPLEX_CP (missing: CPLEX_CP_LIBRARY CPLEX_CP_LIBRARY_DEBUG CPLEX_CP_INCLUDE_DIR) 
------CPLEX IS FOUND-----
------CPLEX CONCERT IS FOUND-----
------CPLEX ILOCPLEX IS FOUND-----
--- System: Darwin-21.6.0
--- Build type: Debug
--- Compiler version: 14.0.0.14000029
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug
+CMake Error at /home/amirelah/.cache/JetBrains/RemoteDev/dist/68305831d57ea_CLion-2022.2.4/bin/cmake/linux/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake:230 (message):
+  Could NOT find CPLEX (missing: CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG
+  CPLEX_INCLUDE_DIR)
+Call Stack (most recent call first):
+  /home/amirelah/.cache/JetBrains/RemoteDev/dist/68305831d57ea_CLion-2022.2.4/bin/cmake/linux/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake:594 (_FPHSA_FAILURE_MESSAGE)
+  FindCPLEX.cmake:152 (find_package_handle_standard_args)
+  CMakeLists.txt:29 (find_package)
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/amirelah/Projects/dynamic-ips/DARP_IPS/CMakeFiles/CMakeOutput.log".
+See also "/home/amirelah/Projects/dynamic-ips/DARP_IPS/CMakeFiles/CMakeError.log".

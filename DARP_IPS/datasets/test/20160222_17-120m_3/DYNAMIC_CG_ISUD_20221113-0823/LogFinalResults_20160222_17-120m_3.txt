@@ -1,0 +1,2077 @@
+*************************************************************************************
+                        FINAL VEHICLE ROUTES AFTER  61 EPOCHS 
+                                    DYNAMIC MODE
+*************************************************************************************
+
+
+# NUMBER OF VEHICLES           = 45
+# 
+############################   PARAMETERS AND OPTIONS   ############################
+# MODEL PARAMETERS
+#
+# alpha Parameter              = 1.5
+# beta Parameter               = 240.0
+# delta Parameter              = 420.0
+# epoch Length                 = 30 (s)
+# penalty epoch Length         = 30
+# number of threads            = 8
+# initial dual solution        = PENALTIES
+# main algorithm               = CG_ISUD
+# add columns with one request = false
+# solution mode                = DYNAMIC
+
+# ISUD PARAMETERS
+#
+# warm start                   = PREVIOUS_SOLUTION
+# max MIP compatibility degree  = 4
+# max CP compatibility degree  = 14
+# min ISUD improvement         = 0.0
+# fixed epoch                  = false
+
+# LABEL SETTING STRATEGIES
+#
+# Use Truncated Labeling       = false
+# MaxLabel in Truncating       = 150
+# Release Dominance Rule       = false
+# Restrict outgoing arcs       = false
+# Is Pickup allowd after Drop  = false
+# Restrict Route Length        = NUM_PICK_RESTRICTED
+# Labeling Strategy            = PUSHING
+# SubProblem solution Method   = LABEL_SETTING
+
+# CPLEX PARAMETERS
+#
+# BigM value                   = 27000
+# solve Time Limit             = 300
+# populate Time Limit          = 200
+# 
+
+
+################################   FINAL ROUTES   ################################
+#
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 45
+#	- VEHICLE_ID              : 0
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1778
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_0             66647 (s)        66647 (s)        66647 (s)        0
+#   2  (PICKUP ) Request_ID 67    PI_67            66717 (s)        66717 (s)        66717 (s)        2
+#   3  (PICKUP ) Request_ID 78    PI_78            66765 (s)        66765 (s)        66765 (s)        4
+#   4  (PICKUP ) Request_ID 88    PI_88            66813 (s)        66813 (s)        66813 (s)        5
+#   5  (DROPOFF) Request_ID 78    DR_78            66848 (s)        66848 (s)        66848 (s)        3
+#   6  (DROPOFF) Request_ID 67    DR_67            66988 (s)        66988 (s)        66988 (s)        1
+#   7  (PICKUP ) Request_ID 143   PI_143           66988 (s)        66988 (s)        66988 (s)        7
+#   8  (DROPOFF) Request_ID 88    DR_88            67112 (s)        67112 (s)        67112 (s)        6
+#   9  (DROPOFF) Request_ID 143   DR_143           67364 (s)        67364 (s)        67364 (s)        0
+#  10  (PICKUP ) Request_ID 213   PI_213           67419 (s)        67419 (s)        67419 (s)        2
+#  11  (PICKUP ) Request_ID 225   PI_225           67489 (s)        67489 (s)        67489 (s)        4
+#  12  (DROPOFF) Request_ID 213   DR_213           67604 (s)        67604 (s)        67604 (s)        2
+#  13  (PICKUP ) Request_ID 271   PI_271           67604 (s)        67604 (s)        67604 (s)        3
+#  14  (DROPOFF) Request_ID 225   DR_225           67871 (s)        67871 (s)        67871 (s)        1
+#  15  (PICKUP ) Request_ID 306   PI_306           67871 (s)        67871 (s)        67871 (s)        2
+#  16  (PICKUP ) Request_ID 305   PI_305           67914 (s)        67914 (s)        67914 (s)        4
+#  17  (DROPOFF) Request_ID 271   DR_271           67957 (s)        67957 (s)        67957 (s)        3
+#  18  (PICKUP ) Request_ID 367   PI_367           67957 (s)        67957 (s)        67957 (s)        4
+#  19  (DROPOFF) Request_ID 306   DR_306           68166 (s)        68166 (s)        68166 (s)        3
+#  20  (DROPOFF) Request_ID 367   DR_367           68237 (s)        68237 (s)        68237 (s)        2
+#  21  (PICKUP ) Request_ID 422   PI_422           68400 (s)        68400 (s)        68400 (s)        4
+#  22  (DROPOFF) Request_ID 305   DR_305           68535 (s)        68535 (s)        68535 (s)        2
+#  23  (DROPOFF) Request_ID 422   DR_422           68639 (s)        68639 (s)        68639 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 46
+#	- VEHICLE_ID              : 1
+#	- NUMBER_OF_STOPS         : 14
+#	- TOTAL_WAITING (seconds) : 912
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_1             66671 (s)        66671 (s)        66671 (s)        4
+#   2  (DROPOFF) Request_ID 0     DR_0             67003 (s)        67003 (s)        67003 (s)        0
+#   3  (PICKUP ) Request_ID 146   PI_146           67003 (s)        67003 (s)        67003 (s)        1
+#   4  (DROPOFF) Request_ID 146   DR_146           67386 (s)        67386 (s)        67386 (s)        0
+#   5  (PICKUP ) Request_ID 211   PI_211           67431 (s)        67431 (s)        67431 (s)        1
+#   6  (PICKUP ) Request_ID 228   PI_228           67477 (s)        67477 (s)        67477 (s)        2
+#   7  (DROPOFF) Request_ID 228   DR_228           67652 (s)        67652 (s)        67652 (s)        1
+#   8  (PICKUP ) Request_ID 293   PI_293           67704 (s)        67704 (s)        67704 (s)        2
+#   9  (DROPOFF) Request_ID 211   DR_211           67819 (s)        67819 (s)        67819 (s)        1
+#  10  (DROPOFF) Request_ID 293   DR_293           68151 (s)        68151 (s)        68151 (s)        0
+#  11  (PICKUP ) Request_ID 406   PI_406           68235 (s)        68235 (s)        68235 (s)        6
+#  12  (PICKUP ) Request_ID 415   PI_415           68296 (s)        68296 (s)        68296 (s)        7
+#  13  (DROPOFF) Request_ID 415   DR_415           68404 (s)        68404 (s)        68404 (s)        6
+#  14  (DROPOFF) Request_ID 406   DR_406           68622 (s)        68622 (s)        68622 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 47
+#	- VEHICLE_ID              : 2
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1769
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_2             66654 (s)        66654 (s)        66654 (s)        5
+#   2  (DROPOFF) Request_ID 1     DR_1             66705 (s)        66705 (s)        66705 (s)        4
+#   3  (DROPOFF) Request_ID 2     DR_2             66901 (s)        66901 (s)        66901 (s)        3
+#   4  (PICKUP ) Request_ID 118   PI_118           66984 (s)        66984 (s)        66984 (s)        4
+#   5  (DROPOFF) Request_ID 3     DR_3             67142 (s)        67142 (s)        67142 (s)        1
+#   6  (PICKUP ) Request_ID 168   PI_168           67213 (s)        67213 (s)        67213 (s)        3
+#   7  (DROPOFF) Request_ID 168   DR_168           67261 (s)        67261 (s)        67261 (s)        1
+#   8  (DROPOFF) Request_ID 118   DR_118           67362 (s)        67362 (s)        67362 (s)        0
+#   9  (PICKUP ) Request_ID 221   PI_221           67362 (s)        67362 (s)        67362 (s)        1
+#  10  (PICKUP ) Request_ID 212   PI_212           67450 (s)        67450 (s)        67450 (s)        2
+#  11  (DROPOFF) Request_ID 221   DR_221           67686 (s)        67686 (s)        67686 (s)        1
+#  12  (DROPOFF) Request_ID 212   DR_212           67832 (s)        67832 (s)        67832 (s)        0
+#  13  (PICKUP ) Request_ID 313   PI_313           67875 (s)        67875 (s)        67875 (s)        1
+#  14  (DROPOFF) Request_ID 313   DR_313           68172 (s)        68172 (s)        68172 (s)        0
+#  15  (PICKUP ) Request_ID 401   PI_401           68300 (s)        68300 (s)        68300 (s)        1
+#  16  (PICKUP ) Request_ID 409   PI_409           68337 (s)        68337 (s)        68337 (s)        7
+#  17  (DROPOFF) Request_ID 409   DR_409           68466 (s)        68466 (s)        68466 (s)        1
+#  18  (PICKUP ) Request_ID 487   PI_487           68565 (s)        68565 (s)        68565 (s)        2
+#  19  (PICKUP ) Request_ID 503   PI_503           68635 (s)        68635 (s)        68635 (s)        3
+#  20  (DROPOFF) Request_ID 487   DR_487           68653 (s)        68653 (s)        68653 (s)        2
+#  21  (DROPOFF) Request_ID 401   DR_401           68713 (s)        68713 (s)        68713 (s)        1
+#  22  (DROPOFF) Request_ID 503   DR_503           68977 (s)        68977 (s)        68977 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 48
+#	- VEHICLE_ID              : 3
+#	- NUMBER_OF_STOPS         : 26
+#	- TOTAL_WAITING (seconds) : 2136
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_3             66752 (s)        66752 (s)        66752 (s)        1
+#   2  (PICKUP ) Request_ID 86    PI_86            66826 (s)        66826 (s)        66826 (s)        3
+#   3  (DROPOFF) Request_ID 86    DR_86            66878 (s)        66878 (s)        66878 (s)        1
+#   4  (PICKUP ) Request_ID 124   PI_124           66928 (s)        66928 (s)        66928 (s)        7
+#   5  (DROPOFF) Request_ID 4     DR_4             67074 (s)        67074 (s)        67074 (s)        6
+#   6  (DROPOFF) Request_ID 124   DR_124           67208 (s)        67208 (s)        67208 (s)        0
+#   7  (PICKUP ) Request_ID 192   PI_192           67229 (s)        67229 (s)        67229 (s)        1
+#   8  (PICKUP ) Request_ID 190   PI_190           67273 (s)        67273 (s)        67273 (s)        2
+#   9  (DROPOFF) Request_ID 190   DR_190           67434 (s)        67434 (s)        67434 (s)        1
+#  10  (PICKUP ) Request_ID 238   PI_238           67517 (s)        67517 (s)        67517 (s)        2
+#  11  (PICKUP ) Request_ID 254   PI_254           67517 (s)        67517 (s)        67517 (s)        3
+#  12  (DROPOFF) Request_ID 192   DR_192           67714 (s)        67714 (s)        67714 (s)        2
+#  13  (DROPOFF) Request_ID 254   DR_254           67772 (s)        67772 (s)        67772 (s)        1
+#  14  (PICKUP ) Request_ID 327   PI_327           67966 (s)        67966 (s)        67966 (s)        2
+#  15  (PICKUP ) Request_ID 347   PI_347           68034 (s)        68034 (s)        68034 (s)        4
+#  16  (PICKUP ) Request_ID 291   PI_291           68034 (s)        68034 (s)        68034 (s)        7
+#  17  (DROPOFF) Request_ID 238   DR_238           68034 (s)        68034 (s)        68034 (s)        6
+#  18  (DROPOFF) Request_ID 347   DR_347           68166 (s)        68166 (s)        68166 (s)        4
+#  19  (PICKUP ) Request_ID 421   PI_421           68236 (s)        68236 (s)        68236 (s)        5
+#  20  (PICKUP ) Request_ID 394   PI_394           68236 (s)        68236 (s)        68236 (s)        6
+#  21  (DROPOFF) Request_ID 291   DR_291           68315 (s)        68315 (s)        68315 (s)        3
+#  22  (DROPOFF) Request_ID 327   DR_327           68464 (s)        68464 (s)        68464 (s)        2
+#  23  (PICKUP ) Request_ID 481   PI_481           68594 (s)        68594 (s)        68594 (s)        3
+#  24  (DROPOFF) Request_ID 394   DR_394           68674 (s)        68674 (s)        68674 (s)        2
+#  25  (DROPOFF) Request_ID 481   DR_481           68728 (s)        68728 (s)        68728 (s)        1
+#  26  (DROPOFF) Request_ID 421   DR_421           68824 (s)        68824 (s)        68824 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 9.00
+#	- ROUTE_NUMBER            : 49
+#	- VEHICLE_ID              : 4
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1342
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_4             66762 (s)        66762 (s)        66762 (s)        0
+#   2  (PICKUP ) Request_ID 87    PI_87            66840 (s)        66840 (s)        66840 (s)        1
+#   3  (PICKUP ) Request_ID 111   PI_111           66944 (s)        66944 (s)        66944 (s)        2
+#   4  (DROPOFF) Request_ID 87    DR_87            67194 (s)        67194 (s)        67194 (s)        1
+#   5  (DROPOFF) Request_ID 111   DR_111           67371 (s)        67380 (s)        67380 (s)        0
+#   6  (PICKUP ) Request_ID 223   PI_223           67440 (s)        67440 (s)        67440 (s)        2
+#   7  (PICKUP ) Request_ID 235   PI_235           67497 (s)        67497 (s)        67497 (s)        5
+#   8  (PICKUP ) Request_ID 244   PI_244           67530 (s)        67530 (s)        67530 (s)        6
+#   9  (DROPOFF) Request_ID 223   DR_223           67667 (s)        67667 (s)        67667 (s)        4
+#  10  (PICKUP ) Request_ID 289   PI_289           67756 (s)        67756 (s)        67756 (s)        5
+#  11  (DROPOFF) Request_ID 235   DR_235           67792 (s)        67792 (s)        67792 (s)        2
+#  12  (DROPOFF) Request_ID 244   DR_244           67882 (s)        67882 (s)        67882 (s)        1
+#  13  (DROPOFF) Request_ID 289   DR_289           68080 (s)        68080 (s)        68080 (s)        0
+#  14  (PICKUP ) Request_ID 404   PI_404           68207 (s)        68207 (s)        68207 (s)        1
+#  15  (PICKUP ) Request_ID 414   PI_414           68239 (s)        68239 (s)        68239 (s)        3
+#  16  (PICKUP ) Request_ID 442   PI_442           68364 (s)        68364 (s)        68364 (s)        4
+#  17  (DROPOFF) Request_ID 404   DR_404           68453 (s)        68453 (s)        68453 (s)        3
+#  18  (DROPOFF) Request_ID 414   DR_414           68544 (s)        68544 (s)        68544 (s)        1
+#  19  (DROPOFF) Request_ID 442   DR_442           68707 (s)        68707 (s)        68707 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 73.00
+#	- ROUTE_NUMBER            : 50
+#	- VEHICLE_ID              : 5
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1473
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_5             66646 (s)        66646 (s)        66646 (s)        0
+#   2  (PICKUP ) Request_ID 74    PI_74            66696 (s)        66696 (s)        66696 (s)        5
+#   3  (PICKUP ) Request_ID 79    PI_79            66799 (s)        66799 (s)        66799 (s)        7
+#   4  (DROPOFF) Request_ID 79    DR_79            66957 (s)        66957 (s)        66957 (s)        5
+#   5  (DROPOFF) Request_ID 74    DR_74            67115 (s)        67140 (s)        67140 (s)        0
+#   6  (PICKUP ) Request_ID 173   PI_173           67264 (s)        67264 (s)        67264 (s)        1
+#   7  (PICKUP ) Request_ID 210   PI_210           67388 (s)        67388 (s)        67388 (s)        7
+#   8  (DROPOFF) Request_ID 210   DR_210           67628 (s)        67628 (s)        67628 (s)        1
+#   9  (DROPOFF) Request_ID 173   DR_173           67662 (s)        67710 (s)        67710 (s)        0
+#  10  (PICKUP ) Request_ID 308   PI_308           67858 (s)        67858 (s)        67858 (s)        2
+#  11  (PICKUP ) Request_ID 341   PI_341           67904 (s)        67904 (s)        67904 (s)        4
+#  12  (DROPOFF) Request_ID 341   DR_341           68141 (s)        68141 (s)        68141 (s)        2
+#  13  (PICKUP ) Request_ID 392   PI_392           68161 (s)        68161 (s)        68161 (s)        3
+#  14  (DROPOFF) Request_ID 308   DR_308           68230 (s)        68230 (s)        68230 (s)        1
+#  15  (PICKUP ) Request_ID 433   PI_433           68313 (s)        68313 (s)        68313 (s)        7
+#  16  (DROPOFF) Request_ID 392   DR_392           68409 (s)        68409 (s)        68409 (s)        6
+#  17  (PICKUP ) Request_ID 480   PI_480           68539 (s)        68539 (s)        68539 (s)        7
+#  18  (DROPOFF) Request_ID 433   DR_433           68607 (s)        68607 (s)        68607 (s)        1
+#  19  (DROPOFF) Request_ID 480   DR_480           68754 (s)        68754 (s)        68754 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 124.00
+#	- ROUTE_NUMBER            : 51
+#	- VEHICLE_ID              : 6
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1560
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_6             66780 (s)        66780 (s)        66780 (s)        0
+#   2  (PICKUP ) Request_ID 101   PI_101           66999 (s)        66999 (s)        66999 (s)        1
+#   3  (PICKUP ) Request_ID 148   PI_148           67075 (s)        67075 (s)        67075 (s)        2
+#   4  (PICKUP ) Request_ID 157   PI_157           67075 (s)        67075 (s)        67075 (s)        3
+#   5  (DROPOFF) Request_ID 101   DR_101           67196 (s)        67196 (s)        67196 (s)        2
+#   6  (DROPOFF) Request_ID 157   DR_157           67387 (s)        67387 (s)        67387 (s)        1
+#   7  (DROPOFF) Request_ID 148   DR_148           67480 (s)        67480 (s)        67480 (s)        0
+#   8  (PICKUP ) Request_ID 239   PI_239           67528 (s)        67528 (s)        67528 (s)        2
+#   9  (DROPOFF) Request_ID 239   DR_239           67752 (s)        67752 (s)        67752 (s)        0
+#  10  (PICKUP ) Request_ID 307   PI_307           67859 (s)        67859 (s)        67859 (s)        1
+#  11  (PICKUP ) Request_ID 325   PI_325           67942 (s)        67942 (s)        67942 (s)        6
+#  12  (DROPOFF) Request_ID 307   DR_307           68174 (s)        68174 (s)        68174 (s)        5
+#  13  (PICKUP ) Request_ID 393   PI_393           68203 (s)        68203 (s)        68203 (s)        6
+#  14  (DROPOFF) Request_ID 325   DR_325           68342 (s)        68342 (s)        68342 (s)        1
+#  15  (PICKUP ) Request_ID 462   PI_462           68395 (s)        68395 (s)        68395 (s)        2
+#  16  (DROPOFF) Request_ID 393   DR_393           68603 (s)        68603 (s)        68603 (s)        1
+#  17  (PICKUP ) Request_ID 502   PI_502           68603 (s)        68603 (s)        68603 (s)        3
+#  18  (DROPOFF) Request_ID 462   DR_462           68691 (s)        68691 (s)        68691 (s)        2
+#  19  (DROPOFF) Request_ID 502   DR_502           68807 (s)        68807 (s)        68807 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 52
+#	- VEHICLE_ID              : 7
+#	- NUMBER_OF_STOPS         : 17
+#	- TOTAL_WAITING (seconds) : 1343
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_7             66714 (s)        66714 (s)        66714 (s)        0
+#   2  (PICKUP ) Request_ID 83    PI_83            66801 (s)        66801 (s)        66801 (s)        4
+#   3  (DROPOFF) Request_ID 83    DR_83            66873 (s)        66873 (s)        66873 (s)        0
+#   4  (PICKUP ) Request_ID 115   PI_115           66960 (s)        66960 (s)        66960 (s)        6
+#   5  (PICKUP ) Request_ID 136   PI_136           67034 (s)        67034 (s)        67034 (s)        7
+#   6  (DROPOFF) Request_ID 115   DR_115           67146 (s)        67146 (s)        67146 (s)        1
+#   7  (DROPOFF) Request_ID 136   DR_136           67532 (s)        67532 (s)        67532 (s)        0
+#   8  (PICKUP ) Request_ID 229   PI_229           67589 (s)        67589 (s)        67589 (s)        1
+#   9  (DROPOFF) Request_ID 229   DR_229           67884 (s)        67884 (s)        67884 (s)        0
+#  10  (PICKUP ) Request_ID 338   PI_338           67884 (s)        67884 (s)        67884 (s)        3
+#  11  (PICKUP ) Request_ID 348   PI_348           67969 (s)        67969 (s)        67969 (s)        5
+#  12  (DROPOFF) Request_ID 348   DR_348           68081 (s)        68081 (s)        68081 (s)        3
+#  13  (DROPOFF) Request_ID 338   DR_338           68328 (s)        68328 (s)        68328 (s)        0
+#  14  (PICKUP ) Request_ID 435   PI_435           68328 (s)        68328 (s)        68328 (s)        1
+#  15  (PICKUP ) Request_ID 455   PI_455           68408 (s)        68408 (s)        68408 (s)        2
+#  16  (DROPOFF) Request_ID 435   DR_435           68551 (s)        68551 (s)        68551 (s)        1
+#  17  (DROPOFF) Request_ID 455   DR_455           68895 (s)        68895 (s)        68895 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 53
+#	- VEHICLE_ID              : 8
+#	- NUMBER_OF_STOPS         : 30
+#	- TOTAL_WAITING (seconds) : 2152
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_8             66655 (s)        66655 (s)        66655 (s)        1
+#   2  (PICKUP ) Request_ID 66    PI_66            66749 (s)        66749 (s)        66749 (s)        2
+#   3  (DROPOFF) Request_ID 66    DR_66            66894 (s)        66894 (s)        66894 (s)        1
+#   4  (DROPOFF) Request_ID 5     DR_5             66952 (s)        66952 (s)        66952 (s)        0
+#   5  (PICKUP ) Request_ID 142   PI_142           67005 (s)        67005 (s)        67005 (s)        1
+#   6  (PICKUP ) Request_ID 132   PI_132           67038 (s)        67038 (s)        67038 (s)        2
+#   7  (PICKUP ) Request_ID 153   PI_153           67071 (s)        67071 (s)        67071 (s)        3
+#   8  (DROPOFF) Request_ID 153   DR_153           67156 (s)        67156 (s)        67156 (s)        2
+#   9  (PICKUP ) Request_ID 175   PI_175           67156 (s)        67156 (s)        67156 (s)        4
+#  10  (DROPOFF) Request_ID 175   DR_175           67182 (s)        67182 (s)        67182 (s)        2
+#  11  (DROPOFF) Request_ID 142   DR_142           67283 (s)        67283 (s)        67283 (s)        1
+#  12  (PICKUP ) Request_ID 206   PI_206           67309 (s)        67309 (s)        67309 (s)        7
+#  13  (DROPOFF) Request_ID 132   DR_132           67401 (s)        67401 (s)        67401 (s)        6
+#  14  (PICKUP ) Request_ID 227   PI_227           67498 (s)        67498 (s)        67498 (s)        7
+#  15  (DROPOFF) Request_ID 206   DR_206           67595 (s)        67595 (s)        67595 (s)        1
+#  16  (PICKUP ) Request_ID 269   PI_269           67667 (s)        67667 (s)        67667 (s)        2
+#  17  (DROPOFF) Request_ID 227   DR_227           67834 (s)        67834 (s)        67834 (s)        1
+#  18  (PICKUP ) Request_ID 324   PI_324           67890 (s)        67890 (s)        67890 (s)        2
+#  19  (PICKUP ) Request_ID 329   PI_329           67940 (s)        67940 (s)        67940 (s)        5
+#  20  (PICKUP ) Request_ID 366   PI_366           68054 (s)        68054 (s)        68054 (s)        6
+#  21  (DROPOFF) Request_ID 269   DR_269           68144 (s)        68144 (s)        68144 (s)        5
+#  22  (DROPOFF) Request_ID 366   DR_366           68199 (s)        68199 (s)        68199 (s)        4
+#  23  (PICKUP ) Request_ID 427   PI_427           68261 (s)        68261 (s)        68261 (s)        5
+#  24  (DROPOFF) Request_ID 324   DR_324           68261 (s)        68261 (s)        68261 (s)        4
+#  25  (DROPOFF) Request_ID 427   DR_427           68261 (s)        68261 (s)        68261 (s)        3
+#  26  (DROPOFF) Request_ID 329   DR_329           68333 (s)        68333 (s)        68333 (s)        0
+#  27  (PICKUP ) Request_ID 461   PI_461           68485 (s)        68485 (s)        68485 (s)        2
+#  28  (PICKUP ) Request_ID 484   PI_484           68485 (s)        68485 (s)        68485 (s)        3
+#  29  (DROPOFF) Request_ID 461   DR_461           68664 (s)        68664 (s)        68664 (s)        1
+#  30  (DROPOFF) Request_ID 484   DR_484           68987 (s)        68987 (s)        68987 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 54
+#	- VEHICLE_ID              : 9
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1683
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_9             66665 (s)        66665 (s)        66665 (s)        1
+#   2  (DROPOFF) Request_ID 6     DR_6             66838 (s)        66838 (s)        66838 (s)        0
+#   3  (PICKUP ) Request_ID 107   PI_107           66874 (s)        66874 (s)        66874 (s)        1
+#   4  (PICKUP ) Request_ID 121   PI_121           66910 (s)        66910 (s)        66910 (s)        2
+#   5  (DROPOFF) Request_ID 107   DR_107           67002 (s)        67002 (s)        67002 (s)        1
+#   6  (PICKUP ) Request_ID 150   PI_150           67094 (s)        67094 (s)        67094 (s)        2
+#   7  (DROPOFF) Request_ID 121   DR_121           67330 (s)        67330 (s)        67330 (s)        1
+#   8  (DROPOFF) Request_ID 150   DR_150           67543 (s)        67543 (s)        67543 (s)        0
+#   9  (PICKUP ) Request_ID 264   PI_264           67593 (s)        67593 (s)        67593 (s)        1
+#  10  (DROPOFF) Request_ID 264   DR_264           67684 (s)        67684 (s)        67684 (s)        0
+#  11  (PICKUP ) Request_ID 283   PI_283           67770 (s)        67770 (s)        67770 (s)        1
+#  12  (PICKUP ) Request_ID 282   PI_282           67770 (s)        67770 (s)        67770 (s)        5
+#  13  (PICKUP ) Request_ID 320   PI_320           67817 (s)        67817 (s)        67817 (s)        6
+#  14  (DROPOFF) Request_ID 282   DR_282           67861 (s)        67861 (s)        67861 (s)        2
+#  15  (DROPOFF) Request_ID 320   DR_320           67960 (s)        67960 (s)        67960 (s)        1
+#  16  (DROPOFF) Request_ID 283   DR_283           68100 (s)        68100 (s)        68100 (s)        0
+#  17  (PICKUP ) Request_ID 379   PI_379           68220 (s)        68220 (s)        68220 (s)        1
+#  18  (PICKUP ) Request_ID 446   PI_446           68340 (s)        68340 (s)        68340 (s)        2
+#  19  (PICKUP ) Request_ID 425   PI_425           68429 (s)        68429 (s)        68429 (s)        3
+#  20  (DROPOFF) Request_ID 379   DR_379           68483 (s)        68483 (s)        68483 (s)        2
+#  21  (DROPOFF) Request_ID 425   DR_425           68597 (s)        68597 (s)        68597 (s)        1
+#  22  (DROPOFF) Request_ID 446   DR_446           68881 (s)        68881 (s)        68881 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 45.00
+#	- ROUTE_NUMBER            : 55
+#	- VEHICLE_ID              : 10
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1331
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_10            66701 (s)        66701 (s)        66701 (s)        2
+#   2  (DROPOFF) Request_ID 7     DR_7             66701 (s)        66701 (s)        66701 (s)        1
+#   3  (DROPOFF) Request_ID 8     DR_8             66825 (s)        66870 (s)        66870 (s)        0
+#   4  (PICKUP ) Request_ID 117   PI_117           66964 (s)        66964 (s)        66964 (s)        1
+#   5  (DROPOFF) Request_ID 117   DR_117           67179 (s)        67179 (s)        67179 (s)        0
+#   6  (PICKUP ) Request_ID 158   PI_158           67179 (s)        67179 (s)        67179 (s)        1
+#   7  (PICKUP ) Request_ID 162   PI_162           67215 (s)        67215 (s)        67215 (s)        2
+#   8  (DROPOFF) Request_ID 158   DR_158           67324 (s)        67324 (s)        67324 (s)        1
+#   9  (DROPOFF) Request_ID 162   DR_162           67625 (s)        67625 (s)        67625 (s)        0
+#  10  (PICKUP ) Request_ID 280   PI_280           67673 (s)        67673 (s)        67673 (s)        4
+#  11  (PICKUP ) Request_ID 277   PI_277           67764 (s)        67764 (s)        67764 (s)        5
+#  12  (DROPOFF) Request_ID 277   DR_277           67843 (s)        67843 (s)        67843 (s)        4
+#  13  (DROPOFF) Request_ID 280   DR_280           68093 (s)        68093 (s)        68093 (s)        0
+#  14  (PICKUP ) Request_ID 396   PI_396           68093 (s)        68093 (s)        68093 (s)        5
+#  15  (PICKUP ) Request_ID 376   PI_376           68170 (s)        68170 (s)        68170 (s)        6
+#  16  (PICKUP ) Request_ID 408   PI_408           68262 (s)        68262 (s)        68262 (s)        7
+#  17  (DROPOFF) Request_ID 396   DR_396           68359 (s)        68359 (s)        68359 (s)        2
+#  18  (DROPOFF) Request_ID 408   DR_408           68489 (s)        68489 (s)        68489 (s)        1
+#  19  (DROPOFF) Request_ID 376   DR_376           68634 (s)        68634 (s)        68634 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 56
+#	- VEHICLE_ID              : 11
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1634
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_11            66612 (s)        66612 (s)        66612 (s)        2
+#   2  (DROPOFF) Request_ID 9     DR_9             66745 (s)        66745 (s)        66745 (s)        1
+#   3  (PICKUP ) Request_ID 85    PI_85            66745 (s)        66745 (s)        66745 (s)        3
+#   4  (PICKUP ) Request_ID 82    PI_82            66841 (s)        66841 (s)        66841 (s)        4
+#   5  (DROPOFF) Request_ID 85    DR_85            66950 (s)        66950 (s)        66950 (s)        2
+#   6  (DROPOFF) Request_ID 10    DR_10            67033 (s)        67033 (s)        67033 (s)        1
+#   7  (DROPOFF) Request_ID 82    DR_82            67091 (s)        67091 (s)        67091 (s)        0
+#   8  (PICKUP ) Request_ID 161   PI_161           67188 (s)        67188 (s)        67188 (s)        1
+#   9  (DROPOFF) Request_ID 161   DR_161           67375 (s)        67375 (s)        67375 (s)        0
+#  10  (PICKUP ) Request_ID 216   PI_216           67478 (s)        67478 (s)        67478 (s)        1
+#  11  (PICKUP ) Request_ID 241   PI_241           67572 (s)        67572 (s)        67572 (s)        2
+#  12  (PICKUP ) Request_ID 250   PI_250           67625 (s)        67625 (s)        67625 (s)        3
+#  13  (DROPOFF) Request_ID 250   DR_250           67790 (s)        67790 (s)        67790 (s)        2
+#  14  (DROPOFF) Request_ID 216   DR_216           67830 (s)        67830 (s)        67830 (s)        1
+#  15  (DROPOFF) Request_ID 241   DR_241           67961 (s)        67961 (s)        67961 (s)        0
+#  16  (PICKUP ) Request_ID 369   PI_369           68070 (s)        68070 (s)        68070 (s)        1
+#  17  (PICKUP ) Request_ID 381   PI_381           68120 (s)        68120 (s)        68120 (s)        2
+#  18  (PICKUP ) Request_ID 398   PI_398           68166 (s)        68166 (s)        68166 (s)        4
+#  19  (PICKUP ) Request_ID 419   PI_419           68270 (s)        68270 (s)        68270 (s)        5
+#  20  (DROPOFF) Request_ID 381   DR_381           68270 (s)        68270 (s)        68270 (s)        4
+#  21  (DROPOFF) Request_ID 369   DR_369           68393 (s)        68393 (s)        68393 (s)        3
+#  22  (DROPOFF) Request_ID 398   DR_398           68456 (s)        68456 (s)        68456 (s)        1
+#  23  (DROPOFF) Request_ID 419   DR_419           68650 (s)        68650 (s)        68650 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 49.00
+#	- ROUTE_NUMBER            : 57
+#	- VEHICLE_ID              : 12
+#	- NUMBER_OF_STOPS         : 25
+#	- TOTAL_WAITING (seconds) : 1415
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_12            66683 (s)        66683 (s)        66683 (s)        7
+#   2  (DROPOFF) Request_ID 11    DR_11            66748 (s)        66748 (s)        66748 (s)        1
+#   3  (DROPOFF) Request_ID 12    DR_12            66851 (s)        66900 (s)        66900 (s)        0
+#   4  (PICKUP ) Request_ID 128   PI_128           66984 (s)        66984 (s)        66984 (s)        1
+#   5  (DROPOFF) Request_ID 128   DR_128           67159 (s)        67159 (s)        67159 (s)        0
+#   6  (PICKUP ) Request_ID 166   PI_166           67172 (s)        67172 (s)        67172 (s)        1
+#   7  (PICKUP ) Request_ID 184   PI_184           67172 (s)        67172 (s)        67172 (s)        2
+#   8  (DROPOFF) Request_ID 166   DR_166           67288 (s)        67288 (s)        67288 (s)        1
+#   9  (DROPOFF) Request_ID 184   DR_184           67562 (s)        67562 (s)        67562 (s)        0
+#  10  (PICKUP ) Request_ID 263   PI_263           67696 (s)        67696 (s)        67696 (s)        1
+#  11  (PICKUP ) Request_ID 292   PI_292           67696 (s)        67696 (s)        67696 (s)        2
+#  12  (PICKUP ) Request_ID 287   PI_287           67802 (s)        67802 (s)        67802 (s)        4
+#  13  (PICKUP ) Request_ID 331   PI_331           67802 (s)        67802 (s)        67802 (s)        5
+#  14  (DROPOFF) Request_ID 292   DR_292           67967 (s)        67967 (s)        67967 (s)        4
+#  15  (DROPOFF) Request_ID 263   DR_263           68076 (s)        68076 (s)        68076 (s)        3
+#  16  (PICKUP ) Request_ID 400   PI_400           68179 (s)        68179 (s)        68179 (s)        4
+#  17  (DROPOFF) Request_ID 331   DR_331           68230 (s)        68230 (s)        68230 (s)        3
+#  18  (DROPOFF) Request_ID 287   DR_287           68363 (s)        68363 (s)        68363 (s)        1
+#  19  (PICKUP ) Request_ID 459   PI_459           68386 (s)        68386 (s)        68386 (s)        2
+#  20  (PICKUP ) Request_ID 477   PI_477           68467 (s)        68467 (s)        68467 (s)        3
+#  21  (PICKUP ) Request_ID 496   PI_496           68493 (s)        68493 (s)        68493 (s)        5
+#  22  (DROPOFF) Request_ID 400   DR_400           68515 (s)        68515 (s)        68515 (s)        4
+#  23  (DROPOFF) Request_ID 496   DR_496           68562 (s)        68562 (s)        68562 (s)        2
+#  24  (DROPOFF) Request_ID 459   DR_459           68718 (s)        68718 (s)        68718 (s)        1
+#  25  (DROPOFF) Request_ID 477   DR_477           68860 (s)        68860 (s)        68860 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 22.00
+#	- ROUTE_NUMBER            : 58
+#	- VEHICLE_ID              : 13
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1835
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_13            66646 (s)        66646 (s)        66646 (s)        1
+#   2  (PICKUP ) Request_ID 65    PI_65            66731 (s)        66731 (s)        66731 (s)        2
+#   3  (DROPOFF) Request_ID 13    DR_13            67006 (s)        67006 (s)        67006 (s)        1
+#   4  (DROPOFF) Request_ID 65    DR_65            67058 (s)        67080 (s)        67080 (s)        0
+#   5  (PICKUP ) Request_ID 159   PI_159           67119 (s)        67119 (s)        67119 (s)        5
+#   6  (PICKUP ) Request_ID 169   PI_169           67173 (s)        67173 (s)        67173 (s)        6
+#   7  (DROPOFF) Request_ID 159   DR_159           67325 (s)        67325 (s)        67325 (s)        1
+#   8  (DROPOFF) Request_ID 169   DR_169           67520 (s)        67520 (s)        67520 (s)        0
+#   9  (PICKUP ) Request_ID 251   PI_251           67547 (s)        67547 (s)        67547 (s)        3
+#  10  (DROPOFF) Request_ID 251   DR_251           67722 (s)        67722 (s)        67722 (s)        0
+#  11  (PICKUP ) Request_ID 312   PI_312           67789 (s)        67789 (s)        67789 (s)        1
+#  12  (PICKUP ) Request_ID 300   PI_300           67861 (s)        67861 (s)        67861 (s)        2
+#  13  (PICKUP ) Request_ID 356   PI_356           67874 (s)        67874 (s)        67874 (s)        3
+#  14  (DROPOFF) Request_ID 356   DR_356           68029 (s)        68029 (s)        68029 (s)        2
+#  15  (DROPOFF) Request_ID 312   DR_312           68221 (s)        68221 (s)        68221 (s)        1
+#  16  (DROPOFF) Request_ID 300   DR_300           68295 (s)        68295 (s)        68295 (s)        0
+#  17  (PICKUP ) Request_ID 456   PI_456           68430 (s)        68430 (s)        68430 (s)        1
+#  18  (PICKUP ) Request_ID 443   PI_443           68457 (s)        68457 (s)        68457 (s)        5
+#  19  (PICKUP ) Request_ID 417   PI_417           68526 (s)        68526 (s)        68526 (s)        6
+#  20  (DROPOFF) Request_ID 417   DR_417           68623 (s)        68623 (s)        68623 (s)        5
+#  21  (DROPOFF) Request_ID 443   DR_443           68902 (s)        68902 (s)        68902 (s)        1
+#  22  (DROPOFF) Request_ID 456   DR_456           68950 (s)        68950 (s)        68950 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 15.00
+#	- ROUTE_NUMBER            : 59
+#	- VEHICLE_ID              : 14
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1646
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_14            66618 (s)        66618 (s)        66618 (s)        6
+#   2  (DROPOFF) Request_ID 14    DR_14            66678 (s)        66678 (s)        66678 (s)        5
+#   3  (PICKUP ) Request_ID 76    PI_76            66828 (s)        66828 (s)        66828 (s)        6
+#   4  (DROPOFF) Request_ID 15    DR_15            66917 (s)        66917 (s)        66917 (s)        1
+#   5  (DROPOFF) Request_ID 76    DR_76            67125 (s)        67140 (s)        67140 (s)        0
+#   6  (PICKUP ) Request_ID 176   PI_176           67211 (s)        67211 (s)        67211 (s)        1
+#   7  (PICKUP ) Request_ID 187   PI_187           67263 (s)        67263 (s)        67263 (s)        2
+#   8  (PICKUP ) Request_ID 186   PI_186           67304 (s)        67304 (s)        67304 (s)        3
+#   9  (DROPOFF) Request_ID 186   DR_186           67426 (s)        67426 (s)        67426 (s)        2
+#  10  (DROPOFF) Request_ID 176   DR_176           67601 (s)        67601 (s)        67601 (s)        1
+#  11  (PICKUP ) Request_ID 255   PI_255           67601 (s)        67601 (s)        67601 (s)        2
+#  12  (DROPOFF) Request_ID 187   DR_187           67793 (s)        67793 (s)        67793 (s)        1
+#  13  (PICKUP ) Request_ID 303   PI_303           67824 (s)        67824 (s)        67824 (s)        2
+#  14  (DROPOFF) Request_ID 255   DR_255           68065 (s)        68065 (s)        68065 (s)        1
+#  15  (PICKUP ) Request_ID 395   PI_395           68065 (s)        68065 (s)        68065 (s)        2
+#  16  (DROPOFF) Request_ID 303   DR_303           68242 (s)        68242 (s)        68242 (s)        1
+#  17  (PICKUP ) Request_ID 429   PI_429           68295 (s)        68295 (s)        68295 (s)        2
+#  18  (PICKUP ) Request_ID 445   PI_445           68360 (s)        68360 (s)        68360 (s)        3
+#  19  (PICKUP ) Request_ID 436   PI_436           68456 (s)        68456 (s)        68456 (s)        4
+#  20  (DROPOFF) Request_ID 395   DR_395           68456 (s)        68456 (s)        68456 (s)        3
+#  21  (DROPOFF) Request_ID 445   DR_445           68541 (s)        68541 (s)        68541 (s)        2
+#  22  (DROPOFF) Request_ID 436   DR_436           68586 (s)        68586 (s)        68586 (s)        1
+#  23  (DROPOFF) Request_ID 429   DR_429           68586 (s)        68586 (s)        68586 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 23.00
+#	- ROUTE_NUMBER            : 60
+#	- VEHICLE_ID              : 15
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1659
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_15            66810 (s)        66810 (s)        66810 (s)        1
+#   2  (PICKUP ) Request_ID 95    PI_95            66903 (s)        66903 (s)        66903 (s)        2
+#   3  (PICKUP ) Request_ID 106   PI_106           66903 (s)        66903 (s)        66903 (s)        4
+#   4  (DROPOFF) Request_ID 16    DR_16            66985 (s)        66985 (s)        66985 (s)        3
+#   5  (DROPOFF) Request_ID 106   DR_106           67049 (s)        67049 (s)        67049 (s)        1
+#   6  (DROPOFF) Request_ID 95    DR_95            67267 (s)        67267 (s)        67267 (s)        0
+#   7  (PICKUP ) Request_ID 199   PI_199           67332 (s)        67332 (s)        67332 (s)        2
+#   8  (PICKUP ) Request_ID 180   PI_180           67355 (s)        67355 (s)        67355 (s)        5
+#   9  (PICKUP ) Request_ID 215   PI_215           67424 (s)        67424 (s)        67424 (s)        6
+#  10  (DROPOFF) Request_ID 215   DR_215           67515 (s)        67515 (s)        67515 (s)        5
+#  11  (DROPOFF) Request_ID 180   DR_180           67633 (s)        67633 (s)        67633 (s)        2
+#  12  (DROPOFF) Request_ID 199   DR_199           67747 (s)        67770 (s)        67770 (s)        0
+#  13  (PICKUP ) Request_ID 319   PI_319           67879 (s)        67879 (s)        67879 (s)        3
+#  14  (PICKUP ) Request_ID 358   PI_358           67988 (s)        67988 (s)        67988 (s)        4
+#  15  (PICKUP ) Request_ID 380   PI_380           67988 (s)        67988 (s)        67988 (s)        5
+#  16  (DROPOFF) Request_ID 319   DR_319           68173 (s)        68173 (s)        68173 (s)        2
+#  17  (PICKUP ) Request_ID 407   PI_407           68192 (s)        68192 (s)        68192 (s)        3
+#  18  (DROPOFF) Request_ID 358   DR_358           68342 (s)        68342 (s)        68342 (s)        2
+#  19  (PICKUP ) Request_ID 447   PI_447           68452 (s)        68452 (s)        68452 (s)        7
+#  20  (DROPOFF) Request_ID 380   DR_380           68547 (s)        68547 (s)        68547 (s)        6
+#  21  (DROPOFF) Request_ID 407   DR_407           68727 (s)        68727 (s)        68727 (s)        5
+#  22  (DROPOFF) Request_ID 447   DR_447           68828 (s)        68828 (s)        68828 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 32.00
+#	- ROUTE_NUMBER            : 61
+#	- VEHICLE_ID              : 16
+#	- NUMBER_OF_STOPS         : 20
+#	- TOTAL_WAITING (seconds) : 1637
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_16            66612 (s)        66612 (s)        66612 (s)        1
+#   2  (DROPOFF) Request_ID 17    DR_17            66883 (s)        66883 (s)        66883 (s)        0
+#   3  (PICKUP ) Request_ID 93    PI_93            66883 (s)        66883 (s)        66883 (s)        1
+#   4  (PICKUP ) Request_ID 125   PI_125           66938 (s)        66938 (s)        66938 (s)        2
+#   5  (PICKUP ) Request_ID 137   PI_137           67027 (s)        67027 (s)        67027 (s)        3
+#   6  (PICKUP ) Request_ID 135   PI_135           67027 (s)        67027 (s)        67027 (s)        4
+#   7  (DROPOFF) Request_ID 125   DR_125           67116 (s)        67116 (s)        67116 (s)        3
+#   8  (DROPOFF) Request_ID 93    DR_93            67196 (s)        67196 (s)        67196 (s)        2
+#   9  (DROPOFF) Request_ID 135   DR_135           67291 (s)        67291 (s)        67291 (s)        1
+#  10  (DROPOFF) Request_ID 137   DR_137           67438 (s)        67438 (s)        67438 (s)        0
+#  11  (PICKUP ) Request_ID 233   PI_233           67488 (s)        67488 (s)        67488 (s)        2
+#  12  (DROPOFF) Request_ID 233   DR_233           67724 (s)        67724 (s)        67724 (s)        0
+#  13  (PICKUP ) Request_ID 304   PI_304           67814 (s)        67814 (s)        67814 (s)        1
+#  14  (PICKUP ) Request_ID 297   PI_297           67814 (s)        67814 (s)        67814 (s)        2
+#  15  (PICKUP ) Request_ID 322   PI_322           67904 (s)        67904 (s)        67904 (s)        3
+#  16  (DROPOFF) Request_ID 304   DR_304           67997 (s)        67997 (s)        67997 (s)        2
+#  17  (DROPOFF) Request_ID 322   DR_322           68120 (s)        68120 (s)        68120 (s)        1
+#  18  (DROPOFF) Request_ID 297   DR_297           68398 (s)        68430 (s)        68430 (s)        0
+#  19  (PICKUP ) Request_ID 476   PI_476           68714 (s)        68714 (s)        68714 (s)        4
+#  20  (DROPOFF) Request_ID 476   DR_476           68842 (s)        68842 (s)        68842 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 62
+#	- VEHICLE_ID              : 17
+#	- NUMBER_OF_STOPS         : 27
+#	- TOTAL_WAITING (seconds) : 2050
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_17            66709 (s)        66709 (s)        66709 (s)        2
+#   2  (DROPOFF) Request_ID 18    DR_18            66842 (s)        66842 (s)        66842 (s)        1
+#   3  (PICKUP ) Request_ID 100   PI_100           66842 (s)        66842 (s)        66842 (s)        2
+#   4  (PICKUP ) Request_ID 84    PI_84            66860 (s)        66860 (s)        66860 (s)        3
+#   5  (DROPOFF) Request_ID 19    DR_19            67076 (s)        67076 (s)        67076 (s)        2
+#   6  (PICKUP ) Request_ID 155   PI_155           67099 (s)        67099 (s)        67099 (s)        7
+#   7  (DROPOFF) Request_ID 84    DR_84            67214 (s)        67214 (s)        67214 (s)        6
+#   8  (PICKUP ) Request_ID 181   PI_181           67214 (s)        67214 (s)        67214 (s)        7
+#   9  (DROPOFF) Request_ID 100   DR_100           67266 (s)        67266 (s)        67266 (s)        6
+#  10  (DROPOFF) Request_ID 181   DR_181           67396 (s)        67396 (s)        67396 (s)        5
+#  11  (DROPOFF) Request_ID 155   DR_155           67588 (s)        67588 (s)        67588 (s)        0
+#  12  (PICKUP ) Request_ID 249   PI_249           67669 (s)        67669 (s)        67669 (s)        1
+#  13  (PICKUP ) Request_ID 272   PI_272           67669 (s)        67669 (s)        67669 (s)        3
+#  14  (PICKUP ) Request_ID 267   PI_267           67731 (s)        67731 (s)        67731 (s)        4
+#  15  (DROPOFF) Request_ID 249   DR_249           67814 (s)        67814 (s)        67814 (s)        3
+#  16  (PICKUP ) Request_ID 334   PI_334           67933 (s)        67933 (s)        67933 (s)        4
+#  17  (DROPOFF) Request_ID 272   DR_272           68042 (s)        68042 (s)        68042 (s)        2
+#  18  (PICKUP ) Request_ID 378   PI_378           68042 (s)        68042 (s)        68042 (s)        4
+#  19  (DROPOFF) Request_ID 267   DR_267           68106 (s)        68106 (s)        68106 (s)        3
+#  20  (PICKUP ) Request_ID 374   PI_374           68155 (s)        68155 (s)        68155 (s)        4
+#  21  (DROPOFF) Request_ID 374   DR_374           68224 (s)        68224 (s)        68224 (s)        3
+#  22  (PICKUP ) Request_ID 440   PI_440           68338 (s)        68338 (s)        68338 (s)        5
+#  23  (DROPOFF) Request_ID 334   DR_334           68338 (s)        68338 (s)        68338 (s)        4
+#  24  (DROPOFF) Request_ID 378   DR_378           68472 (s)        68472 (s)        68472 (s)        2
+#  25  (PICKUP ) Request_ID 497   PI_497           68646 (s)        68646 (s)        68646 (s)        3
+#  26  (DROPOFF) Request_ID 440   DR_440           68769 (s)        68769 (s)        68769 (s)        1
+#  27  (DROPOFF) Request_ID 497   DR_497           68963 (s)        68963 (s)        68963 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 284.00
+#	- ROUTE_NUMBER            : 63
+#	- VEHICLE_ID              : 18
+#	- NUMBER_OF_STOPS         : 15
+#	- TOTAL_WAITING (seconds) : 975
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_18            66870 (s)        66870 (s)        66870 (s)        0
+#   2  (PICKUP ) Request_ID 120   PI_120           66927 (s)        66927 (s)        66927 (s)        3
+#   3  (DROPOFF) Request_ID 120   DR_120           67424 (s)        67530 (s)        67530 (s)        0
+#   4  (PICKUP ) Request_ID 258   PI_258           67649 (s)        67649 (s)        67649 (s)        1
+#   5  (PICKUP ) Request_ID 256   PI_256           67649 (s)        67649 (s)        67649 (s)        2
+#   6  (PICKUP ) Request_ID 285   PI_285           67779 (s)        67779 (s)        67779 (s)        3
+#   7  (PICKUP ) Request_ID 317   PI_317           67845 (s)        67845 (s)        67845 (s)        4
+#   8  (PICKUP ) Request_ID 344   PI_344           67845 (s)        67845 (s)        67845 (s)        5
+#   9  (DROPOFF) Request_ID 256   DR_256           68013 (s)        68013 (s)        68013 (s)        4
+#  10  (DROPOFF) Request_ID 258   DR_258           68070 (s)        68070 (s)        68070 (s)        3
+#  11  (DROPOFF) Request_ID 285   DR_285           68216 (s)        68216 (s)        68216 (s)        2
+#  12  (PICKUP ) Request_ID 426   PI_426           68264 (s)        68264 (s)        68264 (s)        3
+#  13  (DROPOFF) Request_ID 317   DR_317           68323 (s)        68323 (s)        68323 (s)        2
+#  14  (DROPOFF) Request_ID 344   DR_344           68323 (s)        68323 (s)        68323 (s)        1
+#  15  (DROPOFF) Request_ID 426   DR_426           68578 (s)        68578 (s)        68578 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 1.00
+#	- ROUTE_NUMBER            : 64
+#	- VEHICLE_ID              : 19
+#	- NUMBER_OF_STOPS         : 20
+#	- TOTAL_WAITING (seconds) : 1505
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_19            66648 (s)        66648 (s)        66648 (s)        3
+#   2  (DROPOFF) Request_ID 20    DR_20            66648 (s)        66648 (s)        66648 (s)        2
+#   3  (DROPOFF) Request_ID 21    DR_21            66896 (s)        66896 (s)        66896 (s)        1
+#   4  (DROPOFF) Request_ID 22    DR_22            67019 (s)        67020 (s)        67020 (s)        0
+#   5  (PICKUP ) Request_ID 151   PI_151           67070 (s)        67070 (s)        67070 (s)        1
+#   6  (DROPOFF) Request_ID 151   DR_151           67301 (s)        67301 (s)        67301 (s)        0
+#   7  (PICKUP ) Request_ID 179   PI_179           67450 (s)        67450 (s)        67450 (s)        2
+#   8  (PICKUP ) Request_ID 230   PI_230           67450 (s)        67450 (s)        67450 (s)        3
+#   9  (DROPOFF) Request_ID 230   DR_230           67570 (s)        67570 (s)        67570 (s)        2
+#  10  (PICKUP ) Request_ID 247   PI_247           67591 (s)        67591 (s)        67591 (s)        3
+#  11  (PICKUP ) Request_ID 261   PI_261           67673 (s)        67673 (s)        67673 (s)        4
+#  12  (DROPOFF) Request_ID 247   DR_247           67768 (s)        67768 (s)        67768 (s)        3
+#  13  (DROPOFF) Request_ID 179   DR_179           67937 (s)        67937 (s)        67937 (s)        1
+#  14  (PICKUP ) Request_ID 345   PI_345           67942 (s)        67942 (s)        67942 (s)        2
+#  15  (PICKUP ) Request_ID 359   PI_359           68020 (s)        68020 (s)        68020 (s)        3
+#  16  (DROPOFF) Request_ID 261   DR_261           68053 (s)        68053 (s)        68053 (s)        2
+#  17  (DROPOFF) Request_ID 345   DR_345           68271 (s)        68271 (s)        68271 (s)        1
+#  18  (PICKUP ) Request_ID 437   PI_437           68450 (s)        68450 (s)        68450 (s)        2
+#  19  (DROPOFF) Request_ID 359   DR_359           68576 (s)        68576 (s)        68576 (s)        1
+#  20  (DROPOFF) Request_ID 437   DR_437           68798 (s)        68798 (s)        68798 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 65
+#	- VEHICLE_ID              : 20
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1815
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_20            66693 (s)        66693 (s)        66693 (s)        5
+#   2  (DROPOFF) Request_ID 23    DR_23            66740 (s)        66740 (s)        66740 (s)        3
+#   3  (DROPOFF) Request_ID 24    DR_24            66798 (s)        66798 (s)        66798 (s)        2
+#   4  (PICKUP ) Request_ID 94    PI_94            66902 (s)        66902 (s)        66902 (s)        3
+#   5  (DROPOFF) Request_ID 25    DR_25            66902 (s)        66902 (s)        66902 (s)        2
+#   6  (DROPOFF) Request_ID 26    DR_26            67087 (s)        67087 (s)        67087 (s)        1
+#   7  (DROPOFF) Request_ID 94    DR_94            67269 (s)        67269 (s)        67269 (s)        0
+#   8  (PICKUP ) Request_ID 182   PI_182           67386 (s)        67386 (s)        67386 (s)        2
+#   9  (DROPOFF) Request_ID 182   DR_182           67752 (s)        67752 (s)        67752 (s)        0
+#  10  (PICKUP ) Request_ID 310   PI_310           67839 (s)        67839 (s)        67839 (s)        1
+#  11  (PICKUP ) Request_ID 342   PI_342           67915 (s)        67915 (s)        67915 (s)        2
+#  12  (PICKUP ) Request_ID 323   PI_323           67995 (s)        67995 (s)        67995 (s)        3
+#  13  (PICKUP ) Request_ID 371   PI_371           68048 (s)        68048 (s)        68048 (s)        4
+#  14  (DROPOFF) Request_ID 342   DR_342           68129 (s)        68129 (s)        68129 (s)        3
+#  15  (DROPOFF) Request_ID 371   DR_371           68230 (s)        68230 (s)        68230 (s)        2
+#  16  (DROPOFF) Request_ID 310   DR_310           68345 (s)        68345 (s)        68345 (s)        1
+#  17  (PICKUP ) Request_ID 452   PI_452           68398 (s)        68398 (s)        68398 (s)        7
+#  18  (DROPOFF) Request_ID 323   DR_323           68398 (s)        68398 (s)        68398 (s)        6
+#  19  (DROPOFF) Request_ID 452   DR_452           68504 (s)        68504 (s)        68504 (s)        0
+#  20  (PICKUP ) Request_ID 475   PI_475           68535 (s)        68535 (s)        68535 (s)        1
+#  21  (PICKUP ) Request_ID 488   PI_488           68609 (s)        68609 (s)        68609 (s)        4
+#  22  (DROPOFF) Request_ID 475   DR_475           68729 (s)        68729 (s)        68729 (s)        3
+#  23  (DROPOFF) Request_ID 488   DR_488           68887 (s)        68887 (s)        68887 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 66
+#	- VEHICLE_ID              : 21
+#	- NUMBER_OF_STOPS         : 24
+#	- TOTAL_WAITING (seconds) : 2062
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_21            66687 (s)        66687 (s)        66687 (s)        3
+#   2  (PICKUP ) Request_ID 77    PI_77            66749 (s)        66749 (s)        66749 (s)        4
+#   3  (DROPOFF) Request_ID 77    DR_77            66846 (s)        66846 (s)        66846 (s)        3
+#   4  (PICKUP ) Request_ID 97    PI_97            66881 (s)        66881 (s)        66881 (s)        4
+#   5  (PICKUP ) Request_ID 122   PI_122           66894 (s)        66894 (s)        66894 (s)        5
+#   6  (DROPOFF) Request_ID 27    DR_27            67035 (s)        67035 (s)        67035 (s)        2
+#   7  (DROPOFF) Request_ID 122   DR_122           67104 (s)        67104 (s)        67104 (s)        1
+#   8  (DROPOFF) Request_ID 97    DR_97            67231 (s)        67231 (s)        67231 (s)        0
+#   9  (PICKUP ) Request_ID 195   PI_195           67268 (s)        67268 (s)        67268 (s)        2
+#  10  (PICKUP ) Request_ID 202   PI_202           67343 (s)        67343 (s)        67343 (s)        3
+#  11  (DROPOFF) Request_ID 202   DR_202           67502 (s)        67502 (s)        67502 (s)        2
+#  12  (PICKUP ) Request_ID 253   PI_253           67617 (s)        67617 (s)        67617 (s)        4
+#  13  (DROPOFF) Request_ID 195   DR_195           67671 (s)        67671 (s)        67671 (s)        2
+#  14  (PICKUP ) Request_ID 279   PI_279           67814 (s)        67814 (s)        67814 (s)        3
+#  15  (PICKUP ) Request_ID 294   PI_294           67887 (s)        67887 (s)        67887 (s)        4
+#  16  (DROPOFF) Request_ID 253   DR_253           67968 (s)        67968 (s)        67968 (s)        2
+#  17  (DROPOFF) Request_ID 294   DR_294           68114 (s)        68114 (s)        68114 (s)        1
+#  18  (DROPOFF) Request_ID 279   DR_279           68326 (s)        68326 (s)        68326 (s)        0
+#  19  (PICKUP ) Request_ID 438   PI_438           68446 (s)        68446 (s)        68446 (s)        1
+#  20  (PICKUP ) Request_ID 501   PI_501           68514 (s)        68514 (s)        68514 (s)        2
+#  21  (PICKUP ) Request_ID 491   PI_491           68710 (s)        68710 (s)        68710 (s)        3
+#  22  (DROPOFF) Request_ID 501   DR_501           68772 (s)        68772 (s)        68772 (s)        2
+#  23  (DROPOFF) Request_ID 438   DR_438           69031 (s)        69031 (s)        69031 (s)        1
+#  24  (DROPOFF) Request_ID 491   DR_491           69288 (s)        69288 (s)        69288 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 15.00
+#	- ROUTE_NUMBER            : 67
+#	- VEHICLE_ID              : 22
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1470
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_22            66630 (s)        66630 (s)        66630 (s)        0
+#   2  (PICKUP ) Request_ID 71    PI_71            66788 (s)        66788 (s)        66788 (s)        3
+#   3  (PICKUP ) Request_ID 102   PI_102           66818 (s)        66818 (s)        66818 (s)        4
+#   4  (DROPOFF) Request_ID 71    DR_71            67047 (s)        67047 (s)        67047 (s)        1
+#   5  (PICKUP ) Request_ID 152   PI_152           67063 (s)        67063 (s)        67063 (s)        2
+#   6  (DROPOFF) Request_ID 152   DR_152           67163 (s)        67163 (s)        67163 (s)        1
+#   7  (PICKUP ) Request_ID 172   PI_172           67234 (s)        67234 (s)        67234 (s)        2
+#   8  (PICKUP ) Request_ID 203   PI_203           67315 (s)        67315 (s)        67315 (s)        3
+#   9  (DROPOFF) Request_ID 102   DR_102           67344 (s)        67344 (s)        67344 (s)        2
+#  10  (DROPOFF) Request_ID 172   DR_172           67444 (s)        67444 (s)        67444 (s)        1
+#  11  (DROPOFF) Request_ID 203   DR_203           67614 (s)        67614 (s)        67614 (s)        0
+#  12  (PICKUP ) Request_ID 275   PI_275           67664 (s)        67664 (s)        67664 (s)        1
+#  13  (DROPOFF) Request_ID 275   DR_275           67838 (s)        67838 (s)        67838 (s)        0
+#  14  (PICKUP ) Request_ID 337   PI_337           67948 (s)        67948 (s)        67948 (s)        1
+#  15  (PICKUP ) Request_ID 328   PI_328           67948 (s)        67948 (s)        67948 (s)        2
+#  16  (DROPOFF) Request_ID 328   DR_328           68061 (s)        68061 (s)        68061 (s)        1
+#  17  (DROPOFF) Request_ID 337   DR_337           68335 (s)        68335 (s)        68335 (s)        0
+#  18  (PICKUP ) Request_ID 457   PI_457           68562 (s)        68562 (s)        68562 (s)        1
+#  19  (DROPOFF) Request_ID 457   DR_457           68674 (s)        68674 (s)        68674 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 68
+#	- VEHICLE_ID              : 23
+#	- NUMBER_OF_STOPS         : 25
+#	- TOTAL_WAITING (seconds) : 1876
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_23            66625 (s)        66625 (s)        66625 (s)        2
+#   2  (DROPOFF) Request_ID 28    DR_28            66727 (s)        66727 (s)        66727 (s)        1
+#   3  (PICKUP ) Request_ID 89    PI_89            66781 (s)        66781 (s)        66781 (s)        2
+#   4  (DROPOFF) Request_ID 29    DR_29            67015 (s)        67015 (s)        67015 (s)        1
+#   5  (DROPOFF) Request_ID 89    DR_89            67170 (s)        67170 (s)        67170 (s)        0
+#   6  (PICKUP ) Request_ID 171   PI_171           67247 (s)        67247 (s)        67247 (s)        1
+#   7  (PICKUP ) Request_ID 197   PI_197           67247 (s)        67247 (s)        67247 (s)        2
+#   8  (PICKUP ) Request_ID 156   PI_156           67247 (s)        67247 (s)        67247 (s)        5
+#   9  (DROPOFF) Request_ID 171   DR_171           67426 (s)        67426 (s)        67426 (s)        4
+#  10  (PICKUP ) Request_ID 236   PI_236           67499 (s)        67499 (s)        67499 (s)        6
+#  11  (DROPOFF) Request_ID 236   DR_236           67583 (s)        67583 (s)        67583 (s)        4
+#  12  (DROPOFF) Request_ID 197   DR_197           67652 (s)        67652 (s)        67652 (s)        3
+#  13  (PICKUP ) Request_ID 288   PI_288           67727 (s)        67727 (s)        67727 (s)        4
+#  14  (DROPOFF) Request_ID 156   DR_156           67727 (s)        67727 (s)        67727 (s)        1
+#  15  (DROPOFF) Request_ID 288   DR_288           67909 (s)        67909 (s)        67909 (s)        0
+#  16  (PICKUP ) Request_ID 350   PI_350           67979 (s)        67979 (s)        67979 (s)        3
+#  17  (PICKUP ) Request_ID 364   PI_364           68006 (s)        68006 (s)        68006 (s)        7
+#  18  (DROPOFF) Request_ID 364   DR_364           68205 (s)        68205 (s)        68205 (s)        3
+#  19  (PICKUP ) Request_ID 411   PI_411           68352 (s)        68352 (s)        68352 (s)        4
+#  20  (DROPOFF) Request_ID 350   DR_350           68488 (s)        68488 (s)        68488 (s)        1
+#  21  (PICKUP ) Request_ID 489   PI_489           68525 (s)        68525 (s)        68525 (s)        3
+#  22  (PICKUP ) Request_ID 468   PI_468           68573 (s)        68573 (s)        68573 (s)        5
+#  23  (DROPOFF) Request_ID 411   DR_411           68696 (s)        68696 (s)        68696 (s)        4
+#  24  (DROPOFF) Request_ID 489   DR_489           68852 (s)        68852 (s)        68852 (s)        2
+#  25  (DROPOFF) Request_ID 468   DR_468           69026 (s)        69026 (s)        69026 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 63.00
+#	- ROUTE_NUMBER            : 69
+#	- VEHICLE_ID              : 24
+#	- NUMBER_OF_STOPS         : 26
+#	- TOTAL_WAITING (seconds) : 1629
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_24            66726 (s)        66726 (s)        66726 (s)        6
+#   2  (PICKUP ) Request_ID 81    PI_81            66741 (s)        66741 (s)        66741 (s)        7
+#   3  (DROPOFF) Request_ID 30    DR_30            66850 (s)        66850 (s)        66850 (s)        1
+#   4  (PICKUP ) Request_ID 108   PI_108           66902 (s)        66902 (s)        66902 (s)        2
+#   5  (PICKUP ) Request_ID 113   PI_113           66989 (s)        66989 (s)        66989 (s)        3
+#   6  (DROPOFF) Request_ID 81    DR_81            67097 (s)        67097 (s)        67097 (s)        2
+#   7  (DROPOFF) Request_ID 113   DR_113           67224 (s)        67224 (s)        67224 (s)        1
+#   8  (DROPOFF) Request_ID 108   DR_108           67373 (s)        67373 (s)        67373 (s)        0
+#   9  (PICKUP ) Request_ID 204   PI_204           67409 (s)        67409 (s)        67409 (s)        1
+#  10  (DROPOFF) Request_ID 204   DR_204           67490 (s)        67490 (s)        67490 (s)        0
+#  11  (PICKUP ) Request_ID 243   PI_243           67490 (s)        67490 (s)        67490 (s)        1
+#  12  (DROPOFF) Request_ID 243   DR_243           67617 (s)        67680 (s)        67680 (s)        0
+#  13  (PICKUP ) Request_ID 299   PI_299           67807 (s)        67807 (s)        67807 (s)        1
+#  14  (PICKUP ) Request_ID 330   PI_330           67898 (s)        67898 (s)        67898 (s)        6
+#  15  (PICKUP ) Request_ID 363   PI_363           67898 (s)        67898 (s)        67898 (s)        7
+#  16  (DROPOFF) Request_ID 299   DR_299           68037 (s)        68037 (s)        68037 (s)        6
+#  17  (PICKUP ) Request_ID 377   PI_377           68065 (s)        68065 (s)        68065 (s)        7
+#  18  (DROPOFF) Request_ID 330   DR_330           68195 (s)        68195 (s)        68195 (s)        2
+#  19  (PICKUP ) Request_ID 439   PI_439           68195 (s)        68195 (s)        68195 (s)        3
+#  20  (DROPOFF) Request_ID 363   DR_363           68292 (s)        68292 (s)        68292 (s)        2
+#  21  (DROPOFF) Request_ID 377   DR_377           68426 (s)        68426 (s)        68426 (s)        1
+#  22  (PICKUP ) Request_ID 465   PI_465           68479 (s)        68479 (s)        68479 (s)        3
+#  23  (PICKUP ) Request_ID 494   PI_494           68533 (s)        68533 (s)        68533 (s)        4
+#  24  (DROPOFF) Request_ID 439   DR_439           68568 (s)        68568 (s)        68568 (s)        3
+#  25  (DROPOFF) Request_ID 494   DR_494           68714 (s)        68714 (s)        68714 (s)        2
+#  26  (DROPOFF) Request_ID 465   DR_465           68847 (s)        68847 (s)        68847 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 75.00
+#	- ROUTE_NUMBER            : 70
+#	- VEHICLE_ID              : 25
+#	- NUMBER_OF_STOPS         : 21
+#	- TOTAL_WAITING (seconds) : 1644
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_25            66750 (s)        66750 (s)        66750 (s)        0
+#   2  (PICKUP ) Request_ID 96    PI_96            66806 (s)        66806 (s)        66806 (s)        1
+#   3  (PICKUP ) Request_ID 105   PI_105           66806 (s)        66806 (s)        66806 (s)        2
+#   4  (DROPOFF) Request_ID 105   DR_105           66993 (s)        66993 (s)        66993 (s)        1
+#   5  (PICKUP ) Request_ID 149   PI_149           67076 (s)        67076 (s)        67076 (s)        2
+#   6  (DROPOFF) Request_ID 96    DR_96            67226 (s)        67226 (s)        67226 (s)        1
+#   7  (DROPOFF) Request_ID 149   DR_149           67549 (s)        67620 (s)        67620 (s)        0
+#   8  (PICKUP ) Request_ID 284   PI_284           67664 (s)        67664 (s)        67664 (s)        1
+#   9  (DROPOFF) Request_ID 284   DR_284           67770 (s)        67770 (s)        67770 (s)        0
+#  10  (PICKUP ) Request_ID 302   PI_302           67821 (s)        67821 (s)        67821 (s)        1
+#  11  (DROPOFF) Request_ID 302   DR_302           67960 (s)        67960 (s)        67960 (s)        0
+#  12  (PICKUP ) Request_ID 362   PI_362           68078 (s)        68078 (s)        68078 (s)        3
+#  13  (PICKUP ) Request_ID 399   PI_399           68118 (s)        68118 (s)        68118 (s)        4
+#  14  (DROPOFF) Request_ID 362   DR_362           68281 (s)        68281 (s)        68281 (s)        1
+#  15  (PICKUP ) Request_ID 434   PI_434           68354 (s)        68354 (s)        68354 (s)        3
+#  16  (DROPOFF) Request_ID 399   DR_399           68419 (s)        68419 (s)        68419 (s)        2
+#  17  (PICKUP ) Request_ID 469   PI_469           68565 (s)        68565 (s)        68565 (s)        5
+#  18  (PICKUP ) Request_ID 478   PI_478           68573 (s)        68573 (s)        68573 (s)        6
+#  19  (DROPOFF) Request_ID 469   DR_469           68692 (s)        68692 (s)        68692 (s)        3
+#  20  (DROPOFF) Request_ID 434   DR_434           68775 (s)        68775 (s)        68775 (s)        1
+#  21  (DROPOFF) Request_ID 478   DR_478           68920 (s)        68920 (s)        68920 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 71
+#	- VEHICLE_ID              : 26
+#	- NUMBER_OF_STOPS         : 25
+#	- TOTAL_WAITING (seconds) : 1773
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_26            66681 (s)        66681 (s)        66681 (s)        3
+#   2  (DROPOFF) Request_ID 31    DR_31            66763 (s)        66763 (s)        66763 (s)        1
+#   3  (PICKUP ) Request_ID 90    PI_90            66795 (s)        66795 (s)        66795 (s)        3
+#   4  (PICKUP ) Request_ID 99    PI_99            66882 (s)        66882 (s)        66882 (s)        4
+#   5  (DROPOFF) Request_ID 32    DR_32            66940 (s)        66940 (s)        66940 (s)        3
+#   6  (DROPOFF) Request_ID 90    DR_90            66971 (s)        66971 (s)        66971 (s)        1
+#   7  (PICKUP ) Request_ID 139   PI_139           67024 (s)        67024 (s)        67024 (s)        7
+#   8  (DROPOFF) Request_ID 139   DR_139           67077 (s)        67077 (s)        67077 (s)        1
+#   9  (DROPOFF) Request_ID 99    DR_99            67143 (s)        67143 (s)        67143 (s)        0
+#  10  (PICKUP ) Request_ID 160   PI_160           67190 (s)        67190 (s)        67190 (s)        6
+#  11  (PICKUP ) Request_ID 183   PI_183           67270 (s)        67270 (s)        67270 (s)        7
+#  12  (DROPOFF) Request_ID 183   DR_183           67344 (s)        67344 (s)        67344 (s)        6
+#  13  (DROPOFF) Request_ID 160   DR_160           67559 (s)        67559 (s)        67559 (s)        0
+#  14  (PICKUP ) Request_ID 246   PI_246           67670 (s)        67670 (s)        67670 (s)        1
+#  15  (DROPOFF) Request_ID 246   DR_246           67887 (s)        67887 (s)        67887 (s)        0
+#  16  (PICKUP ) Request_ID 314   PI_314           67920 (s)        67920 (s)        67920 (s)        1
+#  17  (PICKUP ) Request_ID 355   PI_355           67961 (s)        67961 (s)        67961 (s)        2
+#  18  (DROPOFF) Request_ID 355   DR_355           68035 (s)        68035 (s)        68035 (s)        1
+#  19  (PICKUP ) Request_ID 387   PI_387           68100 (s)        68100 (s)        68100 (s)        7
+#  20  (DROPOFF) Request_ID 314   DR_314           68313 (s)        68313 (s)        68313 (s)        6
+#  21  (DROPOFF) Request_ID 387   DR_387           68468 (s)        68468 (s)        68468 (s)        0
+#  22  (PICKUP ) Request_ID 499   PI_499           68510 (s)        68510 (s)        68510 (s)        1
+#  23  (PICKUP ) Request_ID 486   PI_486           68557 (s)        68557 (s)        68557 (s)        2
+#  24  (DROPOFF) Request_ID 499   DR_499           68769 (s)        68769 (s)        68769 (s)        1
+#  25  (DROPOFF) Request_ID 486   DR_486           69000 (s)        69000 (s)        69000 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 72
+#	- VEHICLE_ID              : 27
+#	- NUMBER_OF_STOPS         : 26
+#	- TOTAL_WAITING (seconds) : 1524
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_27            66614 (s)        66614 (s)        66614 (s)        5
+#   2  (DROPOFF) Request_ID 33    DR_33            66670 (s)        66670 (s)        66670 (s)        2
+#   3  (PICKUP ) Request_ID 73    PI_73            66726 (s)        66726 (s)        66726 (s)        3
+#   4  (DROPOFF) Request_ID 34    DR_34            66765 (s)        66765 (s)        66765 (s)        2
+#   5  (DROPOFF) Request_ID 73    DR_73            66960 (s)        66960 (s)        66960 (s)        1
+#   6  (PICKUP ) Request_ID 127   PI_127           66986 (s)        66986 (s)        66986 (s)        2
+#   7  (PICKUP ) Request_ID 133   PI_133           67008 (s)        67008 (s)        67008 (s)        3
+#   8  (DROPOFF) Request_ID 35    DR_35            67084 (s)        67084 (s)        67084 (s)        2
+#   9  (DROPOFF) Request_ID 133   DR_133           67258 (s)        67258 (s)        67258 (s)        1
+#  10  (PICKUP ) Request_ID 188   PI_188           67313 (s)        67313 (s)        67313 (s)        2
+#  11  (DROPOFF) Request_ID 127   DR_127           67363 (s)        67363 (s)        67363 (s)        1
+#  12  (PICKUP ) Request_ID 219   PI_219           67409 (s)        67409 (s)        67409 (s)        2
+#  13  (PICKUP ) Request_ID 226   PI_226           67474 (s)        67474 (s)        67474 (s)        3
+#  14  (DROPOFF) Request_ID 219   DR_219           67605 (s)        67605 (s)        67605 (s)        2
+#  15  (DROPOFF) Request_ID 188   DR_188           67703 (s)        67703 (s)        67703 (s)        1
+#  16  (PICKUP ) Request_ID 296   PI_296           67724 (s)        67724 (s)        67724 (s)        2
+#  17  (DROPOFF) Request_ID 226   DR_226           67870 (s)        67870 (s)        67870 (s)        1
+#  18  (DROPOFF) Request_ID 296   DR_296           68124 (s)        68124 (s)        68124 (s)        0
+#  19  (PICKUP ) Request_ID 384   PI_384           68124 (s)        68124 (s)        68124 (s)        2
+#  20  (DROPOFF) Request_ID 384   DR_384           68343 (s)        68343 (s)        68343 (s)        0
+#  21  (PICKUP ) Request_ID 473   PI_473           68343 (s)        68343 (s)        68343 (s)        2
+#  22  (PICKUP ) Request_ID 463   PI_463           68402 (s)        68402 (s)        68402 (s)        3
+#  23  (DROPOFF) Request_ID 463   DR_463           68526 (s)        68526 (s)        68526 (s)        2
+#  24  (PICKUP ) Request_ID 492   PI_492           68609 (s)        68609 (s)        68609 (s)        4
+#  25  (DROPOFF) Request_ID 492   DR_492           68701 (s)        68701 (s)        68701 (s)        2
+#  26  (DROPOFF) Request_ID 473   DR_473           68883 (s)        68883 (s)        68883 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 46.00
+#	- ROUTE_NUMBER            : 73
+#	- VEHICLE_ID              : 28
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1356
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_28            66622 (s)        66622 (s)        66622 (s)        3
+#   2  (DROPOFF) Request_ID 36    DR_36            66726 (s)        66726 (s)        66726 (s)        1
+#   3  (DROPOFF) Request_ID 37    DR_37            66914 (s)        66960 (s)        66960 (s)        0
+#   4  (PICKUP ) Request_ID 145   PI_145           67068 (s)        67068 (s)        67068 (s)        1
+#   5  (DROPOFF) Request_ID 145   DR_145           67282 (s)        67282 (s)        67282 (s)        0
+#   6  (PICKUP ) Request_ID 208   PI_208           67470 (s)        67470 (s)        67470 (s)        6
+#   7  (PICKUP ) Request_ID 237   PI_237           67470 (s)        67470 (s)        67470 (s)        7
+#   8  (DROPOFF) Request_ID 208   DR_208           67595 (s)        67595 (s)        67595 (s)        1
+#   9  (PICKUP ) Request_ID 252   PI_252           67595 (s)        67595 (s)        67595 (s)        3
+#  10  (DROPOFF) Request_ID 237   DR_237           67828 (s)        67828 (s)        67828 (s)        2
+#  11  (DROPOFF) Request_ID 252   DR_252           68071 (s)        68071 (s)        68071 (s)        0
+#  12  (PICKUP ) Request_ID 372   PI_372           68190 (s)        68190 (s)        68190 (s)        4
+#  13  (PICKUP ) Request_ID 431   PI_431           68223 (s)        68223 (s)        68223 (s)        5
+#  14  (PICKUP ) Request_ID 441   PI_441           68223 (s)        68223 (s)        68223 (s)        6
+#  15  (PICKUP ) Request_ID 388   PI_388           68277 (s)        68277 (s)        68277 (s)        7
+#  16  (DROPOFF) Request_ID 372   DR_372           68308 (s)        68308 (s)        68308 (s)        3
+#  17  (DROPOFF) Request_ID 388   DR_388           68419 (s)        68419 (s)        68419 (s)        2
+#  18  (DROPOFF) Request_ID 431   DR_431           68573 (s)        68573 (s)        68573 (s)        1
+#  19  (DROPOFF) Request_ID 441   DR_441           68776 (s)        68776 (s)        68776 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 49.00
+#	- ROUTE_NUMBER            : 74
+#	- VEHICLE_ID              : 29
+#	- NUMBER_OF_STOPS         : 20
+#	- TOTAL_WAITING (seconds) : 1924
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_29            66645 (s)        66645 (s)        66645 (s)        1
+#   2  (PICKUP ) Request_ID 72    PI_72            66726 (s)        66726 (s)        66726 (s)        2
+#   3  (DROPOFF) Request_ID 72    DR_72            66874 (s)        66874 (s)        66874 (s)        1
+#   4  (PICKUP ) Request_ID 104   PI_104           66950 (s)        66950 (s)        66950 (s)        2
+#   5  (DROPOFF) Request_ID 38    DR_38            67213 (s)        67213 (s)        67213 (s)        1
+#   6  (DROPOFF) Request_ID 104   DR_104           67356 (s)        67380 (s)        67380 (s)        0
+#   7  (PICKUP ) Request_ID 222   PI_222           67478 (s)        67478 (s)        67478 (s)        2
+#   8  (DROPOFF) Request_ID 222   DR_222           67565 (s)        67590 (s)        67590 (s)        0
+#   9  (PICKUP ) Request_ID 276   PI_276           67610 (s)        67610 (s)        67610 (s)        2
+#  10  (PICKUP ) Request_ID 273   PI_273           67662 (s)        67662 (s)        67662 (s)        3
+#  11  (DROPOFF) Request_ID 273   DR_273           67908 (s)        67908 (s)        67908 (s)        2
+#  12  (PICKUP ) Request_ID 352   PI_352           67952 (s)        67952 (s)        67952 (s)        3
+#  13  (PICKUP ) Request_ID 368   PI_368           68111 (s)        68111 (s)        68111 (s)        4
+#  14  (DROPOFF) Request_ID 276   DR_276           68129 (s)        68129 (s)        68129 (s)        2
+#  15  (DROPOFF) Request_ID 352   DR_352           68312 (s)        68312 (s)        68312 (s)        1
+#  16  (DROPOFF) Request_ID 368   DR_368           68579 (s)        68579 (s)        68579 (s)        0
+#  17  (PICKUP ) Request_ID 493   PI_493           68689 (s)        68689 (s)        68689 (s)        1
+#  18  (PICKUP ) Request_ID 432   PI_432           68689 (s)        68689 (s)        68689 (s)        5
+#  19  (DROPOFF) Request_ID 493   DR_493           68833 (s)        68833 (s)        68833 (s)        4
+#  20  (DROPOFF) Request_ID 432   DR_432           69057 (s)        69057 (s)        69057 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 75
+#	- VEHICLE_ID              : 30
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1826
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_30            66687 (s)        66687 (s)        66687 (s)        0
+#   2  (PICKUP ) Request_ID 68    PI_68            66687 (s)        66687 (s)        66687 (s)        1
+#   3  (PICKUP ) Request_ID 69    PI_69            66716 (s)        66716 (s)        66716 (s)        2
+#   4  (DROPOFF) Request_ID 69    DR_69            66827 (s)        66827 (s)        66827 (s)        1
+#   5  (DROPOFF) Request_ID 68    DR_68            67041 (s)        67041 (s)        67041 (s)        0
+#   6  (PICKUP ) Request_ID 154   PI_154           67138 (s)        67138 (s)        67138 (s)        2
+#   7  (PICKUP ) Request_ID 164   PI_164           67138 (s)        67138 (s)        67138 (s)        3
+#   8  (DROPOFF) Request_ID 154   DR_154           67215 (s)        67215 (s)        67215 (s)        1
+#   9  (DROPOFF) Request_ID 164   DR_164           67450 (s)        67450 (s)        67450 (s)        0
+#  10  (PICKUP ) Request_ID 232   PI_232           67603 (s)        67603 (s)        67603 (s)        1
+#  11  (PICKUP ) Request_ID 274   PI_274           67707 (s)        67707 (s)        67707 (s)        2
+#  12  (PICKUP ) Request_ID 295   PI_295           67836 (s)        67836 (s)        67836 (s)        3
+#  13  (DROPOFF) Request_ID 232   DR_232           67836 (s)        67836 (s)        67836 (s)        2
+#  14  (DROPOFF) Request_ID 274   DR_274           67900 (s)        67900 (s)        67900 (s)        1
+#  15  (PICKUP ) Request_ID 339   PI_339           67966 (s)        67966 (s)        67966 (s)        2
+#  16  (DROPOFF) Request_ID 295   DR_295           68045 (s)        68045 (s)        68045 (s)        1
+#  17  (PICKUP ) Request_ID 383   PI_383           68080 (s)        68080 (s)        68080 (s)        2
+#  18  (DROPOFF) Request_ID 339   DR_339           68205 (s)        68205 (s)        68205 (s)        1
+#  19  (DROPOFF) Request_ID 383   DR_383           68456 (s)        68456 (s)        68456 (s)        0
+#  20  (PICKUP ) Request_ID 500   PI_500           68498 (s)        68498 (s)        68498 (s)        1
+#  21  (PICKUP ) Request_ID 479   PI_479           68546 (s)        68546 (s)        68546 (s)        2
+#  22  (DROPOFF) Request_ID 500   DR_500           68684 (s)        68684 (s)        68684 (s)        1
+#  23  (DROPOFF) Request_ID 479   DR_479           68915 (s)        68915 (s)        68915 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 76
+#	- VEHICLE_ID              : 31
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1286
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_31            66656 (s)        66656 (s)        66656 (s)        4
+#   2  (DROPOFF) Request_ID 39    DR_39            66689 (s)        66689 (s)        66689 (s)        2
+#   3  (DROPOFF) Request_ID 40    DR_40            66750 (s)        66750 (s)        66750 (s)        1
+#   4  (PICKUP ) Request_ID 92    PI_92            66809 (s)        66809 (s)        66809 (s)        2
+#   5  (PICKUP ) Request_ID 91    PI_91            66877 (s)        66877 (s)        66877 (s)        3
+#   6  (DROPOFF) Request_ID 92    DR_92            66934 (s)        66934 (s)        66934 (s)        2
+#   7  (DROPOFF) Request_ID 41    DR_41            67006 (s)        67006 (s)        67006 (s)        1
+#   8  (DROPOFF) Request_ID 91    DR_91            67384 (s)        67384 (s)        67384 (s)        0
+#   9  (PICKUP ) Request_ID 209   PI_209           67405 (s)        67405 (s)        67405 (s)        1
+#  10  (PICKUP ) Request_ID 218   PI_218           67465 (s)        67465 (s)        67465 (s)        2
+#  11  (DROPOFF) Request_ID 209   DR_209           67726 (s)        67726 (s)        67726 (s)        1
+#  12  (PICKUP ) Request_ID 298   PI_298           67726 (s)        67726 (s)        67726 (s)        2
+#  13  (DROPOFF) Request_ID 218   DR_218           67930 (s)        67930 (s)        67930 (s)        1
+#  14  (DROPOFF) Request_ID 298   DR_298           68032 (s)        68032 (s)        68032 (s)        0
+#  15  (PICKUP ) Request_ID 373   PI_373           68110 (s)        68110 (s)        68110 (s)        1
+#  16  (PICKUP ) Request_ID 391   PI_391           68110 (s)        68110 (s)        68110 (s)        2
+#  17  (PICKUP ) Request_ID 410   PI_410           68167 (s)        68167 (s)        68167 (s)        3
+#  18  (DROPOFF) Request_ID 373   DR_373           68268 (s)        68268 (s)        68268 (s)        2
+#  19  (PICKUP ) Request_ID 448   PI_448           68342 (s)        68342 (s)        68342 (s)        4
+#  20  (DROPOFF) Request_ID 410   DR_410           68505 (s)        68505 (s)        68505 (s)        3
+#  21  (DROPOFF) Request_ID 448   DR_448           68505 (s)        68505 (s)        68505 (s)        1
+#  22  (DROPOFF) Request_ID 391   DR_391           68658 (s)        68658 (s)        68658 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 77
+#	- VEHICLE_ID              : 32
+#	- NUMBER_OF_STOPS         : 26
+#	- TOTAL_WAITING (seconds) : 1752
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_32            66677 (s)        66677 (s)        66677 (s)        1
+#   2  (DROPOFF) Request_ID 42    DR_42            66924 (s)        66924 (s)        66924 (s)        0
+#   3  (PICKUP ) Request_ID 130   PI_130           67028 (s)        67028 (s)        67028 (s)        1
+#   4  (PICKUP ) Request_ID 141   PI_141           67028 (s)        67028 (s)        67028 (s)        4
+#   5  (DROPOFF) Request_ID 141   DR_141           67116 (s)        67116 (s)        67116 (s)        1
+#   6  (PICKUP ) Request_ID 165   PI_165           67225 (s)        67225 (s)        67225 (s)        2
+#   7  (PICKUP ) Request_ID 177   PI_177           67225 (s)        67225 (s)        67225 (s)        3
+#   8  (DROPOFF) Request_ID 130   DR_130           67337 (s)        67337 (s)        67337 (s)        2
+#   9  (PICKUP ) Request_ID 205   PI_205           67372 (s)        67372 (s)        67372 (s)        4
+#  10  (DROPOFF) Request_ID 177   DR_177           67449 (s)        67449 (s)        67449 (s)        3
+#  11  (PICKUP ) Request_ID 240   PI_240           67541 (s)        67541 (s)        67541 (s)        4
+#  12  (DROPOFF) Request_ID 165   DR_165           67660 (s)        67660 (s)        67660 (s)        3
+#  13  (DROPOFF) Request_ID 205   DR_205           67776 (s)        67776 (s)        67776 (s)        1
+#  14  (DROPOFF) Request_ID 240   DR_240           67861 (s)        67861 (s)        67861 (s)        0
+#  15  (PICKUP ) Request_ID 351   PI_351           67900 (s)        67900 (s)        67900 (s)        3
+#  16  (PICKUP ) Request_ID 361   PI_361           67948 (s)        67948 (s)        67948 (s)        4
+#  17  (DROPOFF) Request_ID 351   DR_351           67976 (s)        67976 (s)        67976 (s)        1
+#  18  (DROPOFF) Request_ID 361   DR_361           68197 (s)        68197 (s)        68197 (s)        0
+#  19  (PICKUP ) Request_ID 423   PI_423           68238 (s)        68238 (s)        68238 (s)        1
+#  20  (PICKUP ) Request_ID 420   PI_420           68326 (s)        68326 (s)        68326 (s)        3
+#  21  (PICKUP ) Request_ID 460   PI_460           68391 (s)        68391 (s)        68391 (s)        4
+#  22  (PICKUP ) Request_ID 466   PI_466           68391 (s)        68391 (s)        68391 (s)        5
+#  23  (DROPOFF) Request_ID 423   DR_423           68454 (s)        68454 (s)        68454 (s)        4
+#  24  (DROPOFF) Request_ID 466   DR_466           68610 (s)        68610 (s)        68610 (s)        3
+#  25  (DROPOFF) Request_ID 420   DR_420           68678 (s)        68678 (s)        68678 (s)        1
+#  26  (DROPOFF) Request_ID 460   DR_460           68823 (s)        68823 (s)        68823 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 78
+#	- VEHICLE_ID              : 33
+#	- NUMBER_OF_STOPS         : 21
+#	- TOTAL_WAITING (seconds) : 1430
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_33            66620 (s)        66620 (s)        66620 (s)        7
+#   2  (DROPOFF) Request_ID 43    DR_43            66895 (s)        66895 (s)        66895 (s)        6
+#   3  (DROPOFF) Request_ID 44    DR_44            66964 (s)        66964 (s)        66964 (s)        0
+#   4  (PICKUP ) Request_ID 147   PI_147           67046 (s)        67046 (s)        67046 (s)        3
+#   5  (DROPOFF) Request_ID 147   DR_147           67243 (s)        67243 (s)        67243 (s)        0
+#   6  (PICKUP ) Request_ID 196   PI_196           67370 (s)        67370 (s)        67370 (s)        1
+#   7  (DROPOFF) Request_ID 196   DR_196           67564 (s)        67564 (s)        67564 (s)        0
+#   8  (PICKUP ) Request_ID 265   PI_265           67564 (s)        67564 (s)        67564 (s)        2
+#   9  (PICKUP ) Request_ID 268   PI_268           67614 (s)        67614 (s)        67614 (s)        3
+#  10  (DROPOFF) Request_ID 268   DR_268           67614 (s)        67614 (s)        67614 (s)        2
+#  11  (DROPOFF) Request_ID 265   DR_265           67851 (s)        67851 (s)        67851 (s)        0
+#  12  (PICKUP ) Request_ID 333   PI_333           67872 (s)        67872 (s)        67872 (s)        6
+#  13  (PICKUP ) Request_ID 354   PI_354           67974 (s)        67974 (s)        67974 (s)        7
+#  14  (DROPOFF) Request_ID 333   DR_333           68009 (s)        68009 (s)        68009 (s)        1
+#  15  (PICKUP ) Request_ID 375   PI_375           68125 (s)        68125 (s)        68125 (s)        2
+#  16  (DROPOFF) Request_ID 354   DR_354           68283 (s)        68283 (s)        68283 (s)        1
+#  17  (DROPOFF) Request_ID 375   DR_375           68445 (s)        68445 (s)        68445 (s)        0
+#  18  (PICKUP ) Request_ID 472   PI_472           68510 (s)        68510 (s)        68510 (s)        1
+#  19  (PICKUP ) Request_ID 495   PI_495           68644 (s)        68644 (s)        68644 (s)        2
+#  20  (DROPOFF) Request_ID 472   DR_472           68682 (s)        68682 (s)        68682 (s)        1
+#  21  (DROPOFF) Request_ID 495   DR_495           68921 (s)        68921 (s)        68921 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 6.00
+#	- ROUTE_NUMBER            : 79
+#	- VEHICLE_ID              : 34
+#	- NUMBER_OF_STOPS         : 22
+#	- TOTAL_WAITING (seconds) : 1141
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_34            66609 (s)        66609 (s)        66609 (s)        4
+#   2  (DROPOFF) Request_ID 45    DR_45            66693 (s)        66693 (s)        66693 (s)        3
+#   3  (DROPOFF) Request_ID 46    DR_46            66950 (s)        66950 (s)        66950 (s)        2
+#   4  (PICKUP ) Request_ID 134   PI_134           66997 (s)        66997 (s)        66997 (s)        3
+#   5  (DROPOFF) Request_ID 47    DR_47            67124 (s)        67124 (s)        67124 (s)        1
+#   6  (DROPOFF) Request_ID 134   DR_134           67344 (s)        67350 (s)        67350 (s)        0
+#   7  (PICKUP ) Request_ID 217   PI_217           67444 (s)        67444 (s)        67444 (s)        1
+#   8  (PICKUP ) Request_ID 242   PI_242           67485 (s)        67485 (s)        67485 (s)        2
+#   9  (DROPOFF) Request_ID 217   DR_217           67584 (s)        67584 (s)        67584 (s)        1
+#  10  (DROPOFF) Request_ID 242   DR_242           67779 (s)        67779 (s)        67779 (s)        0
+#  11  (PICKUP ) Request_ID 318   PI_318           67848 (s)        67848 (s)        67848 (s)        1
+#  12  (PICKUP ) Request_ID 340   PI_340           67889 (s)        67889 (s)        67889 (s)        3
+#  13  (DROPOFF) Request_ID 318   DR_318           68121 (s)        68121 (s)        68121 (s)        2
+#  14  (PICKUP ) Request_ID 389   PI_389           68204 (s)        68204 (s)        68204 (s)        4
+#  15  (PICKUP ) Request_ID 430   PI_430           68204 (s)        68204 (s)        68204 (s)        5
+#  16  (DROPOFF) Request_ID 389   DR_389           68297 (s)        68297 (s)        68297 (s)        3
+#  17  (PICKUP ) Request_ID 444   PI_444           68297 (s)        68297 (s)        68297 (s)        5
+#  18  (DROPOFF) Request_ID 340   DR_340           68465 (s)        68465 (s)        68465 (s)        3
+#  19  (PICKUP ) Request_ID 498   PI_498           68495 (s)        68495 (s)        68495 (s)        4
+#  20  (DROPOFF) Request_ID 430   DR_430           68525 (s)        68525 (s)        68525 (s)        3
+#  21  (DROPOFF) Request_ID 498   DR_498           68657 (s)        68657 (s)        68657 (s)        2
+#  22  (DROPOFF) Request_ID 444   DR_444           68740 (s)        68740 (s)        68740 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 31.00
+#	- ROUTE_NUMBER            : 80
+#	- VEHICLE_ID              : 35
+#	- NUMBER_OF_STOPS         : 17
+#	- TOTAL_WAITING (seconds) : 1307
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_35            66870 (s)        66870 (s)        66870 (s)        0
+#   2  (PICKUP ) Request_ID 116   PI_116           66997 (s)        66997 (s)        66997 (s)        1
+#   3  (DROPOFF) Request_ID 116   DR_116           67328 (s)        67328 (s)        67328 (s)        0
+#   4  (PICKUP ) Request_ID 214   PI_214           67432 (s)        67432 (s)        67432 (s)        1
+#   5  (DROPOFF) Request_ID 214   DR_214           67556 (s)        67556 (s)        67556 (s)        0
+#   6  (PICKUP ) Request_ID 262   PI_262           67556 (s)        67556 (s)        67556 (s)        6
+#   7  (DROPOFF) Request_ID 262   DR_262           67810 (s)        67810 (s)        67810 (s)        0
+#   8  (PICKUP ) Request_ID 315   PI_315           67868 (s)        67868 (s)        67868 (s)        2
+#   9  (PICKUP ) Request_ID 353   PI_353           67933 (s)        67933 (s)        67933 (s)        3
+#  10  (PICKUP ) Request_ID 360   PI_360           68018 (s)        68018 (s)        68018 (s)        4
+#  11  (DROPOFF) Request_ID 315   DR_315           68208 (s)        68208 (s)        68208 (s)        2
+#  12  (PICKUP ) Request_ID 413   PI_413           68301 (s)        68301 (s)        68301 (s)        3
+#  13  (DROPOFF) Request_ID 360   DR_360           68333 (s)        68333 (s)        68333 (s)        2
+#  14  (PICKUP ) Request_ID 458   PI_458           68455 (s)        68455 (s)        68455 (s)        3
+#  15  (DROPOFF) Request_ID 353   DR_353           68455 (s)        68455 (s)        68455 (s)        2
+#  16  (DROPOFF) Request_ID 458   DR_458           68589 (s)        68589 (s)        68589 (s)        1
+#  17  (DROPOFF) Request_ID 413   DR_413           68620 (s)        68620 (s)        68620 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 4.00
+#	- ROUTE_NUMBER            : 81
+#	- VEHICLE_ID              : 36
+#	- NUMBER_OF_STOPS         : 25
+#	- TOTAL_WAITING (seconds) : 1652
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_36            66646 (s)        66646 (s)        66646 (s)        5
+#   2  (DROPOFF) Request_ID 48    DR_48            66646 (s)        66646 (s)        66646 (s)        4
+#   3  (DROPOFF) Request_ID 49    DR_49            66737 (s)        66737 (s)        66737 (s)        2
+#   4  (DROPOFF) Request_ID 50    DR_50            66821 (s)        66821 (s)        66821 (s)        1
+#   5  (DROPOFF) Request_ID 51    DR_51            66992 (s)        66992 (s)        66992 (s)        0
+#   6  (PICKUP ) Request_ID 103   PI_103           66992 (s)        66992 (s)        66992 (s)        1
+#   7  (DROPOFF) Request_ID 103   DR_103           67196 (s)        67200 (s)        67200 (s)        0
+#   8  (PICKUP ) Request_ID 194   PI_194           67261 (s)        67261 (s)        67261 (s)        1
+#   9  (PICKUP ) Request_ID 191   PI_191           67305 (s)        67305 (s)        67305 (s)        2
+#  10  (DROPOFF) Request_ID 194   DR_194           67305 (s)        67305 (s)        67305 (s)        1
+#  11  (DROPOFF) Request_ID 191   DR_191           67574 (s)        67574 (s)        67574 (s)        0
+#  12  (PICKUP ) Request_ID 270   PI_270           67639 (s)        67639 (s)        67639 (s)        1
+#  13  (PICKUP ) Request_ID 278   PI_278           67688 (s)        67688 (s)        67688 (s)        2
+#  14  (PICKUP ) Request_ID 286   PI_286           67737 (s)        67737 (s)        67737 (s)        3
+#  15  (DROPOFF) Request_ID 278   DR_278           67879 (s)        67879 (s)        67879 (s)        2
+#  16  (DROPOFF) Request_ID 286   DR_286           67979 (s)        67979 (s)        67979 (s)        1
+#  17  (DROPOFF) Request_ID 270   DR_270           68123 (s)        68123 (s)        68123 (s)        0
+#  18  (PICKUP ) Request_ID 390   PI_390           68177 (s)        68177 (s)        68177 (s)        2
+#  19  (PICKUP ) Request_ID 428   PI_428           68218 (s)        68218 (s)        68218 (s)        3
+#  20  (PICKUP ) Request_ID 412   PI_412           68287 (s)        68287 (s)        68287 (s)        4
+#  21  (DROPOFF) Request_ID 428   DR_428           68395 (s)        68395 (s)        68395 (s)        3
+#  22  (DROPOFF) Request_ID 412   DR_412           68531 (s)        68531 (s)        68531 (s)        2
+#  23  (PICKUP ) Request_ID 471   PI_471           68531 (s)        68531 (s)        68531 (s)        3
+#  24  (DROPOFF) Request_ID 471   DR_471           68648 (s)        68648 (s)        68648 (s)        2
+#  25  (DROPOFF) Request_ID 390   DR_390           68762 (s)        68762 (s)        68762 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 74.00
+#	- ROUTE_NUMBER            : 82
+#	- VEHICLE_ID              : 37
+#	- NUMBER_OF_STOPS         : 20
+#	- TOTAL_WAITING (seconds) : 1267
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_37            66640 (s)        66640 (s)        66640 (s)        4
+#   2  (DROPOFF) Request_ID 52    DR_52            66743 (s)        66743 (s)        66743 (s)        2
+#   3  (DROPOFF) Request_ID 53    DR_53            66851 (s)        66851 (s)        66851 (s)        1
+#   4  (DROPOFF) Request_ID 54    DR_54            67036 (s)        67110 (s)        67110 (s)        0
+#   5  (PICKUP ) Request_ID 170   PI_170           67189 (s)        67189 (s)        67189 (s)        1
+#   6  (PICKUP ) Request_ID 178   PI_178           67268 (s)        67268 (s)        67268 (s)        2
+#   7  (DROPOFF) Request_ID 178   DR_178           67362 (s)        67362 (s)        67362 (s)        1
+#   8  (DROPOFF) Request_ID 170   DR_170           67567 (s)        67567 (s)        67567 (s)        0
+#   9  (PICKUP ) Request_ID 266   PI_266           67620 (s)        67620 (s)        67620 (s)        1
+#  10  (PICKUP ) Request_ID 248   PI_248           67620 (s)        67620 (s)        67620 (s)        2
+#  11  (PICKUP ) Request_ID 281   PI_281           67652 (s)        67652 (s)        67652 (s)        3
+#  12  (DROPOFF) Request_ID 248   DR_248           67795 (s)        67795 (s)        67795 (s)        2
+#  13  (PICKUP ) Request_ID 301   PI_301           67874 (s)        67874 (s)        67874 (s)        4
+#  14  (DROPOFF) Request_ID 281   DR_281           67975 (s)        67975 (s)        67975 (s)        3
+#  15  (DROPOFF) Request_ID 266   DR_266           68089 (s)        68089 (s)        68089 (s)        2
+#  16  (PICKUP ) Request_ID 405   PI_405           68192 (s)        68192 (s)        68192 (s)        3
+#  17  (DROPOFF) Request_ID 301   DR_301           68275 (s)        68275 (s)        68275 (s)        1
+#  18  (PICKUP ) Request_ID 453   PI_453           68471 (s)        68471 (s)        68471 (s)        2
+#  19  (DROPOFF) Request_ID 405   DR_405           68527 (s)        68527 (s)        68527 (s)        1
+#  20  (DROPOFF) Request_ID 453   DR_453           68692 (s)        68692 (s)        68692 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 178.00
+#	- ROUTE_NUMBER            : 83
+#	- VEHICLE_ID              : 38
+#	- NUMBER_OF_STOPS         : 21
+#	- TOTAL_WAITING (seconds) : 1481
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_38            66618 (s)        66618 (s)        66618 (s)        4
+#   2  (DROPOFF) Request_ID 55    DR_55            66626 (s)        66626 (s)        66626 (s)        3
+#   3  (DROPOFF) Request_ID 56    DR_56            66940 (s)        66940 (s)        66940 (s)        0
+#   4  (PICKUP ) Request_ID 129   PI_129           66979 (s)        66979 (s)        66979 (s)        1
+#   5  (PICKUP ) Request_ID 144   PI_144           67020 (s)        67020 (s)        67020 (s)        2
+#   6  (DROPOFF) Request_ID 129   DR_129           67134 (s)        67134 (s)        67134 (s)        1
+#   7  (DROPOFF) Request_ID 144   DR_144           67281 (s)        67380 (s)        67380 (s)        0
+#   8  (PICKUP ) Request_ID 224   PI_224           67449 (s)        67449 (s)        67449 (s)        1
+#   9  (DROPOFF) Request_ID 224   DR_224           67691 (s)        67770 (s)        67770 (s)        0
+#  10  (PICKUP ) Request_ID 321   PI_321           67828 (s)        67828 (s)        67828 (s)        1
+#  11  (PICKUP ) Request_ID 326   PI_326           67916 (s)        67916 (s)        67916 (s)        2
+#  12  (DROPOFF) Request_ID 321   DR_321           68023 (s)        68023 (s)        68023 (s)        1
+#  13  (PICKUP ) Request_ID 370   PI_370           68023 (s)        68023 (s)        68023 (s)        2
+#  14  (DROPOFF) Request_ID 370   DR_370           68171 (s)        68171 (s)        68171 (s)        1
+#  15  (PICKUP ) Request_ID 403   PI_403           68197 (s)        68197 (s)        68197 (s)        2
+#  16  (DROPOFF) Request_ID 326   DR_326           68474 (s)        68474 (s)        68474 (s)        1
+#  17  (PICKUP ) Request_ID 485   PI_485           68546 (s)        68546 (s)        68546 (s)        2
+#  18  (PICKUP ) Request_ID 467   PI_467           68622 (s)        68622 (s)        68622 (s)        3
+#  19  (DROPOFF) Request_ID 403   DR_403           68690 (s)        68690 (s)        68690 (s)        2
+#  20  (DROPOFF) Request_ID 485   DR_485           68877 (s)        68877 (s)        68877 (s)        1
+#  21  (DROPOFF) Request_ID 467   DR_467           69068 (s)        69068 (s)        69068 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 55.00
+#	- ROUTE_NUMBER            : 84
+#	- VEHICLE_ID              : 39
+#	- NUMBER_OF_STOPS         : 21
+#	- TOTAL_WAITING (seconds) : 1518
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_39            66630 (s)        66630 (s)        66630 (s)        0
+#   2  (PICKUP ) Request_ID 70    PI_70            66741 (s)        66741 (s)        66741 (s)        1
+#   3  (PICKUP ) Request_ID 75    PI_75            66741 (s)        66741 (s)        66741 (s)        6
+#   4  (DROPOFF) Request_ID 70    DR_70            66938 (s)        66938 (s)        66938 (s)        5
+#   5  (PICKUP ) Request_ID 123   PI_123           66974 (s)        66974 (s)        66974 (s)        7
+#   6  (DROPOFF) Request_ID 75    DR_75            67180 (s)        67180 (s)        67180 (s)        2
+#   7  (PICKUP ) Request_ID 163   PI_163           67202 (s)        67202 (s)        67202 (s)        3
+#   8  (PICKUP ) Request_ID 189   PI_189           67224 (s)        67224 (s)        67224 (s)        5
+#   9  (DROPOFF) Request_ID 189   DR_189           67279 (s)        67279 (s)        67279 (s)        3
+#  10  (DROPOFF) Request_ID 123   DR_123           67425 (s)        67425 (s)        67425 (s)        1
+#  11  (DROPOFF) Request_ID 163   DR_163           67826 (s)        67860 (s)        67860 (s)        0
+#  12  (PICKUP ) Request_ID 346   PI_346           67860 (s)        67860 (s)        67860 (s)        1
+#  13  (PICKUP ) Request_ID 357   PI_357           67952 (s)        67952 (s)        67952 (s)        3
+#  14  (DROPOFF) Request_ID 346   DR_346           68196 (s)        68196 (s)        68196 (s)        2
+#  15  (PICKUP ) Request_ID 385   PI_385           68196 (s)        68196 (s)        68196 (s)        3
+#  16  (PICKUP ) Request_ID 418   PI_418           68254 (s)        68254 (s)        68254 (s)        4
+#  17  (PICKUP ) Request_ID 416   PI_416           68314 (s)        68314 (s)        68314 (s)        5
+#  18  (DROPOFF) Request_ID 418   DR_418           68358 (s)        68358 (s)        68358 (s)        4
+#  19  (DROPOFF) Request_ID 357   DR_357           68443 (s)        68443 (s)        68443 (s)        2
+#  20  (DROPOFF) Request_ID 385   DR_385           68606 (s)        68606 (s)        68606 (s)        1
+#  21  (DROPOFF) Request_ID 416   DR_416           68762 (s)        68762 (s)        68762 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 85
+#	- VEHICLE_ID              : 40
+#	- NUMBER_OF_STOPS         : 19
+#	- TOTAL_WAITING (seconds) : 1556
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_40            66644 (s)        66644 (s)        66644 (s)        7
+#   2  (DROPOFF) Request_ID 57    DR_57            66778 (s)        66778 (s)        66778 (s)        1
+#   3  (DROPOFF) Request_ID 58    DR_58            66998 (s)        66998 (s)        66998 (s)        0
+#   4  (PICKUP ) Request_ID 140   PI_140           67023 (s)        67023 (s)        67023 (s)        1
+#   5  (DROPOFF) Request_ID 140   DR_140           67365 (s)        67365 (s)        67365 (s)        0
+#   6  (PICKUP ) Request_ID 201   PI_201           67365 (s)        67365 (s)        67365 (s)        1
+#   7  (PICKUP ) Request_ID 198   PI_198           67409 (s)        67409 (s)        67409 (s)        2
+#   8  (DROPOFF) Request_ID 201   DR_201           67453 (s)        67453 (s)        67453 (s)        1
+#   9  (PICKUP ) Request_ID 234   PI_234           67575 (s)        67575 (s)        67575 (s)        2
+#  10  (PICKUP ) Request_ID 257   PI_257           67638 (s)        67638 (s)        67638 (s)        3
+#  11  (DROPOFF) Request_ID 198   DR_198           67854 (s)        67854 (s)        67854 (s)        2
+#  12  (DROPOFF) Request_ID 234   DR_234           67960 (s)        67960 (s)        67960 (s)        1
+#  13  (DROPOFF) Request_ID 257   DR_257           68169 (s)        68169 (s)        68169 (s)        0
+#  14  (PICKUP ) Request_ID 397   PI_397           68262 (s)        68262 (s)        68262 (s)        2
+#  15  (PICKUP ) Request_ID 402   PI_402           68262 (s)        68262 (s)        68262 (s)        3
+#  16  (PICKUP ) Request_ID 454   PI_454           68387 (s)        68387 (s)        68387 (s)        4
+#  17  (DROPOFF) Request_ID 454   DR_454           68387 (s)        68387 (s)        68387 (s)        3
+#  18  (DROPOFF) Request_ID 402   DR_402           68602 (s)        68602 (s)        68602 (s)        2
+#  19  (DROPOFF) Request_ID 397   DR_397           68805 (s)        68805 (s)        68805 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 86
+#	- VEHICLE_ID              : 41
+#	- NUMBER_OF_STOPS         : 18
+#	- TOTAL_WAITING (seconds) : 1224
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_41            66700 (s)        66700 (s)        66700 (s)        1
+#   2  (DROPOFF) Request_ID 59    DR_59            66848 (s)        66848 (s)        66848 (s)        0
+#   3  (PICKUP ) Request_ID 114   PI_114           66922 (s)        66922 (s)        66922 (s)        1
+#   4  (PICKUP ) Request_ID 119   PI_119           66995 (s)        66995 (s)        66995 (s)        3
+#   5  (DROPOFF) Request_ID 114   DR_114           67084 (s)        67084 (s)        67084 (s)        2
+#   6  (DROPOFF) Request_ID 119   DR_119           67232 (s)        67232 (s)        67232 (s)        0
+#   7  (PICKUP ) Request_ID 200   PI_200           67313 (s)        67313 (s)        67313 (s)        6
+#   8  (DROPOFF) Request_ID 200   DR_200           67434 (s)        67434 (s)        67434 (s)        0
+#   9  (PICKUP ) Request_ID 231   PI_231           67510 (s)        67510 (s)        67510 (s)        1
+#  10  (PICKUP ) Request_ID 245   PI_245           67591 (s)        67591 (s)        67591 (s)        2
+#  11  (DROPOFF) Request_ID 245   DR_245           67816 (s)        67816 (s)        67816 (s)        1
+#  12  (DROPOFF) Request_ID 231   DR_231           67954 (s)        67954 (s)        67954 (s)        0
+#  13  (PICKUP ) Request_ID 365   PI_365           68027 (s)        68027 (s)        68027 (s)        6
+#  14  (PICKUP ) Request_ID 386   PI_386           68118 (s)        68118 (s)        68118 (s)        7
+#  15  (DROPOFF) Request_ID 365   DR_365           68214 (s)        68214 (s)        68214 (s)        1
+#  16  (DROPOFF) Request_ID 386   DR_386           68405 (s)        68405 (s)        68405 (s)        0
+#  17  (PICKUP ) Request_ID 482   PI_482           68519 (s)        68519 (s)        68519 (s)        1
+#  18  (DROPOFF) Request_ID 482   DR_482           68866 (s)        68866 (s)        68866 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 87
+#	- VEHICLE_ID              : 42
+#	- NUMBER_OF_STOPS         : 20
+#	- TOTAL_WAITING (seconds) : 1022
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_42            66604 (s)        66604 (s)        66604 (s)        3
+#   2  (DROPOFF) Request_ID 60    DR_60            66693 (s)        66693 (s)        66693 (s)        2
+#   3  (DROPOFF) Request_ID 61    DR_61            66741 (s)        66741 (s)        66741 (s)        1
+#   4  (DROPOFF) Request_ID 62    DR_62            66843 (s)        66843 (s)        66843 (s)        0
+#   5  (PICKUP ) Request_ID 109   PI_109           66951 (s)        66951 (s)        66951 (s)        1
+#   6  (DROPOFF) Request_ID 109   DR_109           67194 (s)        67194 (s)        67194 (s)        0
+#   7  (PICKUP ) Request_ID 167   PI_167           67194 (s)        67194 (s)        67194 (s)        2
+#   8  (PICKUP ) Request_ID 174   PI_174           67217 (s)        67217 (s)        67217 (s)        7
+#   9  (DROPOFF) Request_ID 174   DR_174           67319 (s)        67319 (s)        67319 (s)        2
+#  10  (DROPOFF) Request_ID 167   DR_167           67554 (s)        67554 (s)        67554 (s)        0
+#  11  (PICKUP ) Request_ID 259   PI_259           67554 (s)        67554 (s)        67554 (s)        1
+#  12  (PICKUP ) Request_ID 260   PI_260           67621 (s)        67621 (s)        67621 (s)        7
+#  13  (DROPOFF) Request_ID 259   DR_259           67841 (s)        67841 (s)        67841 (s)        6
+#  14  (PICKUP ) Request_ID 332   PI_332           67841 (s)        67841 (s)        67841 (s)        7
+#  15  (DROPOFF) Request_ID 260   DR_260           68031 (s)        68031 (s)        68031 (s)        1
+#  16  (DROPOFF) Request_ID 332   DR_332           68317 (s)        68317 (s)        68317 (s)        0
+#  17  (PICKUP ) Request_ID 464   PI_464           68434 (s)        68434 (s)        68434 (s)        1
+#  18  (PICKUP ) Request_ID 483   PI_483           68456 (s)        68456 (s)        68456 (s)        7
+#  19  (DROPOFF) Request_ID 483   DR_483           68531 (s)        68531 (s)        68531 (s)        1
+#  20  (DROPOFF) Request_ID 464   DR_464           68614 (s)        68614 (s)        68614 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 25.00
+#	- ROUTE_NUMBER            : 88
+#	- VEHICLE_ID              : 43
+#	- NUMBER_OF_STOPS         : 23
+#	- TOTAL_WAITING (seconds) : 1578
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_43            66605 (s)        66605 (s)        66605 (s)        2
+#   2  (DROPOFF) Request_ID 63    DR_63            66702 (s)        66702 (s)        66702 (s)        1
+#   3  (DROPOFF) Request_ID 64    DR_64            66785 (s)        66810 (s)        66810 (s)        0
+#   4  (PICKUP ) Request_ID 110   PI_110           66937 (s)        66937 (s)        66937 (s)        1
+#   5  (PICKUP ) Request_ID 131   PI_131           67017 (s)        67017 (s)        67017 (s)        3
+#   6  (DROPOFF) Request_ID 131   DR_131           67055 (s)        67055 (s)        67055 (s)        1
+#   7  (DROPOFF) Request_ID 110   DR_110           67243 (s)        67243 (s)        67243 (s)        0
+#   8  (PICKUP ) Request_ID 185   PI_185           67243 (s)        67243 (s)        67243 (s)        2
+#   9  (PICKUP ) Request_ID 193   PI_193           67293 (s)        67293 (s)        67293 (s)        3
+#  10  (PICKUP ) Request_ID 207   PI_207           67385 (s)        67385 (s)        67385 (s)        4
+#  11  (DROPOFF) Request_ID 185   DR_185           67592 (s)        67592 (s)        67592 (s)        2
+#  12  (DROPOFF) Request_ID 193   DR_193           67649 (s)        67649 (s)        67649 (s)        1
+#  13  (DROPOFF) Request_ID 207   DR_207           67733 (s)        67733 (s)        67733 (s)        0
+#  14  (PICKUP ) Request_ID 309   PI_309           67848 (s)        67848 (s)        67848 (s)        1
+#  15  (PICKUP ) Request_ID 336   PI_336           67848 (s)        67848 (s)        67848 (s)        2
+#  16  (PICKUP ) Request_ID 343   PI_343           67951 (s)        67951 (s)        67951 (s)        3
+#  17  (DROPOFF) Request_ID 336   DR_336           68118 (s)        68118 (s)        68118 (s)        2
+#  18  (DROPOFF) Request_ID 309   DR_309           68308 (s)        68308 (s)        68308 (s)        1
+#  19  (DROPOFF) Request_ID 343   DR_343           68420 (s)        68420 (s)        68420 (s)        0
+#  20  (PICKUP ) Request_ID 474   PI_474           68507 (s)        68507 (s)        68507 (s)        1
+#  21  (PICKUP ) Request_ID 470   PI_470           68524 (s)        68524 (s)        68524 (s)        7
+#  22  (DROPOFF) Request_ID 470   DR_470           68603 (s)        68603 (s)        68603 (s)        1
+#  23  (DROPOFF) Request_ID 474   DR_474           68688 (s)        68688 (s)        68688 (s)        0
+=============================================================================================================
+#
+#	- IDLE_TIME              : 0.00
+#	- ROUTE_NUMBER            : 89
+#	- VEHICLE_ID              : 44
+#	- NUMBER_OF_STOPS         : 35
+#	- TOTAL_WAITING (seconds) : 2200
+#
+# -----------------------------------------------------------------------------------------------------------
+#      ACTION_DESCRIPTION         NODE_ID      REACH_TIME(s)   DEPART_TIME(s)     PLAN_TIME(s)  #PASSENGERS
+# -----------------------------------------------------------------------------------------------------------
+#   1  (SOURCE ) departure        SO_44            66692 (s)        66692 (s)        66692 (s)        0
+#   2  (PICKUP ) Request_ID 80    PI_80            66844 (s)        66844 (s)        66844 (s)        1
+#   3  (PICKUP ) Request_ID 112   PI_112           66927 (s)        66927 (s)        66927 (s)        2
+#   4  (PICKUP ) Request_ID 98    PI_98            66927 (s)        66927 (s)        66927 (s)        3
+#   5  (PICKUP ) Request_ID 126   PI_126           66968 (s)        66968 (s)        66968 (s)        4
+#   6  (PICKUP ) Request_ID 138   PI_138           67009 (s)        67009 (s)        67009 (s)        5
+#   7  (DROPOFF) Request_ID 126   DR_126           67079 (s)        67079 (s)        67079 (s)        4
+#   8  (DROPOFF) Request_ID 112   DR_112           67132 (s)        67132 (s)        67132 (s)        3
+#   9  (DROPOFF) Request_ID 80    DR_80            67262 (s)        67262 (s)        67262 (s)        2
+#  10  (DROPOFF) Request_ID 98    DR_98            67355 (s)        67355 (s)        67355 (s)        1
+#  11  (PICKUP ) Request_ID 220   PI_220           67397 (s)        67397 (s)        67397 (s)        2
+#  12  (DROPOFF) Request_ID 138   DR_138           67397 (s)        67397 (s)        67397 (s)        1
+#  13  (DROPOFF) Request_ID 220   DR_220           67657 (s)        67657 (s)        67657 (s)        0
+#  14  (PICKUP ) Request_ID 290   PI_290           67657 (s)        67657 (s)        67657 (s)        1
+#  15  (DROPOFF) Request_ID 290   DR_290           67771 (s)        67771 (s)        67771 (s)        0
+#  16  (PICKUP ) Request_ID 311   PI_311           67784 (s)        67784 (s)        67784 (s)        1
+#  17  (PICKUP ) Request_ID 316   PI_316           67828 (s)        67828 (s)        67828 (s)        2
+#  18  (PICKUP ) Request_ID 335   PI_335           67884 (s)        67884 (s)        67884 (s)        3
+#  19  (DROPOFF) Request_ID 335   DR_335           67957 (s)        67957 (s)        67957 (s)        2
+#  20  (PICKUP ) Request_ID 349   PI_349           68040 (s)        68040 (s)        68040 (s)        3
+#  21  (PICKUP ) Request_ID 382   PI_382           68072 (s)        68072 (s)        68072 (s)        4
+#  22  (DROPOFF) Request_ID 311   DR_311           68122 (s)        68122 (s)        68122 (s)        3
+#  23  (DROPOFF) Request_ID 316   DR_316           68216 (s)        68216 (s)        68216 (s)        2
+#  24  (PICKUP ) Request_ID 424   PI_424           68216 (s)        68216 (s)        68216 (s)        3
+#  25  (DROPOFF) Request_ID 382   DR_382           68264 (s)        68264 (s)        68264 (s)        2
+#  26  (PICKUP ) Request_ID 449   PI_449           68264 (s)        68264 (s)        68264 (s)        3
+#  27  (PICKUP ) Request_ID 450   PI_450           68264 (s)        68264 (s)        68264 (s)        6
+#  28  (DROPOFF) Request_ID 349   DR_349           68358 (s)        68358 (s)        68358 (s)        5
+#  29  (PICKUP ) Request_ID 451   PI_451           68408 (s)        68408 (s)        68408 (s)        6
+#  30  (PICKUP ) Request_ID 490   PI_490           68493 (s)        68493 (s)        68493 (s)        7
+#  31  (DROPOFF) Request_ID 424   DR_424           68591 (s)        68591 (s)        68591 (s)        6
+#  32  (DROPOFF) Request_ID 450   DR_450           68686 (s)        68686 (s)        68686 (s)        3
+#  33  (DROPOFF) Request_ID 449   DR_449           68737 (s)        68737 (s)        68737 (s)        2
+#  34  (DROPOFF) Request_ID 451   DR_451           68795 (s)        68795 (s)        68795 (s)        1
+#  35  (DROPOFF) Request_ID 490   DR_490           68932 (s)        68932 (s)        68932 (s)        0
+=============================================================================================================
+
+
+#################################   REQUESTS    #################################
+#
+# --------------------------------------------------------------------------------------------------------
+#  REQUEST_ID  REQUEST_TIME(s)   PICK_TIME(s)   DROP_TIME(s)   WAIT_TIME(s)  TRIP_DELAY(s)   #PASSENGERS
+# --------------------------------------------------------------------------------------------------------
+#        0        66464.00 (s)   66539.00 (s)   67003.00 (s)      75.00 (s)     129.00 (s)        4
+#        1        66482.00 (s)   66531.00 (s)   66705.00 (s)      49.00 (s)      48.00 (s)        1
+#        2        66421.00 (s)   66531.00 (s)   66901.00 (s)     110.00 (s)     215.00 (s)        1
+#        3        66405.00 (s)   66654.00 (s)   67142.00 (s)     249.00 (s)     170.00 (s)        3
+#        4        66326.00 (s)   66531.00 (s)   67074.00 (s)     205.00 (s)     225.00 (s)        1
+#        5        66543.00 (s)   66655.00 (s)   66952.00 (s)     112.00 (s)     135.00 (s)        1
+#        6        66516.00 (s)   66575.00 (s)   66838.00 (s)      59.00 (s)     167.00 (s)        1
+#        7        66189.00 (s)   66369.00 (s)   66701.00 (s)     180.00 (s)     208.00 (s)        1
+#        8        66508.00 (s)   66701.00 (s)   66825.00 (s)     193.00 (s)       0.00 (s)        1
+#        9        66419.00 (s)   66571.00 (s)   66745.00 (s)     152.00 (s)      62.00 (s)        1
+#       10        66458.00 (s)   66612.00 (s)   67033.00 (s)     154.00 (s)     131.00 (s)        1
+#       11        66181.00 (s)   66406.00 (s)   66748.00 (s)     225.00 (s)     212.00 (s)        6
+#       12        66503.00 (s)   66683.00 (s)   66851.00 (s)     180.00 (s)      19.00 (s)        1
+#       13        66471.00 (s)   66578.00 (s)   67006.00 (s)     107.00 (s)     239.00 (s)        1
+#       14        66043.00 (s)   66237.00 (s)   66678.00 (s)     194.00 (s)     230.00 (s)        1
+#       15        66478.00 (s)   66618.00 (s)   66917.00 (s)     140.00 (s)     118.00 (s)        5
+#       16        66222.00 (s)   66489.00 (s)   66985.00 (s)     267.00 (s)     226.00 (s)        1
+#       17        66358.00 (s)   66523.00 (s)   66883.00 (s)     165.00 (s)     113.00 (s)        1
+#       18        66308.00 (s)   66440.00 (s)   66842.00 (s)     132.00 (s)     135.00 (s)        1
+#       19        66347.00 (s)   66523.00 (s)   67076.00 (s)     176.00 (s)     237.00 (s)        1
+#       20        66244.00 (s)   66325.00 (s)   66648.00 (s)      81.00 (s)     193.00 (s)        1
+#       21        66208.00 (s)   66358.00 (s)   66896.00 (s)     150.00 (s)     211.00 (s)        1
+#       22        66500.00 (s)   66648.00 (s)   67019.00 (s)     148.00 (s)     159.00 (s)        1
+#       23        66371.00 (s)   66422.00 (s)   66740.00 (s)      51.00 (s)     233.00 (s)        2
+#       24        66472.00 (s)   66581.00 (s)   66798.00 (s)     109.00 (s)     103.00 (s)        1
+#       25        66562.00 (s)   66581.00 (s)   66902.00 (s)      19.00 (s)     162.00 (s)        1
+#       26        66533.00 (s)   66581.00 (s)   67087.00 (s)      48.00 (s)     222.00 (s)        1
+#       27        66462.00 (s)   66687.00 (s)   67035.00 (s)     225.00 (s)     194.00 (s)        3
+#       28        66536.00 (s)   66541.00 (s)   66727.00 (s)       5.00 (s)      81.00 (s)        1
+#       29        66419.00 (s)   66541.00 (s)   67015.00 (s)     122.00 (s)     207.00 (s)        1
+#       30        66395.00 (s)   66564.00 (s)   66850.00 (s)     169.00 (s)      73.00 (s)        6
+#       31        66453.00 (s)   66599.00 (s)   66763.00 (s)     146.00 (s)     164.00 (s)        2
+#       32        66578.00 (s)   66681.00 (s)   66940.00 (s)     103.00 (s)     115.00 (s)        1
+#       33        66183.00 (s)   66368.00 (s)   66670.00 (s)     185.00 (s)     229.00 (s)        3
+#       34        66482.00 (s)   66575.00 (s)   66765.00 (s)      93.00 (s)     148.00 (s)        1
+#       35        66412.00 (s)   66614.00 (s)   67084.00 (s)     202.00 (s)     201.00 (s)        1
+#       36        66263.00 (s)   66415.00 (s)   66726.00 (s)     152.00 (s)     179.00 (s)        2
+#       37        66428.00 (s)   66560.00 (s)   66914.00 (s)     132.00 (s)     179.00 (s)        1
+#       38        66505.00 (s)   66645.00 (s)   67213.00 (s)     140.00 (s)     178.00 (s)        1
+#       39        66298.00 (s)   66356.00 (s)   66689.00 (s)      58.00 (s)     195.00 (s)        2
+#       40        66368.00 (s)   66514.00 (s)   66750.00 (s)     146.00 (s)     119.00 (s)        1
+#       41        66426.00 (s)   66558.00 (s)   67006.00 (s)     132.00 (s)     236.00 (s)        1
+#       42        66438.00 (s)   66513.00 (s)   66924.00 (s)      75.00 (s)     186.00 (s)        1
+#       43        66496.00 (s)   66620.00 (s)   66895.00 (s)     124.00 (s)       0.00 (s)        1
+#       44        66109.00 (s)   66336.00 (s)   66964.00 (s)     227.00 (s)     224.00 (s)        6
+#       45        66246.00 (s)   66292.00 (s)   66693.00 (s)      46.00 (s)     175.00 (s)        1
+#       46        66207.00 (s)   66370.00 (s)   66950.00 (s)     163.00 (s)     230.00 (s)        1
+#       47        66485.00 (s)   66609.00 (s)   67124.00 (s)     124.00 (s)     198.00 (s)        2
+#       48        66194.00 (s)   66306.00 (s)   66646.00 (s)     112.00 (s)     227.00 (s)        1
+#       49        66344.00 (s)   66460.00 (s)   66737.00 (s)     116.00 (s)      93.00 (s)        2
+#       50        66269.00 (s)   66407.00 (s)   66821.00 (s)     138.00 (s)     182.00 (s)        1
+#       51        66542.00 (s)   66646.00 (s)   66992.00 (s)     104.00 (s)     213.00 (s)        1
+#       52        66278.00 (s)   66531.00 (s)   66743.00 (s)     253.00 (s)     126.00 (s)        2
+#       53        66379.00 (s)   66501.00 (s)   66851.00 (s)     122.00 (s)     177.00 (s)        1
+#       54        66476.00 (s)   66640.00 (s)   67036.00 (s)     164.00 (s)     228.00 (s)        1
+#       55        66086.00 (s)   66214.00 (s)   66626.00 (s)     128.00 (s)     199.00 (s)        1
+#       56        66265.00 (s)   66473.00 (s)   66940.00 (s)     208.00 (s)     213.00 (s)        3
+#       57        66051.00 (s)   66379.00 (s)   66778.00 (s)     328.00 (s)     223.00 (s)        6
+#       58        66469.00 (s)   66644.00 (s)   66998.00 (s)     175.00 (s)     234.00 (s)        1
+#       59        66338.00 (s)   66529.00 (s)   66848.00 (s)     191.00 (s)     186.00 (s)        1
+#       60        66449.00 (s)   66529.00 (s)   66693.00 (s)      80.00 (s)      76.00 (s)        1
+#       61        66356.00 (s)   66445.00 (s)   66741.00 (s)      89.00 (s)     217.00 (s)        1
+#       62        66319.00 (s)   66463.00 (s)   66843.00 (s)     144.00 (s)     217.00 (s)        1
+#       63        65931.00 (s)   66128.00 (s)   66702.00 (s)     197.00 (s)     224.00 (s)        1
+#       64        66378.00 (s)   66522.00 (s)   66785.00 (s)     144.00 (s)     107.00 (s)        1
+#       65        66491.00 (s)   66731.00 (s)   67058.00 (s)     240.00 (s)       0.00 (s)        1
+#       66        66503.00 (s)   66749.00 (s)   66894.00 (s)     246.00 (s)       0.00 (s)        1
+#       67        66514.00 (s)   66717.00 (s)   66988.00 (s)     203.00 (s)     152.00 (s)        2
+#       68        66539.00 (s)   66687.00 (s)   67041.00 (s)     148.00 (s)     187.00 (s)        1
+#       69        66547.00 (s)   66716.00 (s)   66827.00 (s)     169.00 (s)       0.00 (s)        1
+#       70        66571.00 (s)   66741.00 (s)   66938.00 (s)     170.00 (s)       0.00 (s)        1
+#       71        66585.00 (s)   66788.00 (s)   67047.00 (s)     203.00 (s)      49.00 (s)        3
+#       72        66586.00 (s)   66726.00 (s)   66874.00 (s)     140.00 (s)       0.00 (s)        1
+#       73        66588.00 (s)   66726.00 (s)   66960.00 (s)     138.00 (s)      53.00 (s)        1
+#       74        66599.00 (s)   66696.00 (s)   67115.00 (s)      97.00 (s)     144.00 (s)        5
+#       75        66600.00 (s)   66741.00 (s)   67180.00 (s)     141.00 (s)      69.00 (s)        5
+#       76        66611.00 (s)   66828.00 (s)   67125.00 (s)     217.00 (s)     147.00 (s)        1
+#       77        66615.00 (s)   66749.00 (s)   66846.00 (s)     134.00 (s)       0.00 (s)        1
+#       78        66616.00 (s)   66765.00 (s)   66848.00 (s)     149.00 (s)       0.00 (s)        2
+#       79        66616.00 (s)   66799.00 (s)   66957.00 (s)     183.00 (s)       0.00 (s)        2
+#       80        66641.00 (s)   66844.00 (s)   67262.00 (s)     203.00 (s)     213.00 (s)        1
+#       81        66646.00 (s)   66741.00 (s)   67097.00 (s)      95.00 (s)     239.00 (s)        1
+#       82        66652.00 (s)   66841.00 (s)   67091.00 (s)     189.00 (s)      59.00 (s)        1
+#       83        66659.00 (s)   66801.00 (s)   66873.00 (s)     142.00 (s)       0.00 (s)        4
+#       84        66667.00 (s)   66860.00 (s)   67214.00 (s)     193.00 (s)     227.00 (s)        1
+#       85        66673.00 (s)   66745.00 (s)   66950.00 (s)      72.00 (s)      66.00 (s)        2
+#       86        66682.00 (s)   66826.00 (s)   66878.00 (s)     144.00 (s)       0.00 (s)        2
+#       87        66684.00 (s)   66840.00 (s)   67194.00 (s)     156.00 (s)      97.00 (s)        1
+#       88        66686.00 (s)   66813.00 (s)   67112.00 (s)     127.00 (s)     145.00 (s)        1
+#       89        66689.00 (s)   66781.00 (s)   67170.00 (s)      92.00 (s)     239.00 (s)        1
+#       90        66690.00 (s)   66795.00 (s)   66971.00 (s)     105.00 (s)       2.00 (s)        2
+#       91        66692.00 (s)   66877.00 (s)   67384.00 (s)     185.00 (s)     113.00 (s)        1
+#       92        66694.00 (s)   66809.00 (s)   66934.00 (s)     115.00 (s)      74.00 (s)        1
+#       93        66694.00 (s)   66883.00 (s)   67196.00 (s)     189.00 (s)     209.00 (s)        1
+#       94        66697.00 (s)   66902.00 (s)   67269.00 (s)     205.00 (s)     222.00 (s)        1
+#       95        66708.00 (s)   66903.00 (s)   67267.00 (s)     195.00 (s)     226.00 (s)        1
+#       96        66711.00 (s)   66806.00 (s)   67226.00 (s)      95.00 (s)      79.00 (s)        1
+#       97        66712.00 (s)   66881.00 (s)   67231.00 (s)     169.00 (s)     232.00 (s)        1
+#       98        66719.00 (s)   66927.00 (s)   67355.00 (s)     208.00 (s)     227.00 (s)        1
+#       99        66719.00 (s)   66882.00 (s)   67143.00 (s)     163.00 (s)     192.00 (s)        1
+#      100        66721.00 (s)   66842.00 (s)   67266.00 (s)     121.00 (s)     229.00 (s)        1
+#      101        66722.00 (s)   66999.00 (s)   67196.00 (s)     277.00 (s)      82.00 (s)        1
+#      102        66723.00 (s)   66818.00 (s)   67344.00 (s)      95.00 (s)     217.00 (s)        1
+#      103        66735.00 (s)   66992.00 (s)   67196.00 (s)     257.00 (s)       0.00 (s)        1
+#      104        66739.00 (s)   66950.00 (s)   67356.00 (s)     211.00 (s)     229.00 (s)        1
+#      105        66740.00 (s)   66806.00 (s)   66993.00 (s)      66.00 (s)       0.00 (s)        1
+#      106        66744.00 (s)   66903.00 (s)   67049.00 (s)     159.00 (s)       0.00 (s)        2
+#      107        66747.00 (s)   66874.00 (s)   67002.00 (s)     127.00 (s)       5.00 (s)        1
+#      108        66747.00 (s)   66902.00 (s)   67373.00 (s)     155.00 (s)     201.00 (s)        1
+#      109        66753.00 (s)   66951.00 (s)   67194.00 (s)     198.00 (s)       0.00 (s)        1
+#      110        66776.00 (s)   66937.00 (s)   67243.00 (s)     161.00 (s)     133.00 (s)        1
+#      111        66781.00 (s)   66944.00 (s)   67371.00 (s)     163.00 (s)     170.00 (s)        1
+#      112        66787.00 (s)   66927.00 (s)   67132.00 (s)     140.00 (s)     116.00 (s)        1
+#      113        66799.00 (s)   66989.00 (s)   67224.00 (s)     190.00 (s)     105.00 (s)        1
+#      114        66799.00 (s)   66922.00 (s)   67084.00 (s)     123.00 (s)      49.00 (s)        1
+#      115        66810.00 (s)   66960.00 (s)   67146.00 (s)     150.00 (s)      76.00 (s)        6
+#      116        66811.00 (s)   66997.00 (s)   67328.00 (s)     186.00 (s)       0.00 (s)        1
+#      117        66811.00 (s)   66964.00 (s)   67179.00 (s)     153.00 (s)       0.00 (s)        1
+#      118        66812.00 (s)   66984.00 (s)   67362.00 (s)     172.00 (s)     233.00 (s)        1
+#      119        66816.00 (s)   66995.00 (s)   67232.00 (s)     179.00 (s)     145.00 (s)        2
+#      120        66830.00 (s)   66927.00 (s)   67424.00 (s)      97.00 (s)       0.00 (s)        3
+#      121        66833.00 (s)   66910.00 (s)   67330.00 (s)      77.00 (s)     184.00 (s)        1
+#      122        66835.00 (s)   66894.00 (s)   67104.00 (s)      59.00 (s)      51.00 (s)        1
+#      123        66837.00 (s)   66974.00 (s)   67425.00 (s)     137.00 (s)     179.00 (s)        2
+#      124        66838.00 (s)   66928.00 (s)   67208.00 (s)      90.00 (s)      34.00 (s)        6
+#      125        66838.00 (s)   66938.00 (s)   67116.00 (s)     100.00 (s)     178.00 (s)        1
+#      126        66839.00 (s)   66968.00 (s)   67079.00 (s)     129.00 (s)      20.00 (s)        1
+#      127        66843.00 (s)   66986.00 (s)   67363.00 (s)     143.00 (s)     216.00 (s)        1
+#      128        66844.00 (s)   66984.00 (s)   67159.00 (s)     140.00 (s)       0.00 (s)        1
+#      129        66850.00 (s)   66979.00 (s)   67134.00 (s)     129.00 (s)       0.00 (s)        1
+#      130        66851.00 (s)   67028.00 (s)   67337.00 (s)     177.00 (s)     218.00 (s)        1
+#      131        66854.00 (s)   67017.00 (s)   67055.00 (s)     163.00 (s)       0.00 (s)        2
+#      132        66856.00 (s)   67038.00 (s)   67401.00 (s)     182.00 (s)     218.00 (s)        1
+#      133        66856.00 (s)   67008.00 (s)   67258.00 (s)     152.00 (s)     145.00 (s)        1
+#      134        66860.00 (s)   66997.00 (s)   67344.00 (s)     137.00 (s)     188.00 (s)        1
+#      135        66865.00 (s)   67027.00 (s)   67291.00 (s)     162.00 (s)     147.00 (s)        1
+#      136        66869.00 (s)   67034.00 (s)   67532.00 (s)     165.00 (s)     170.00 (s)        1
+#      137        66869.00 (s)   67027.00 (s)   67438.00 (s)     158.00 (s)     155.00 (s)        1
+#      138        66877.00 (s)   67009.00 (s)   67397.00 (s)     132.00 (s)     229.00 (s)        1
+#      139        66878.00 (s)   67024.00 (s)   67077.00 (s)     146.00 (s)       0.00 (s)        6
+#      140        66893.00 (s)   67023.00 (s)   67365.00 (s)     130.00 (s)       0.00 (s)        1
+#      141        66894.00 (s)   67028.00 (s)   67116.00 (s)     134.00 (s)       0.00 (s)        3
+#      142        66899.00 (s)   67005.00 (s)   67283.00 (s)     106.00 (s)     212.00 (s)        1
+#      143        66905.00 (s)   66988.00 (s)   67364.00 (s)      83.00 (s)     186.00 (s)        6
+#      144        66910.00 (s)   67020.00 (s)   67281.00 (s)     110.00 (s)     153.00 (s)        1
+#      145        66911.00 (s)   67068.00 (s)   67282.00 (s)     157.00 (s)       0.00 (s)        1
+#      146        66922.00 (s)   67003.00 (s)   67386.00 (s)      81.00 (s)       0.00 (s)        1
+#      147        66926.00 (s)   67046.00 (s)   67243.00 (s)     120.00 (s)       0.00 (s)        3
+#      148        66934.00 (s)   67075.00 (s)   67480.00 (s)     141.00 (s)     232.00 (s)        1
+#      149        66938.00 (s)   67076.00 (s)   67549.00 (s)     138.00 (s)     236.00 (s)        1
+#      150        66954.00 (s)   67094.00 (s)   67543.00 (s)     140.00 (s)     198.00 (s)        1
+#      151        66962.00 (s)   67070.00 (s)   67301.00 (s)     108.00 (s)       0.00 (s)        1
+#      152        66962.00 (s)   67063.00 (s)   67163.00 (s)     101.00 (s)       0.00 (s)        1
+#      153        66977.00 (s)   67071.00 (s)   67156.00 (s)      94.00 (s)       0.00 (s)        1
+#      154        66979.00 (s)   67138.00 (s)   67215.00 (s)     159.00 (s)       0.00 (s)        2
+#      155        67008.00 (s)   67099.00 (s)   67588.00 (s)      91.00 (s)     148.00 (s)        5
+#      156        67009.00 (s)   67247.00 (s)   67727.00 (s)     238.00 (s)     180.00 (s)        3
+#      157        67019.00 (s)   67075.00 (s)   67387.00 (s)      56.00 (s)     226.00 (s)        1
+#      158        67021.00 (s)   67179.00 (s)   67324.00 (s)     158.00 (s)      63.00 (s)        1
+#      159        67027.00 (s)   67119.00 (s)   67325.00 (s)      92.00 (s)      72.00 (s)        5
+#      160        67028.00 (s)   67190.00 (s)   67559.00 (s)     162.00 (s)     189.00 (s)        6
+#      161        67031.00 (s)   67188.00 (s)   67375.00 (s)     157.00 (s)       0.00 (s)        1
+#      162        67038.00 (s)   67215.00 (s)   67625.00 (s)     177.00 (s)     218.00 (s)        1
+#      163        67040.00 (s)   67202.00 (s)   67826.00 (s)     162.00 (s)     221.00 (s)        1
+#      164        67040.00 (s)   67138.00 (s)   67450.00 (s)      98.00 (s)     117.00 (s)        1
+#      165        67047.00 (s)   67225.00 (s)   67660.00 (s)     178.00 (s)     195.00 (s)        1
+#      166        67049.00 (s)   67172.00 (s)   67288.00 (s)     123.00 (s)       0.00 (s)        1
+#      167        67053.00 (s)   67194.00 (s)   67554.00 (s)     141.00 (s)     204.00 (s)        2
+#      168        67055.00 (s)   67213.00 (s)   67261.00 (s)     158.00 (s)       0.00 (s)        2
+#      169        67065.00 (s)   67173.00 (s)   67520.00 (s)     108.00 (s)     217.00 (s)        1
+#      170        67080.00 (s)   67189.00 (s)   67567.00 (s)     109.00 (s)     188.00 (s)        1
+#      171        67085.00 (s)   67247.00 (s)   67426.00 (s)     162.00 (s)       0.00 (s)        1
+#      172        67089.00 (s)   67234.00 (s)   67444.00 (s)     145.00 (s)      58.00 (s)        1
+#      173        67093.00 (s)   67264.00 (s)   67662.00 (s)     171.00 (s)     240.00 (s)        1
+#      174        67093.00 (s)   67217.00 (s)   67319.00 (s)     124.00 (s)       0.00 (s)        5
+#      175        67095.00 (s)   67156.00 (s)   67182.00 (s)      61.00 (s)       0.00 (s)        2
+#      176        67105.00 (s)   67211.00 (s)   67601.00 (s)     106.00 (s)     204.00 (s)        1
+#      177        67106.00 (s)   67225.00 (s)   67449.00 (s)     119.00 (s)      76.00 (s)        1
+#      178        67113.00 (s)   67268.00 (s)   67362.00 (s)     155.00 (s)       0.00 (s)        1
+#      179        67114.00 (s)   67450.00 (s)   67937.00 (s)     336.00 (s)     228.00 (s)        2
+#      180        67115.00 (s)   67355.00 (s)   67633.00 (s)     240.00 (s)     118.00 (s)        3
+#      181        67116.00 (s)   67214.00 (s)   67396.00 (s)      98.00 (s)     102.00 (s)        1
+#      182        67124.00 (s)   67386.00 (s)   67752.00 (s)     262.00 (s)       0.00 (s)        2
+#      183        67126.00 (s)   67270.00 (s)   67344.00 (s)     144.00 (s)       0.00 (s)        1
+#      184        67129.00 (s)   67172.00 (s)   67562.00 (s)      43.00 (s)     231.00 (s)        1
+#      185        67132.00 (s)   67243.00 (s)   67592.00 (s)     111.00 (s)     216.00 (s)        2
+#      186        67136.00 (s)   67304.00 (s)   67426.00 (s)     168.00 (s)       0.00 (s)        1
+#      187        67138.00 (s)   67263.00 (s)   67793.00 (s)     125.00 (s)     208.00 (s)        1
+#      188        67138.00 (s)   67313.00 (s)   67703.00 (s)     175.00 (s)     226.00 (s)        1
+#      189        67143.00 (s)   67224.00 (s)   67279.00 (s)      81.00 (s)       0.00 (s)        2
+#      190        67147.00 (s)   67273.00 (s)   67434.00 (s)     126.00 (s)       0.00 (s)        1
+#      191        67150.00 (s)   67305.00 (s)   67574.00 (s)     155.00 (s)       0.00 (s)        1
+#      192        67153.00 (s)   67229.00 (s)   67714.00 (s)      76.00 (s)     185.00 (s)        1
+#      193        67160.00 (s)   67293.00 (s)   67649.00 (s)     133.00 (s)     180.00 (s)        1
+#      194        67170.00 (s)   67261.00 (s)   67305.00 (s)      91.00 (s)       0.00 (s)        1
+#      195        67171.00 (s)   67268.00 (s)   67671.00 (s)      97.00 (s)     209.00 (s)        2
+#      196        67171.00 (s)   67370.00 (s)   67564.00 (s)     199.00 (s)       0.00 (s)        1
+#      197        67175.00 (s)   67247.00 (s)   67652.00 (s)      72.00 (s)     132.00 (s)        1
+#      198        67180.00 (s)   67409.00 (s)   67854.00 (s)     229.00 (s)     181.00 (s)        1
+#      199        67182.00 (s)   67332.00 (s)   67747.00 (s)     150.00 (s)     224.00 (s)        2
+#      200        67182.00 (s)   67313.00 (s)   67434.00 (s)     131.00 (s)       0.00 (s)        6
+#      201        67182.00 (s)   67365.00 (s)   67453.00 (s)     183.00 (s)      88.00 (s)        1
+#      202        67190.00 (s)   67343.00 (s)   67502.00 (s)     153.00 (s)       0.00 (s)        1
+#      203        67200.00 (s)   67315.00 (s)   67614.00 (s)     115.00 (s)     200.00 (s)        1
+#      204        67206.00 (s)   67409.00 (s)   67490.00 (s)     203.00 (s)       0.00 (s)        1
+#      205        67208.00 (s)   67372.00 (s)   67776.00 (s)     164.00 (s)     240.00 (s)        2
+#      206        67212.00 (s)   67309.00 (s)   67595.00 (s)      97.00 (s)     194.00 (s)        6
+#      207        67217.00 (s)   67385.00 (s)   67733.00 (s)     168.00 (s)     190.00 (s)        1
+#      208        67220.00 (s)   67470.00 (s)   67595.00 (s)     250.00 (s)       0.00 (s)        6
+#      209        67222.00 (s)   67405.00 (s)   67726.00 (s)     183.00 (s)      70.00 (s)        1
+#      210        67227.00 (s)   67388.00 (s)   67628.00 (s)     161.00 (s)       0.00 (s)        6
+#      211        67251.00 (s)   67431.00 (s)   67819.00 (s)     180.00 (s)     143.00 (s)        1
+#      212        67262.00 (s)   67450.00 (s)   67832.00 (s)     188.00 (s)     211.00 (s)        1
+#      213        67263.00 (s)   67419.00 (s)   67604.00 (s)     156.00 (s)     100.00 (s)        2
+#      214        67275.00 (s)   67432.00 (s)   67556.00 (s)     157.00 (s)       0.00 (s)        1
+#      215        67284.00 (s)   67424.00 (s)   67515.00 (s)     140.00 (s)       0.00 (s)        1
+#      216        67301.00 (s)   67478.00 (s)   67830.00 (s)     177.00 (s)     203.00 (s)        1
+#      217        67302.00 (s)   67444.00 (s)   67584.00 (s)     142.00 (s)       0.00 (s)        1
+#      218        67310.00 (s)   67465.00 (s)   67930.00 (s)     155.00 (s)     236.00 (s)        1
+#      219        67311.00 (s)   67409.00 (s)   67605.00 (s)      98.00 (s)      71.00 (s)        1
+#      220        67320.00 (s)   67397.00 (s)   67657.00 (s)      77.00 (s)       0.00 (s)        1
+#      221        67320.00 (s)   67362.00 (s)   67686.00 (s)      42.00 (s)     176.00 (s)        1
+#      222        67323.00 (s)   67478.00 (s)   67565.00 (s)     155.00 (s)       0.00 (s)        2
+#      223        67326.00 (s)   67440.00 (s)   67667.00 (s)     114.00 (s)     107.00 (s)        2
+#      224        67326.00 (s)   67449.00 (s)   67691.00 (s)     123.00 (s)       0.00 (s)        1
+#      225        67332.00 (s)   67489.00 (s)   67871.00 (s)     157.00 (s)      39.00 (s)        2
+#      226        67334.00 (s)   67474.00 (s)   67870.00 (s)     140.00 (s)     208.00 (s)        1
+#      227        67336.00 (s)   67498.00 (s)   67834.00 (s)     162.00 (s)     123.00 (s)        1
+#      228        67340.00 (s)   67477.00 (s)   67652.00 (s)     137.00 (s)       0.00 (s)        1
+#      229        67351.00 (s)   67589.00 (s)   67884.00 (s)     238.00 (s)       0.00 (s)        1
+#      230        67352.00 (s)   67450.00 (s)   67570.00 (s)      98.00 (s)       0.00 (s)        1
+#      231        67357.00 (s)   67510.00 (s)   67954.00 (s)     153.00 (s)     153.00 (s)        1
+#      232        67366.00 (s)   67603.00 (s)   67836.00 (s)     237.00 (s)      99.00 (s)        1
+#      233        67371.00 (s)   67488.00 (s)   67724.00 (s)     117.00 (s)       0.00 (s)        2
+#      234        67374.00 (s)   67575.00 (s)   67960.00 (s)     201.00 (s)     171.00 (s)        1
+#      235        67377.00 (s)   67497.00 (s)   67792.00 (s)     120.00 (s)      85.00 (s)        3
+#      236        67379.00 (s)   67499.00 (s)   67583.00 (s)     120.00 (s)       0.00 (s)        2
+#      237        67379.00 (s)   67470.00 (s)   67828.00 (s)      91.00 (s)     182.00 (s)        1
+#      238        67380.00 (s)   67517.00 (s)   68034.00 (s)     137.00 (s)     216.00 (s)        1
+#      239        67381.00 (s)   67528.00 (s)   67752.00 (s)     147.00 (s)       0.00 (s)        2
+#      240        67386.00 (s)   67541.00 (s)   67861.00 (s)     155.00 (s)     209.00 (s)        1
+#      241        67387.00 (s)   67572.00 (s)   67961.00 (s)     185.00 (s)     222.00 (s)        1
+#      242        67407.00 (s)   67485.00 (s)   67779.00 (s)      78.00 (s)     198.00 (s)        1
+#      243        67417.00 (s)   67490.00 (s)   67617.00 (s)      73.00 (s)       0.00 (s)        1
+#      244        67431.00 (s)   67530.00 (s)   67882.00 (s)      99.00 (s)     176.00 (s)        1
+#      245        67440.00 (s)   67591.00 (s)   67816.00 (s)     151.00 (s)       0.00 (s)        1
+#      246        67442.00 (s)   67670.00 (s)   67887.00 (s)     228.00 (s)       0.00 (s)        1
+#      247        67445.00 (s)   67591.00 (s)   67768.00 (s)     146.00 (s)      36.00 (s)        1
+#      248        67451.00 (s)   67620.00 (s)   67795.00 (s)     169.00 (s)       1.00 (s)        1
+#      249        67452.00 (s)   67669.00 (s)   67814.00 (s)     217.00 (s)      28.00 (s)        1
+#      250        67454.00 (s)   67625.00 (s)   67790.00 (s)     171.00 (s)       0.00 (s)        1
+#      251        67454.00 (s)   67547.00 (s)   67722.00 (s)      93.00 (s)       0.00 (s)        3
+#      252        67458.00 (s)   67595.00 (s)   68071.00 (s)     137.00 (s)     226.00 (s)        2
+#      253        67466.00 (s)   67617.00 (s)   67968.00 (s)     151.00 (s)     181.00 (s)        2
+#      254        67469.00 (s)   67517.00 (s)   67772.00 (s)      48.00 (s)      19.00 (s)        1
+#      255        67480.00 (s)   67601.00 (s)   68065.00 (s)     121.00 (s)     235.00 (s)        1
+#      256        67483.00 (s)   67649.00 (s)   68013.00 (s)     166.00 (s)     186.00 (s)        1
+#      257        67483.00 (s)   67638.00 (s)   68169.00 (s)     155.00 (s)     188.00 (s)        1
+#      258        67486.00 (s)   67649.00 (s)   68070.00 (s)     163.00 (s)     186.00 (s)        1
+#      259        67486.00 (s)   67554.00 (s)   67841.00 (s)      68.00 (s)      76.00 (s)        1
+#      260        67487.00 (s)   67621.00 (s)   68031.00 (s)     134.00 (s)      38.00 (s)        6
+#      261        67488.00 (s)   67673.00 (s)   68053.00 (s)     185.00 (s)     103.00 (s)        1
+#      262        67488.00 (s)   67556.00 (s)   67810.00 (s)      68.00 (s)       0.00 (s)        6
+#      263        67493.00 (s)   67696.00 (s)   68076.00 (s)     203.00 (s)     153.00 (s)        1
+#      264        67500.00 (s)   67593.00 (s)   67684.00 (s)      93.00 (s)       0.00 (s)        1
+#      265        67501.00 (s)   67564.00 (s)   67851.00 (s)      63.00 (s)      99.00 (s)        2
+#      266        67507.00 (s)   67620.00 (s)   68089.00 (s)     113.00 (s)     236.00 (s)        1
+#      267        67509.00 (s)   67731.00 (s)   68106.00 (s)     222.00 (s)     203.00 (s)        1
+#      268        67511.00 (s)   67614.00 (s)   67614.00 (s)     103.00 (s)       0.00 (s)        1
+#      269        67517.00 (s)   67667.00 (s)   68144.00 (s)     150.00 (s)     204.00 (s)        1
+#      270        67524.00 (s)   67639.00 (s)   68123.00 (s)     115.00 (s)     171.00 (s)        1
+#      271        67531.00 (s)   67604.00 (s)   67957.00 (s)      73.00 (s)      86.00 (s)        1
+#      272        67532.00 (s)   67669.00 (s)   68042.00 (s)     137.00 (s)     230.00 (s)        2
+#      273        67540.00 (s)   67662.00 (s)   67908.00 (s)     122.00 (s)       0.00 (s)        1
+#      274        67545.00 (s)   67707.00 (s)   67900.00 (s)     162.00 (s)      71.00 (s)        1
+#      275        67555.00 (s)   67664.00 (s)   67838.00 (s)     109.00 (s)       0.00 (s)        1
+#      276        67558.00 (s)   67610.00 (s)   68129.00 (s)      52.00 (s)     142.00 (s)        2
+#      277        67563.00 (s)   67764.00 (s)   67843.00 (s)     201.00 (s)       0.00 (s)        1
+#      278        67563.00 (s)   67688.00 (s)   67879.00 (s)     125.00 (s)      29.00 (s)        1
+#      279        67565.00 (s)   67814.00 (s)   68326.00 (s)     249.00 (s)     225.00 (s)        1
+#      280        67568.00 (s)   67673.00 (s)   68093.00 (s)     105.00 (s)     169.00 (s)        4
+#      281        67572.00 (s)   67652.00 (s)   67975.00 (s)      80.00 (s)     203.00 (s)        1
+#      282        67576.00 (s)   67770.00 (s)   67861.00 (s)     194.00 (s)      14.00 (s)        4
+#      283        67577.00 (s)   67770.00 (s)   68100.00 (s)     193.00 (s)     195.00 (s)        1
+#      284        67578.00 (s)   67664.00 (s)   67770.00 (s)      86.00 (s)       0.00 (s)        1
+#      285        67587.00 (s)   67779.00 (s)   68216.00 (s)     192.00 (s)     202.00 (s)        1
+#      286        67594.00 (s)   67737.00 (s)   67979.00 (s)     143.00 (s)      12.00 (s)        1
+#      287        67594.00 (s)   67802.00 (s)   68363.00 (s)     208.00 (s)     234.00 (s)        2
+#      288        67596.00 (s)   67727.00 (s)   67909.00 (s)     131.00 (s)       0.00 (s)        1
+#      289        67600.00 (s)   67756.00 (s)   68080.00 (s)     156.00 (s)     202.00 (s)        1
+#      290        67603.00 (s)   67657.00 (s)   67771.00 (s)      54.00 (s)       0.00 (s)        1
+#      291        67605.00 (s)   68034.00 (s)   68315.00 (s)     429.00 (s)      80.00 (s)        3
+#      292        67609.00 (s)   67696.00 (s)   67967.00 (s)      87.00 (s)     123.00 (s)        1
+#      293        67610.00 (s)   67704.00 (s)   68151.00 (s)      94.00 (s)     230.00 (s)        1
+#      294        67611.00 (s)   67887.00 (s)   68114.00 (s)     276.00 (s)      86.00 (s)        1
+#      295        67628.00 (s)   67836.00 (s)   68045.00 (s)     208.00 (s)      70.00 (s)        1
+#      296        67629.00 (s)   67724.00 (s)   68124.00 (s)      95.00 (s)     218.00 (s)        1
+#      297        67634.00 (s)   67814.00 (s)   68398.00 (s)     180.00 (s)     191.00 (s)        1
+#      298        67636.00 (s)   67726.00 (s)   68032.00 (s)      90.00 (s)     176.00 (s)        1
+#      299        67641.00 (s)   67807.00 (s)   68037.00 (s)     166.00 (s)     158.00 (s)        1
+#      300        67643.00 (s)   67861.00 (s)   68295.00 (s)     218.00 (s)     208.00 (s)        1
+#      301        67645.00 (s)   67874.00 (s)   68275.00 (s)     229.00 (s)     222.00 (s)        2
+#      302        67647.00 (s)   67821.00 (s)   67960.00 (s)     174.00 (s)       0.00 (s)        1
+#      303        67651.00 (s)   67824.00 (s)   68242.00 (s)     173.00 (s)     198.00 (s)        1
+#      304        67656.00 (s)   67814.00 (s)   67997.00 (s)     158.00 (s)      27.00 (s)        1
+#      305        67666.00 (s)   67914.00 (s)   68535.00 (s)     248.00 (s)     225.00 (s)        2
+#      306        67675.00 (s)   67871.00 (s)   68166.00 (s)     196.00 (s)      86.00 (s)        1
+#      307        67676.00 (s)   67859.00 (s)   68174.00 (s)     183.00 (s)     150.00 (s)        1
+#      308        67677.00 (s)   67858.00 (s)   68230.00 (s)     181.00 (s)     205.00 (s)        2
+#      309        67677.00 (s)   67848.00 (s)   68308.00 (s)     171.00 (s)     233.00 (s)        1
+#      310        67677.00 (s)   67839.00 (s)   68345.00 (s)     162.00 (s)     234.00 (s)        1
+#      311        67678.00 (s)   67784.00 (s)   68122.00 (s)     106.00 (s)     148.00 (s)        1
+#      312        67680.00 (s)   67789.00 (s)   68221.00 (s)     109.00 (s)     182.00 (s)        1
+#      313        67692.00 (s)   67875.00 (s)   68172.00 (s)     183.00 (s)       0.00 (s)        1
+#      314        67698.00 (s)   67920.00 (s)   68313.00 (s)     222.00 (s)     224.00 (s)        1
+#      315        67699.00 (s)   67868.00 (s)   68208.00 (s)     169.00 (s)     184.00 (s)        2
+#      316        67699.00 (s)   67828.00 (s)   68216.00 (s)     129.00 (s)     184.00 (s)        1
+#      317        67700.00 (s)   67845.00 (s)   68323.00 (s)     145.00 (s)     211.00 (s)        1
+#      318        67711.00 (s)   67848.00 (s)   68121.00 (s)     137.00 (s)      35.00 (s)        1
+#      319        67714.00 (s)   67879.00 (s)   68173.00 (s)     165.00 (s)      83.00 (s)        3
+#      320        67718.00 (s)   67817.00 (s)   67960.00 (s)      99.00 (s)      88.00 (s)        1
+#      321        67719.00 (s)   67828.00 (s)   68023.00 (s)     109.00 (s)      44.00 (s)        1
+#      322        67723.00 (s)   67904.00 (s)   68120.00 (s)     181.00 (s)      51.00 (s)        1
+#      323        67724.00 (s)   67995.00 (s)   68398.00 (s)     271.00 (s)     164.00 (s)        1
+#      324        67728.00 (s)   67890.00 (s)   68261.00 (s)     162.00 (s)     221.00 (s)        1
+#      325        67735.00 (s)   67942.00 (s)   68342.00 (s)     207.00 (s)     221.00 (s)        5
+#      326        67739.00 (s)   67916.00 (s)   68474.00 (s)     177.00 (s)     201.00 (s)        1
+#      327        67740.00 (s)   67966.00 (s)   68464.00 (s)     226.00 (s)     239.00 (s)        1
+#      328        67742.00 (s)   67948.00 (s)   68061.00 (s)     206.00 (s)       0.00 (s)        1
+#      329        67749.00 (s)   67940.00 (s)   68333.00 (s)     191.00 (s)     195.00 (s)        3
+#      330        67750.00 (s)   67898.00 (s)   68195.00 (s)     148.00 (s)     207.00 (s)        5
+#      331        67754.00 (s)   67802.00 (s)   68230.00 (s)      48.00 (s)     205.00 (s)        1
+#      332        67759.00 (s)   67841.00 (s)   68317.00 (s)      82.00 (s)     237.00 (s)        1
+#      333        67761.00 (s)   67872.00 (s)   68009.00 (s)     111.00 (s)      56.00 (s)        6
+#      334        67763.00 (s)   67933.00 (s)   68338.00 (s)     170.00 (s)     234.00 (s)        1
+#      335        67768.00 (s)   67884.00 (s)   67957.00 (s)     116.00 (s)       0.00 (s)        1
+#      336        67771.00 (s)   67848.00 (s)   68118.00 (s)      77.00 (s)     173.00 (s)        1
+#      337        67775.00 (s)   67948.00 (s)   68335.00 (s)     173.00 (s)      16.00 (s)        1
+#      338        67779.00 (s)   67884.00 (s)   68328.00 (s)     105.00 (s)     221.00 (s)        3
+#      339        67779.00 (s)   67966.00 (s)   68205.00 (s)     187.00 (s)      38.00 (s)        1
+#      340        67781.00 (s)   67889.00 (s)   68465.00 (s)     108.00 (s)     227.00 (s)        2
+#      341        67783.00 (s)   67904.00 (s)   68141.00 (s)     121.00 (s)       0.00 (s)        2
+#      342        67786.00 (s)   67915.00 (s)   68129.00 (s)     129.00 (s)     137.00 (s)        1
+#      343        67792.00 (s)   67951.00 (s)   68420.00 (s)     159.00 (s)     212.00 (s)        1
+#      344        67794.00 (s)   67845.00 (s)   68323.00 (s)      51.00 (s)     211.00 (s)        1
+#      345        67800.00 (s)   67942.00 (s)   68271.00 (s)     142.00 (s)     137.00 (s)        1
+#      346        67802.00 (s)   67860.00 (s)   68196.00 (s)      58.00 (s)      39.00 (s)        1
+#      347        67808.00 (s)   68034.00 (s)   68166.00 (s)     226.00 (s)       0.00 (s)        2
+#      348        67811.00 (s)   67969.00 (s)   68081.00 (s)     158.00 (s)       0.00 (s)        2
+#      349        67814.00 (s)   68040.00 (s)   68358.00 (s)     226.00 (s)     215.00 (s)        1
+#      350        67814.00 (s)   67979.00 (s)   68488.00 (s)     165.00 (s)     236.00 (s)        3
+#      351        67817.00 (s)   67900.00 (s)   67976.00 (s)      83.00 (s)       8.00 (s)        3
+#      352        67817.00 (s)   67952.00 (s)   68312.00 (s)     135.00 (s)     133.00 (s)        1
+#      353        67820.00 (s)   67933.00 (s)   68455.00 (s)     113.00 (s)     225.00 (s)        1
+#      354        67820.00 (s)   67974.00 (s)   68283.00 (s)     154.00 (s)     141.00 (s)        1
+#      355        67820.00 (s)   67961.00 (s)   68035.00 (s)     141.00 (s)       0.00 (s)        1
+#      356        67825.00 (s)   67874.00 (s)   68029.00 (s)      49.00 (s)       0.00 (s)        1
+#      357        67828.00 (s)   67952.00 (s)   68443.00 (s)     124.00 (s)     208.00 (s)        2
+#      358        67830.00 (s)   67988.00 (s)   68342.00 (s)     158.00 (s)      60.00 (s)        1
+#      359        67836.00 (s)   68020.00 (s)   68576.00 (s)     184.00 (s)     139.00 (s)        1
+#      360        67845.00 (s)   68018.00 (s)   68333.00 (s)     173.00 (s)     153.00 (s)        1
+#      361        67845.00 (s)   67948.00 (s)   68197.00 (s)     103.00 (s)      48.00 (s)        1
+#      362        67850.00 (s)   68078.00 (s)   68281.00 (s)     228.00 (s)      31.00 (s)        3
+#      363        67855.00 (s)   67898.00 (s)   68292.00 (s)      43.00 (s)     235.00 (s)        1
+#      364        67859.00 (s)   68006.00 (s)   68205.00 (s)     147.00 (s)       0.00 (s)        4
+#      365        67866.00 (s)   68027.00 (s)   68214.00 (s)     161.00 (s)      47.00 (s)        6
+#      366        67879.00 (s)   68054.00 (s)   68199.00 (s)     175.00 (s)      38.00 (s)        1
+#      367        67881.00 (s)   67957.00 (s)   68237.00 (s)      76.00 (s)      92.00 (s)        1
+#      368        67889.00 (s)   68111.00 (s)   68579.00 (s)     222.00 (s)     213.00 (s)        1
+#      369        67898.00 (s)   68070.00 (s)   68393.00 (s)     172.00 (s)     223.00 (s)        1
+#      370        67909.00 (s)   68023.00 (s)   68171.00 (s)     114.00 (s)       0.00 (s)        1
+#      371        67921.00 (s)   68048.00 (s)   68230.00 (s)     127.00 (s)      26.00 (s)        1
+#      372        67923.00 (s)   68190.00 (s)   68308.00 (s)     267.00 (s)      13.00 (s)        4
+#      373        67926.00 (s)   68110.00 (s)   68268.00 (s)     184.00 (s)      84.00 (s)        1
+#      374        67927.00 (s)   68155.00 (s)   68224.00 (s)     228.00 (s)       0.00 (s)        1
+#      375        67927.00 (s)   68125.00 (s)   68445.00 (s)     198.00 (s)     223.00 (s)        1
+#      376        67930.00 (s)   68170.00 (s)   68634.00 (s)     240.00 (s)     177.00 (s)        1
+#      377        67930.00 (s)   68065.00 (s)   68426.00 (s)     135.00 (s)     221.00 (s)        1
+#      378        67932.00 (s)   68042.00 (s)   68472.00 (s)     110.00 (s)     191.00 (s)        2
+#      379        67940.00 (s)   68220.00 (s)   68483.00 (s)     280.00 (s)     179.00 (s)        1
+#      380        67944.00 (s)   67988.00 (s)   68547.00 (s)      44.00 (s)     205.00 (s)        1
+#      381        67948.00 (s)   68120.00 (s)   68270.00 (s)     172.00 (s)       0.00 (s)        1
+#      382        67951.00 (s)   68072.00 (s)   68264.00 (s)     121.00 (s)      80.00 (s)        1
+#      383        67952.00 (s)   68080.00 (s)   68456.00 (s)     128.00 (s)     239.00 (s)        1
+#      384        67964.00 (s)   68124.00 (s)   68343.00 (s)     160.00 (s)       0.00 (s)        2
+#      385        67964.00 (s)   68196.00 (s)   68606.00 (s)     232.00 (s)     222.00 (s)        1
+#      386        67971.00 (s)   68118.00 (s)   68405.00 (s)     147.00 (s)     167.00 (s)        1
+#      387        67975.00 (s)   68100.00 (s)   68468.00 (s)     125.00 (s)     232.00 (s)        6
+#      388        67982.00 (s)   68277.00 (s)   68419.00 (s)     295.00 (s)      37.00 (s)        1
+#      389        67985.00 (s)   68204.00 (s)   68297.00 (s)     219.00 (s)       0.00 (s)        2
+#      390        67985.00 (s)   68177.00 (s)   68762.00 (s)     192.00 (s)     238.00 (s)        2
+#      391        67991.00 (s)   68110.00 (s)   68658.00 (s)     119.00 (s)     240.00 (s)        1
+#      392        67992.00 (s)   68161.00 (s)   68409.00 (s)     169.00 (s)      70.00 (s)        1
+#      393        68001.00 (s)   68203.00 (s)   68603.00 (s)     202.00 (s)     233.00 (s)        1
+#      394        68006.00 (s)   68236.00 (s)   68674.00 (s)     230.00 (s)     195.00 (s)        1
+#      395        68006.00 (s)   68065.00 (s)   68456.00 (s)      59.00 (s)     232.00 (s)        1
+#      396        68013.00 (s)   68093.00 (s)   68359.00 (s)      80.00 (s)     103.00 (s)        5
+#      397        68014.00 (s)   68262.00 (s)   68805.00 (s)     248.00 (s)     238.00 (s)        2
+#      398        68015.00 (s)   68166.00 (s)   68456.00 (s)     151.00 (s)     208.00 (s)        2
+#      399        68016.00 (s)   68118.00 (s)   68419.00 (s)     102.00 (s)     134.00 (s)        1
+#      400        68017.00 (s)   68179.00 (s)   68515.00 (s)     162.00 (s)     226.00 (s)        1
+#      401        68018.00 (s)   68300.00 (s)   68713.00 (s)     282.00 (s)     214.00 (s)        1
+#      402        68022.00 (s)   68262.00 (s)   68602.00 (s)     240.00 (s)     127.00 (s)        1
+#      403        68024.00 (s)   68197.00 (s)   68690.00 (s)     173.00 (s)     183.00 (s)        1
+#      404        68032.00 (s)   68207.00 (s)   68453.00 (s)     175.00 (s)     160.00 (s)        1
+#      405        68038.00 (s)   68192.00 (s)   68527.00 (s)     154.00 (s)     238.00 (s)        1
+#      406        68038.00 (s)   68235.00 (s)   68622.00 (s)     197.00 (s)     171.00 (s)        6
+#      407        68040.00 (s)   68192.00 (s)   68727.00 (s)     152.00 (s)     130.00 (s)        1
+#      408        68045.00 (s)   68262.00 (s)   68489.00 (s)     217.00 (s)     100.00 (s)        1
+#      409        68049.00 (s)   68337.00 (s)   68466.00 (s)     288.00 (s)       0.00 (s)        6
+#      410        68052.00 (s)   68167.00 (s)   68505.00 (s)     115.00 (s)     148.00 (s)        1
+#      411        68061.00 (s)   68352.00 (s)   68696.00 (s)     291.00 (s)     197.00 (s)        1
+#      412        68064.00 (s)   68287.00 (s)   68531.00 (s)     223.00 (s)     119.00 (s)        1
+#      413        68067.00 (s)   68301.00 (s)   68620.00 (s)     234.00 (s)     221.00 (s)        1
+#      414        68072.00 (s)   68239.00 (s)   68544.00 (s)     167.00 (s)     135.00 (s)        2
+#      415        68073.00 (s)   68296.00 (s)   68404.00 (s)     223.00 (s)       0.00 (s)        1
+#      416        68073.00 (s)   68314.00 (s)   68762.00 (s)     241.00 (s)     127.00 (s)        1
+#      417        68077.00 (s)   68526.00 (s)   68623.00 (s)     449.00 (s)       0.00 (s)        1
+#      418        68082.00 (s)   68254.00 (s)   68358.00 (s)     172.00 (s)      40.00 (s)        1
+#      419        68082.00 (s)   68270.00 (s)   68650.00 (s)     188.00 (s)     225.00 (s)        1
+#      420        68085.00 (s)   68326.00 (s)   68678.00 (s)     241.00 (s)     159.00 (s)        2
+#      421        68088.00 (s)   68236.00 (s)   68824.00 (s)     148.00 (s)     226.00 (s)        1
+#      422        68090.00 (s)   68400.00 (s)   68639.00 (s)     310.00 (s)      12.00 (s)        2
+#      423        68093.00 (s)   68238.00 (s)   68454.00 (s)     145.00 (s)     130.00 (s)        1
+#      424        68101.00 (s)   68216.00 (s)   68591.00 (s)     115.00 (s)     217.00 (s)        1
+#      425        68102.00 (s)   68429.00 (s)   68597.00 (s)     327.00 (s)       6.00 (s)        1
+#      426        68103.00 (s)   68264.00 (s)   68578.00 (s)     161.00 (s)     110.00 (s)        1
+#      427        68104.00 (s)   68261.00 (s)   68261.00 (s)     157.00 (s)       0.00 (s)        1
+#      428        68107.00 (s)   68218.00 (s)   68395.00 (s)     111.00 (s)       0.00 (s)        1
+#      429        68112.00 (s)   68295.00 (s)   68586.00 (s)     183.00 (s)     193.00 (s)        1
+#      430        68119.00 (s)   68204.00 (s)   68525.00 (s)      85.00 (s)      67.00 (s)        1
+#      431        68125.00 (s)   68223.00 (s)   68573.00 (s)      98.00 (s)     223.00 (s)        1
+#      432        68125.00 (s)   68689.00 (s)   69057.00 (s)     564.00 (s)     130.00 (s)        4
+#      433        68126.00 (s)   68313.00 (s)   68607.00 (s)     187.00 (s)     137.00 (s)        6
+#      434        68131.00 (s)   68354.00 (s)   68775.00 (s)     223.00 (s)     230.00 (s)        2
+#      435        68132.00 (s)   68328.00 (s)   68551.00 (s)     196.00 (s)     121.00 (s)        1
+#      436        68138.00 (s)   68456.00 (s)   68586.00 (s)     318.00 (s)      17.00 (s)        1
+#      437        68144.00 (s)   68450.00 (s)   68798.00 (s)     306.00 (s)     208.00 (s)        1
+#      438        68145.00 (s)   68446.00 (s)   69031.00 (s)     301.00 (s)     240.00 (s)        1
+#      439        68145.00 (s)   68195.00 (s)   68568.00 (s)      50.00 (s)     181.00 (s)        1
+#      440        68149.00 (s)   68338.00 (s)   68769.00 (s)     189.00 (s)     223.00 (s)        2
+#      441        68162.00 (s)   68223.00 (s)   68776.00 (s)      61.00 (s)     223.00 (s)        1
+#      442        68172.00 (s)   68364.00 (s)   68707.00 (s)     192.00 (s)     216.00 (s)        1
+#      443        68182.00 (s)   68457.00 (s)   68902.00 (s)     275.00 (s)     131.00 (s)        4
+#      444        68183.00 (s)   68297.00 (s)   68740.00 (s)     114.00 (s)     238.00 (s)        2
+#      445        68184.00 (s)   68360.00 (s)   68541.00 (s)     176.00 (s)      63.00 (s)        1
+#      446        68187.00 (s)   68340.00 (s)   68881.00 (s)     153.00 (s)     170.00 (s)        1
+#      447        68196.00 (s)   68452.00 (s)   68828.00 (s)     256.00 (s)     225.00 (s)        5
+#      448        68202.00 (s)   68342.00 (s)   68505.00 (s)     140.00 (s)       0.00 (s)        2
+#      449        68206.00 (s)   68264.00 (s)   68737.00 (s)      58.00 (s)     238.00 (s)        1
+#      450        68208.00 (s)   68264.00 (s)   68686.00 (s)      56.00 (s)     206.00 (s)        3
+#      451        68209.00 (s)   68408.00 (s)   68795.00 (s)     199.00 (s)     207.00 (s)        1
+#      452        68212.00 (s)   68398.00 (s)   68504.00 (s)     186.00 (s)       0.00 (s)        6
+#      453        68213.00 (s)   68471.00 (s)   68692.00 (s)     258.00 (s)      40.00 (s)        1
+#      454        68217.00 (s)   68387.00 (s)   68387.00 (s)     170.00 (s)       0.00 (s)        1
+#      455        68219.00 (s)   68408.00 (s)   68895.00 (s)     189.00 (s)     175.00 (s)        1
+#      456        68228.00 (s)   68430.00 (s)   68950.00 (s)     202.00 (s)     231.00 (s)        1
+#      457        68239.00 (s)   68562.00 (s)   68674.00 (s)     323.00 (s)       0.00 (s)        1
+#      458        68248.00 (s)   68455.00 (s)   68589.00 (s)     207.00 (s)       0.00 (s)        1
+#      459        68251.00 (s)   68386.00 (s)   68718.00 (s)     135.00 (s)     199.00 (s)        1
+#      460        68256.00 (s)   68391.00 (s)   68823.00 (s)     135.00 (s)     237.00 (s)        1
+#      461        68256.00 (s)   68485.00 (s)   68664.00 (s)     229.00 (s)       0.00 (s)        2
+#      462        68261.00 (s)   68395.00 (s)   68691.00 (s)     134.00 (s)     120.00 (s)        1
+#      463        68263.00 (s)   68402.00 (s)   68526.00 (s)     139.00 (s)       0.00 (s)        1
+#      464        68270.00 (s)   68434.00 (s)   68614.00 (s)     164.00 (s)      61.00 (s)        1
+#      465        68272.00 (s)   68479.00 (s)   68847.00 (s)     207.00 (s)     202.00 (s)        2
+#      466        68273.00 (s)   68391.00 (s)   68610.00 (s)     118.00 (s)     126.00 (s)        1
+#      467        68276.00 (s)   68622.00 (s)   69068.00 (s)     346.00 (s)      97.00 (s)        1
+#      468        68281.00 (s)   68573.00 (s)   69026.00 (s)     292.00 (s)     175.00 (s)        2
+#      469        68283.00 (s)   68565.00 (s)   68692.00 (s)     282.00 (s)       3.00 (s)        3
+#      470        68288.00 (s)   68524.00 (s)   68603.00 (s)     236.00 (s)       0.00 (s)        6
+#      471        68291.00 (s)   68531.00 (s)   68648.00 (s)     240.00 (s)       0.00 (s)        1
+#      472        68301.00 (s)   68510.00 (s)   68682.00 (s)     209.00 (s)      76.00 (s)        1
+#      473        68305.00 (s)   68343.00 (s)   68883.00 (s)      38.00 (s)     230.00 (s)        2
+#      474        68308.00 (s)   68507.00 (s)   68688.00 (s)     199.00 (s)      99.00 (s)        1
+#      475        68314.00 (s)   68535.00 (s)   68729.00 (s)     221.00 (s)      54.00 (s)        1
+#      476        68322.00 (s)   68714.00 (s)   68842.00 (s)     392.00 (s)       0.00 (s)        4
+#      477        68323.00 (s)   68467.00 (s)   68860.00 (s)     144.00 (s)     224.00 (s)        1
+#      478        68323.00 (s)   68573.00 (s)   68920.00 (s)     250.00 (s)      15.00 (s)        1
+#      479        68328.00 (s)   68546.00 (s)   68915.00 (s)     218.00 (s)     187.00 (s)        1
+#      480        68336.00 (s)   68539.00 (s)   68754.00 (s)     203.00 (s)      47.00 (s)        1
+#      481        68338.00 (s)   68594.00 (s)   68728.00 (s)     256.00 (s)      58.00 (s)        1
+#      482        68340.00 (s)   68519.00 (s)   68866.00 (s)     179.00 (s)       0.00 (s)        1
+#      483        68345.00 (s)   68456.00 (s)   68531.00 (s)     111.00 (s)       0.00 (s)        6
+#      484        68345.00 (s)   68485.00 (s)   68987.00 (s)     140.00 (s)     205.00 (s)        1
+#      485        68346.00 (s)   68546.00 (s)   68877.00 (s)     200.00 (s)     159.00 (s)        1
+#      486        68350.00 (s)   68557.00 (s)   69000.00 (s)     207.00 (s)     228.00 (s)        1
+#      487        68350.00 (s)   68565.00 (s)   68653.00 (s)     215.00 (s)       0.00 (s)        1
+#      488        68357.00 (s)   68609.00 (s)   68887.00 (s)     252.00 (s)      43.00 (s)        3
+#      489        68359.00 (s)   68525.00 (s)   68852.00 (s)     166.00 (s)     188.00 (s)        2
+#      490        68362.00 (s)   68493.00 (s)   68932.00 (s)     131.00 (s)     152.00 (s)        1
+#      491        68363.00 (s)   68710.00 (s)   69288.00 (s)     347.00 (s)     190.00 (s)        1
+#      492        68363.00 (s)   68609.00 (s)   68701.00 (s)     246.00 (s)       0.00 (s)        2
+#      493        68366.00 (s)   68689.00 (s)   68833.00 (s)     323.00 (s)       0.00 (s)        1
+#      494        68369.00 (s)   68533.00 (s)   68714.00 (s)     164.00 (s)      24.00 (s)        1
+#      495        68371.00 (s)   68644.00 (s)   68921.00 (s)     273.00 (s)      17.00 (s)        1
+#      496        68371.00 (s)   68493.00 (s)   68562.00 (s)     122.00 (s)       0.00 (s)        2
+#      497        68372.00 (s)   68646.00 (s)   68963.00 (s)     274.00 (s)     179.00 (s)        1
+#      498        68374.00 (s)   68495.00 (s)   68657.00 (s)     121.00 (s)      60.00 (s)        1
+#      499        68380.00 (s)   68510.00 (s)   68769.00 (s)     130.00 (s)      81.00 (s)        1
+#      500        68386.00 (s)   68498.00 (s)   68684.00 (s)     112.00 (s)      50.00 (s)        1
+#      501        68388.00 (s)   68514.00 (s)   68772.00 (s)     126.00 (s)      96.00 (s)        1
+#      502        68390.00 (s)   68603.00 (s)   68807.00 (s)     213.00 (s)      16.00 (s)        2
+#      503        68394.00 (s)   68635.00 (s)   68977.00 (s)     241.00 (s)      76.00 (s)        1
+# --------------------------------------------------------------------------------------------------------
+#
+# FINAL OBJECTIVE VALUE                         = 71148.00
+# TOTAL WAIT TIME                               = 71148.00 (s)
+# TOTAL TRIP DELAY                              = 61010.00 (s)
+# TOTAL IDLE TIME                               = 1298.00 (s)
+#
+# NUMBER OF UNSERVED REQUESTS                   = 0
+# TOTAL NUMBER OF REQUESTS                      = 504
+#
+# ----------------------   AVERAGE VALUES   ----------------------
+# WAIT TIME PER REQUEST                         = 162.07 (s)
+# TRIP DELAY PER REQUEST                        = 121.05 (s)
+# IDLE TIME PER VEHICLE                         = 28.84
+#
+#
+# -------------------   TOTAL ISUD RUN TIMES   -------------------
+#
+# TIME SPENT ON ISUD IMPROVEMENT                = 2.75 (s)
+# TIME SPENT ON RP IMPROVEMENT                  = 0.96 (s)
+# TIME SPENT ON CP IMPROVEMENT                  = 1.69 (s)
+# TIME SPENT ON MIP ISUD                        = 0.59 (s)
+# TIME SPENT ON SOLVING SUB PROBLEMS            = 2.09 (s)
+# TIME SPENT ON GREEDY                          = 0.00 (s)
+#
+# -------------   AVERAGE ISUD RUN TIMES PER EPOCH   -------------
+#
+# TIME SPENT ON ISUD IMPROVEMENT                = 0.05 (s)
+# TIME SPENT ON RP IMPROVEMENT                  = 0.02 (s)
+# TIME SPENT ON CP IMPROVEMENT                  = 0.03 (s)
+# TIME SPENT ON MIP ISUD                        = 0.01 (s)
+# TIME SPENT ON SOLVING SUB PROBLEMS            = 0.03 (s)

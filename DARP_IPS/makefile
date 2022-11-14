@@ -16,7 +16,7 @@ CONCERTLIBDIR = $(CONCERTDIR)/lib/x86-64_linux/static_pic
 CPLEXLIBDIR   = $(CPLEXDIR)/lib/x86-64_linux/static_pic
 
 OUTDIR = .
-SUBDIR = OMEGA_SLK # NOUV
+SUBDIR = src/data src/utilities src/solvers src
 #DIR_OBJ = ./obj
 DIR_OBJ = .
 
@@ -34,7 +34,7 @@ $(TARGET): $(OBJS)
 
 $(DIR_OBJ)/%.o: %.$(EXT) $(INCS)
 #	mkdir -p $(@D)
-	$(CXX) -o $@ $(CFLAGS) -c $< $(INC_DIRS)
+	$(CXX) -o $@ $(CXXFLAGS) -c $< $(INC_DIRS)
 
 PHONY += clean
 clean:
