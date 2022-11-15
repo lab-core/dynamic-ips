@@ -28,7 +28,8 @@ public:
     // Solution containers
     std::vector<PRoute> routeSolution_;
     std::vector<PRequest> zSolution_;
-
+    int maxIncDegree_;
+    int cpIncDegree_;
 
     Eigen::MatrixXd incMatrix_;                                     // incompatibility matrix
 //    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
@@ -72,6 +73,7 @@ public:
 
     // this function update the incompatibility degree of availableRoutes and
     // order them based on the incompatibility degree and reduced cost
+    void updateIncDegrees(PInstance &pInst);
     void updateRoutesIncDegree(int &vehicleID);
 
     // this function updates the reduced cost for the routes in the pool

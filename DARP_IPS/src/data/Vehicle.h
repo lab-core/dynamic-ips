@@ -32,6 +32,7 @@ public:
     double CPDual_;
     double bestReducedCost_;
     float idleTime_;
+    float score_;
 
 
     // Constructor and Destructor

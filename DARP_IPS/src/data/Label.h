@@ -12,7 +12,6 @@
 
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3 };
 
-
 class Label {
 private:
     const unsigned int labelID_;      // request ID

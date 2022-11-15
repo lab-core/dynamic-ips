@@ -27,10 +27,12 @@ public:
 
     // ISUD parameters
     warmStart initialStart_;
-    int MIP_maxIncDegree_;
-    int CP_IncDegree_;
+    int MIP_maxIncDegree_;      // max incompatibility degree for Zoom
+    int CP_IncDegree_;          // max incompatibility degree for CP
+    bool useMultiStage_;       // min incompatibility degree that CP starts from in multi-stage
     float minImp_;
-    bool fixedEpoch_;
+    bool useZoom_;
+
 
     // label setting strategies
     bool isTruncated_{};
@@ -41,6 +43,7 @@ public:
     SubProSolveMode SubproSolveMode_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
+    float vehicle_portion_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -48,12 +51,13 @@ public:
     int populateTimeLimit_{};
 
     // Constructor and Destructor
-    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL, float committedTime,
-               int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, warmStart initialStart,
-               int MIP_maxIncDegree, int CP_IncDegree, float minImp, bool fixedEpoch, bool isTruncated, int maxLabel,
-               bool isSuccessorsLimited, bool isDominanceReleased, bool isDropPickPossible,
-               SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm,
-               int bigM, int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode);
+    Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
+               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
+               warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
+               bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+               bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
+               subproblemAlgorithm subAlgorithm, float vehicle_portion, int bigM, int solveTimeLimit,
+               int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode);
 
     virtual ~Parameters();
 

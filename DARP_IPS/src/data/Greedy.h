@@ -7,6 +7,7 @@
 
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
+
 //---------------------------------------------------------------------------------------------
 //  GreedyLabel class
 //  for Greedy method I use linked list for and I linked GreedyLabel to create routes and insertions

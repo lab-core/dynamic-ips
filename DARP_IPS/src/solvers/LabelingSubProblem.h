@@ -51,6 +51,8 @@ public:
     void solveDynamic_pulling();
     void solveDynamic_pulling1();
     void solveDynamic();
+    // this function is for reconstructing the routes generated in previous epoch
+    void reconstructLabels(std::vector<PRoute> &availableRoutes);
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes);

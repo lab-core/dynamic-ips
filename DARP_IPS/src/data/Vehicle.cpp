@@ -21,6 +21,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
     dual_=0;
     CPDual_ = 0;
     bestReducedCost_ = 9999;
+    score_ = 9999;
     idleTime_ = 0;
     startTime_ = departTime;
 }

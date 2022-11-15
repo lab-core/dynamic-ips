@@ -3,12 +3,12 @@
 //
 
 #include "Instance.h"
-
+vector2D<float> durationMatrix_;
 //-----------------------------------------------------------------------------
 //  Instance class
 //  contains the instance data including vehicle info and requests
 //-----------------------------------------------------------------------------
-
+extern vector2D<float> durationMatrix_;
 // Constructor and Destructor
 Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
                    std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph) : name_(name),
@@ -219,6 +219,14 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             std::string dropID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+
+            // calculate vehicle scores
+            for (auto & vehicleObj: mainInst->vehicles_){
+                if (vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
+                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime) < vehicleObj->score_)
+                    vehicleObj->score_ = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
+                    [mainInst->instGraph_->nodes_[pickID]->locationID_]- (simulationStartTime_ + elapsedTime);
+            }
         }
         else
             break;
@@ -266,6 +274,7 @@ void Instance::addRequest(PRequest &request) {
 void Instance::setInitialTimes() {
 
     for (auto & requestObj: requests_) {
+
         requestObj->setMinTravelTime(durationMatrix_[requestObj->PickUpID_][requestObj->DropOffID_]);
         requestObj->setMaxTravelTime(parameters_->alphaParam_, parameters_->betaParam_);
     }
@@ -303,6 +312,10 @@ void Instance::sortVehicles(SortVehicle sortBase) {
         case BEST_REDUCE_COST :
             sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->bestReducedCost_ < rhs->bestReducedCost_;});
+            break;
+        case SCORE :
+            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+                return lhs->score_ < rhs->score_;});
             break;
     }
 }

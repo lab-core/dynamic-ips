@@ -11,18 +11,19 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, float minImp, bool fixedEpoch,
-                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
+                       bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, int bigM, int solveTimeLimit, int populateTimeLimit,
-                       bool addOneRequestColumn, SolutionMode solutionMode):
-        alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength), penaltyL_(penaltyL),
-        committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual), mainAlgorithm_(mainAlgorithm), initialStart_(initialStart),
-        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), minImp_(minImp), fixedEpoch_(fixedEpoch),
+                       subproblemAlgorithm subAlgorithm, float vehicle_portion, int bigM, int solveTimeLimit,
+                       int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode) :
+        alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
+        penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
+        mainAlgorithm_(mainAlgorithm), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
+        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy),
-        subAlgorithm_(subAlgorithm), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
+        vehicle_portion_(vehicle_portion), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
         populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
 }
 
@@ -53,10 +54,11 @@ std::string Parameters::toString() const {
     repStr << "# ISUD PARAMETERS" << std::endl;
     repStr << "#" << std::endl;
     repStr << std::setw(setwLength) << "# warm start " << " = " << warmStartName[initialStart_] << std::endl;
-    repStr << std::setw(setwLength) << "# max MIP compatibility degree " << " = " << MIP_maxIncDegree_ << std::endl;
-    repStr << std::setw(setwLength) << "# max CP compatibility degree " << " = " << CP_IncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# Zoom max MIP compatibility degree " << " = " << MIP_maxIncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# max CP Inc. degree " << " = " << CP_IncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# use Multi stage " << " = " << useMultiStage_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
-    repStr << std::setw(setwLength) << "# fixed epoch " << " = " << fixedEpoch_ << std::endl;
+    repStr << std::setw(setwLength) << "# is Zooming used " << " = " << useZoom_ << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;
@@ -69,6 +71,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveMode_] << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
+    repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;

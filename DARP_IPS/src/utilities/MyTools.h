@@ -30,7 +30,7 @@
 using std::string;
 using std::vector;
 using std::chrono::high_resolution_clock;
-
+extern std::vector<std::vector<float>> durationMatrix_;
 //-----------------------------------------------------------------------------
 //  Definition of useful tools and data types
 //-----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ static const int sentenceSize = 47;
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
 template<class T> using vector3D = std::vector<vector2D<T>>;
-extern vector2D<float> durationMatrix_;
+
 
 class PCompare {
 public:

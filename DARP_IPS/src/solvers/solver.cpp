@@ -83,13 +83,21 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         isudObj_->nbRoutes_ = 0;
         EpochInst->updateTaskIndexLabeling();
         std::vector<PLabelingSubPro> subProblems;
+        EpochInst->sortVehicles(SCORE);
+        int portion = std::max((int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbRequests_),EpochInst->nbNewRequests_);
         for (auto &vehicleObj: EpochInst->vehicles_) {
             int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
             //   subProOptions->maxPickup_ = vehicleMaxPick;
             subProOptions_->maxPickup_ = maxPick;
             subProblems.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj,subProOptions_));
-            isudObj_->availableRoutes_[(*subProblems.back()->Vehicle_)->vehicleID_].clear();
+ //           isudObj_->availableRoutes_[(*subProblems.back()->Vehicle_)->vehicleID_].clear();
         }
+
+
+
+
+
+
         // initializing and solving subproblems
         for (auto &subProblem: subProblems){
             Tools::Job job([&]() {
@@ -101,13 +109,14 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         }
         pPool->wait();
         for (auto &subProblem: subProblems){
+            isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
                                          isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
             isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
-
+        EpochInst->restVehicleOrder();
         /*std::cout << "# ==============================================================" << std::endl;
         std::cout << "# TIME SPENT ON SOLVING SUBPROBLEMS =";
         std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;
@@ -192,7 +201,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
-            isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
+ //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
 

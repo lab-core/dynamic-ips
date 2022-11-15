@@ -225,7 +225,7 @@ void CPLEXSubProblem::SolveCPLEX() {
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 3);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Pool::Replace, 2);
 //    SubProbCplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.05);
-        SubProbCplex_.setParam(IloCplex::TiLim, 300);
+        SubProbCplex_.setParam(IloCplex::Param::TimeLimit, 300);
         if ( !SubProbCplex_.solve()) {
             std::cout << "Failed to optimize the subproblem" << std::endl;
         }
@@ -233,7 +233,7 @@ void CPLEXSubProblem::SolveCPLEX() {
         else {
             if (SubProbCplex_.getObjValue() <= -0.0001) {
                 bestReducedCost_ = SubProbCplex_.getObjValue();
-                SubProbCplex_.setParam(IloCplex::TiLim, 200);
+                SubProbCplex_.setParam(IloCplex::Param::TimeLimit, 200);
                 SubProbCplex_.populate();
             }
         }

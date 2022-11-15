@@ -8,7 +8,6 @@
 #include "data/Graph.h"
 #include <ilcplex/ilocplex.h>
 
-
 //---------------------------------------------------------------------------------------------
 //  Route class
 //  Route for each vehicle

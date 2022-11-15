@@ -7,7 +7,6 @@
 
 #include "utilities/MyTools.h"
 #include "Parameters.h"
-
 //---------------------------------------------------------------------------------------------
 //  request class
 //  contains the request info request time, number of passengers, pickup and drop off location

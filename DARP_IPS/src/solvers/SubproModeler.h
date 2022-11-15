@@ -19,6 +19,7 @@ public:
     double bestReducedCost_;
     int nbNegativeColumns_;
     int nbTotalRequest_;
+    float score_;
 
     // Constructor and Destructor
     explicit SubproModeler(PVehicle &vehicle);

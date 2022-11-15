@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12.2)
+project(DARP_IPS)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
-project(DARP_IPS)
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # this code is to solve the following warning
 # CMake Warning (dev) at The package name passed to `find_package_handle_standard_args`
@@ -75,17 +76,10 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-
+SET(LIBS cplex-library cplex-concert ilocplex)
 
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
 
-#add_executable(static_DARP src/staticMain.cpp)
-#add_executable(dynamic_DARP src/dynamicMain.cpp)
-#add_executable(anytime_DARP src/anyTimeMain.cpp)
 add_executable(realtime_DARP src/realTimeMain.cpp)
-
-#target_link_libraries(dynamic_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-#target_link_libraries(static_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-#target_link_libraries(anytime_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex)
-target_link_libraries(realtime_DARP ${DARP_IPS_LIB} cplex-library cplex-concert ilocplex pthread)
+target_link_libraries(realtime_DARP ${DARP_IPS_LIB} ${LIBS})
