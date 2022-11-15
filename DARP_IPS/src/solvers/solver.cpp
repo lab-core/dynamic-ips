@@ -93,7 +93,14 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
  //           isudObj_->availableRoutes_[(*subProblems.back()->Vehicle_)->vehicleID_].clear();
         }
 
-
+        /*for (int i = 0; i<subProblems.size(); i++){
+            subProblems[i]->initSubGraph2(EpochInst);
+            if (i <= portion)
+                subProblems[i]->solveDynamic();
+            else
+ //               subProblems[i]->solveDynamic();
+                subProblems[i]->reconstructLabels(isudObj_->availableRoutes_[(*subProblems[i]->Vehicle_)->vehicleID_]);
+        }*/
 
 
 
