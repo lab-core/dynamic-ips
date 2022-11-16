@@ -13,7 +13,7 @@
 #include "solvers/GreedyModeler.h"
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
-
+extern vector2D<float> durationMatrix_;
 // extern Tools::PThreadsPool pPool;
 
 class solver {

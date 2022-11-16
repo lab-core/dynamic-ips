@@ -128,6 +128,7 @@ void LabelingSubProblem::initialization() {
         float remainedTime = subGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
                              (*Vehicle_)->departTime_ + subGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
                              subGraph_->nodes_[nodeID]->related_Request_->deltaTime_;
+
         initialLabel->travelResources_[subGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_] = remainedTime;
     }
     for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){
@@ -688,7 +689,6 @@ void LabelingSubProblem::solveDynamic() {
 }
 
 void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes) {
-    std::cout << "s1" << std::endl;
     nbActivated_ = 0;
     dominatedLabels_.clear();
     // clear active lists
@@ -700,7 +700,6 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
         // if the length of the route is not limited, this command should be changed
         subGraph_->nodes_[nodeID]->generatedLabel_.resize(solverOptions_->maxPickup_ + 1);
     }
-    std::cout << "s2" << std::endl;
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->nodes_[(*Vehicle_)->departID_]);
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
@@ -714,11 +713,9 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                              subGraph_->nodes_[nodeID]->related_Request_->deltaTime_;
         initialLabel->travelResources_[subGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_] = remainedTime;
     }
-    std::cout << "s3" << std::endl;
     for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){
         initialLabel->openRequests_.push_back(initialLabel->completedRequests_[i]);
     }
-    std::cout << "s4" << std::endl;
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
@@ -728,49 +725,39 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                 break;
         }
     }
-    std::cout << "s5" << std::endl;
     for (auto & routeObj: availableRoutes) {
         bool isRemoved = false;
         if (routeObj->routeSize_ > 1) {
             PLabel newLabel = std::make_shared<Label>(*initialLabel);
-            std::cout << "s6" << std::endl;
             for (int i = 1; i < routeObj->routeNodes_.size(); ++i) {
                 if ((subGraph_->nodes_.count(routeObj->routeNodes_[i]->nodeID_)>0) &&
                 (routeObj->routeNodes_[i]->type_ != SOURCE)){
-                    std::cout << "s7" << std::endl;
                     if (newLabel->isExtendFeasible(routeObj->routeNodes_[i], solverOptions_->MaxLabel_)) {
                         newLabel->extend(routeObj->routeNodes_[i]);
-                        std::cout << "s8" << std::endl;
                         if (newLabel->isEliminated(subGraph_)){
                             isRemoved = true;
-                            std::cout << "s9" << std::endl;
                             break;
                         }
                     }
                 }
             }
             if (!isRemoved){
-                std::cout << "s10" << std::endl;
                 if (!newLabel->openNode_.empty()){
                     std::vector<PNode> outNodes;
                     for (auto & nodeObj : newLabel->openNode_)
                         outNodes.push_back(nodeObj);
-                    std::cout << "s11" << std::endl;
                     for (auto &neighbourNode: outNodes) {
                         if (newLabel->isExtendFeasible(neighbourNode, solverOptions_->MaxLabel_)) {
                             newLabel->extend(neighbourNode);
                             if (newLabel->isEliminated(subGraph_)){
                                 isRemoved = true;
-                                std::cout << "s12" << std::endl;
                                 break;
                             }
                         }
                     }
-                    std::cout << "s13" << std::endl;
                     if (!isRemoved){
                         newLabel->extend(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
                         subGraph_->nodes_[(*Vehicle_)->sinkID_]->activeLabels_.push_back(newLabel);
-                        std::cout << "s14" << std::endl;
                         if (subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ > newLabel->reducedCost_)
                             subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ = newLabel->reducedCost_;
                     }

@@ -54,7 +54,7 @@ std::string Parameters::toString() const {
     repStr << "# ISUD PARAMETERS" << std::endl;
     repStr << "#" << std::endl;
     repStr << std::setw(setwLength) << "# warm start " << " = " << warmStartName[initialStart_] << std::endl;
-    repStr << std::setw(setwLength) << "# Zoom max MIP compatibility degree " << " = " << MIP_maxIncDegree_ << std::endl;
+    repStr << std::setw(setwLength) << "# Zoom max MIP Inc. degree " << " = " << MIP_maxIncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# max CP Inc. degree " << " = " << CP_IncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# use Multi stage " << " = " << useMultiStage_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;

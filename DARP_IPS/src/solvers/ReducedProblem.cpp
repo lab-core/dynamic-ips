@@ -128,7 +128,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-   //     Cplex_.setOut(env_.getNullStream());
+        Cplex_.setOut(env_.getNullStream());
         Cplex_.solve();
 
         // getting dual values
@@ -203,8 +203,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
             if (requestObj->requestStatus_ == NO_ACTION)
                 nbRequests++;
         }
-        /*std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-        << " are selected to served." << std::endl;*/
+        std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
+        << " are selected to served." << std::endl;
         Cplex_.clearModel();
     }
     catch (IloException& e) {

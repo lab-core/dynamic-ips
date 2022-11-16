@@ -183,6 +183,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         for (auto & nodeID: vehicleObj->onboards_) {
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
         }
+        vehicleObj->score_ = 9999;
     }
     nbNewRequests_ = 0;
 
@@ -220,16 +221,59 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
 
-            // calculate vehicle scores
+            /*// calculate vehicle scores
             for (auto & vehicleObj: mainInst->vehicles_){
                 if (vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
                 [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime) < vehicleObj->score_)
                     vehicleObj->score_ = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
                     [mainInst->instGraph_->nodes_[pickID]->locationID_]- (simulationStartTime_ + elapsedTime);
-            }
+            }*/
         }
         else
             break;
+    }
+    // calculate vehicle scores
+    for (auto & vehicleObj: mainInst->vehicles_){
+        if (vehicleObj->onboards_.empty()){
+            for (auto & requestObj : requests_){
+                std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+                float earliestPick = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
+                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime);
+                if (earliestPick < vehicleObj->score_)
+                    vehicleObj->score_ = earliestPick;
+            }
+        }
+    }
+    for (auto & requestObj : requests_){
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        int vehicleID;
+        float score = 9999;
+        for (auto & vehicleObj: mainInst->vehicles_){
+            if (vehicleObj->score_ == 9999){
+                float earliest_pick = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
+                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime);
+                float minDist = 0;
+                if (!vehicleObj->onboards_.empty()){
+                    minDist = 9999;
+                    for (auto & onboardID : vehicleObj->onboards_){
+                        if (durationMatrix_[mainInst->instGraph_->nodes_[pickID]->locationID_]
+                            [mainInst->instGraph_->nodes_[onboardID]->locationID_] < minDist)
+                            minDist = durationMatrix_[mainInst->instGraph_->nodes_[pickID]->locationID_]
+                            [mainInst->instGraph_->nodes_[onboardID]->locationID_];
+                        if (durationMatrix_[mainInst->instGraph_->nodes_[dropID]->locationID_]
+                            [mainInst->instGraph_->nodes_[onboardID]->locationID_] < minDist)
+                            minDist = durationMatrix_[mainInst->instGraph_->nodes_[dropID]->locationID_]
+                            [mainInst->instGraph_->nodes_[onboardID]->locationID_];
+                    }
+                }
+                if ( earliest_pick + minDist < score){
+                    score = earliest_pick + minDist;
+                    vehicleID = vehicleObj->vehicleID_;
+                }
+            }
+        }
+        mainInst->vehicles_[vehicleID]->score_ = score;
     }
     updateRequestOrder();
 }
@@ -608,6 +652,14 @@ void Instance::updateTaskIndexLabeling() {
     for (auto & requestObj : requests_){
         requestObj->taskIndexLabel_ = orderCounter;
         orderCounter++;
+    }
+    int firstIndex = orderCounter;
+    for (auto & vehicleObj : vehicles_){
+        orderCounter = firstIndex;
+        for (auto & nodeID : vehicleObj->onboards_){
+            instGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_ = orderCounter;
+            orderCounter++;
+        }
     }
 }
 

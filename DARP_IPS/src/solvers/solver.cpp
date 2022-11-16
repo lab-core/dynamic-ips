@@ -82,31 +82,44 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         // defining subproblems
         isudObj_->nbRoutes_ = 0;
         EpochInst->updateTaskIndexLabeling();
-        std::vector<PLabelingSubPro> subProblems;
+        std::vector<PLabelingSubPro> subProSolve;
+        std::vector<PLabelingSubPro> subProConst;
         EpochInst->sortVehicles(SCORE);
-        int portion = std::max((int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbRequests_),EpochInst->nbNewRequests_);
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            int vehicleMaxPick = std::max(maxPick, vehicleObj->capacity_);
+        int portion = std::max((int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbVehicles_),EpochInst->nbNewRequests_);
+        for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
+  //          std::cout << EpochInst->vehicles_[v]->vehicleID_ << " = " << EpochInst->vehicles_[v]->score_ << std::endl;
+            int vehicleMaxPick = std::max(maxPick, EpochInst->vehicles_[v]->capacity_);
             //   subProOptions->maxPickup_ = vehicleMaxPick;
             subProOptions_->maxPickup_ = maxPick;
-            subProblems.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj,subProOptions_));
- //           isudObj_->availableRoutes_[(*subProblems.back()->Vehicle_)->vehicleID_].clear();
-        }
-
-        /*for (int i = 0; i<subProblems.size(); i++){
-            subProblems[i]->initSubGraph2(EpochInst);
-            if (i <= portion)
-                subProblems[i]->solveDynamic();
+            if (v <= portion)
+                subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
             else
- //               subProblems[i]->solveDynamic();
-                subProblems[i]->reconstructLabels(isudObj_->availableRoutes_[(*subProblems[i]->Vehicle_)->vehicleID_]);
-        }*/
+                subProConst.emplace_back(std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
+        }
+        EpochInst->restVehicleOrder();
+        // initializing and solving subproblems
+        /*for (int i = 0; i < subProSolve.size(); i++){
+   //         if (i <= portion) {
+                Tools::Job job([&]() {
+                    subProSolve[i]->initSubGraph2(EpochInst);
+                    subProSolve[i]->solveDynamic();
 
+                });
+                pPool->run(job);
+  //          }
+            *//*else {
+                Tools::Job job([&]() {
+                    subProSolve[i]->initSubGraph2(EpochInst);
+                    subProSolve[i]->reconstructLabels(isudObj_->availableRoutes_[(*subProSolve[i]->Vehicle_)->vehicleID_]);
 
-
+                });
+                pPool->run(job);
+            }*//*
+        }
+        pPool->wait();*/
 
         // initializing and solving subproblems
-        for (auto &subProblem: subProblems){
+        for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);
                 subProblem->solveDynamic();
@@ -114,8 +127,16 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             });
             pPool->run(job);
         }
+        for (auto &subProblem: subProConst){
+            Tools::Job job([&]() {
+                subProblem->initSubGraph2(EpochInst);
+                subProblem->reconstructLabels(isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_]);
+
+            });
+            pPool->run(job);
+        }
         pPool->wait();
-        for (auto &subProblem: subProblems){
+        for (auto &subProblem: subProSolve){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
                                          isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
@@ -123,7 +144,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
-        EpochInst->restVehicleOrder();
         /*std::cout << "# ==============================================================" << std::endl;
         std::cout << "# TIME SPENT ON SOLVING SUBPROBLEMS =";
         std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;
@@ -148,12 +168,11 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
                 isudObj_->solveISUD3(EpochInst, epoch_, inputPaths);
-
+                break;
                 /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
                 RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
                 CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
                 isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
-
                 if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                     break;
             }
@@ -167,6 +186,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
     }  // end of CG while
     for (auto & routeObj : isudObj_->routeSolution_) {
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+ //       std::cout << EpochInst->vehicles_[routeObj->vehicleID_]->currentRoute_->toString() << std::endl;
     }
     isudObj_->setObjValue();
 //    std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
@@ -267,10 +287,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
         preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        /*std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "*************************************************************************************"<< std::endl;
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;*/
+        std::cout << "*************************************************************************************"<< std::endl;
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
