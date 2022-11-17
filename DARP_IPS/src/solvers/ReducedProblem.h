@@ -42,13 +42,13 @@ public:
 
      // this function solve the model and remove all columns except than the current base
      virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::unordered_map<std::string , PRoute> &generatedRoutes);
+                    std::map<std::string , PRoute> &generatedRoutes);
 
     // function to check whether two routes are column disjoint or not
-    static bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int>& requestToOrder);
+    static bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);
 
     // function to check whether the route is repeated before
-    static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int>& requestToOrder);
+    static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);
 
     // Display function
     std::string toString() const override;

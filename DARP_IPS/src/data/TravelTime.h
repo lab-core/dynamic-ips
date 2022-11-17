@@ -21,7 +21,7 @@ public:
 
     // Setters
 //    void setDurationMat(PGraph &graph);
-    void setNodeIdToInt(const std::unordered_map<std::string, int> &nodeIdToInt);
+    void setNodeIdToInt(const std::map<std::string, int> &nodeIdToInt);
 
     // function to return travel duration between two nodes
     float queryTravelTime(PNode &startNode, PNode &endNode);

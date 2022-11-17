@@ -406,6 +406,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
 //***************************************************************************************//
 void LabelingSubProblem::solveDynamic_pushing() {
     // create initial label
+
     int nbActive;
     while(true) {
         // create initial label

@@ -98,27 +98,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         }
         EpochInst->restVehicleOrder();
         // initializing and solving subproblems
-        /*for (int i = 0; i < subProSolve.size(); i++){
-   //         if (i <= portion) {
-                Tools::Job job([&]() {
-                    subProSolve[i]->initSubGraph2(EpochInst);
-                    subProSolve[i]->solveDynamic();
-
-                });
-                pPool->run(job);
-  //          }
-            *//*else {
-                Tools::Job job([&]() {
-                    subProSolve[i]->initSubGraph2(EpochInst);
-                    subProSolve[i]->reconstructLabels(isudObj_->availableRoutes_[(*subProSolve[i]->Vehicle_)->vehicleID_]);
-
-                });
-                pPool->run(job);
-            }*//*
-        }
-        pPool->wait();*/
-
-        // initializing and solving subproblems
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);

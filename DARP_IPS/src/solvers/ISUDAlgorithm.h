@@ -33,7 +33,7 @@ public:
 
     Eigen::MatrixXd incMatrix_;                                     // incompatibility matrix
 //    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
-    std::unordered_map<int, int> incVehicleToOrder_;
+    std::map<int, int> incVehicleToOrder_;
     int nbCoveredTasks_;
 
     int isudIter_;
@@ -95,7 +95,7 @@ public:
     // function to evaluate available routes and find proper ones to be added to the models
     void updateRoutesToAdd(int compDegree, PInstance &pInst);
     void updateRoutesToAddZoom(PInstance &pInst);
-    static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<unsigned int, int> &requestToOrder);
+    static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::map<unsigned int, int> &requestToOrder);
 
     void restGeneratedRoutes(PInstance &pInst);
 

@@ -15,6 +15,7 @@ float saveTime = 7200;
 bool middleSave = false;
 
 int main(int argc, char** argv) {
+
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string instFolder = "test";
@@ -43,6 +44,8 @@ int main(int argc, char** argv) {
 
         // create solver
         std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
+
+
         if (mainInst->parameters_->solutionMode_ == DYNAMIC)
             instanceSolver->dynamicSolver(mainInst, inputPaths);
         else if (mainInst->parameters_->solutionMode_ == ANYTIME)

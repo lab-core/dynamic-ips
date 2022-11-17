@@ -122,8 +122,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
 // this function solve the model and remove all columns except than the current base
 void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution,
-                                std::vector<PRoute> &routeSolution, std::unordered_map<std::string ,
-                                PRoute> &generatedRoutes) {
+                                std::vector<PRoute> &routeSolution, std::map<std::string ,PRoute> &generatedRoutes) {
     try {
 
         Cplex_ = IloCplex(Model_);
@@ -215,7 +214,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
 
 // function to check whether two routes are column disjoint or not
-bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute, std::unordered_map<unsigned int, int> &requestToOrder){
+bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int> &requestToOrder){
     Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), (signed) routeSet.size()+1);
     vector<PRoute> selectedRoutes = routeSet;
     selectedRoutes.push_back(newRoute);
@@ -247,7 +246,7 @@ std::string ReducedProblem::toString() const {
 
 // function to check whether the route is repeated before
 bool ReducedProblem::isColumnRepeat(vector<PRoute> &routeSet, PRoute &newRoute,
-                                    std::unordered_map<unsigned int, int> &requestToOrder) {
+                                    std::map<unsigned int, int> &requestToOrder) {
     Eigen::MatrixXd newCol = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), 1);
 
     for (auto & requestObj : newRoute->routeRequests_)

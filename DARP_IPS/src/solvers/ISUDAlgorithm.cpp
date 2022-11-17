@@ -1134,7 +1134,7 @@ void ISUDAlgorithm::updateRoutesToAddZoom(PInstance &pInst) {
     }
 }
 
-bool ISUDAlgorithm::isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::unordered_map<unsigned int, int> &requestToOrder) {
+bool ISUDAlgorithm::isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::map<unsigned int, int> &requestToOrder) {
     Eigen::MatrixXd solutionPattern = Eigen::MatrixXd::Zero((int) requestToOrder.size(), 1);
     Eigen::MatrixXd comingPattern = Eigen::MatrixXd::Zero((int) requestToOrder.size(),1);
 

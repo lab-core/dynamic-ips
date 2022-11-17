@@ -30,7 +30,7 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instFolder
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = datadir + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_4.txt";
+    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_5.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }

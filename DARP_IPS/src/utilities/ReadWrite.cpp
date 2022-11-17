@@ -221,7 +221,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime));
-                pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
+                pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
                 pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);

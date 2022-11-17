@@ -27,7 +27,7 @@ static void createIloNumArray (IloNumArray& numArray, unsigned int size, int ele
 }
 
 // function to create pattern from routes
-static void createPattern (IloNumArray& pattern, PRoute & route, std::unordered_map<unsigned int, int>& requestToOrder) {
+static void createPattern (IloNumArray& pattern, PRoute & route, std::map<unsigned int, int>& requestToOrder) {
     for (auto requestObj : route->routeRequests_) {
         pattern[requestObj->taskIndex_] = 1;
     }
