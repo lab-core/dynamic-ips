@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc libutilities.a CMakeFiles/utilities.dir/InputPaths.cpp.o CMakeFiles/utilities.dir/MyTools.cpp.o CMakeFiles/utilities.dir/ReadWrite.cpp.o CMakeFiles/utilities.dir/Tools.cpp.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib libutilities.a
