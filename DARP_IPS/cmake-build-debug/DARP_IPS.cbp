@@ -88,16 +88,17 @@
 				</MakeCommands>
 			</Target>
 			<Target title="DARP_IPS">
-				<Option output="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/libDARP_IPS.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="/Users/ella/Projects/dynamic-ips/DARP_IPS/lib/libDARP_IPS.dylib" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src"/>
 				<Option object_output="./"/>
-				<Option type="2"/>
+				<Option type="3"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -112,16 +113,17 @@
 				</MakeCommands>
 			</Target>
 			<Target title="DARP_IPS/fast">
-				<Option output="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src/libDARP_IPS.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="/Users/ella/Projects/dynamic-ips/DARP_IPS/lib/libDARP_IPS.dylib" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug/src"/>
 				<Option object_output="./"/>
-				<Option type="2"/>
+				<Option type="3"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -142,10 +144,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -166,10 +169,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -190,10 +194,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -214,10 +219,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -238,10 +244,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
@@ -262,10 +269,11 @@
 				<Option type="2"/>
 				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
-					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
+					<Add option="-DIL_STD"/>
 					<Add directory="/Applications/eigen-3.4.0"/>
 					<Add directory="/Users/ella/Projects/dynamic-ips/DARP_IPS/src"/>
+					<Add directory="/Applications/CPLEX_Studio221/cplex/include"/>
+					<Add directory="/Applications/CPLEX_Studio221/concert/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>

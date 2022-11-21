@@ -14,7 +14,20 @@
 // Constructor and Destructor
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
                  std::string sinkID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                 endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)) {
+                                                   endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)){
+    numPassengers_ = 0;
+//    departID_ = myTools::createNodeID(0, SOURCE);
+//    sinkID_ = myTools::createNodeID(0, SINK);
+    dual_=0;
+    CPDual_ = 0;
+    bestReducedCost_ = 9999;
+    score_ = 9999;
+    idleTime_ = 0;
+    startTime_ = departTime;
+}
+Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
+                 std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
+                 endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)) , zoneID_(zoneID){
     numPassengers_ = 0;
 //    departID_ = myTools::createNodeID(0, SOURCE);
 //    sinkID_ = myTools::createNodeID(0, SINK);

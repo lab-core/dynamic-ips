@@ -48,6 +48,7 @@ public:
     Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
              std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph);
     Instance(const Instance &mainInst);
+    Instance(const Instance &mainInst, int zoneID);
     void resetInstance();
 //    virtual ~Instance();
 
@@ -60,6 +61,7 @@ public:
     // update the set of available requests, removed completed requests and update onboards
     void buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
     void buildStaticData(const PInstance &mainInst);
+    void buildDataZone(const PInstance &mainInst, int zoneID);
 
     // function to add requests from previous epochs to the current partial instance
     void addRequest(PRequest &request);

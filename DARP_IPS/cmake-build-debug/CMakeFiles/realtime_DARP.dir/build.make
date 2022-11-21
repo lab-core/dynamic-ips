@@ -92,13 +92,14 @@ realtime_DARP_EXTERNAL_OBJECTS =
 
 ../bin/realtime_DARP: CMakeFiles/realtime_DARP.dir/src/realTimeMain.cpp.o
 ../bin/realtime_DARP: CMakeFiles/realtime_DARP.dir/build.make
-../bin/realtime_DARP: src/libDARP_IPS.a
+../bin/realtime_DARP: ../lib/libDARP_IPS.dylib
 ../bin/realtime_DARP: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libcplex.a
 ../bin/realtime_DARP: /Applications/CPLEX_Studio221/concert/lib/x86-64_osx/static_pic/libconcert.a
 ../bin/realtime_DARP: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libilocplex.a
 ../bin/realtime_DARP: src/data/libdata.a
 ../bin/realtime_DARP: src/utilities/libutilities.a
 ../bin/realtime_DARP: src/solvers/libsolvers.a
+../bin/realtime_DARP: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libilocplex.a
 ../bin/realtime_DARP: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libcplex.a
 ../bin/realtime_DARP: /Applications/CPLEX_Studio221/concert/lib/x86-64_osx/static_pic/libconcert.a
 ../bin/realtime_DARP: CMakeFiles/realtime_DARP.dir/link.txt

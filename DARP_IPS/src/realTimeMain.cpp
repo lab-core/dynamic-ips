@@ -44,7 +44,14 @@ int main(int argc, char** argv) {
 
         // create solver
         std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
+        /*PInstance zoneInst = std::make_shared<Instance>(*mainInst, 291);
+        int i = 0;
+        for (auto & vehicleObj : zoneInst->vehicles_){
+            vehicleObj->vehicleID_ = i;
+            i++;
+        }
 
+        zoneInst->buildDataZone(mainInst, 291);*/
 
         if (mainInst->parameters_->solutionMode_ == DYNAMIC)
             instanceSolver->dynamicSolver(mainInst, inputPaths);

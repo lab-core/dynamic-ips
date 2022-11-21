@@ -43,9 +43,11 @@ public:
     int taskIndex_;
     int taskIndexLabel_;
     int taskIncIndex_;
+    int zoneID_;
 
     // Constructor and Destructor
     Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);
+    Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int zoneID);
 
     virtual ~Request();
 

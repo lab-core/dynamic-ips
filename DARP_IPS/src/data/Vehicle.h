@@ -33,10 +33,12 @@ public:
     double bestReducedCost_;
     float idleTime_;
     float score_;
+    int zoneID_;
 
 
     // Constructor and Destructor
     Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID, std::string sinkID);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID, std::string sinkID, int zoneID);
 
     virtual ~Vehicle();
 

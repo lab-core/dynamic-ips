@@ -1,3 +1,4 @@
+import math
 from datetime import datetime as dt
 import os
 import visualize as vf
@@ -7,7 +8,7 @@ import utilities as uf
 
 
 class Dataset(object):
-    def __init__(self, file_name, dataset=None, instance=None, nb_trip_per_district=None):
+    def __init__(self, file_name, dataset=None, instance=None, nb_trip_per_district=None, nb_vehicle_per_district=None):
         self.file_name = file_name
         if dataset is None:
             dataset = []
@@ -15,6 +16,8 @@ class Dataset(object):
             instance = []
         if nb_trip_per_district is None:
             nb_trip_per_district = []
+        if nb_vehicle_per_district is None:
+            nb_vehicle_per_district = []
         self.dataset = dataset
         self.instance = instance
         self.nb_requests = 0
@@ -25,6 +28,8 @@ class Dataset(object):
         self.start_min = 0
         self.end_hr = 9
         self.end_min = 0
+        self.nb_vehicles = 2000
+        self.nb_vehicle_per_district = nb_vehicle_per_district
 
     def read_dataset_data(self):
         """ read data """
@@ -67,11 +72,11 @@ class Dataset(object):
     def remove_unwanted_columns_instance(self):
         if 'tpep_pickup_datetime' in self.instance.columns:
             self.instance = self.instance.drop(columns=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
-        if 'pickup_district' in self.instance.columns:
-            self.instance = self.instance.drop(columns=['pickup_district', 'dropoff_district'])
+        if 'dropoff_district' in self.instance.columns:
+            self.instance = self.instance.drop(columns=['dropoff_district'])
         if 'pickup_latitude' in self.instance.columns:
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
-        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec']]
+        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
 
     def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -176,6 +181,22 @@ class Dataset(object):
         selected_records = self.dataset[self.dataset.pickup_district == c.OUT_BOUND]
         # selected_records = selected_records[selected_records.dropoff_district == c.OUT_BOUND]
         self.nb_trip_per_district.append(len(selected_records))
+
+    def calculate_vehicle_per_district(self, network, nb_vehicles=None):
+        if nb_vehicles is not None:
+            self.nb_vehicles = nb_vehicles
+        self.nb_vehicle_per_district.clear()
+        total = 0
+        for count, item in enumerate(network.districts):
+            self.nb_vehicle_per_district.append(round((self.nb_vehicles*self.nb_trip_per_district[count])/self.nb_requests))
+            total = total + self.nb_vehicle_per_district[count]
+        self.nb_vehicle_per_district.append(round((self.nb_vehicles*self.nb_trip_per_district[-1])/self.nb_requests))
+        total = total + self.nb_vehicle_per_district[len(self.nb_vehicle_per_district)-1]
+        if total != self.nb_vehicles:
+            self.nb_vehicle_per_district[0] = self.nb_vehicle_per_district[0] + self.nb_vehicles - total
+
+
+
 
     def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None):
         self.read_dataset_data()

@@ -252,7 +252,7 @@ DARP_IPS_BINARY_DIR:STATIC=/Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build
 DARP_IPS_IS_TOP_LEVEL:STATIC=ON
 
 //Dependencies for the target
-DARP_IPS_LIB_DEPENDS:STATIC=general;data;general;utilities;general;solvers;
+DARP_IPS_LIB_DEPENDS:STATIC=general;data;general;utilities;general;solvers;general;cplex-library;general;cplex-concert;general;ilocplex;
 
 //Value Computed by CMake
 DARP_IPS_SOURCE_DIR:STATIC=/Users/ella/Projects/dynamic-ips/DARP_IPS
@@ -262,6 +262,15 @@ ProcessorCount_cmd_sysctl:FILEPATH=/usr/sbin/sysctl
 
 //The directory containing a CMake configuration file for Thread.
 Thread_DIR:PATH=Thread_DIR-NOTFOUND
+
+//Dependencies for the target
+data_LIB_DEPENDS:STATIC=general;cplex-library;general;cplex-concert;general;ilocplex;
+
+//Dependencies for the target
+solvers_LIB_DEPENDS:STATIC=general;cplex-library;general;cplex-concert;general;ilocplex;
+
+//Dependencies for the target
+utilities_LIB_DEPENDS:STATIC=general;cplex-library;general;cplex-concert;general;ilocplex;
 
 
 ########################

@@ -36,6 +36,24 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     requests_.reserve(mainInst.requests_.size());
 }
 
+Instance::Instance(const Instance &mainInst, int zoneID) : name_(mainInst.name_){
+    for (auto & vehicleObj : mainInst.vehicles_){
+        if (vehicleObj->zoneID_ == zoneID)
+            vehicles_.push_back(vehicleObj);
+    }
+    nbVehicles_ = vehicles_.size();
+    parameters_ = mainInst.parameters_;
+    simulationStartTime_ = mainInst.simulationStartTime_;
+    nbRequests_ = 0;
+    nbNewRequests_ = 0;
+    nbWaiting_ = 0;
+    instGraph_ = std::make_shared<Graph>();
+    nbOnboards_ = 0;
+    nbLocations_ = mainInst.nbLocations_;
+    requests_.reserve(mainInst.requests_.size());
+
+}
+
 void Instance::resetInstance() {
     nbRequests_ = 0;
     nbNewRequests_ = 0;
@@ -304,6 +322,24 @@ void Instance::buildStaticData(const PInstance &mainInst) {
     }
 }
 
+void Instance::buildDataZone(const PInstance &mainInst, int zoneID) {
+    for (auto & vehicleObj : vehicles_){
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+    }
+    nbNewRequests_ = 0;
+
+    for (auto & requestObj : mainInst->requests_) {
+        if (requestObj->zoneID_ == zoneID) {
+            nbNewRequests_++;
+            addRequest(requestObj);
+            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+        }
+    }
+}
 // function to add requests from previous epochs to the current partial instance
 void Instance::addRequest(PRequest &request) {
     nbRequests_++;
@@ -662,6 +698,8 @@ void Instance::updateTaskIndexLabeling() {
         }
     }
 }
+
+
 
 
 

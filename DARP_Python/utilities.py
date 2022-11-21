@@ -47,6 +47,46 @@ def create_vehicle_dataset(vehicle_file, districts=None):
     file.close()
 
 
+def create_vehicle_dataset_zone(vehicle_file, districts, nb_per_zone):
+    # read data
+    f = open(c.VEHICLES_DIR + vehicle_file + ".json")
+    df_vehicles = json.load(f)
+    f.close()
+    # covert data to matrix
+    vehicle_data = []
+    vehicle_id = 0
+    for count, item in enumerate(districts):
+        source_ids = []
+        for cell in item.cells:
+            source_ids.append(int(cell[0]))
+        source_ids = sorted(source_ids)
+        for i in range(nb_per_zone[count]):
+            source_id = source_ids[i % len(source_ids)]
+            vehicle_data.append(
+                [vehicle_id, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id,
+                 item.cartodb_id])
+            vehicle_id = vehicle_id + 1
+
+    df_vehicles = pd.DataFrame(vehicle_data,
+                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID', 'zone_ID'])
+
+    # save data file
+    folder_name = c.VEHICLES_DIR + "manhattan-vehicles"
+    if not os.path.exists(folder_name):
+        os.mkdir(folder_name)
+    file_to_save = folder_name + "/" + vehicle_file + ".txt"
+    df_columns = df_vehicles.columns.tolist()
+    file = open(file_to_save, "w")
+    file.write("COLUMNS\n\n")
+
+    for col in df_columns:
+        file.write(col)
+        file.write("\n")
+    file.write("\nVEHICLES_INFO\n")
+    df_as_string = df_vehicles.to_string(header=False, index=False)
+    file.write(df_as_string)
+    file.close()
+
 def create_file_names():
     file_names = []
     for item in c.DATES_2015:

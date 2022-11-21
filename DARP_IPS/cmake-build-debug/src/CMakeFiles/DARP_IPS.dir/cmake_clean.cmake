@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
+  "../../lib/libDARP_IPS.dylib"
+  "../../lib/libDARP_IPS.pdb"
   "CMakeFiles/DARP_IPS.dir/realTimeMain.cpp.o"
   "CMakeFiles/DARP_IPS.dir/realTimeMain.cpp.o.d"
-  "libDARP_IPS.a"
-  "libDARP_IPS.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

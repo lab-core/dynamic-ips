@@ -49,7 +49,6 @@ endif()
 ######## GUROBI Dependency
 #find_package(GUROBI REQUIRED)
 #include_directories(${GUROBI_INCLUDE_DIRS})
-
 ######## Eigen Dependency
 if (UNIX)
     if (APPLE)

@@ -481,6 +481,7 @@ void LabelingSubProblem::solveDynamic_pushing() {
             }
             currentNode.reset();
         }
+        break;
         if (!solverOptions_->areHeuristicsDisabled()) {
             if (subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_ >= -0.0001)
                 solverOptions_->disableHeuristics();
@@ -574,6 +575,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
             }
             currentNode.reset();
         }
+        break;
         if (!solverOptions_->areHeuristicsDisabled()) {
             if (subGraph_->nodes_[(*Vehicle_)->sinkID_]->bestLabelReduceCost_ - (*Vehicle_)->dual_ >= -0.0001)
                 solverOptions_->disableHeuristics();

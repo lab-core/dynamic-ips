@@ -90,7 +90,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
 
     string title;
     std::vector<PVehicle> vehicles;
-    int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1;
+    int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1, zoneID = -1;
     float departTime = -1, endTime = -1;
 
     // add this only when I want to use less vehicles
@@ -107,15 +107,16 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> endTime;
                 file >> departID;
                 file >> sinkID;
+//                file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(
                         departID, SOURCE, vehicleID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(
                         sinkID, SINK, vehicleID));
-                pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime, endTime,
-                                                                            myTools::createSourceID(vehicleID, SOURCE),
-                                                                            myTools::createSourceID(vehicleID, SINK)));
+                pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
+                                                                            endTime, myTools::createSourceID(vehicleID, SOURCE),
+                                                                            myTools::createSourceID(vehicleID, SINK),zoneID));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
             }
         }
@@ -147,7 +148,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
 
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
                 // attributes for reading trip requests file
-                int nbPassengers = -1, vehicleID = -1;
+                int nbPassengers = -1, vehicleID = -1, zoneID = -1;
  //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
                 float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, deltaTime = -1;
 
@@ -158,11 +159,12 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> pickTime;
 
                 file >> vehicleID;
+ //               file >> zoneID;
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
-                                                                             nbPassengers, deltaTime));
+                                                                             nbPassengers, deltaTime, zoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
                 pInstance->requests_.back()->vehicleID_ = vehicleID;
@@ -209,18 +211,19 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
 //                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
-                int pickUpID = -1, dropOffID = -1;
+                int pickUpID = -1, dropOffID = -1, zoneID;
                 float earlyPick = -1, deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
                 file >> dropOffID;
                 file >> earlyPick;
+//                file >> zoneID;
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
-                                                                             nbPassengers, deltaTime));
+                                                                             nbPassengers, deltaTime, zoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
