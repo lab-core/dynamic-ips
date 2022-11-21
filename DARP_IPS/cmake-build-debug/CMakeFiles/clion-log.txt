@@ -1,13 +1,39 @@
 "/Users/ella/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/222.4345.21/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug -DCPLEX_STUDIO_DIR:PATH=CPLEX_STUDIO_DIR-NOTFOUND -G "CodeBlocks - Unix Makefiles" -S /Users/ella/Projects/dynamic-ips/DARP_IPS -B /Users/ella/Projects/dynamic-ips/DARP_IPS/cmake-build-debug
+-- The C compiler identification is AppleClang 14.0.0.14000029
+-- The CXX compiler identification is AppleClang 14.0.0.14000029
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /Library/Developer/CommandLineTools/usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /Library/Developer/CommandLineTools/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test COMPILER_SUPPORTS_CXX11
+-- Performing Test COMPILER_SUPPORTS_CXX11 - Success
 lib/x86-64_osx/static_piclib/x86-64_darwin9_gcc4.0/static_pic
 Found studio dirs: /Applications/CPLEX_Studio221
 -- Found CPLEX Studio: /Applications/CPLEX_Studio221
 -- Detected CPLEX version 
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found CPLEX: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libcplex.a  
+-- Looking for floor in m
+-- Looking for floor in m - found
+-- Found CPLEX_CONCERT: /Applications/CPLEX_Studio221/concert/lib/x86-64_osx/static_pic/libconcert.a  
+-- Performing Test HAVE_WNO_LONG_LONG_FLAG
+-- Performing Test HAVE_WNO_LONG_LONG_FLAG - Success
+-- Found CPLEX_ILOCPLEX: /Applications/CPLEX_Studio221/cplex/lib/x86-64_osx/static_pic/libilocplex.a  
 -- Could NOT find CPLEX_CP (missing: CPLEX_CP_LIBRARY CPLEX_CP_LIBRARY_DEBUG CPLEX_CP_INCLUDE_DIR) 
 -----CPLEX IS FOUND-----
 -----CPLEX CONCERT IS FOUND-----
 -----CPLEX ILOCPLEX IS FOUND-----
--- System: Darwin-21.6.0
+-- System: Darwin-22.1.0
 -- Build type: Debug
 -- Compiler version: 14.0.0.14000029
 -- Configuring done
