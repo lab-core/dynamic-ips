@@ -3,6 +3,9 @@ project(DARP_IPS)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf")
+
+
 
 # this code is to solve the following warning
 # CMake Warning (dev) at The package name passed to `find_package_handle_standard_args`
@@ -14,18 +17,15 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if (COMPILER_SUPPORTS_CXX11)
-    if (CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DIL_STD")
 else ()
     message(STATUS "Fatal Error: Your compiler doesn't support c++11, please install it!")
 endif ()
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 endif()
-
+set(CMAKE_CXX_FLAGS "-gdwarf-4")
 ######## Cplex Dependency
 find_package(CPLEX REQUIRED)
 if(CPLEX_FOUND)
@@ -75,10 +75,11 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-SET(LIBS cplex-library cplex-concert ilocplex)
+SET(LIBS cplex-library cplex-concert ilocplex -lpthread)
 
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
+
 
 add_executable(realtime_DARP src/realTimeMain.cpp)
 target_link_libraries(realtime_DARP ${DARP_IPS_LIB} ${LIBS})
