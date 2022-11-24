@@ -14,6 +14,7 @@ class GreedyModeler {
 public:
     std::vector<PLinkedGreedyLabels> solutionList_;
     myTools::Timer *greedyTime_;
+    std::vector<int> selectedVehicles_;
 
     //Constructor
     GreedyModeler();

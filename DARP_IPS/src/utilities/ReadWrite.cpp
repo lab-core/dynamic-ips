@@ -299,7 +299,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false;
-    bool isPickDropPossible = false, useZoom = false, useMultiStage = false;
+    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1;
 
@@ -386,6 +386,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Vehicle_portion "))
             file >> vehicle_portion;
 
+        else if (strEndWith(title, "Greedy_portion "))
+            file >> greedyPortion;
+
         else if (strEndWith(title, "BigM "))
             file >> bigM;
 
@@ -406,8 +409,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          vehicle_portion, bigM, solveTimeLimit, populateTimeLimit,
-                                                          addOneRequestColumn, static_cast<SolutionMode>(solutionMode));
+                                                          vehicle_portion, greedyPortion, bigM, solveTimeLimit,
+                                                          populateTimeLimit, addOneRequestColumn,
+                                                          static_cast<SolutionMode>(solutionMode));
 }
 
 // function that open all input files and create the main instance

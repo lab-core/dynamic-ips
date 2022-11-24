@@ -24,6 +24,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
     score_ = 9999;
     idleTime_ = 0;
     startTime_ = departTime;
+    selected_ = false;
 }
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
                  std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
@@ -37,6 +38,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
     score_ = 9999;
     idleTime_ = 0;
     startTime_ = departTime;
+    selected_ = false;
 }
 
 Vehicle::~Vehicle() = default;
@@ -116,6 +118,14 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
+                    float travelTime = currentRoute_->routeNodes_[i]->related_Request_->dropTime_ -
+                            currentRoute_->routeNodes_[i]->related_Request_->pickTime_ -
+                            currentRoute_->routeNodes_[i]->related_Request_->deltaTime_;
+                    if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
+                        std::cout << "Trip delay constraint is violated by request: " <<
+                                  currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;
+                        myTools::throwException("Trip delay Validation");
+                    }
                 }
 
                 if ((currentRoute_->plannedReachTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))||(i == currentRoute_->routeSize_-1)){
@@ -186,6 +196,14 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
+                    float travelTime = currentRoute_->routeNodes_[i]->related_Request_->dropTime_ -
+                                       currentRoute_->routeNodes_[i]->related_Request_->pickTime_ -
+                                       currentRoute_->routeNodes_[i]->related_Request_->deltaTime_;
+                    if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
+                        std::cout << "Trip delay constraint is violated by request: " <<
+                                  currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;
+                        myTools::throwException("Trip delay Validation");
+                    }
                 }
 
                 if ((currentRoute_->plannedReachTime_[i] >= startTime_ + elapsedTime) || (i == currentRoute_->routeSize_ - 1)){

@@ -699,6 +699,20 @@ void Instance::updateTaskIndexLabeling() {
     }
 }
 
+void Instance::resetVehicleSelection() {
+    for (auto & vehicleObj : vehicles_)
+        vehicleObj->selected_ = false;
+}
+
+int Instance::getNbUnselectedVehicles() {
+    int nbUnselected = 0;
+    for (auto & vehicleObj : vehicles_){
+        if (!vehicleObj->selected_)
+            nbUnselected++;
+    }
+    return nbUnselected;
+}
+
 
 
 

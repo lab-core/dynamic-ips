@@ -257,10 +257,15 @@ void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
 void Route::resetRoute() {
     for (int i = routeSize_-1; i > 0; --i) {
         routeNodes_[i]->nodeStatus_ = DEFINED;
-        if (routeNodes_[i]->type_ == DROPOFF)
+        if (routeNodes_[i]->type_ == DROPOFF) {
             routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
-        else if (routeNodes_[i]->type_ == PICKUP)
+            routeNodes_[i]->related_Request_->dropTime_ = MAXReachTime;
+        }
+        else if (routeNodes_[i]->type_ == PICKUP) {
             routeNodes_[i]->related_Request_->requestStatus_ = NO_ACTION;
+            routeNodes_[i]->related_Request_->pickTime_ = MAXReachTime;
+            routeNodes_[i]->related_Request_->dropTime_ = MAXReachTime;
+        }
     }
 }
 

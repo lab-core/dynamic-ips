@@ -99,6 +99,11 @@ public:
     std::string saveISUDRoutes(int epoch, int isudIter);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
 
+    // this function set all the selected vehicles to none (partially solving the subproblems)
+    void resetVehicleSelection();
+
+    // this function determined the number of unselected vehicles
+    int getNbUnselectedVehicles();
 };
 
 

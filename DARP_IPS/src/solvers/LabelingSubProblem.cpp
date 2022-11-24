@@ -295,7 +295,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
         initialization();
 
 
-        while (nbActivated_ > 0) {
+        while (!activeNodes_.empty()) {
             // select a node to pull other labels to it
             for (auto &currentNode: nodesOrder_) {
                 sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
@@ -506,7 +506,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
         initialization();
 
 
-        while (nbActivated_ > 0) {
+        while (!activeNodes_.empty()) {
             sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
                 return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
 
@@ -756,6 +756,10 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                                 isRemoved = true;
                                 break;
                             }
+                        }
+                        else {
+                            isRemoved = true;
+                            break;
                         }
                     }
                     if (!isRemoved){

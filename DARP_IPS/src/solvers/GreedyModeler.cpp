@@ -18,6 +18,7 @@ void GreedyModeler::initialization(PInstance &PInst) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst));
     }
     greedyTime_->stop();
+    selectedVehicles_.resize(PInst->nbVehicles_,0);
 }
 
 
@@ -101,6 +102,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             solutionList_[vehicle_ID]->insertRequest(positionList[vehicle_ID], PInst->instGraph_->nodes_[pickID],
                                                      PInst->instGraph_->nodes_[dropID], requestObj->maxTravelTime_);
+            selectedVehicles_[vehicle_ID] = 1;
         }
     }
     greedyTime_->stop();

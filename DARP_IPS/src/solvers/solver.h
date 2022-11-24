@@ -26,6 +26,9 @@ public:
     double RPEpochTime_;
     double CPEpochTime_;
     double isudMIPEpochTime_;
+    int minSubSize_;
+    int maxSubSize_;
+    int avgSubSize_;
     int epoch_;
 
     std::shared_ptr<ISUDAlgorithm> isudObj_;

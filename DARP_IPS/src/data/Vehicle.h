@@ -34,6 +34,7 @@ public:
     float idleTime_;
     float score_;
     int zoneID_;
+    bool selected_;                         // this variable indicates which subProblem is selected to be solved
 
 
     // Constructor and Destructor

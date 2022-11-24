@@ -14,8 +14,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
                        bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, float vehicle_portion, int bigM, int solveTimeLimit,
-                       int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode) :
+                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, int bigM,
+                       int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
@@ -23,7 +23,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        vehicle_portion_(vehicle_portion), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
         populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
 }
 
@@ -72,6 +72,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
+    repStr << std::setw(setwLength) << "# use greedy to select vehicle portion " << " = " << greedyPortion_ << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
