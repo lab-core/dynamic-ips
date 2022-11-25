@@ -25,6 +25,8 @@ public:
 
     // Constructor
     GreedyLabel(PNode currentNode, float reachTime, int nbPassengers);
+    // this function is for reusing the previous labels
+    void setValues(PNode currentNode, float reachTime, int nbPassengers);
 };
 
 class LinkedGreedyLabels {
@@ -40,9 +42,11 @@ public:
     // Constructor
 public:
     LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst);
+    LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std::vector<PGreedyLabel> &removedLabels);
     LinkedGreedyLabels(const LinkedGreedyLabels &label);
 
     virtual ~LinkedGreedyLabels();
+    void resetLinkedGreedyLabels(std::vector<PGreedyLabel> &removedLabels);
 
     // this function find a position to insert pickup point and add drop off point at the end
     PGreedyLabel findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration) const;
@@ -53,11 +57,18 @@ public:
     bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
     bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
     PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
+    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels);
+    void findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
+                         PInsertPosition & position);
     void insertNode(PGreedyLabel &preLabel, PNode &newNode);
+    void insertNode(PGreedyLabel &preLabel, PNode &newNode, std::vector<PGreedyLabel> &removedLabels);
 
     // This function remove the Label from the list and update the data based on that
     void removeLabel(PGreedyLabel &label);
+    void removeLabel(PGreedyLabel &label, std::vector<PGreedyLabel> &removedLabels);
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
+    void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
+                       std::vector<PGreedyLabel> &removedLabels);
     // this function calculate the reachTime from a Label to a node
     static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;
 
@@ -80,6 +91,8 @@ struct insertPosition {
     float deltaLength_;
 
     // Constructor
+    insertPosition();
+
     insertPosition(PGreedyLabel prePickup, PGreedyLabel preDrop, float deltaDelay, float deltaLength);
     void updatePosition (const PGreedyLabel &prePickup, const PGreedyLabel &preDrop, float deltaDelay, float deltaLength);
 };

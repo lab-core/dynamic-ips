@@ -81,19 +81,18 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         EpochInst->updateTaskIndexLabeling();
         std::vector<PLabelingSubPro> subProSolve;
         std::vector<PLabelingSubPro> subProConst;
-        if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbNewRequests_ > 0)){
-            GreedyModel_->initialization(EpochInst);
-            GreedyModel_->solveInsertion(EpochInst);
-         //   GreedyModel_->GreedySolver(EpochInst);
+        if (EpochInst->parameters_->greedyPortion_){
+            GreedyModel_->GreedySolverFast(EpochInst);
+       //     GreedyModel_->GreedySolver(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
  //               if (vehicleObj->currentRoute_->routeSize_ - 1 - vehicleObj->onboards_.size() > 0) {
-                if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+                if ((GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0)&&(EpochInst->nbNewRequests_ > 0)) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                     vehicleObj->selected_ = true;
                 }
                 else
                     subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-       //         vehicleObj->currentRoute_->resetRoute();
+      //          vehicleObj->currentRoute_->resetRoute();
             }
             /*for (auto & routeObj : isudObj_->routeSolution_) {
                 EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
@@ -618,6 +617,8 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << isudObj_->toStringTimersTotal();
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedySolveTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedySolTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << isudObj_->toStringTimersAvg(epoch_);
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     return repStr.str();
