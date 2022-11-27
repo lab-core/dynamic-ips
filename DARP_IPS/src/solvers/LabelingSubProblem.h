@@ -23,7 +23,9 @@ public:
     int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
     int nbActivated_;
+    int maxPickup_;
     PSolverOption solverOptions_;
+    myTools::Timer *subproTime_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
 
 
@@ -33,6 +35,7 @@ public:
     LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
 
     ~LabelingSubProblem() override;
+
 
     // this function sort the list of nodes based of their dual values
     void sortNodes();
@@ -61,6 +64,6 @@ public:
     std::string toString() const;
 };
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
+void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels);
 void truncateLabelList(PNode &node, int MaxLabel);
-
 #endif //LABELINGSUBPROBLEM_H

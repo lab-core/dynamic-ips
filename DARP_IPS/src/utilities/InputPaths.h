@@ -57,6 +57,7 @@ protected:
     std::string output_instance_;
     std::string output_incDegree_RDCost_;
     std::string output_trip_;
+    std::string output_subproSize_;
 
 
     double timeOut_ = 3600;
@@ -97,12 +98,10 @@ public:
     const std::string &getOutputInstance() const;
     const std::string &getOutputIncDegreeRdCost() const;
     const std::string &getOutputEpochRunTime() const;
-
-
     const std::string &getInstanceNameOut() const;
-
     const std::string &getOutputTrip() const;
 
+    const std::string &getOutputSubproSize() const;
 
     double getTimeOut() const;
 

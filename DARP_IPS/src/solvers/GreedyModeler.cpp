@@ -21,9 +21,16 @@ GreedyModeler::~GreedyModeler() {
     delete greedyTime_;
     delete greedySolveTime_;
     delete greedySolTime_;
+    for (auto & label : removedLabels_){
+        label->child_.reset();
+        label->parent_.reset();
+        label->pair_.reset();
+    }
+    removedLabels_.clear();
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
+    selectedVehicles_.clear();
     greedyTime_->start();
     for (auto & vehicleObj : PInst->vehicles_) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst));
@@ -33,6 +40,7 @@ void GreedyModeler::initialization(PInstance &PInst) {
 }
 
 void GreedyModeler::initializationFast(PInstance &PInst) {
+    selectedVehicles_.clear();
     greedyTime_->start();
     for (auto & vehicleObj : PInst->vehicles_) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst, removedLabels_));
@@ -128,7 +136,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             solutionList_[vehicle_ID]->insertRequest(positionList[vehicle_ID], PInst->instGraph_->nodes_[pickID],
                                                      PInst->instGraph_->nodes_[dropID], requestObj->maxTravelTime_);
-            selectedVehicles_[vehicle_ID] = 1;
+            selectedVehicles_[vehicle_ID]++;
         }
     }
     greedyTime_->stop();
@@ -167,9 +175,9 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
             std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
 
             for (auto & GreedyObj : solutionList_){
-                float minWait = (*GreedyObj->Vehicle_)->departTime_ +
+                /*float minWait = (*GreedyObj->Vehicle_)->departTime_ +
                                 durationMatrix_[PInst->instGraph_->nodes_[(*GreedyObj->Vehicle_)->departID_]->locationID_]
-                                [PInst->instGraph_->nodes_[pickID]->locationID_]- requestObj->earlyPick_;
+                                [PInst->instGraph_->nodes_[pickID]->locationID_]- requestObj->earlyPick_;*/
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
                 // after arrival of each request, the vehicle positions should be updated
                 if (GreedyObj->departTime_ < requestObj->earlyPick_) {
@@ -183,21 +191,21 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
                         GreedyObj->tail_->departTime_ = requestObj->earlyPick_;
                     }
                 }
-                if (minWait <= requestObj->penalty_) {
+ //               if (minWait <= requestObj->penalty_) {
                     GreedyObj->findInsertPlace(PInst->instGraph_->nodes_[pickID],PInst->instGraph_->nodes_[dropID],
                                                requestObj->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
                     possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
-                }
-                else{
-                    possibleDelay.push_back(INFINITY);
-                }
+ //               }
+ //               else{
+//                    possibleDelay.push_back(INFINITY);
+ //               }
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->nodes_[pickID],
                                                      PInst->instGraph_->nodes_[dropID],
                                                      requestObj->maxTravelTime_, removedLabels_);
-            selectedVehicles_[vehicle_ID] = 1;
+            selectedVehicles_[vehicle_ID]++;
         }
     }
     greedyTime_->stop();

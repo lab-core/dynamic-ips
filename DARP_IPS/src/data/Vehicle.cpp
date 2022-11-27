@@ -20,8 +20,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
 //    sinkID_ = myTools::createNodeID(0, SINK);
     dual_=0;
     CPDual_ = 0;
-    bestReducedCost_ = 9999;
-    score_ = 9999;
+    bestReducedCost_ = INFINITY;
+    score_ = INFINITY;
     idleTime_ = 0;
     startTime_ = departTime;
     selected_ = false;
@@ -34,8 +34,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
 //    sinkID_ = myTools::createNodeID(0, SINK);
     dual_=0;
     CPDual_ = 0;
-    bestReducedCost_ = 9999;
-    score_ = 9999;
+    bestReducedCost_ = INFINITY;
+    score_ = INFINITY;
     idleTime_ = 0;
     startTime_ = departTime;
     selected_ = false;
@@ -66,7 +66,7 @@ void Vehicle::setCurrentRoute(PRoute &currentRoute) {
 }
 
 void Vehicle::resetBestReducedCost() {
-    bestReducedCost_ = 9999;
+    bestReducedCost_ = INFINITY;
 }
 
 

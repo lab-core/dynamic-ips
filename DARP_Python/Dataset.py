@@ -74,9 +74,10 @@ class Dataset(object):
             self.instance = self.instance.drop(columns=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
         if 'dropoff_district' in self.instance.columns:
             self.instance = self.instance.drop(columns=['dropoff_district'])
+            self.instance = self.instance.drop(columns=['pickup_district'])
         if 'pickup_latitude' in self.instance.columns:
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
-        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
+        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec']]
 
     def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -166,7 +167,9 @@ class Dataset(object):
             selected_records = self.dataset[self.dataset.pickup_district == item.cartodb_id]
             # selected_records = selected_records[selected_records.dropoff_district == item.cartodb_id]
             temp_df.append(selected_records)
+        temp_df = pd.concat(temp_df)
         self.dataset = pd.DataFrame(temp_df)
+        self.dataset = self.dataset.sort_values(by=['tpep_pickup_datetime'])
         self.update_state()
 
     def calculate_trip_per_district(self, network):

@@ -38,8 +38,10 @@ public:
     myTools::Timer *simulationTime_;
     myTools::Timer *subProblemTime_;
     myTools::Timer *preprocessTime_;
+    myTools::Timer *preprocessBuildTime_;
     Tools::LogOutput* pLogRunTimesStream_;
     Tools::LogOutput* pLogEpochSolutionStream_;
+    Tools::LogOutput* pLogEpochSubproStream_;
 
 
     solver(PInstance & mainInst, InputPaths &inputPaths);

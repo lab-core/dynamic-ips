@@ -68,6 +68,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        env_.out() << Model_ << std::endl;
         std::cout << e << std::endl;
     }
 }

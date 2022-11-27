@@ -35,6 +35,8 @@ public:
 //    std::unordered_map<unsigned int, int> incRequestToOrder_;                // order of requests in incompatibility matrix
     std::map<int, int> incVehicleToOrder_;
     int nbCoveredTasks_;
+    double maxReducedCost_;      // max threshold for the reduced costs selection in CP
+    double minReducedCost_;
 
     int isudIter_;
     double objValue_;

@@ -91,9 +91,9 @@ std::string Parameters::toString() const {
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 
-solverOption::solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
+solverOption::solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased,
                            bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy) :
-                           maxReachTime_(maxReachTime), maxPickup_(maxPickup), isTruncated_(isTruncated),
+                           maxReachTime_(maxReachTime), isTruncated_(isTruncated),
                            MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
                            isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
                            LabelingStrategy_(labelingStrategy) {}
@@ -115,9 +115,8 @@ solverOption::solverOption(PParameters &MainParams) {
     isDropPickPossible_ = MainParams->isDropPickPossible_;
 }
 
-void solverOption::updateOptions(float maxReachTime, int maxPickup) {
+void solverOption::updateOptions(float maxReachTime) {
     maxReachTime_ = maxReachTime;
-    maxPickup_ = maxPickup;
 }
 
 bool solverOption::areHeuristicsDisabled() const {

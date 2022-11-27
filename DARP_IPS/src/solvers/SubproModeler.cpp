@@ -6,7 +6,7 @@
 
 SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&vehicle) {
     subGraph_ = std::make_shared<Graph>();
-    bestReducedCost_ = 9999;
+    bestReducedCost_ = INFINITY;
     score_ = vehicle->score_;
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;

@@ -424,8 +424,7 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
         // consider last CP as dual values
         for(auto & requestObj: pInst->requests_)
             requestObj->dual_ = requestObj->CPDual_;
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = vehicleObj->CPDual_;
+        pInst->vehicles_[vehicleID]->dual_ = pInst->vehicles_[vehicleID]->CPDual_;
     }
     for (auto & routeObj : availableRoutes_[vehicleID]){
         routeObj->reducedCost_ = routeObj->totalDelay_ - pInst->vehicles_[vehicleID]->dual_;
@@ -434,9 +433,14 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
                 routeObj->reducedCost_ -= nodeObj->related_Request_->dual_;
             }
         }
-        if (routeObj->reducedCost_ < pInst->vehicles_[vehicleID]->bestReducedCost_)
+        if (routeObj->reducedCost_ < pInst->vehicles_[vehicleID]->bestReducedCost_) {
             pInst->vehicles_[vehicleID]->bestReducedCost_ = routeObj->reducedCost_;
+            if (minReducedCost_ > routeObj->reducedCost_)
+                minReducedCost_ = routeObj->reducedCost_;
+        }
     }
+    if (minReducedCost_ < 0)
+        maxReducedCost_ = ((-0.5)*minReducedCost_);
 }
 
 void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths) {
@@ -749,8 +753,14 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
 
         // update reduced costs if needed only at the start of epoch, there is another update after CP
         if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
+            minReducedCost_ = INFINITY;
+            maxReducedCost_ = INFINITY;
             for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
+            if (minReducedCost_ > 0){
+                RPTime_->stop();
+                break;
+            }
         }
         // solve RP with MIP solver
         CompPro_->fractionalZ_.clear();
@@ -769,6 +779,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
 
             CompPro_->routesToAdd_.clear();
             updateIncDegrees(pInst);
+
             if (pInst->parameters_->useMultiStage_)
                 updateRoutesToAdd(cpIncDegree_, pInst);
             else
@@ -904,15 +915,15 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;*/
         MIPReducedPro_->requestDuals_ = CompPro_->requestDuals_;
         MIPReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
-        bool findNegative = false;
+        minReducedCost_ = INFINITY;
+        maxReducedCost_ = INFINITY;
         for (auto & vehicleObj : pInst->vehicles_) {
             updateReducedCosts(pInst, vehicleObj->vehicleID_);
-            if (vehicleObj->bestReducedCost_ < 0)
-                findNegative = true;
         }
-        if (!findNegative)
+        if (minReducedCost_ > 0)
             restartAlgorithm = false;
     }
+    std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
 }
@@ -1073,7 +1084,8 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
         }
         else {
             for (int r = (int)availableRoutes_[vehicleObj->vehicleID_].size() - 1; r >= 0; --r) {
-                if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree_ <= compDegree) {
+                if ((availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree_ <= compDegree)&&
+                    (availableRoutes_[vehicleObj->vehicleID_][r]->reducedCost_ < maxReducedCost_)) {
                     if (availableRoutes_[vehicleObj->vehicleID_][r]->incompatibilityDegree_ == 0)
                         break;
                     else {

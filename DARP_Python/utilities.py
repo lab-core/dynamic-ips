@@ -63,12 +63,11 @@ def create_vehicle_dataset_zone(vehicle_file, districts, nb_per_zone):
         for i in range(nb_per_zone[count]):
             source_id = source_ids[i % len(source_ids)]
             vehicle_data.append(
-                [vehicle_id, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id,
-                 item.cartodb_id])
+                [vehicle_id, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id])
             vehicle_id = vehicle_id + 1
 
     df_vehicles = pd.DataFrame(vehicle_data,
-                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID', 'zone_ID'])
+                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID'])
 
     # save data file
     folder_name = c.VEHICLES_DIR + "manhattan-vehicles"

@@ -72,7 +72,7 @@ public:
 //-----------------------------------------------------------------------------
 struct solverOption {
     float maxReachTime_;
-    int maxPickup_;
+ //   int maxPickup_;
 
     bool isTruncated_;
     bool isDominanceReleased_;
@@ -82,11 +82,11 @@ struct solverOption {
     int MaxLabel_;
 
     // Constructor and Destructor
-    solverOption(float maxReachTime, int maxPickup, bool isTruncated, int maxLabel, bool isDominanceReleased,
+    solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased,
                  bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
     explicit solverOption(PParameters &MainParams);
-    void updateOptions(float maxReachTime, int maxPickup);
+    void updateOptions(float maxReachTime);
 
     virtual ~solverOption();
     void disableHeuristics();

@@ -30,7 +30,7 @@ InputPaths::InputPaths(const std::string& datadir, const std::string& instFolder
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = datadir + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_5.txt";
+    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_4.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
@@ -66,6 +66,7 @@ const std::string &InputPaths::getOutputIncDegreeRdCost() const {return output_i
 const std::string &InputPaths::getOutputEpochRunTime() const {return output_epochRunTime_;}
 const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
 const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
+const std::string &InputPaths::getOutputSubproSize() const {return output_subproSize_;}
 double InputPaths::getTimeOut() const {return timeOut_; }
 
 // setters
@@ -112,6 +113,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
     output_epochRunTime_ = outputDir_ + "epochRuntime_" + instanceName_ + ".csv";
     output_epochResults_ = outputDir_ + "epochResults_" + instanceName_ + ".csv";
+    output_subproSize_ = outputDir_ + "epochSubpro_" + instanceName_ + ".csv";
 
     // create output files for epoch results
  //   std::ofstream myFile;
@@ -149,6 +151,8 @@ void InputPaths::makeInstanceOutput(std::string instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
+
 
 
 

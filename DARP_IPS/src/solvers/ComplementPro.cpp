@@ -52,6 +52,10 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
         numVar.setName(newRoute->name_);
         routeVar.add(numVar);
         IncRoute_.push_back(newRoute);
+        if (routeVar.getSize() != IncRoute_.size()){
+            std::cout << "Modelling Problem -> Incompatible routeVar array" << std::endl;
+            throw myTools::myException("The input file was not opened properly!", __LINE__);
+        }
     }
 
 }
@@ -256,6 +260,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
 
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
+//        env_.out() << Model_<< std::endl;
         std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
     }
@@ -376,8 +381,6 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     if (requestObj->requestStatus_ == NO_ACTION)
                         nbRequests++;
                 }
-                std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-                          << " are selected to served." << std::endl;
             }
             else
             {

@@ -201,7 +201,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         for (auto & nodeID: vehicleObj->onboards_) {
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
         }
-        vehicleObj->score_ = 9999;
+        vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
 
@@ -239,8 +239,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
 
-            /*// calculate vehicle scores
-            for (auto & vehicleObj: mainInst->vehicles_){
+            // calculate vehicle scores
+            /*for (auto & vehicleObj: mainInst->vehicles_){
                 if (vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
                 [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime) < vehicleObj->score_)
                     vehicleObj->score_ = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
@@ -262,18 +262,18 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             }
         }
     }
-    for (auto & requestObj : requests_){
+    /*for (auto & requestObj : requests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
         int vehicleID;
-        float score = 9999;
+        float score = INFINITY;
         for (auto & vehicleObj: mainInst->vehicles_){
-            if (vehicleObj->score_ == 9999){
+            if (vehicleObj->score_ == INFINITY){
                 float earliest_pick = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
                 [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime);
                 float minDist = 0;
                 if (!vehicleObj->onboards_.empty()){
-                    minDist = 9999;
+                    minDist = INFINITY;
                     for (auto & onboardID : vehicleObj->onboards_){
                         if (durationMatrix_[mainInst->instGraph_->nodes_[pickID]->locationID_]
                             [mainInst->instGraph_->nodes_[onboardID]->locationID_] < minDist)
@@ -292,7 +292,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             }
         }
         mainInst->vehicles_[vehicleID]->score_ = score;
-    }
+    }*/
     updateRequestOrder();
 }
 
