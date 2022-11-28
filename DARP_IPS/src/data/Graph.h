@@ -27,8 +27,8 @@ class Node {
 public:
     string nodeID_;                     // node ID
     PRequest related_Request_;          // pointer to its request
-    string pairNodeID_;                 // related pickup/drop off
-    PNode *pairNode_;
+//    string pairNodeID_;                 // related pickup/drop off
+    PNode pairNode_;
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
     NodeType initialType_;              // initial type (the type maybe change to source)
@@ -52,7 +52,7 @@ public:
     vector2D<PLabel> generatedLabel_;
 
     // Constructor and Destructor
-    Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID);
+    Node(string nodeId, PRequest &relatedRequest, NodeType type);
     Node(int locationID, NodeType type);
     Node(int locationID, NodeType type, int vehicleID);
     Node(const PNode& oldNode);
@@ -86,6 +86,7 @@ public:
 
     // function for updating the graph and adding new request
     void addRequestToGraph(PRequest &newRequest);
+    void addRequestToMainGraph(PNode & pickNode, PNode & dropNode);
 //    void addNewRequestToGraph(PInstance &pInstance);
 };
 

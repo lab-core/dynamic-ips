@@ -58,7 +58,7 @@ public:
     bool isExtendFeasible(PNode &outNode, int maxPickUp);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
-    bool isEliminated(PGraph &graph);
+    bool isEliminated();
     // this function check whether the label is originated from a dominated parent or not
     static bool haveDominatedParent() ;
     PRoute labelToRoute(PVehicle &vehicle);

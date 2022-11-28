@@ -30,7 +30,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 
     /*int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
     int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];*/
-    int sourceIndex = subGraph_->nodes_[(*Vehicle_)->departID_]->nodeIndex_;
+    int sourceIndex = (*Vehicle_)->departNode_->nodeIndex_;
     int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
@@ -315,14 +315,14 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                 std::cout << "new object final: " << newObj << std::endl;*/
 
                 // creating the route
-                int sourceIndex = subGraph_->nodes_[(*Vehicle_)->departID_]->nodeIndex_;
+                int sourceIndex = (*Vehicle_)->departNode_->nodeIndex_;
                 int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
                 PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
 
                 // adding the source node of the route
                 newRoute->reducedCost_ = SubProbCplex_.getObjValue(s);
-                newRoute->addSource(subGraph_->nodes_[(*Vehicle_)->departID_],
-                                                              (*Vehicle_)->departTime_, (*Vehicle_)->numPassengers_);
+                newRoute->addSource((*Vehicle_)->departNode_,(*Vehicle_)->departTime_,
+                                    (*Vehicle_)->numPassengers_);
 
                 int currentNodeIndex = sourceIndex;
                 while (currentNodeIndex != sinkIndex) {

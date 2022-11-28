@@ -130,8 +130,8 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
                 // creating an empty route
                 PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
 
-                newRoute->addSource(pInst->instGraph_->nodes_[pInst->vehicles_[v]->departID_],
-                                    pInst->vehicles_[v]->departTime_, pInst->vehicles_[v]->numPassengers_);
+                newRoute->addSource(pInst->vehicles_[v]->departNode_,pInst->vehicles_[v]->departTime_,
+                                    pInst->vehicles_[v]->numPassengers_);
                 static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
                 for (const auto t: nodeTypesInOrder) {
                     std::string ID = myTools::createNodeID(pInst->requests_[i]->getRequestId(), t);

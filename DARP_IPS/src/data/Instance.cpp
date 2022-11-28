@@ -34,6 +34,7 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbOnboards_ = mainInst.nbOnboards_;
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
+    sinkNodes_ = mainInst.sinkNodes_;
 }
 
 Instance::Instance(const Instance &mainInst, int zoneID) : name_(mainInst.name_){
@@ -51,6 +52,7 @@ Instance::Instance(const Instance &mainInst, int zoneID) : name_(mainInst.name_)
     nbOnboards_ = 0;
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
+    sinkNodes_ = mainInst.sinkNodes_;
 
 }
 
@@ -65,6 +67,9 @@ void Instance::resetInstance() {
     orderToRequest_.clear();
     instGraph_->nodes_.clear();
     instGraph_->intToNodeID_.clear();
+    pickNodes_.clear();
+    dropNodes_.clear();
+    sourceNodes_.clear();
 }
 
 /*Instance::~Instance() {
@@ -194,8 +199,10 @@ std::string Instance::solutionToString() {
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
 
     for (auto & vehicleObj : mainInst->vehicles_){
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+        instGraph_->addNewNode(vehicleObj->departNode_);
+ //       instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+        instGraph_->addNewNode(mainInst->sinkNodes_[vehicleObj->vehicleID_]);
+        sourceNodes_.push_back(vehicleObj->departNode_);
 
         // adding onboard nodes to the graph
         for (auto & nodeID: vehicleObj->onboards_) {
@@ -213,7 +220,9 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP){
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                     instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+                    instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+                    pickNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+                    dropNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                 }
             }
         }
@@ -222,11 +231,14 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     // add unscheduled requests
     for (auto & requestObj: penaltyRequests) {
         addRequest(requestObj);
-
-        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+        instGraph_->addNewNode(mainInst->pickNodes_[requestObj->getRequestId()]);
+        instGraph_->addNewNode(mainInst->dropNodes_[requestObj->getRequestId()]);
+        pickNodes_.push_back(mainInst->pickNodes_[requestObj->getRequestId()]);
+        dropNodes_.push_back(mainInst->dropNodes_[requestObj->getRequestId()]);
+        /*std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+        instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
     }
 
     // add new requests
@@ -234,10 +246,14 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + elapsedTime ) {
             nbNewRequests_++;
             addRequest(mainInst->requests_[i]);
-            std::string pickID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
+            instGraph_->addNewNode(mainInst->pickNodes_[i]);
+            instGraph_->addNewNode(mainInst->dropNodes_[i]);
+            pickNodes_.push_back(mainInst->pickNodes_[i]);
+            dropNodes_.push_back(mainInst->dropNodes_[i]);
+            /*std::string pickID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
             std::string dropID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
 
             // calculate vehicle scores
             /*for (auto & vehicleObj: mainInst->vehicles_){
@@ -250,13 +266,18 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         else
             break;
     }
+    for (auto & vehicleObj : mainInst->vehicles_){
+        // adding onboard nodes to the graph
+        for (auto & nodeID: vehicleObj->onboards_) {
+            dropNodes_.push_back(instGraph_->nodes_[nodeID]);
+        }
+    }
     // calculate vehicle scores
     for (auto & vehicleObj: mainInst->vehicles_){
         if (vehicleObj->onboards_.empty()){
-            for (auto & requestObj : requests_){
-                std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-                float earliestPick = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
-                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime);
+            for (auto & nodeObj : pickNodes_){
+                float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
+                [nodeObj->locationID_] - (simulationStartTime_ + elapsedTime);
                 if (earliestPick < vehicleObj->score_)
                     vehicleObj->score_ = earliestPick;
             }
@@ -298,7 +319,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
 
 void Instance::buildStaticData(const PInstance &mainInst) {
     for (auto & vehicleObj : mainInst->vehicles_){
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
+        instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
     }
     nbNewRequests_ = 0;
@@ -324,7 +345,7 @@ void Instance::buildStaticData(const PInstance &mainInst) {
 
 void Instance::buildDataZone(const PInstance &mainInst, int zoneID) {
     for (auto & vehicleObj : vehicles_){
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->departID_]);
+        instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
     }
     nbNewRequests_ = 0;
@@ -613,7 +634,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
         myFile << std::setw(10) << vehicleObj->capacity_ ;
         myFile << std::setw(10) << vehicleObj->departTime_ ;
         myFile << std::setw(10) << vehicleObj->endTime_ ;
-        myFile << std::setw(setwSize) << instGraph_->nodes_[vehicleObj->departID_]->locationID_ ;
+        myFile << std::setw(setwSize) << vehicleObj->departNode_->locationID_ ;
         myFile << std::setw(setwSize) << instGraph_->nodes_[vehicleObj->sinkID_]->locationID_ << "\n";
     }
     myFile.close();

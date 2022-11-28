@@ -110,12 +110,12 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
 //                file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(
-                        departID, SOURCE, vehicleID));
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(
-                        sinkID, SINK, vehicleID));
+                pInstance->sourceNodes_.emplace_back(std::make_shared<Node>(departID, SOURCE, vehicleID));
+                pInstance->instGraph_->addNewNode(pInstance->sourceNodes_.back());
+                pInstance->sinkNodes_.emplace_back(std::make_shared<Node>(sinkID, SINK, vehicleID));
+                pInstance->instGraph_->addNewNode(pInstance->sinkNodes_.back());
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
-                                                                            endTime, myTools::createSourceID(vehicleID, SOURCE),
+                                                                            endTime, pInstance->sourceNodes_.back(),
                                                                             myTools::createSourceID(vehicleID, SINK),zoneID));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
             }
@@ -170,15 +170,17 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->requests_.back()->vehicleID_ = vehicleID;
 
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
-                pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
-        //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
+                std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                pInstance->pickNodes_.emplace_back(std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP));
+                pInstance->dropNodes_.emplace_back(std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF));
+                pInstance->instGraph_->addRequestToMainGraph(pInstance->pickNodes_.back(), pInstance->dropNodes_.back());
                 pInstance->vehicles_[vehicleID]->onboards_.push_back(dropID);
                 pInstance->vehicles_[vehicleID]->numPassengers_+= pInstance->requests_.back()->nbPassengers_;
-                pInstance->instGraph_->nodes_[dropID]->nodeStatus_ = PLANNED;
-                (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->nodeStatus_ = DONE;
-                (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->reachTime_ = pickTime;
-                (*pInstance->instGraph_->nodes_[dropID]->pairNode_)->departTime_ = pickTime;
+                pInstance->dropNodes_.back()->nodeStatus_ = PLANNED;
+                pInstance->pickNodes_.back()->nodeStatus_ = DONE;
+                pInstance->pickNodes_.back()->reachTime_ = pickTime;
+                pInstance->pickNodes_.back()->departTime_ = pickTime;
             }
         }
     }
@@ -225,7 +227,11 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime, zoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
-                pInstance->instGraph_->addRequestToGraph(pInstance->requests_.back());
+                std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+                std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                pInstance->pickNodes_.emplace_back(std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP));
+                pInstance->dropNodes_.emplace_back(std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF));
+                pInstance->instGraph_->addRequestToMainGraph(pInstance->pickNodes_.back(), pInstance->dropNodes_.back());
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
                 pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
             }

@@ -14,9 +14,9 @@
 using std::to_string;
 // Constructor and Destructor
 
-Node::Node(string nodeId, PRequest &relatedRequest, NodeType type, string pairNodeID) : nodeID_(std::move(nodeId)),
+Node::Node(string nodeId, PRequest &relatedRequest, NodeType type) : nodeID_(std::move(nodeId)),
                                                                                         related_Request_(relatedRequest),
-                                                                                        type_(type), pairNodeID_(std::move(pairNodeID)) {
+                                                                                        type_(type) {
     reachTime_ = 0;
     departTime_ = 0;
     deltaTime_ = relatedRequest->deltaTime_;
@@ -85,7 +85,7 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
 Node::Node(const PNode &oldNode) {
     nodeID_ = oldNode->nodeID_;
     related_Request_ = oldNode->related_Request_;
-    pairNodeID_ = oldNode->pairNodeID_;
+//    pairNodeID_ = oldNode->pairNodeID_;
 
     locationID_ = oldNode->locationID_;
     type_ = oldNode->type_;
@@ -121,7 +121,9 @@ unsigned int Node::getLabelListIndex(PLabel &newLabel) {
 
 
 
-Node::~Node() = default;
+Node::~Node(){
+    pairNode_.reset();
+};
 
 
 //-----------------------------------------------------------------------------
@@ -158,10 +160,18 @@ void Graph::addRequestToGraph(PRequest &newRequest) {
     std::string pickID = myTools::createNodeID(newRequest->getRequestId(), PICKUP);
     std::string dropID = myTools::createNodeID(newRequest->getRequestId(), DROPOFF);
 
-    addNewNode(std::make_shared<Node>(pickID, newRequest, PICKUP, dropID));
-    addNewNode(std::make_shared<Node>(dropID, newRequest, DROPOFF, pickID));
-    nodes_[pickID]->pairNode_ = & nodes_[dropID];
-    nodes_[dropID]->pairNode_ = & nodes_[pickID];
+    addNewNode(std::make_shared<Node>(pickID, newRequest, PICKUP));
+    addNewNode(std::make_shared<Node>(dropID, newRequest, DROPOFF));
+    nodes_[pickID]->pairNode_ = nodes_[dropID];
+    nodes_[dropID]->pairNode_ = nodes_[pickID];
+}
+
+void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
+    // create pickup node and drop off nodes
+    addNewNode(pickNode);
+    addNewNode(dropNode);
+    nodes_[pickNode->nodeID_]->pairNode_ = nodes_[dropNode->nodeID_];
+    nodes_[dropNode->nodeID_]->pairNode_ = nodes_[pickNode->nodeID_];
 }
 
 /*void Graph::addNewRequestToGraph(PInstance &pInstance) {

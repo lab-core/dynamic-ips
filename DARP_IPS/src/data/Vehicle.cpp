@@ -12,9 +12,9 @@
 //-----------------------------------------------------------------------------
 
 // Constructor and Destructor
-Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
+Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  std::string sinkID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                                                   endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)){
+                                                   endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)){
     numPassengers_ = 0;
 //    departID_ = myTools::createNodeID(0, SOURCE);
 //    sinkID_ = myTools::createNodeID(0, SINK);
@@ -26,9 +26,9 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, s
     startTime_ = departTime;
     selected_ = false;
 }
-Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID,
+Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                 endTime_(endTime), departID_(std::move(departID)), sinkID_(std::move(sinkID)) , zoneID_(zoneID){
+                 endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)) , zoneID_(zoneID){
     numPassengers_ = 0;
 //    departID_ = myTools::createNodeID(0, SOURCE);
 //    sinkID_ = myTools::createNodeID(0, SINK);
@@ -52,7 +52,7 @@ void Vehicle::setDepartTime(float departTime) {
 void Vehicle::setEmptyRoute(PInstance &pInst) {
  //   emptyRoute_.reset();
     emptyRoute_ = std::make_shared<Route>(vehicleID_);
-    emptyRoute_->addSource(pInst->instGraph_->nodes_[departID_], departTime_, numPassengers_);
+    emptyRoute_->addSource(departNode_, departTime_, numPassengers_);
 
     if (!onboards_.empty()) {
         for (auto &nodeID: onboards_) {
@@ -81,7 +81,7 @@ std::string Vehicle::toString() const {
     repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- END_TIME (seconds)" << " : " << endTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_ONBOARDS" << " : " << numPassengers_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DEPART_NODE_ID" << " : " << departID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_NODE_ID" << " : " << departNode_->nodeID_ << std::endl;
     repStr << "#" << std::endl;
     return repStr.str();
 }
@@ -140,7 +140,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                         currentRoute_->routeNodes_[i]->departTime_ = departTime_;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
-                    departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
+                    departNode_ =  currentRoute_->routeNodes_[i];
                     currentRoute_->routeNodes_[i]->type_ = SOURCE;
                     breakIndex = i;
                     break;
@@ -218,7 +218,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                         currentRoute_->routeNodes_[i]->departTime_ = departTime_;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
-                    departID_ =  currentRoute_->routeNodes_[i]->nodeID_;
+                    departNode_ =  currentRoute_->routeNodes_[i];
                     currentRoute_->routeNodes_[i]->type_ = SOURCE;
                     breakIndex = i;
                     break;

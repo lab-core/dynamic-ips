@@ -3,27 +3,27 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 5
+epochLength = 2
 penaltyL = 30
 committedTime = 10
 nbThreads = 8
 InitialDual = 1
 mainAlgorithm = 3
 addOneRequestColumn = 0
-solutionMode = 2
+solutionMode = 1
 
 # ISUD PARAMETERS
 #
 warmStart = 1
 MIP_maxIncDegree = 4
 CP_IncDegree = 14
-useMultiStage = 1
+useMultiStage = 0
 minImp = 0.0025
 useZoom = 0
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
+isTruncated = 0
 MaxLabel = 25
 isDominanceReleased = 1
 isSuccessorsLimited = 0
@@ -31,7 +31,8 @@ isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 1
-Vehicle_portion = 1
+Vehicle_portion = 0.1
+Greedy_portion = 1
 
 # CPLEX PARAMETERS
 #

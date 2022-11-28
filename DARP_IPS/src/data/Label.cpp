@@ -126,7 +126,7 @@ void Label:: extend(PNode &outNode) {
     else if (outNode->type_ == PICKUP){
  //       extendCheck_.insert(outNode->nodeID_);
 //        openNodes_.insert(*outNode->pairNode_);
-        openNode_.push_back(*outNode->pairNode_);
+        openNode_.push_back(outNode->pairNode_);
  //       completedRequests_.insert(outNode->related_Request_);
  //       completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
  //       completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
@@ -244,7 +244,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
-bool Label::isEliminated(PGraph &graph) {
+bool Label::isEliminated() {
     /*for (auto & nodeObj: openNodes_) {
         float travelDuration = passedTime_ - openReachTime_[nodeObj->nodeID_] + (*currentNode_)->deltaTime_ +
                                durationMatrix_[(*currentNode_)->locationID_][nodeObj->locationID_];
@@ -333,7 +333,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
 PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
-    newRoute->addSource(pInst->instGraph_->nodes_[pathNodes_[0]->nodeID_], vehicle->departTime_, vehicle->numPassengers_);
+    newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < pathNodes_.size()-1; ++i) {
         newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]->nodeID_]);
     }

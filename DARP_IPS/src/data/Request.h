@@ -45,6 +45,12 @@ public:
     int taskIncIndex_;
     int zoneID_;
 
+    int pickIndex_;
+    int dropIndex_;
+
+    int subPickIndex_;
+    int subDropIndex_;
+
     // Constructor and Destructor
     Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime);
     Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int zoneID);

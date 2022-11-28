@@ -25,6 +25,7 @@ public:
     double isudEpochTime_;
     double RPEpochTime_;
     double CPEpochTime_;
+    double GreedyTime_;
     double isudMIPEpochTime_;
     int minSubSize_;
     int maxSubSize_;

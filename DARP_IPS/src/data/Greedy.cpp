@@ -29,22 +29,22 @@ void GreedyLabel::setValues(PNode currentNode, float reachTime, int nbPassengers
 
 
 LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Vehicle_(&vehicle)  {
-    source_ = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_], vehicle->departTime_, vehicle->numPassengers_);
+    source_ = std::make_shared<GreedyLabel>((*Vehicle_)->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     head_ = source_;
     tail_ = source_;
     totalDelay_ = 0;
     idleTime_ = 0;
     departTime_ = vehicle->departTime_;
     for (auto &nodeID: (*Vehicle_)->onboards_) {
-        float dropTime = labelToNodeReachTime(tail_, pInst->instGraph_->nodes_[nodeID]);
-        PGreedyLabel newDropLabel = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[nodeID], dropTime,
+        PNode onboardNode = pInst->instGraph_->nodes_[nodeID];
+        float dropTime = labelToNodeReachTime(tail_, onboardNode);
+        PGreedyLabel newDropLabel = std::make_shared<GreedyLabel>(onboardNode, dropTime,
                                                                   tail_->nbPassengers_ +
-                                                                  pInst->instGraph_->nodes_[nodeID]->nbPassengers_);
+                                                                  onboardNode->nbPassengers_);
         newDropLabel->parent_ = tail_;
         tail_->child_ = newDropLabel;
-        newDropLabel->travelResource_ = pInst->instGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
-                dropTime + pInst->instGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
-                pInst->instGraph_->nodes_[nodeID]->deltaTime_;
+        newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
+                onboardNode->related_Request_->pickTime_ + onboardNode->deltaTime_;
 
         tail_ = newDropLabel;
     }
@@ -53,13 +53,13 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Ve
 LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std::vector<PGreedyLabel> &removedLabels) :
     Vehicle_(&vehicle) {
     if (removedLabels.empty())
-        source_ = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                                            vehicle->departTime_,vehicle->numPassengers_);
+        source_ = std::make_shared<GreedyLabel>((*Vehicle_)->departNode_,vehicle->departTime_,
+                                                vehicle->numPassengers_);
     else {
         source_ = removedLabels.back();
         removedLabels.pop_back();
-        source_->setValues(pInst->instGraph_->nodes_[(*Vehicle_)->departID_],
-                           vehicle->departTime_,vehicle->numPassengers_);
+        source_->setValues((*Vehicle_)->departNode_,vehicle->departTime_,
+                           vehicle->numPassengers_);
     }
 
     head_ = source_;
@@ -68,25 +68,23 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std:
     idleTime_ = 0;
     departTime_ = vehicle->departTime_;
     for (auto &nodeID: (*Vehicle_)->onboards_) {
-        float dropTime = labelToNodeReachTime(tail_, pInst->instGraph_->nodes_[nodeID]);
+        PNode onboardNode = pInst->instGraph_->nodes_[nodeID];
+        float dropTime = labelToNodeReachTime(tail_, onboardNode);
         PGreedyLabel newDropLabel;
         if (removedLabels.empty()) {
-            newDropLabel = std::make_shared<GreedyLabel>(pInst->instGraph_->nodes_[nodeID], dropTime,
-                                                                      tail_->nbPassengers_ +
-                                                                      pInst->instGraph_->nodes_[nodeID]->nbPassengers_);
+            newDropLabel = std::make_shared<GreedyLabel>(onboardNode, dropTime,
+                                                         tail_->nbPassengers_ + onboardNode->nbPassengers_);
         }
         else {
             newDropLabel = removedLabels.back();
             removedLabels.pop_back();
-            newDropLabel->setValues(pInst->instGraph_->nodes_[nodeID], dropTime,
-                                    tail_->nbPassengers_ +
-                                    pInst->instGraph_->nodes_[nodeID]->nbPassengers_);
+            newDropLabel->setValues(onboardNode, dropTime,tail_->nbPassengers_ +
+                                    onboardNode->nbPassengers_);
         }
         newDropLabel->parent_ = tail_;
         tail_->child_ = newDropLabel;
-        newDropLabel->travelResource_ = pInst->instGraph_->nodes_[nodeID]->related_Request_->maxTravelTime_ -
-                                        dropTime + pInst->instGraph_->nodes_[nodeID]->related_Request_->pickTime_ +
-                                        pInst->instGraph_->nodes_[nodeID]->deltaTime_;
+        newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
+                onboardNode->related_Request_->pickTime_ + onboardNode->deltaTime_;
 
         tail_ = newDropLabel;
     }

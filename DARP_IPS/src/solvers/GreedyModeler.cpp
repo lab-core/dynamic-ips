@@ -167,12 +167,12 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
     greedySolveTime_->start();
     greedyTime_->start();
     std::vector<float> possibleDelay;
-    for (auto & requestObj : PInst->requests_) {
-        if (requestObj->requestStatus_ == NO_ACTION) {
+    for (int i = 0; i < PInst->requests_.size(); i++) {
+        if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
             possibleDelay.clear();
 
-            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
+            std::string pickID = myTools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
+            std::string dropID = myTools::createNodeID(PInst->requests_[i]->getRequestId(), DROPOFF);
 
             for (auto & GreedyObj : solutionList_){
                 /*float minWait = (*GreedyObj->Vehicle_)->departTime_ +
@@ -180,20 +180,20 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
                                 [PInst->instGraph_->nodes_[pickID]->locationID_]- requestObj->earlyPick_;*/
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
                 // after arrival of each request, the vehicle positions should be updated
-                if (GreedyObj->departTime_ < requestObj->earlyPick_) {
-                    while ((GreedyObj->head_->child_ != nullptr) && (GreedyObj->departTime_ < requestObj->earlyPick_)) {
+                if (GreedyObj->departTime_ < PInst->requests_[i]->earlyPick_) {
+                    while ((GreedyObj->head_->child_ != nullptr) && (GreedyObj->departTime_ < PInst->requests_[i]->earlyPick_)) {
                         GreedyObj->head_ = GreedyObj->head_->child_;
                         GreedyObj->departTime_ = GreedyObj->head_->reachTime_ + GreedyObj->head_->currentNode_->deltaTime_;
                     }
-                    if (GreedyObj->departTime_ < requestObj->earlyPick_) {
-                        GreedyObj->idleTime_ += requestObj->earlyPick_ - GreedyObj->departTime_;
-                        GreedyObj->departTime_ = requestObj->earlyPick_;
-                        GreedyObj->tail_->departTime_ = requestObj->earlyPick_;
+                    if (GreedyObj->departTime_ < PInst->requests_[i]->earlyPick_) {
+                        GreedyObj->idleTime_ += PInst->requests_[i]->earlyPick_ - GreedyObj->departTime_;
+                        GreedyObj->departTime_ = PInst->requests_[i]->earlyPick_;
+                        GreedyObj->tail_->departTime_ = PInst->requests_[i]->earlyPick_;
                     }
                 }
  //               if (minWait <= requestObj->penalty_) {
-                    GreedyObj->findInsertPlace(PInst->instGraph_->nodes_[pickID],PInst->instGraph_->nodes_[dropID],
-                                               requestObj->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
+                    GreedyObj->findInsertPlace(PInst->pickNodes_[i],PInst->dropNodes_[i],
+                                               PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
                     possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
  //               }
@@ -202,9 +202,8 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
  //               }
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->nodes_[pickID],
-                                                     PInst->instGraph_->nodes_[dropID],
-                                                     requestObj->maxTravelTime_, removedLabels_);
+            solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->pickNodes_[i],
+                                                     PInst->dropNodes_[i],PInst->requests_[i]->maxTravelTime_, removedLabels_);
             selectedVehicles_[vehicle_ID]++;
         }
     }

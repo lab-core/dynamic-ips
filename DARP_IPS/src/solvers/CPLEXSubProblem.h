@@ -27,6 +27,8 @@ public:
     IloNumVarArray U;
     IloNumVarArray W;
 
+    PGraph subGraph_;
+
 
     // Constructor and Destructor
     explicit CPLEXSubProblem(PVehicle &vehicle);

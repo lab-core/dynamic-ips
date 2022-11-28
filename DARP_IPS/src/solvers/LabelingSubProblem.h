@@ -28,8 +28,7 @@ public:
     myTools::Timer *subproTime_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
 
-
-    std::vector<PNode> nodesOrder_;
+//    std::vector<PNode> nodesOrder_;
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);

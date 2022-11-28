@@ -23,7 +23,8 @@ public:
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
 //    std::vector<PRoute> generatedRoutes_;   // list of generated routes
-    std::string departID_;
+    PNode departNode_;
+//    std::string departID_;
     std::string sinkID_;
     PRoute currentRoute_;
     PRoute solutionRoute_;
@@ -38,8 +39,8 @@ public:
 
 
     // Constructor and Destructor
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID, std::string sinkID);
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, std::string departID, std::string sinkID, int zoneID);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, std::string sinkID);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, std::string sinkID, int zoneID);
 
     virtual ~Vehicle();
 
