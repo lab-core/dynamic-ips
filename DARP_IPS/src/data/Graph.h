@@ -28,7 +28,7 @@ public:
     string nodeID_;                     // node ID
     PRequest related_Request_;          // pointer to its request
 //    string pairNodeID_;                 // related pickup/drop off
-    PNode pairNode_;
+    PNode *pairNode_;
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
     NodeType initialType_;              // initial type (the type maybe change to source)

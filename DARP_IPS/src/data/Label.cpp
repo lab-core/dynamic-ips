@@ -126,7 +126,7 @@ void Label:: extend(PNode &outNode) {
     else if (outNode->type_ == PICKUP){
  //       extendCheck_.insert(outNode->nodeID_);
 //        openNodes_.insert(*outNode->pairNode_);
-        openNode_.push_back(outNode->pairNode_);
+        openNode_.push_back(*outNode->pairNode_);
  //       completedRequests_.insert(outNode->related_Request_);
  //       completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
  //       completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;

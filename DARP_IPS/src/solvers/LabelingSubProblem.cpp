@@ -19,10 +19,13 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     nbEliminated_ = 0;
     nbGenerated_ = 0;
     nbActivated_ = 0;
+    maxPickup_ = 2;
     subproTime_ = new myTools::Timer(); subproTime_->init();
+    subproRouteTime_ = new myTools::Timer(); subproRouteTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
     delete subproTime_;
+    delete subproRouteTime_;
 }
 
 // this function sort the list of nodes based of their dual values
@@ -667,6 +670,7 @@ void LabelingSubProblem::solveDynamic() {
 }
 
 void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes) {
+    subproTime_->start();
     nbActivated_ = 0;
     dominatedLabels_.clear();
     // clear active lists
@@ -676,7 +680,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
         nodeObj.second->nbActiveLabels_ = 0;
         nodeObj.second->generatedLabel_.clear();
         // if the length of the route is not limited, this command should be changed
-        nodeObj.second->generatedLabel_.resize(maxPickup_ + 1);
+        nodeObj.second->generatedLabel_.resize(10);
     }
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, departNode_);
@@ -749,6 +753,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
             }
         }
     }
+    subproTime_->stop();
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes) {
@@ -769,6 +774,7 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
+    subproRouteTime_->start();
 //    availableRoutes.reserve(subGraph_->nodes_[vehicle->sinkID_]->activeLabels_.size());
     for (auto & labelObj : sinkNode_->activeLabels_) {
         //      if (labelObj->reducedCost_ - vehicle->dual_ <= 0) {
@@ -776,6 +782,7 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
 //        generatedRoutes.insert(std::pair <std::string , PRoute> (availableRoutes.back()->name_ , availableRoutes.back()));
         //       }
     }
+    subproRouteTime_->stop();
 }
 
 std::string LabelingSubProblem::toString() const {

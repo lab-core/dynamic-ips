@@ -34,7 +34,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
 
     pLogEpochSubproStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
-    (*pLogEpochSubproStream_) << "Epoch, vehicleID, nbRequests, nbNodes, maxPick, runtime" << std::endl;
+    (*pLogEpochSubproStream_) << "Epoch, vehicleID, nbRequests, nbNodes, maxPick, solveTime, RouteTime" << std::endl;
 }
 
 solver::~solver() {
@@ -98,15 +98,16 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                     vehicleObj->selected_ = true;
-                    subProSolve.back()->maxPickup_ = 2;
+                    subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];
                     /*if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] < 2)
                         subProSolve.back()->maxPickup_ = 2;
                     else if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 3)
                         subProSolve.back()->maxPickup_ = 3;
                     else
-                        *//*subProSolve.back()->maxPickup_ = std::min(GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_],
-                                                                  vehicleObj->capacity_);*//*
-                        subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];*/
+                        subProSolve.back()->maxPickup_ = std::min(GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_],
+                                                                  vehicleObj->capacity_);*/
+        //            if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] >= 3)
+        //                subProSolve.back()->maxPickup_ = 3;
                 }
                 else
                     subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
@@ -155,7 +156,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             return lhs->maxPickup_ > rhs->maxPickup_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
-                subProblem->maxPickup_ = 2;
                 subProblem->initSubGraph2(EpochInst);
                 subProblem->solveDynamic();
 
@@ -170,21 +170,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             });
             pPool->run(job);
         }
-        std::stringstream repStr;
-        for (auto & subProblem : subProSolve) {
-            if (maxSubSize_ < subProblem->nbNodes_)
-                maxSubSize_ = subProblem->nbNodes_;
-            if (minSubSize_ > subProblem->nbNodes_)
-                minSubSize_ = subProblem->nbNodes_;
-            avgSubSize_ += subProblem->nbNodes_;
-            repStr << epoch_ << ",";
-            repStr << (*subProblem->Vehicle_)->vehicleID_ << ",";
-            repStr << subProblem->subRequests_.size() << ",";
-            repStr << subProblem->nbNodes_-2 << ",";
-            repStr << subProblem->maxPickup_ << ",";
-            repStr << subProblem->subproTime_->dSinceInit().count() << "\n";
-        }
-        (*pLogEpochSubproStream_) << repStr.str();
         pPool->wait();
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
@@ -204,6 +189,22 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
+        std::stringstream repStr;
+        for (auto & subProblem : subProSolve) {
+            if (maxSubSize_ < subProblem->nbNodes_)
+                maxSubSize_ = subProblem->nbNodes_;
+            if (minSubSize_ > subProblem->nbNodes_)
+                minSubSize_ = subProblem->nbNodes_;
+            avgSubSize_ += subProblem->nbNodes_;
+            repStr << epoch_ << ",";
+            repStr << (*subProblem->Vehicle_)->vehicleID_ << ",";
+            repStr << subProblem->subRequests_.size() << ",";
+            repStr << subProblem->nbNodes_-2 << ",";
+            repStr << subProblem->maxPickup_ << ",";
+            repStr << subProblem->subproTime_->dSinceInit().count() << ",";
+            repStr << subProblem->subproRouteTime_->dSinceInit().count() << "\n";
+        }
+        (*pLogEpochSubproStream_) << repStr.str();
         /*std::cout << "# ==============================================================" << std::endl;
         std::cout << "# TIME SPENT ON SOLVING SUBPROBLEMS =";
         std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;

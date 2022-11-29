@@ -925,6 +925,8 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
     }
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    for (auto & requestObj : zSolution_)
+        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
     isudTime_->stop();
 }
 void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {

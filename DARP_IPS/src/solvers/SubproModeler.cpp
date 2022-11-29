@@ -14,16 +14,10 @@ SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&vehicle) {
 }
 
 SubproModeler::~SubproModeler() {
-    for (auto & node : pickNodes_){
-        node->successors_.clear();
-        node->activeLabels_.clear();
-        node->generatedLabel_.clear();
-    }
-
-    for (auto & node : pickNodes_){
-        node->successors_.clear();
-        node->activeLabels_.clear();
-        node->generatedLabel_.clear();
+    for (auto & node : nodes_){
+        node.second->successors_.clear();
+        node.second->activeLabels_.clear();
+        node.second->generatedLabel_.clear();
     }
 
     pickNodes_.clear();
@@ -111,10 +105,10 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
         pickNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[pickID]));
         dropNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[dropID]));
-        pickNodes_.back()->pairNode_ = dropNodes_.back();
-        dropNodes_.back()->pairNode_ = pickNodes_.back();
         nodes_[pickID]  = pickNodes_.back();
         nodes_[dropID]  = dropNodes_.back();
+        pickNodes_.back()->pairNode_ = &nodes_[dropID];
+        dropNodes_.back()->pairNode_ = &nodes_[pickID];
         /*subGraph_->addNewNode(pickNodes_.back());
         subGraph_->addNewNode(dropNodes_.back());
         subGraph_->nodes_[pickID]->pairNode_ = & subGraph_->nodes_[dropID];

@@ -26,6 +26,7 @@ public:
     int maxPickup_;
     PSolverOption solverOptions_;
     myTools::Timer *subproTime_;
+    myTools::Timer *subproRouteTime_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
 
 //    std::vector<PNode> nodesOrder_;
