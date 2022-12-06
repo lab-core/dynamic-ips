@@ -31,7 +31,7 @@ public:
     std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
-    std::vector<PNode> pathNodes_;
+    std::vector<std::string> pathNodes_;
 
     double reducedCost_;
     PNode currentNode_;
@@ -62,7 +62,7 @@ public:
     bool isEliminated();
     // this function check whether the label is originated from a dominated parent or not
     static bool haveDominatedParent() ;
-    PRoute labelToRoute(PVehicle &vehicle);
+//    PRoute labelToRoute(PVehicle &vehicle);
     PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
     // Display function
     std::string toString() const;

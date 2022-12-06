@@ -865,7 +865,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     subproTime_->stop();
 }
 
-void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes) {
+/*void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes) {
 //    availableRoutes.reserve(subGraph_->nodes_[vehicle->sinkID_]->activeLabels_.size());
     for (auto & labelObj : (*sinkNode_)->activeLabels_) {
   //      if (labelObj->reducedCost_ - vehicle->dual_ <= 0) {
@@ -873,14 +873,14 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
 //            generatedRoutes.insert(std::pair <std::string , PRoute> (availableRoutes.back()->name_ , availableRoutes.back()));
  //       }
     }
-    /*if (!availableRoutes.empty()) {
+    *//*if (!availableRoutes.empty()) {
         for (auto &nodeObj: availableRoutes[0]->routeNodes_) {
             if (nodeObj->type_ == PICKUP) {
                 nodeObj->related_Request_->selectStatus_ = SELECTED;
             }
         }
-    }*/
-}
+    }*//*
+}*/
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
     subproRouteTime_->start();

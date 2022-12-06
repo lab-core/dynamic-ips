@@ -13,7 +13,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
 
     load_ = (*vehicle)->numPassengers_;
     passedTime_ = (*vehicle)->departTime_;
-    pathNodes_.push_back(source);
+    pathNodes_.push_back(source->nodeID_);
  //   path_.push_back(&source);
     reducedCost_ = 0;
     totalDelay_ = 0;
@@ -23,7 +23,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
     openRequests_.clear();
  //   completedRequests_.clear();
  //   completedRequest_.clear();
-    currentNode_ = pathNodes_[0];
+    currentNode_ = source;
     nbPickUp_ = 0;
 //    extendCheck_.insert(source->nodeID_);
 //    parent_ = nullptr;
@@ -166,7 +166,7 @@ void Label:: extend(PNode &outNode) {
     else if (outNode->type_ == SINK){
         passedTime_ = reachTime;
     }
-    pathNodes_.push_back(outNode);
+    pathNodes_.push_back(outNode->nodeID_);
  //   path_.push_back(&outNode);
     currentNode_ = outNode;
 //    extendCheck_.insert(outNode->nodeID_);
@@ -320,7 +320,7 @@ bool Label::haveDominatedParent() {
     return false;
 }
 
-PRoute Label::labelToRoute(PVehicle &vehicle) {
+/*PRoute Label::labelToRoute(PVehicle &vehicle) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(pathNodes_[0], vehicle->departTime_, vehicle->numPassengers_);
@@ -333,14 +333,14 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
         myTools::throwException("Label convert problem");
     }
     return newRoute;
-}
+}*/
 
 PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < pathNodes_.size()-1; ++i) {
-        newRoute->addNode(pInst->instGraph_->nodes_[(pathNodes_[i])->nodeID_]);
+        newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]]);
     }
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
