@@ -62,10 +62,10 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
     // adding source and sink
     nodes_.clear();
     nbTotalRequest_ = pInst->nbRequests_;
-    departNode_ = std::make_shared<Node>((*Vehicle_)->departNode_);
-    sinkNode_ = std::make_shared<Node>(pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
-    nodes_[departNode_->nodeID_] = departNode_;
-    nodes_[sinkNode_->nodeID_] = sinkNode_;
+    nodes_[(*Vehicle_)->departNode_->nodeID_] = std::make_shared<Node>((*Vehicle_)->departNode_);
+    nodes_[(*Vehicle_)->sinkID_] = std::make_shared<Node>(pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
+    departNode_ = &nodes_[(*Vehicle_)->departNode_->nodeID_];
+    sinkNode_ = &nodes_[(*Vehicle_)->sinkID_];
 
 //    subGraph_->addNewNode(departNode_);
 //    subGraph_->addNewNode(sinkNode_);
