@@ -146,13 +146,24 @@ Graph::Graph(PNode &source, PNode &sink) {
 
 // function for adding node to graph
 void Graph::addNewNode(const PNode &node) {
-//    if (node->nodeStatus_ != COMMITTED) {
-        nodes_.emplace(std::pair<std::string, PNode> (node->nodeID_, node));
- //       nodeIDToInt_[node->nodeID_] = nbNodes_;
-        node->nodeIndex_ = nbNodes_;
-        intToNodeID_.push_back(node->nodeID_);
-        nbNodes_++;
-//    }
+    nodes_.emplace(std::pair<std::string, PNode> (node->nodeID_, node));
+    node->nodeIndex_ = nbNodes_;
+    intToNodeID_.push_back(node->nodeID_);
+    nbNodes_++;
+    switch(node->type_) {
+        case SOURCE :
+            sourceNodes_.push_back(node);
+            break;
+        case SINK :
+            sinkNodes_.push_back(node);
+            break;
+        case PICKUP :
+            pickNodes_.push_back(node);
+            break;
+        case DROPOFF :
+            dropNodes_.push_back(node);
+            break;
+    }
 }
 
 void Graph::addRequestToGraph(PRequest &newRequest) {

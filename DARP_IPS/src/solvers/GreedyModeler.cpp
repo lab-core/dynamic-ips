@@ -192,7 +192,7 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
                     }
                 }
  //               if (minWait <= requestObj->penalty_) {
-                    GreedyObj->findInsertPlace(PInst->pickNodes_[i],PInst->dropNodes_[i],
+                    GreedyObj->findInsertPlace(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
                                                PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
                     possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
@@ -202,8 +202,8 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
  //               }
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->pickNodes_[i],
-                                                     PInst->dropNodes_[i],PInst->requests_[i]->maxTravelTime_, removedLabels_);
+            solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
+                                                     PInst->instGraph_->dropNodes_[i],PInst->requests_[i]->maxTravelTime_, removedLabels_);
             selectedVehicles_[vehicle_ID]++;
         }
     }

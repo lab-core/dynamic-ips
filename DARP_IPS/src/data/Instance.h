@@ -41,10 +41,10 @@ public:
     vector<unsigned int> orderToRequest_;
     PGraph instGraph_;
     PParameters parameters_;
-    std::vector<PNode> pickNodes_;
+    /*std::vector<PNode> pickNodes_;
     std::vector<PNode> dropNodes_;
     std::vector<PNode> sourceNodes_;
-    std::vector<PNode> sinkNodes_;
+    std::vector<PNode> sinkNodes_;*/
 
 
     // Constructor and Destructor

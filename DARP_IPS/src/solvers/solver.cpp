@@ -147,7 +147,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         subProOptions_->updateOptions(maxReachTime);*/
         // initializing and solving subproblems
         sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
-            return lhs->nbNodes_ > rhs->nbNodes_;});
+            return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -185,11 +185,11 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         }
         std::stringstream repStr;
         for (auto & subProblem : subProSolve) {
-            if (maxSubSize_ < subProblem->nbNodes_)
-                maxSubSize_ = subProblem->nbNodes_;
-            if (minSubSize_ > subProblem->nbNodes_)
-                minSubSize_ = subProblem->nbNodes_;
-            avgSubSize_ += subProblem->nbNodes_;
+            if (maxSubSize_ < subProblem->subGraph_->nbNodes_)
+                maxSubSize_ = subProblem->subGraph_->nbNodes_;
+            if (minSubSize_ > subProblem->subGraph_->nbNodes_)
+                minSubSize_ = subProblem->subGraph_->nbNodes_;
+            avgSubSize_ += subProblem->subGraph_->nbNodes_;
             repStr << subProblem->toStringOut(epoch_);
         }
         for (auto & subProblem : subProConst) {

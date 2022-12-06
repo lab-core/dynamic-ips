@@ -74,6 +74,10 @@ public:
 class Graph {
 public:
     int nbNodes_;
+    std::vector<PNode> pickNodes_;
+    std::vector<PNode> dropNodes_;
+    std::vector<PNode> sourceNodes_;
+    std::vector<PNode> sinkNodes_;
     std::map<std::string,PNode> nodes_;
 //    std::unordered_map<std::string, int> nodeIDToInt_;
     std::vector<std::string> intToNodeID_;

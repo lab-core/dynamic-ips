@@ -13,14 +13,14 @@
 class SubproModeler {
 public:
     PVehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
-//    PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
-    std::vector<PNode> pickNodes_;
-    std::vector<PNode> dropNodes_;
+    PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
+//    std::vector<PNode> pickNodes_;
+//    std::vector<PNode> dropNodes_;
     std::vector<PNode> onboards_;
-    std::map<std::string,PNode> nodes_;
-    int nbNodes_;
-    PNode departNode_;
-    PNode sinkNode_;
+//    std::map<std::string,PNode> nodes_;
+//    int nbNodes_;
+//    PNode departNode_;
+//    PNode sinkNode_;
     std::vector<PRequest> subRequests_;     // List of requests
 //    std::set<PRequest> onboardRequests_;
     double bestReducedCost_;
