@@ -757,6 +757,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
             maxReducedCost_ = INFINITY;
             for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
+            save_IncDegree_RDCost(inputPaths, epoch, isudIter_);
             if (minReducedCost_ > 0){
                 RPTime_->stop();
                 break;
@@ -1203,6 +1204,7 @@ void ISUDAlgorithm::save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int
             myFile << i << ",";
             myFile << routeObj->incompatibilityDegree_ << ",";
             myFile << routeObj->reducedCost_ << ",";
+            myFile << routeObj->createTime_ << ",";
             myFile << routeObj->getRouteId() << "\n";
         }
     }

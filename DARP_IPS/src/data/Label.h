@@ -31,7 +31,8 @@ public:
     std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
-    vector<PNode> pathNodes_;                               // list of nodes in the path of the vehicle
+    std::vector<PNode> pathNodes_;
+
     double reducedCost_;
     PNode currentNode_;
     float totalDelay_;
@@ -40,7 +41,7 @@ public:
 //    std::set<std::string> extendCheck_;
     bool isDropped_;
     int nbUsed_;
-
+    double createTime_;
 
     // Constructor and Destructor
     Label(PVehicle *vehicle, PNode &source);

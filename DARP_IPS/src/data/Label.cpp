@@ -14,6 +14,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
     load_ = (*vehicle)->numPassengers_;
     passedTime_ = (*vehicle)->departTime_;
     pathNodes_.push_back(source);
+ //   path_.push_back(&source);
     reducedCost_ = 0;
     totalDelay_ = 0;
     status_ = ACTIVE;
@@ -28,6 +29,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
 //    parent_ = nullptr;
     isDropped_ = false;
     nbUsed_ = 0;
+    createTime_ = 0;
 }
 
 Label::Label(const Label &label) :labelID_(labelCount_++) {
@@ -42,6 +44,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
 //    travelResource_ = label.travelResource_;
     travelResources_ = label.travelResources_;
     pathNodes_ = label.pathNodes_;
+ //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
     currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
@@ -58,6 +61,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     }*/
     nbUsed_ = 0;
     isDropped_ = false;
+    createTime_ = 0;
 }
 void Label::copyLabel(const Label &label) {
     status_ = ACTIVE;
@@ -67,6 +71,7 @@ void Label::copyLabel(const Label &label) {
 //    parent_ = nullptr;
     travelResources_ = label.travelResources_;
     pathNodes_ = label.pathNodes_;
+ //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
     currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
@@ -162,8 +167,8 @@ void Label:: extend(PNode &outNode) {
         passedTime_ = reachTime;
     }
     pathNodes_.push_back(outNode);
+ //   path_.push_back(&outNode);
     currentNode_ = outNode;
-
 //    extendCheck_.insert(outNode->nodeID_);
 }
 
@@ -231,8 +236,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                     if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
                         return true;
                 }
-                else
-                {
+                else {
                     if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
                         return true;
                     }
@@ -323,6 +327,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
     for (int i = 1; i < pathNodes_.size()-1; ++i) {
         newRoute->addNode(pathNodes_[i]);
     }
+    newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
         myTools::throwException("Label convert problem");
@@ -335,8 +340,9 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < pathNodes_.size()-1; ++i) {
-        newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]->nodeID_]);
+        newRoute->addNode(pInst->instGraph_->nodes_[(pathNodes_[i])->nodeID_]);
     }
+    newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
         myTools::throwException("Label convert problem");

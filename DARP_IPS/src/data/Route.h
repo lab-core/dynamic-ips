@@ -31,6 +31,7 @@ public:
     double reducedCost_;
     int incompatibilityDegree_;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
+    double createTime_;
 //    Eigen::MatrixXd fullPattern_;
 
     // Constructor and Destructor

@@ -14,7 +14,7 @@ SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&vehicle) {
 }
 
 SubproModeler::~SubproModeler() {
-    for (auto & node : nodes_){
+    /*for (auto & node : nodes_){
         node.second->successors_.clear();
         node.second->activeLabels_.clear();
         node.second->generatedLabel_.clear();
@@ -22,7 +22,7 @@ SubproModeler::~SubproModeler() {
 
     pickNodes_.clear();
     dropNodes_.clear();
-    onboards_.clear();
+    onboards_.clear();*/
 //    subGraph_->nodes_.clear();
 //    subGraph_.reset();
 }

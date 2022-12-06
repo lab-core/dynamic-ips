@@ -58,6 +58,7 @@ protected:
     std::string output_incDegree_RDCost_;
     std::string output_trip_;
     std::string output_subproSize_;
+    std::string output_subproRouteTime_;
 
 
     double timeOut_ = 3600;
@@ -102,6 +103,8 @@ public:
     const std::string &getOutputTrip() const;
 
     const std::string &getOutputSubproSize() const;
+
+    const std::string &getOutputSubproRouteTime() const;
 
     double getTimeOut() const;
 

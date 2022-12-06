@@ -42,7 +42,8 @@ public:
     myTools::Timer *preprocessBuildTime_;
     Tools::LogOutput* pLogRunTimesStream_;
     Tools::LogOutput* pLogEpochSolutionStream_;
-    Tools::LogOutput* pLogEpochSubproStream_;
+    Tools::LogOutput* pLogEpochSubRuntimeStream_;
+    Tools::LogOutput* pLogEpochSubRouteStream_;
 
 
     solver(PInstance & mainInst, InputPaths &inputPaths);
@@ -60,6 +61,8 @@ public:
 
     // this function is to solve the main instance in static mode
     void staticSolver(PInstance & mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime);
+    // this function is to solve the main instance in dynamic mode iteratively with fixed epoch
+    void dynamicSolver(PInstance & mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime);
 
     // function to print epoch runTime to file
     void saveRuntimes(PInstance & EpochInst, const std::string& EpochRunTimeDir);

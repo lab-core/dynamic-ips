@@ -256,12 +256,14 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
 
             // calculate vehicle scores
-            /*for (auto & vehicleObj: mainInst->vehicles_){
-                if (vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
-                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime) < vehicleObj->score_)
-                    vehicleObj->score_ = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
-                    [mainInst->instGraph_->nodes_[pickID]->locationID_]- (simulationStartTime_ + elapsedTime);
-            }*/
+            if (mainInst->parameters_->vehicle_portion_ < 1){
+                for (auto & vehicleObj: mainInst->vehicles_){
+                    float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
+                    [mainInst->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
+                    if (earliestPick < vehicleObj->score_)
+                        vehicleObj->score_ = earliestPick;
+                }
+            }
         }
         else
             break;
@@ -273,47 +275,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
     }
     // calculate vehicle scores
-    for (auto & vehicleObj: mainInst->vehicles_){
-        if (vehicleObj->onboards_.empty()){
-            for (auto & nodeObj : pickNodes_){
-                float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
-                [nodeObj->locationID_] - (simulationStartTime_ + elapsedTime);
-                if (earliestPick < vehicleObj->score_)
-                    vehicleObj->score_ = earliestPick;
-            }
-        }
-    }
-    /*for (auto & requestObj : requests_){
-        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
-        int vehicleID;
-        float score = INFINITY;
-        for (auto & vehicleObj: mainInst->vehicles_){
-            if (vehicleObj->score_ == INFINITY){
-                float earliest_pick = vehicleObj->departTime_ + durationMatrix_[mainInst->instGraph_->nodes_[vehicleObj->departID_]->locationID_]
-                [mainInst->instGraph_->nodes_[pickID]->locationID_] - (simulationStartTime_ + elapsedTime);
-                float minDist = 0;
-                if (!vehicleObj->onboards_.empty()){
-                    minDist = INFINITY;
-                    for (auto & onboardID : vehicleObj->onboards_){
-                        if (durationMatrix_[mainInst->instGraph_->nodes_[pickID]->locationID_]
-                            [mainInst->instGraph_->nodes_[onboardID]->locationID_] < minDist)
-                            minDist = durationMatrix_[mainInst->instGraph_->nodes_[pickID]->locationID_]
-                            [mainInst->instGraph_->nodes_[onboardID]->locationID_];
-                        if (durationMatrix_[mainInst->instGraph_->nodes_[dropID]->locationID_]
-                            [mainInst->instGraph_->nodes_[onboardID]->locationID_] < minDist)
-                            minDist = durationMatrix_[mainInst->instGraph_->nodes_[dropID]->locationID_]
-                            [mainInst->instGraph_->nodes_[onboardID]->locationID_];
-                    }
-                }
-                if ( earliest_pick + minDist < score){
-                    score = earliest_pick + minDist;
-                    vehicleID = vehicleObj->vehicleID_;
-                }
-            }
-        }
-        mainInst->vehicles_[vehicleID]->score_ = score;
-    }*/
     updateRequestOrder();
 }
 
@@ -616,6 +577,19 @@ std::string Instance::saveISUDRoutes(int epoch, int isudIter) {
     return repStr.str();
 }
 
+std::string Instance::saveRoutesTimes(int epoch) {
+    std::stringstream repStr;
+    for (auto & vehicleObj : vehicles_) {
+        repStr << epoch << ",";
+        repStr << vehicleObj->vehicleID_ << ",";
+        repStr << vehicleObj->currentRoute_->getRouteId() << ",";
+        repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->routeRequests_.size() << ",";
+        repStr << vehicleObj->currentRoute_->createTime_ << "\n";
+    }
+    return repStr.str();
+}
+
 void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     std::ofstream myFile;
     int setwSize = 15;
@@ -733,6 +707,8 @@ int Instance::getNbUnselectedVehicles() {
     }
     return nbUnselected;
 }
+
+
 
 
 

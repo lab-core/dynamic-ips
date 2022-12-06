@@ -36,6 +36,7 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type) : nodeID_(std
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     bestLabelReduceCost_ = INFINITY;
+    maxLabelReducedCost_ = bestLabelReduceCost_ * (-1);
     nodeIndex_ = -1;
 }
 
@@ -48,6 +49,7 @@ Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type)
     requestTime_ = 0;
     nodeStatus_ = DEFINED;
     bestLabelReduceCost_ = INFINITY;
+    maxLabelReducedCost_ = bestLabelReduceCost_ * (-1);
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     pairNode_ = nullptr;
@@ -70,6 +72,7 @@ Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationI
     requestTime_ = 0;
     nodeStatus_ = DEFINED;
     bestLabelReduceCost_ = INFINITY;
+    maxLabelReducedCost_ = bestLabelReduceCost_ * (-1);
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     pairNode_ = nullptr;
@@ -99,6 +102,7 @@ Node::Node(const PNode &oldNode) {
     nbActiveLabels_ = 0;
     travelTimeFromNode_ = 0;
     bestLabelReduceCost_ = INFINITY;
+    maxLabelReducedCost_ = bestLabelReduceCost_ * (-1);
     nodeIndex_ = -1;
     pairNode_ = nullptr;
 }
@@ -119,12 +123,6 @@ unsigned int Node::getLabelListIndex(PLabel &newLabel) {
 }
 
 
-
-
-Node::~Node(){
-};
-
-
 //-----------------------------------------------------------------------------
 //  Graph class
 //-----------------------------------------------------------------------------
@@ -138,8 +136,8 @@ Graph::Graph(PNode &source, PNode &sink) {
 //    nodes_.emplace_back(source);
 //    nodes_.emplace_back(sink);
     nbNodes_ = 0;
-    addNewNode(source);
-    addNewNode(sink);
+    addNewNode(std::move(source));
+    addNewNode(std::move(sink));
 }
 
 // function for adding node to graph

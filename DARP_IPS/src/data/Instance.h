@@ -100,6 +100,7 @@ public:
     // save the current route of the vehicles (current solution of ISUD)
     void saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter);
     std::string saveISUDRoutes(int epoch, int isudIter);
+    std::string saveRoutesTimes(int epoch);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
 
     // this function set all the selected vehicles to none (partially solving the subproblems)

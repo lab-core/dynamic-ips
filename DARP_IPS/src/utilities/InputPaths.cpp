@@ -67,6 +67,8 @@ const std::string &InputPaths::getOutputEpochRunTime() const {return output_epoc
 const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
 const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
 const std::string &InputPaths::getOutputSubproSize() const {return output_subproSize_;}
+const std::string &InputPaths::getOutputSubproRouteTime() const {return output_subproRouteTime_;}
+
 double InputPaths::getTimeOut() const {return timeOut_; }
 
 // setters
@@ -113,10 +115,11 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
     output_epochRunTime_ = outputDir_ + "epochRuntime_" + instanceName_ + ".csv";
     output_epochResults_ = outputDir_ + "epochResults_" + instanceName_ + ".csv";
-    output_subproSize_ = outputDir_ + "epochSubpro_" + instanceName_ + ".csv";
+    output_subproSize_ = outputDir_ + "epochSubRunTimes_" + instanceName_ + ".csv";
+    output_subproRouteTime_ = outputDir_ + "epochSubRouteTimes_" + instanceName_ + ".csv";
 
     // create output files for epoch results
- //   std::ofstream myFile;
+    std::ofstream myFile;
     /*myFile.open(output_epochISUD_);
     myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID,RouteID" << std::endl;
     myFile.close();*/
@@ -132,9 +135,9 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     myFile << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue" << std::endl;
     myFile.close();*/
 
-    /*myFile.open(output_incDegree_RDCost_);
-    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, RouteID" << std::endl;
-    myFile.close();*/
+    myFile.open(output_incDegree_RDCost_);
+    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, CreateTime, RouteID" << std::endl;
+    myFile.close();
 }
 
 void InputPaths::makeInstanceOutput(std::string instNum) {
@@ -151,6 +154,7 @@ void InputPaths::makeInstanceOutput(std::string instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
 
 
 

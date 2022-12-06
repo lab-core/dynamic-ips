@@ -23,10 +23,12 @@ public:
     int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
     int nbActivated_;
+    int nbOutputs_;
     int maxPickup_;
     PSolverOption solverOptions_;
     myTools::Timer *subproTime_;
     myTools::Timer *subproRouteTime_;
+    myTools::Timer *sortTime_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
 
 //    std::vector<PNode> nodesOrder_;
@@ -47,10 +49,12 @@ public:
     void labelExtend(PLabel &parentLabel, PNode &outNode);
     void labelExtend2(PLabel &parentLabel, PNode &outNode);
     void labelDrop(PLabel &parentLabel, std::vector<PNode> &activeNodeList);
-    bool isLabelAdded(PLabel &newLabel, PNode &outNode);
+//    bool isLabelAdded(PLabel &newLabel, PNode &outNode);
+    bool isLabelAdded2(PLabel &newLabel, PNode &outNode);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     void solveDynamic_pushingDrop();
+    void solveDynamic_pushingWave();
     void solveDynamic_pulling();
     void solveDynamic_pulling1();
     void solveDynamic();
@@ -62,6 +66,7 @@ public:
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
     // Display function
     std::string toString() const;
+    std::string toStringOut(int epoch) const;
 };
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
 void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels);

@@ -44,20 +44,18 @@ public:
 //    std::set<PNode> predecessor_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
     int nodeIndex_;
-
+    double maxLabelReducedCost_;
 
     std::vector<PLabel> activeLabels_;
     // generatedLabels_ save the labels based on the number of completed requests in different spaces
 //    std::map<int, std::vector<PLabel>> generatedLabels_;
-    vector2D<PLabel> generatedLabel_;
+//    vector2D<PLabel> generatedLabel_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type);
     Node(int locationID, NodeType type);
     Node(int locationID, NodeType type, int vehicleID);
-    Node(const PNode& oldNode);
-
-    virtual ~Node();
+    explicit Node(const PNode& oldNode);
 
     // this function return the index in of the first label in the active labels of the node whose reduced cost
     // is grater than the newLabel

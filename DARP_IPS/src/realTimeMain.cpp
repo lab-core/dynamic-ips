@@ -11,8 +11,9 @@
 
 
 using namespace std::chrono;
-float saveTime = 7200;
+float saveTime = 290;
 bool middleSave = false;
+std::string instNum = "1";
 
 int main(int argc, char** argv) {
 
@@ -53,8 +54,9 @@ int main(int argc, char** argv) {
 
         zoneInst->buildDataZone(mainInst, 291);*/
 
-        if (mainInst->parameters_->solutionMode_ == DYNAMIC)
-            instanceSolver->dynamicSolver(mainInst, inputPaths);
+        if (mainInst->parameters_->solutionMode_ == DYNAMIC){
+            instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+        }
         else if (mainInst->parameters_->solutionMode_ == ANYTIME)
             instanceSolver->anyTimeSolver(mainInst, inputPaths);
         else
