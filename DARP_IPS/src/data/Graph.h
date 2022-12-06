@@ -40,7 +40,7 @@ public:
     float requestTime_;                 // earliest possible pick up time for the request (request time)
     double bestLabelReduceCost_;        // smallest reduced cost af active vehicles
     int nbActiveLabels_;                // Number of active labels in labeling approach
-    std::vector<PNode> successors_;
+    std::vector<PNode *> successors_;
 //    std::set<PNode> predecessor_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
     int nodeIndex_;

@@ -26,6 +26,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     sortTime_ = new myTools::Timer(); sortTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
+    dominatedLabels_.clear();
     delete subproTime_;
     delete subproRouteTime_;
     delete sortTime_;
@@ -79,11 +80,11 @@ void LabelingSubProblem::sortSuccessors() {
                 if (nodeObj.second->nodeID_ != pickNodeObj->nodeID_) {
                     pickNodeObj->travelTimeFromNode_ = durationMatrix_[nodeObj.second->locationID_][pickNodeObj->locationID_];
                     if (pickNodeObj->nodeStatus_ != COMMITTED)
-                        nodeObj.second->successors_.push_back(pickNodeObj);
+                        nodeObj.second->successors_.push_back(&pickNodeObj);
                 }
             }
-            sort(nodeObj.second->successors_.begin(),nodeObj.second->successors_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromNode_ < rhs->travelTimeFromNode_;});
+            sort(nodeObj.second->successors_.begin(),nodeObj.second->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
+                return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});
             if (solverOptions_->isSuccessorsLimited_) {
                 int location = (int)floor(1*nodeObj.second->successors_.size()/2) + 1;
                 nodeObj.second->successors_.erase(nodeObj.second->successors_.begin()+location, nodeObj.second->successors_.end());
@@ -105,14 +106,14 @@ void LabelingSubProblem::initialization() {
     dominatedLabels_.clear();
     // clear active lists
 
-    for (auto &nodeObj: nodes_) {
+    /*for (auto &nodeObj: nodes_) {
         nodeObj.second->activeLabels_.clear();
         nodeObj.second->bestLabelReduceCost_ = INFINITY;
         nodeObj.second->nbActiveLabels_ = 0;
  //       nodeObj.second->generatedLabel_.clear();
         // if the length of the route is not limited, this command should be changed
  //       nodeObj.second->generatedLabel_.resize(maxPickup_ + 1);
-    }
+    }*/
 
     sortNodes();
     sortSuccessors();
@@ -491,11 +492,11 @@ void LabelingSubProblem::solveDynamic_pushing() {
                     if (selectedLabel->nbPickUp_ != maxPickup_) {
                         // push to pickup points
                         for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
-                            if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_)) {
-                                nbActive = neighbourNode->nbActiveLabels_;
-                                labelExtend(selectedLabel, neighbourNode);
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                                nbActive = (*neighbourNode)->nbActiveLabels_;
+                                labelExtend(selectedLabel, (*neighbourNode));
+                                if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(*neighbourNode);
                                 }
                             }
                         }
@@ -570,11 +571,11 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                     if ((selectedLabel->nbPickUp_ != maxPickup_)&&(!selectedLabel->isDropped_)) {
                         // push to pickup points
                         for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
-                            if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_)) {
-                                nbActive = neighbourNode->nbActiveLabels_;
-                                labelExtend(selectedLabel, neighbourNode);
-                                if ((neighbourNode->nbActiveLabels_ == 1)&&(nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                                nbActive = (*neighbourNode)->nbActiveLabels_;
+                                labelExtend(selectedLabel, *neighbourNode);
+                                if (((*neighbourNode)->nbActiveLabels_ == 1)&&(nbActive == 0)) {
+                                    activeNodes_.push_back(*neighbourNode);
                                 }
                             }
                         }
@@ -623,8 +624,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                             selectedLabel->status_ = INACTIVE;
                             // push to pickup points
                             for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
-                                if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_)) {
-                                    labelExtend(selectedLabel, neighbourNode);
+                                if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                                    labelExtend(selectedLabel, *neighbourNode);
                                 }
                             }
                         }
@@ -782,14 +783,14 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     nbActivated_ = 0;
     dominatedLabels_.clear();
     // clear active lists
-    for (auto &nodeObj: nodes_) {
+    /*for (auto &nodeObj: nodes_) {
         nodeObj.second->activeLabels_.clear();
         nodeObj.second->bestLabelReduceCost_ = INFINITY;
         nodeObj.second->nbActiveLabels_ = 0;
 //        nodeObj.second->generatedLabel_.clear();
         // if the length of the route is not limited, this command should be changed
 //        nodeObj.second->generatedLabel_.resize(5);
-    }
+    }*/
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, *departNode_);
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
