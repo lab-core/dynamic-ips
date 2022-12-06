@@ -41,7 +41,7 @@ public:
 
     // this function sort the list of nodes based of their dual values
     void sortNodes();
-    void sortSuccessors();
+    void sortSuccessors(std::vector<PNode> &nodeList);
 
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();

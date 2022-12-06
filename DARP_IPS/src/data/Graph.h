@@ -43,6 +43,7 @@ public:
     std::vector<PNode *> successors_;
 //    std::set<PNode> predecessor_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
+    float travelTimeFromSource_;          // is used in labeling for sorting successors_
     int nodeIndex_;
     double maxLabelReducedCost_;
 

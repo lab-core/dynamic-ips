@@ -150,7 +150,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             return lhs->nbNodes_ > rhs->nbNodes_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
-                subProblem->initSubGraph2(EpochInst);
+                subProblem->initSubGraph(EpochInst);
                 subProblem->solveDynamic();
 
             });

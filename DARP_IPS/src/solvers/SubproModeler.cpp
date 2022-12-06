@@ -64,8 +64,8 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
     nbTotalRequest_ = pInst->nbRequests_;
     nodes_[(*Vehicle_)->departNode_->nodeID_] = std::make_shared<Node>((*Vehicle_)->departNode_);
     nodes_[(*Vehicle_)->sinkID_] = std::make_shared<Node>(pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
-    departNode_ = &nodes_[(*Vehicle_)->departNode_->nodeID_];
-    sinkNode_ = &nodes_[(*Vehicle_)->sinkID_];
+    departNode_ = nodes_[(*Vehicle_)->departNode_->nodeID_];
+    sinkNode_ = nodes_[(*Vehicle_)->sinkID_];
 
 //    subGraph_->addNewNode(departNode_);
 //    subGraph_->addNewNode(sinkNode_);
@@ -113,6 +113,48 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
         subGraph_->addNewNode(dropNodes_.back());
         subGraph_->nodes_[pickID]->pairNode_ = & subGraph_->nodes_[dropID];
         subGraph_->nodes_[dropID]->pairNode_ = & subGraph_->nodes_[pickID];*/
+    }
+    nbNodes_ = pickNodes_.size() + dropNodes_.size() + onboards_.size() + 2;
+}
+
+void SubproModeler::initSubGraph(PInstance &pInst) {
+// adding source and sink
+    nodes_.clear();
+    nbTotalRequest_ = pInst->nbRequests_;
+    departNode_ = std::make_shared<Node>((*Vehicle_)->departNode_);
+    sinkNode_ = std::make_shared<Node>(pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
+
+    // adding onboard nodes to the graph
+    for (auto & nodeID: (*Vehicle_)->onboards_) {
+        onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
+        onboards_.back()->travelTimeFromSource_ = durationMatrix_[(departNode_)->locationID_][onboards_.back()->locationID_];
+    }
+
+    // adding available nodes based on the penalty
+    for (auto & requestObj : pInst->requests_) {
+        if (requestObj->requestStatus_ == NO_ACTION) {
+            float minWait = (*Vehicle_)->departTime_ +
+                            durationMatrix_[(*Vehicle_)->departNode_->locationID_]
+                            [pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
+                            - requestObj->earlyPick_;
+            if (minWait <= requestObj->penalty_) {
+                subRequests_.push_back(requestObj);
+            }
+        }
+    }
+    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});
+    for (auto & requestObj : subRequests_){
+        std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
+        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
+        pickNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[pickID]));
+        dropNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[dropID]));
+        pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[(departNode_)->locationID_][pickNodes_.back()->locationID_];
+        dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[(departNode_)->locationID_][dropNodes_.back()->locationID_];
+    }
+    for (int i=0; i < pickNodes_.size(); i++){
+        pickNodes_[i]->pairNode_ = &dropNodes_[i];
+        dropNodes_[i]->pairNode_ = &pickNodes_[i];
     }
     nbNodes_ = pickNodes_.size() + dropNodes_.size() + onboards_.size() + 2;
 }

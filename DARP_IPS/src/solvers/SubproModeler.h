@@ -19,8 +19,8 @@ public:
     std::vector<PNode> onboards_;
     std::map<std::string,PNode> nodes_;
     int nbNodes_;
-    PNode *departNode_;
-    PNode *sinkNode_;
+    PNode departNode_;
+    PNode sinkNode_;
     std::vector<PRequest> subRequests_;     // List of requests
 //    std::set<PRequest> onboardRequests_;
     double bestReducedCost_;
@@ -36,6 +36,7 @@ public:
 //    void initSubGraph(PInstance &pInst);
 
     void initSubGraph2(PInstance &pInst);
+    void initSubGraph(PInstance &pInst);
 
 };
 
