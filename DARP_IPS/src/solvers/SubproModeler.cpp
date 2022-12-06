@@ -19,12 +19,13 @@ SubproModeler::~SubproModeler() {
         node.second->activeLabels_.clear();
         node.second->generatedLabel_.clear();
     }
-
-    pickNodes_.clear();
-    dropNodes_.clear();
-    onboards_.clear();*/
+*/
 //    subGraph_->nodes_.clear();
 //    subGraph_.reset();
+    subGraph_->sinkNodes_[0]->activeLabels_.clear();
+    std::cout << (*Vehicle_)->vehicleID_ << "-" << subGraph_->sinkNodes_[0].use_count() << std::endl;
+
+    subGraph_.reset();
 }
 
 // calculation of penalties and initialization of the subgraph

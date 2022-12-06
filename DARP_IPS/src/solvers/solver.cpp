@@ -115,7 +115,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
                     if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[v]->selected_))
                         subProSolve.emplace_back(
                                 std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
-                    else
+                    else if (!isudObj_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].empty())
                         subProConst.emplace_back(std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
                 }
             }
@@ -203,6 +203,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;
         std::cout << "# ==============================================================" << std::endl;
         std::cout << "#" << std::endl;*/
+        subProSolve.clear();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {

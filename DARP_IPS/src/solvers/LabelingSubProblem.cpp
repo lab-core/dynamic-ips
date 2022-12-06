@@ -26,7 +26,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     sortTime_ = new myTools::Timer(); sortTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
-    dominatedLabels_.clear();
+
     delete subproTime_;
     delete subproRouteTime_;
     delete sortTime_;
@@ -117,8 +117,6 @@ void LabelingSubProblem::initialization() {
 
     activeNodes_.reserve(subGraph_->pickNodes_.size()*2+ onboards_.size()+2);
     nbActivated_ = 0;
-
-    dominatedLabels_.clear();
     // clear active lists
 
     /*for (auto &nodeObj: nodes_) {
@@ -131,9 +129,8 @@ void LabelingSubProblem::initialization() {
     }*/
 
     sortNodes();
-    std::vector<PNode> nodeList = subGraph_->pickNodes_;
-    nodeList.push_back(subGraph_->sourceNodes_[0]);
-    sortSuccessors(nodeList);
+    sortSuccessors(subGraph_->sourceNodes_);
+    sortSuccessors(subGraph_->pickNodes_);
     sortSuccessors(subGraph_->dropNodes_);
     sortSuccessors(onboards_);
 
@@ -163,13 +160,14 @@ void LabelingSubProblem::initialization() {
                 break;
         }
     }
-    initialLabel->currentNode_->activeLabels_.push_back(initialLabel);
+
 //    initialLabel->currentNode_->generatedLabel_.resize(maxPickup_ + 1);
 //    initialLabel->currentNode_->generatedLabel_[initialLabel->nbPickUp_].push_back(initialLabel);
     initialLabel->currentNode_->nbActiveLabels_++;
     initialLabel->currentNode_->bestLabelReduceCost_ = initialLabel->reducedCost_;
     activeNodes_.clear();
     activeNodes_.push_back(initialLabel->currentNode_);
+    initialLabel->currentNode_->activeLabels_.push_back(std::move(initialLabel));
     nbActivated_ ++;
 }
 
@@ -203,6 +201,7 @@ void LabelingSubProblem::labelExtend(PLabel &parentLabel, PNode &outNode) {
     else {
         newLabel = std::make_shared<Label>(*parentLabel);
     }
+
 //    newLabel->parent_ = parentLabel;
     newLabel->extend(outNode);
     nbGenerated_++;
@@ -800,7 +799,6 @@ void LabelingSubProblem::solveDynamic() {
 void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes) {
     subproTime_->start();
     nbActivated_ = 0;
-    dominatedLabels_.clear();
     // clear active lists
     /*for (auto &nodeObj: nodes_) {
         nodeObj.second->activeLabels_.clear();
@@ -903,6 +901,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
 }*/
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
+
     subproRouteTime_->start();
 //    availableRoutes.reserve(subGraph_->nodes_[vehicle->sinkID_]->activeLabels_.size());
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
@@ -912,7 +911,6 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
 //        generatedRoutes.insert(std::pair <std::string , PRoute> (availableRoutes.back()->name_ , availableRoutes.back()));
         //       }
     }
-    subGraph_->sinkNodes_.clear();
     subproRouteTime_->stop();
 }
 
