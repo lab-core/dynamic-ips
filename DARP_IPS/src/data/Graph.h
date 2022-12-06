@@ -56,6 +56,9 @@ public:
     Node(string nodeId, PRequest &relatedRequest, NodeType type);
     Node(int locationID, NodeType type);
     Node(int locationID, NodeType type, int vehicleID);
+
+    virtual ~Node();
+
     explicit Node(const PNode& oldNode);
 
     // this function return the index in of the first label in the active labels of the node whose reduced cost

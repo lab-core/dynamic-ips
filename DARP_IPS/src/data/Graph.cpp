@@ -122,6 +122,10 @@ unsigned int Node::getLabelListIndex(PLabel &newLabel) {
     }
 }
 
+Node::~Node() {
+    activeLabels_.clear();
+}
+
 
 //-----------------------------------------------------------------------------
 //  Graph class
