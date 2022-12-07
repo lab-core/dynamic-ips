@@ -23,7 +23,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
     openRequests_.clear();
  //   completedRequests_.clear();
  //   completedRequest_.clear();
-    currentNode_ = source;
+    currentNode_ = &source;
     nbPickUp_ = 0;
 //    extendCheck_.insert(source->nodeID_);
 //    parent_ = nullptr;
@@ -99,7 +99,7 @@ bool Label::operator () (const Label &rhs) const {
 void Label:: extend(PNode &outNode) {
 
     load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[currentNode_->locationID_][outNode->locationID_]+ currentNode_->deltaTime_;
+    float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_]+ (*currentNode_)->deltaTime_;
     float reachTime = passedTime_ + travelTime;
     /*for (auto & item: travelResource_) {
         item.second -= travelTime;
@@ -109,7 +109,7 @@ void Label:: extend(PNode &outNode) {
         travelResources_[node->related_Request_->taskIndexLabel_] -= travelTime;
     }*/
     for (auto & node: openNode_) {
-        travelResources_[node->related_Request_->taskIndexLabel_] -= travelTime;
+        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= travelTime;
     }
 
     if (outNode->type_ == DROPOFF) {
@@ -117,7 +117,7 @@ void Label:: extend(PNode &outNode) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
 //        openNodes_.erase(outNode);
         for (int i = 0; i < openNode_.size(); i++){
-            if (openNode_[i]->nodeID_ == outNode->nodeID_){
+            if ((*openNode_[i])->nodeID_ == outNode->nodeID_){
                 openNode_.erase(openNode_.begin()+i);
                 break;
             }
@@ -131,7 +131,7 @@ void Label:: extend(PNode &outNode) {
     else if (outNode->type_ == PICKUP){
  //       extendCheck_.insert(outNode->nodeID_);
 //        openNodes_.insert(*outNode->pairNode_);
-        openNode_.push_back(*outNode->pairNode_);
+        openNode_.push_back(outNode->pairNode_);
  //       completedRequests_.insert(outNode->related_Request_);
  //       completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
  //       completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
@@ -152,7 +152,7 @@ void Label:: extend(PNode &outNode) {
                 travelResources_[node->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
             }*/
             for (auto & node: openNode_) {
-                travelResources_[node->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
+                travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
             }
         }
         else {
@@ -168,7 +168,7 @@ void Label:: extend(PNode &outNode) {
     }
     pathNodes_.push_back(outNode->nodeID_);
  //   path_.push_back(&outNode);
-    currentNode_ = outNode;
+    currentNode_ = &outNode;
 //    extendCheck_.insert(outNode->nodeID_);
 }
 
@@ -209,11 +209,11 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
     }*/
 
     for (auto & nodeObj: openNode_) {
-        float travelToDrop = currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][outNode->locationID_] +
-                             outNode->deltaTime_ + durationMatrix_[outNode->locationID_][nodeObj->locationID_];
+        float travelToDrop = (*currentNode_)->deltaTime_ + durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
+                             outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
         /*if (travelResource_[nodeObj->nodeID_] <  travelToDrop)
             return false;*/
-        if (travelResources_[nodeObj->related_Request_->taskIndexLabel_] <  travelToDrop)
+        if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] <  travelToDrop)
             return false;
     }
 
@@ -229,6 +229,9 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
 }
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
+    if (currentNode_ != otherLabel->currentNode_)
+        myTools::throwException("Label Domination error!!");
+
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->openRequests_ == otherLabel->openRequests_) {
@@ -269,7 +272,8 @@ bool Label::isEliminated() {
                                durationMatrix_[(*currentNode_)->locationID_][nodeObj->locationID_];*/
         /*if (travelResource_[nodeObj->nodeID_] < currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][nodeObj->locationID_])
             return true;*/
-        if (travelResources_[nodeObj->related_Request_->taskIndexLabel_] < currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][nodeObj->locationID_])
+        if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < (*currentNode_)->deltaTime_ +
+            durationMatrix_[(*currentNode_)->locationID_][(*nodeObj)->locationID_])
             return true;
     }
 
@@ -357,7 +361,7 @@ std::string Label::toString() const {
     repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
     repStr << "# \t" <<"_____________________" << std::endl;
     repStr << "#\t" << std::setw(24) << "- LABEL_NUMBER" << " : " << labelID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << currentNode_->nodeID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << (*currentNode_)->nodeID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNodes_.size() << std::endl;
     repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
@@ -369,7 +373,7 @@ std::string Label::toString() const {
         repStr << nodeObj->related_Request_->getRequestId() << "  ";
     }*/
     for (auto & nodeObj : openNode_) {
-        repStr << nodeObj->related_Request_->getRequestId() << "  ";
+        repStr << (*nodeObj)->related_Request_->getRequestId() << "  ";
     }
     repStr << std::endl;
 

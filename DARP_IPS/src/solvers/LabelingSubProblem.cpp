@@ -140,7 +140,7 @@ void LabelingSubProblem::initialization() {
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: onboards_) {
-        initialLabel->openNode_.push_back(nodeObj);
+        initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                 nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
@@ -163,11 +163,11 @@ void LabelingSubProblem::initialization() {
 
 //    initialLabel->currentNode_->generatedLabel_.resize(maxPickup_ + 1);
 //    initialLabel->currentNode_->generatedLabel_[initialLabel->nbPickUp_].push_back(initialLabel);
-    initialLabel->currentNode_->nbActiveLabels_++;
-    initialLabel->currentNode_->bestLabelReduceCost_ = initialLabel->reducedCost_;
+    (*initialLabel->currentNode_)->nbActiveLabels_++;
+    (*initialLabel->currentNode_)->bestLabelReduceCost_ = initialLabel->reducedCost_;
     activeNodes_.clear();
-    activeNodes_.push_back(initialLabel->currentNode_);
-    initialLabel->currentNode_->activeLabels_.push_back(std::move(initialLabel));
+    activeNodes_.push_back(*initialLabel->currentNode_);
+    (*initialLabel->currentNode_)->activeLabels_.push_back(std::move(initialLabel));
     nbActivated_ ++;
 }
 
@@ -226,7 +226,7 @@ void LabelingSubProblem::labelDrop(PLabel &parentLabel, vector<PNode> &activeNod
                                     selectedLabel->openNodes_.end());*/
         std::vector<PNode> outNodes;
         for (auto & nodeObj : selectedLabel->openNode_)
-            outNodes.push_back(nodeObj);
+            outNodes.push_back(*nodeObj);
         /*std::vector<PNode> outNodes(selectedLabel->openNodes_.begin(),
                                     selectedLabel->openNodes_.end());*/
         for (auto &neighbourNode: outNodes) {
@@ -243,7 +243,7 @@ void LabelingSubProblem::labelDrop(PLabel &parentLabel, vector<PNode> &activeNod
                     else
                         // terminate to the sink
                         labelExtend(newLabel, subGraph_->sinkNodes_[0]);
-                    if ((newLabel->currentNode_->type_ != SINK)&&(neighbourNode->nbActiveLabels_ == 1)) {
+                    if (((*newLabel->currentNode_)->type_ != SINK)&&(neighbourNode->nbActiveLabels_ == 1)) {
                         activeNodeList.push_back(neighbourNode);
                     }
                 }
@@ -379,7 +379,7 @@ void LabelingSubProblem::solveDynamic_pulling1() {
                                                                         selectedLabel->openNodes_.end());*/
                                             std::vector<PNode> outNodes;
                                             for (auto & nodeObj: selectedLabel->openNode_)
-                                                outNodes.push_back(nodeObj);
+                                                outNodes.push_back(*nodeObj);
                                             for (auto &onboardNode: outNodes) {
                                                 nbActive = onboardNode->nbActiveLabels_;
                                                 labelExtend(selectedLabel, onboardNode);
@@ -496,20 +496,17 @@ void LabelingSubProblem::solveDynamic_pushing() {
                         labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
                         // drop onboards
                     else {
-                        std::vector<PNode> outNodes;
-                        for (auto &nodeObj: selectedLabel->openNode_)
-                            outNodes.push_back(nodeObj);
-                        for (auto &neighbourNode: outNodes) {
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            labelExtend(selectedLabel, neighbourNode);
-                            if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                activeNodes_.push_back(neighbourNode);
+                        for (auto &neighbourNode: selectedLabel->openNode_){
+                            nbActive = (*neighbourNode)->nbActiveLabels_;
+                            labelExtend(selectedLabel, *neighbourNode);
+                            if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                activeNodes_.push_back(*neighbourNode);
                             }
                         }
                     }
                     if (selectedLabel->nbPickUp_ != maxPickup_) {
                         // push to pickup points
-                        for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
+                        for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
                             if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
                                 nbActive = (*neighbourNode)->nbActiveLabels_;
                                 labelExtend(selectedLabel, (*neighbourNode));
@@ -556,10 +553,10 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
             }
 
             while (!currentNode->activeLabels_.empty()){
-                if ((currentNode->activeLabels_.back()->status_ != ACTIVE)||
-                    (currentNode->activeLabels_.back()->currentNode_->nodeID_ != currentNode->nodeID_ && currentNode->activeLabels_.back()->nbUsed_ == 1))
+                /*if ((currentNode->activeLabels_.back()->status_ != ACTIVE)||
+                        (currentNode->activeLabels_.back()->currentNode_->nodeID_ != currentNode->nodeID_ && currentNode->activeLabels_.back()->nbUsed_ == 1))
                     currentNode->activeLabels_.pop_back();
-                else {
+                else {*/
                     // if the heuristics are node disabled, we are not allowed to dominate labels with dominated parents
                     PLabel selectedLabel = currentNode->activeLabels_.back();
                     currentNode->activeLabels_.pop_back();
@@ -575,7 +572,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                                                     selectedLabel->openNodes_.end());*/
                         std::vector<PNode> outNodes;
                         for (auto & nodeObj : selectedLabel->openNode_)
-                            outNodes.push_back(nodeObj);
+                            outNodes.push_back(*nodeObj);
                         for (auto &neighbourNode: outNodes) {
                             nbActive = neighbourNode->nbActiveLabels_;
                             labelExtend(selectedLabel, neighbourNode);
@@ -588,7 +585,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                     }
                     if ((selectedLabel->nbPickUp_ != maxPickup_)&&(!selectedLabel->isDropped_)) {
                         // push to pickup points
-                        for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
+                        for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
                             if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
                                 nbActive = (*neighbourNode)->nbActiveLabels_;
                                 labelExtend(selectedLabel, *neighbourNode);
@@ -598,7 +595,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                             }
                         }
                     }
-                }
+        //        }
             }
             currentNode.reset();
         }
@@ -641,7 +638,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                             nbActivated_--;
                             selectedLabel->status_ = INACTIVE;
                             // push to pickup points
-                            for (auto &neighbourNode: selectedLabel->currentNode_->successors_) {
+                            for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
                                 if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
                                     labelExtend(selectedLabel, *neighbourNode);
                                 }
@@ -673,7 +670,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                             else {
                                 std::vector<PNode> outNodes;
                                 for (auto & nodeObj : selectedLabel->openNode_)
-                                    outNodes.push_back(nodeObj);
+                                    outNodes.push_back(*nodeObj);
                                 for (auto &neighbourNode: outNodes) {
                                     labelExtend(selectedLabel, neighbourNode);
                                 }
@@ -814,7 +811,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: onboards_) {
-        initialLabel->openNode_.push_back(nodeObj);
+        initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                              nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
@@ -855,7 +852,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                 if (!newLabel->openNode_.empty()){
                     std::vector<PNode> outNodes;
                     for (auto & nodeObj : newLabel->openNode_)
-                        outNodes.push_back(nodeObj);
+                        outNodes.push_back(*nodeObj);
                     for (auto &neighbourNode: outNodes) {
                         if (newLabel->isExtendFeasible(neighbourNode, solverOptions_->MaxLabel_)) {
                             newLabel->extend(neighbourNode);

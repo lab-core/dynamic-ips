@@ -25,7 +25,7 @@ public:
 //    std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
     std::vector<float> travelResources_;
 //    std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
-    std::vector<PNode> openNode_;
+    std::vector<PNode*> openNode_;
 //    std::set<PRequest> completedRequests_;                  // set of completed requests
 //    std::vector<int> completedRequest_;
     std::valarray<int> completedRequests_;
@@ -34,7 +34,7 @@ public:
     std::vector<std::string> pathNodes_;
 
     double reducedCost_;
-    PNode currentNode_;
+    PNode* currentNode_;
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;
