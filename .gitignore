@@ -6,3 +6,15 @@ DARP_IPS/datasets/SmallInstances/*
 DARP_IPS/datasets/SmallInstances1/*
 DARP_Python/NYC/*
 DARP_IPS/datasets/manhattan-vehicles/*
+DARP_IPS/bin/*
+DARP_IPS/cmake-build-debug/*
+DARP_IPS/datasets/test/20150706_07-30m/*
+DARP_IPS/datasets/Instances-7/*
+DARP_IPS/datasets/test/20150715_08-30m/*
+DARP_IPS/datasets/test/20150715_08-60m/*
+DARP_IPS/datasets/test/20150715_08-60m_1/*
+DARP_IPS/datasets/test/20160222_17-120m_3/*
+DARP_IPS/datasets/test/20160222_17-120m_3_1/*
+.DS_Store
+.DS_Store
+DARP_IPS/lib/libDARP_IPS.dylib
