@@ -16,23 +16,23 @@ solutionMode = 1
 #
 warmStart = 1
 MIP_maxIncDegree = 4
-CP_IncDegree = 14
+CP_IncDegree = 6
 useMultiStage = 0
 minImp = 0.0025
-useZoom = 0
+useZoom = 1
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
-MaxLabel = 25
+isTruncated = 1
+MaxLabel = 5
 isDominanceReleased = 1
 isSuccessorsLimited = 0
 isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 1
-Vehicle_portion = 0.1
-Greedy_portion = 1
+Vehicle_portion = 0.3
+Greedy_portion = 0
 
 # CPLEX PARAMETERS
 #

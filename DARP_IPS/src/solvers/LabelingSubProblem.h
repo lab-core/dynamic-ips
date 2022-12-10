@@ -22,7 +22,7 @@ public:
     int nbDominated_;                               // number of labels removed via Domination Rules
     int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
-    int nbActivated_;
+//    int nbActivated_;
     int nbOutputs_;
     int maxPickup_;
     PSolverOption solverOptions_;
@@ -48,15 +48,17 @@ public:
     // main function of the dynamic programming
     void labelExtend(PLabel &parentLabel, PNode &outNode);
     void labelExtend2(PLabel &parentLabel, PNode &outNode);
-    void labelDrop(PLabel &parentLabel, std::vector<PNode> &activeNodeList);
+    void labelDrop(PLabel &parentLabel);
+
 //    bool isLabelAdded(PLabel &newLabel, PNode &outNode);
     bool isLabelAdded2(PLabel &newLabel, PNode &outNode);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     void solveDynamic_pushingDrop();
     void solveDynamic_pushingWave();
+    void solveDynamic_pushingWave1();
     void solveDynamic_pulling();
-    void solveDynamic_pulling1();
+    void solveDynamic_pullingWave();
     void solveDynamic();
     // this function is for reconstructing the routes generated in previous epoch
     void reconstructLabels(std::vector<PRoute> &availableRoutes);

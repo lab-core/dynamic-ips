@@ -10,7 +10,7 @@
 #include "data/Graph.h"
 
 
-enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4 };
+enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4, MIDDLE = 5};
 
 class Label {
 private:
@@ -38,7 +38,7 @@ public:
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;
-//    std::set<std::string> extendCheck_;
+    std::valarray<int> extendCheck_;
     bool isDropped_;
     int nbUsed_;
     double createTime_;

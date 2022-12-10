@@ -52,6 +52,9 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
     completedRequests_ = label.completedRequests_;
+    extendCheck_ = completedRequests_;
+    if ((*currentNode_)->type_ != SOURCE)
+        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
  //   completedRequest_ = label.completedRequest_;
 //    requestIDToInt_ = label.requestIDToInt_;
     nbPickUp_ = label.nbPickUp_;
@@ -78,6 +81,9 @@ void Label::copyLabel(const Label &label) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
     completedRequests_ = label.completedRequests_;
+    extendCheck_ = label.completedRequests_;
+    if ((*currentNode_)->type_ != SOURCE)
+        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
     nbPickUp_ = label.nbPickUp_;
     isDropped_ = false;
     nbUsed_ = 1;
@@ -138,6 +144,7 @@ void Label:: extend(PNode &outNode) {
  //       openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
 
         completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
+        extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
@@ -174,7 +181,7 @@ void Label:: extend(PNode &outNode) {
 
 // this function check the feasibility of the label before extension
 bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
-//    extendCheck_.insert(outNode->nodeID_);
+    extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
     if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
         return false;
     if (outNode->type_ == PICKUP) {
