@@ -107,17 +107,21 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         }
         else {
             if (EpochInst->parameters_->vehicle_portion_ < 1) {
-                EpochInst->sortVehicles(SCORE);
+                std::vector<PVehicle> vehicleList = EpochInst->vehicles_;
+                sort(vehicleList.begin(), vehicleList.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+                    return lhs->score_ < rhs->score_;});
+   //             EpochInst->sortVehicles(SCORE);
                 int portion = (int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbVehicles_);
                 if (EpochInst->getNbUnselectedVehicles() < (0.75 * portion))
                     EpochInst->resetVehicleSelection();
-                for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
-                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[v]->selected_))
+                for (int v = 0; v < vehicleList.size(); v++) {
+                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[vehicleList[v]->vehicleID_]->selected_))
                         subProSolve.emplace_back(
-                                std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
-                    else if (!isudObj_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].empty())
-                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
+                                std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[vehicleList[v]->vehicleID_], subProOptions_));
+                    else if (!isudObj_->availableRoutes_[EpochInst->vehicles_[vehicleList[v]->vehicleID_]->vehicleID_].empty())
+                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[vehicleList[v]->vehicleID_], subProOptions_));
                 }
+                vehicleList.clear();
             }
             else {
                 for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
@@ -598,8 +602,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        if (epoch_ == 1)
-            break;
+        /*if (epoch_ == 1)
+            break;*/
 
         // resetting a subInstance
         EpochInst->resetInstance();

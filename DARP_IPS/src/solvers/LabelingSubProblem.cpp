@@ -101,8 +101,8 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
                         nodeObj->successors_.push_back(&pickNodeObj);
                 }
             }
-            /*sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
-                return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});*/
+            sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
+                return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});
             if (solverOptions_->isSuccessorsLimited_) {
                 int location = (int)floor(1*nodeObj->successors_.size()/2) + 1;
                 nodeObj->successors_.erase(nodeObj->successors_.begin()+location, nodeObj->successors_.end());
