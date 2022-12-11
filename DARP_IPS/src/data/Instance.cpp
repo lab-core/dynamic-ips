@@ -233,8 +233,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         addRequest(requestObj);
         instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
         instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
-        instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
-        instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
+//        instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
+//        instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
         /*std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
         instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
@@ -248,22 +248,22 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             addRequest(mainInst->requests_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
-            instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[i]);
-            instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[i]);
+ //           instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[i]);
+ //           instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[i]);
             /*std::string pickID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
             std::string dropID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
             instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
 
             // calculate vehicle scores
-            if (mainInst->parameters_->vehicle_portion_ < 1){
+            /*if (mainInst->parameters_->vehicle_portion_ < 1){
                 for (auto & vehicleObj: mainInst->vehicles_){
                     float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
                     [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
                     if (earliestPick < vehicleObj->score_)
                         vehicleObj->score_ = earliestPick;
                 }
-            }
+            }*/
         }
         else
             break;
@@ -275,6 +275,33 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
     }
     // calculate vehicle scores
+    /*float earliestPick;
+    int VehicleId;*/
+    if (mainInst->parameters_->vehicle_portion_ < 1){
+        /*for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
+            earliestPick = INFINITY;
+            for (auto & vehicleObj: mainInst->vehicles_){
+                if (vehicleObj->score_ > 0){
+                    float minReachTime = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
+                    [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
+                    if ( minReachTime < earliestPick){
+                        earliestPick = minReachTime;
+                        VehicleId = vehicleObj->vehicleID_;
+                    }
+                }
+            }
+            mainInst->vehicles_[VehicleId]->score_ = 0;
+            mainInst->vehicles_[VehicleId]->selected_ = false;
+        }*/
+        for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
+            for (auto & vehicleObj: mainInst->vehicles_){
+                float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
+                [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
+                if (earliestPick < vehicleObj->score_)
+                    vehicleObj->score_ = earliestPick;
+            }
+        }
+    }
     updateRequestOrder();
 }
 
