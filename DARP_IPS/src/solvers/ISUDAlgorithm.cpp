@@ -17,6 +17,7 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
     isudTime_ = new myTools::Timer(); isudTime_->init();
     RPTime_ = new myTools::Timer(); RPTime_->init();
     CPTime_ = new myTools::Timer(); CPTime_->init();
+    updateDegreeTime_ = new myTools::Timer(); updateDegreeTime_->init();
     isudMIPTime_ = new myTools::Timer(); isudMIPTime_->init();
     isudIter_ = 0;
     nbRoutes_ = 0;
@@ -273,7 +274,6 @@ void ISUDAlgorithm::calcIncMatrixFull() {
         for (auto & routeObj : routeSolution_) {
             if (routeObj->routeRequests_.size() >= 1) {
                 for (auto & requestObj : routeObj->routeRequests_) {
- //                   incRequestToOrder_[requestObj->getRequestId()] = orderCount;
                     requestObj->taskIncIndex_ = orderCount;
                     nbCoveredTasks_ ++;
                     orderCount++;
@@ -295,7 +295,6 @@ void ISUDAlgorithm::calcIncMatrixFull() {
 // function to calculate incompatibility degree of a route
 void ISUDAlgorithm::calcIncompatibility(PRoute &route) {
     if (incMatrix_.rows() > 0) {
- //       Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero((int) incRequestToOrder_.size(),1);
         Eigen::MatrixXd pattern = Eigen::MatrixXd::Zero(nbCoveredTasks_,1);
 
         for (auto & requestObj : route->routeRequests_) {
@@ -305,11 +304,7 @@ void ISUDAlgorithm::calcIncompatibility(PRoute &route) {
                 pattern(requestObj->taskIncIndex_, 0) = 1;
         }
         Eigen::MatrixXd multiplication = incMatrix_ * pattern;
-        route->incompatibilityDegree_ = 0;
-        for (int i = 0; i < multiplication.rows(); ++i) {
-            if (multiplication(i,0) != 0)
-                route->incompatibilityDegree_ ++;
-        }
+        route->incompatibilityDegree_ = multiplication.cwiseAbs().colwise().sum()[0];
     }
     else
         route->incompatibilityDegree_ = 0;
@@ -372,7 +367,8 @@ void ISUDAlgorithm::calcIncompatibilityMatrix() {
 // this function update the incompatibility degree of availableRoutes and
 // order them based on the incompatibility degree and reduced cost
 void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
-    calcIncMatrixFull();
+    calcIncMatrix();
+ //   calcIncMatrixFull();
     maxIncDegree_ = 0;
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
@@ -383,8 +379,8 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
     for (auto & routeObj : availableRoutes_[vehicleID]) {
-//        calcIncompatibility(routeObj);
-        calcIncompatibilityFull(routeObj);
+        calcIncompatibility(routeObj);
+//        calcIncompatibilityFull(routeObj);
         if (routeObj->incompatibilityDegree_ > maxIncDegree_)
             maxIncDegree_  =routeObj->incompatibilityDegree_;
     }
@@ -779,8 +775,11 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
  //           std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
 
             CompPro_->routesToAdd_.clear();
+            updateDegreeTime_->start();
+            CPTime_->stop();
             updateIncDegrees(pInst);
-
+            updateDegreeTime_->stop();
+            CPTime_->start();
             if (pInst->parameters_->useMultiStage_)
                 updateRoutesToAdd(cpIncDegree_, pInst);
             else
@@ -797,7 +796,11 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         CPTime_->start();
         if (!isCPBuilt){
             CompPro_->routesToAdd_.clear();
+            CPTime_->stop();
+            updateDegreeTime_->start();
             updateIncDegrees(pInst);
+            updateDegreeTime_->stop();
+            CPTime_->start();
             if (pInst->parameters_->useMultiStage_)
                 updateRoutesToAdd(cpIncDegree_, pInst);
             else
@@ -826,7 +829,11 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
                             //                     std::cout << "restarting CP after MIP improve" << std::endl;
                             isCPImproved = true;
                             CompPro_->routesToAdd_.clear();
+                            CPTime_->stop();
+                            updateDegreeTime_->start();
                             updateIncDegrees(pInst);
+                            updateDegreeTime_->stop();
+                            CPTime_->start();
                             updateRoutesToAdd(maxIncDegree_, pInst);
                             //                  std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
                             CompPro_->buildModel(pInst, zSolution_, routeSolution_);
@@ -926,6 +933,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
     }
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    std::cout << "# Time spent on ISUD update  = " << updateDegreeTime_->dSinceInit().count() << " (seconds)" << std::endl;
     for (auto & requestObj : zSolution_)
         std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
     isudTime_->stop();

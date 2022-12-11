@@ -44,6 +44,7 @@ public:
     myTools::Timer *RPTime_;
     myTools::Timer *CPTime_;
     myTools::Timer *isudMIPTime_;
+    myTools::Timer *updateDegreeTime_;
 
     Tools::LogOutput* pLogIsudResultsStream_;
     Tools::LogOutput* pLogIterSolutionStream_;
