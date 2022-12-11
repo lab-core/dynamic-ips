@@ -18,6 +18,7 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
     RPTime_ = new myTools::Timer(); RPTime_->init();
     CPTime_ = new myTools::Timer(); CPTime_->init();
     updateDegreeTime_ = new myTools::Timer(); updateDegreeTime_->init();
+    timer1 = new myTools::Timer(); timer1->init();
     isudMIPTime_ = new myTools::Timer(); isudMIPTime_->init();
     isudIter_ = 0;
     nbRoutes_ = 0;
@@ -40,6 +41,8 @@ ISUDAlgorithm::~ISUDAlgorithm() {
     pLogIterSolutionStream_->close();
     delete pLogIsudResultsStream_;
     delete pLogIterSolutionStream_;
+    delete updateDegreeTime_;
+    delete timer1;
 }
 
 
@@ -414,6 +417,7 @@ void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
 }
 
 void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
+    timer1->start();
     pInst->restVehicleOrder();
     pInst->vehicles_[vehicleID]->resetBestReducedCost();
     if ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES)){
@@ -422,6 +426,7 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
             requestObj->dual_ = requestObj->CPDual_;
         pInst->vehicles_[vehicleID]->dual_ = pInst->vehicles_[vehicleID]->CPDual_;
     }
+
     for (auto & routeObj : availableRoutes_[vehicleID]){
         routeObj->reducedCost_ = routeObj->totalDelay_ - pInst->vehicles_[vehicleID]->dual_;
         for (auto & nodeObj: routeObj->routeNodes_){
@@ -435,8 +440,10 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
                 minReducedCost_ = routeObj->reducedCost_;
         }
     }
+
     if (minReducedCost_ < 0)
         maxReducedCost_ = ((-0.5)*minReducedCost_);
+    timer1->stop();
 }
 
 void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths) {
@@ -936,6 +943,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     std::cout << "# Time spent on ISUD update  = " << updateDegreeTime_->dSinceInit().count() << " (seconds)" << std::endl;
+    std::cout << "# Timer  = " << timer1->dSinceInit().count() << " (seconds)" << std::endl;
     for (auto & requestObj : zSolution_)
         std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
     isudTime_->stop();
