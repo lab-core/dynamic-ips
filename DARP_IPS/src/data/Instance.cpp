@@ -705,8 +705,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
 
 void Instance::updateTaskIndexLabeling() {
     int orderCounter = 0;
-    sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});
+    /*sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
     for (auto & requestObj : requests_){
         requestObj->taskIndexLabel_ = orderCounter;
         orderCounter++;

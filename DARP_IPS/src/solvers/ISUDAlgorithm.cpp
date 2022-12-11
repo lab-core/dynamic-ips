@@ -389,9 +389,9 @@ void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
     }
 
     // sort the routes based on their incompatibility degree
-    sort(availableRoutes_[vehicleID].begin(),availableRoutes_[vehicleID].end(),[](const PRoute &lhs, const PRoute &rhs){
+    /*sort(availableRoutes_[vehicleID].begin(),availableRoutes_[vehicleID].end(),[](const PRoute &lhs, const PRoute &rhs){
         return std::tie(lhs->incompatibilityDegree_, lhs->reducedCost_) < std::tie(rhs->incompatibilityDegree_, rhs->reducedCost_);
-    });
+    });*/
 }
 
 // this function updates the reduced cost for the routes in the pool
@@ -418,7 +418,7 @@ void ISUDAlgorithm::updateReducedCosts(int &vehicleID) {
 
 void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
     timer1->start();
-    pInst->restVehicleOrder();
+//    pInst->restVehicleOrder();
     pInst->vehicles_[vehicleID]->resetBestReducedCost();
     if ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES)){
         // consider last CP as dual values

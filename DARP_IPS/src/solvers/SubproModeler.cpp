@@ -96,8 +96,8 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
             }
         }
     }
-    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});
+    /*sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
     for (auto & requestObj : subRequests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
@@ -133,8 +133,8 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
             }
         }
     }
-    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});
+    /*sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
     for (auto & requestObj : subRequests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);

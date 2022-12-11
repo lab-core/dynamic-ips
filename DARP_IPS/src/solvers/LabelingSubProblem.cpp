@@ -101,8 +101,8 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
                         nodeObj->successors_.push_back(&pickNodeObj);
                 }
             }
-            sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
-                return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});
+            /*sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
+                return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});*/
             if (solverOptions_->isSuccessorsLimited_) {
                 int location = (int)floor(1*nodeObj->successors_.size()/2) + 1;
                 nodeObj->successors_.erase(nodeObj->successors_.begin()+location, nodeObj->successors_.end());
@@ -345,8 +345,8 @@ void LabelingSubProblem::solveDynamic_pulling() {
         while (!activeNodes_.empty()) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
-                sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+                /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
                 for (int j = activeNodes_.size()-1; j >= 0; j--) {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
                         activeNodes_.erase(activeNodes_.begin() + j);
@@ -431,8 +431,8 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
         while (!activeNodes_.empty()) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
-                sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+                /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
                 for (int j = activeNodes_.size()-1; j >= 0; j--) {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
                         activeNodes_.erase(activeNodes_.begin() + j);
@@ -542,8 +542,8 @@ void LabelingSubProblem::solveDynamic_pushing() {
 
 
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -602,8 +602,8 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
 
 
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -668,8 +668,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
         // create initial label
         initialization();
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -730,8 +730,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
         activeNodes_.push_back(subGraph_->sourceNodes_[0]);
         subGraph_->sourceNodes_[0]->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -775,8 +775,8 @@ void LabelingSubProblem::solveDynamic_pushingWave1() {
         // create initial label
         initialization();
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -814,8 +814,8 @@ void LabelingSubProblem::solveDynamic_pushingWave1() {
         activeNodes_.push_back(subGraph_->sourceNodes_[0]);
 //        subGraph_->sourceNodes_[0]->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
-            sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
