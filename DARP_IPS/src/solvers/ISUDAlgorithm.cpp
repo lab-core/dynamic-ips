@@ -627,10 +627,12 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPat
     MIPReducedPro_->routesToAdd_.clear();
     // if RP improve the solution another iteration is done and reducedImproved stay true
     // update reduced cost if needed
+    updateDegreeTime_->start();
     if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES)){
         for (auto & vehicleObj : pInst->vehicles_)
             updateReducedCosts(pInst, vehicleObj->vehicleID_);
     }
+    updateDegreeTime_->stop();
     updateIncDegrees(pInst);
     updateRoutesToAdd(0, pInst);
 
@@ -717,12 +719,13 @@ void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPat
 //    ReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
 
     bool findNegative = false;
+    updateDegreeTime_->start();
     for (auto & vehicleObj : pInst->vehicles_) {
         updateReducedCosts(pInst, vehicleObj->vehicleID_);
         if (vehicleObj->bestReducedCost_ < 0)
             findNegative = true;
     }
-
+    updateDegreeTime_->stop();
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
     isudTime_->stop();
 }
@@ -751,8 +754,10 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
             minReducedCost_ = INFINITY;
             maxReducedCost_ = INFINITY;
+            updateDegreeTime_->start();
             for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
+            updateDegreeTime_->stop();
             save_IncDegree_RDCost(inputPaths, epoch, isudIter_);
             if (minReducedCost_ > 0){
                 RPTime_->stop();
@@ -919,9 +924,11 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         MIPReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
         minReducedCost_ = INFINITY;
         maxReducedCost_ = INFINITY;
+        updateDegreeTime_->start();
         for (auto & vehicleObj : pInst->vehicles_) {
             updateReducedCosts(pInst, vehicleObj->vehicleID_);
         }
+        updateDegreeTime_->stop();
         if (minReducedCost_ > 0)
             restartAlgorithm = false;
         CPTime_->stop();
