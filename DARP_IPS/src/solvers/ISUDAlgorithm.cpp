@@ -375,11 +375,18 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     calcIncMatrix();
  //   calcIncMatrixFull();
     maxIncDegree_ = 0;
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
+
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
-            updateRoutesIncDegree(vehicleObj->vehicleID_);
+            Tools::Job job([&]() {
+                updateRoutesIncDegree(vehicleObj->vehicleID_);
+            });
+            pPool->run(job);
+//            updateRoutesIncDegree(vehicleObj->vehicleID_);
         }
     }
+    pPool->wait();
 }
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
