@@ -221,8 +221,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                     instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
                     instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
-                    instGraph_->pickNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                    instGraph_->dropNodes_.push_back(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+ //                   instGraph_->pickNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+ //                   instGraph_->dropNodes_.push_back(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                 }
             }
         }
