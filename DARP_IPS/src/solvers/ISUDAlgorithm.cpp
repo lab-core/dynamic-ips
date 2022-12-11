@@ -431,8 +431,8 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
     pInst->vehicles_[vehicleID]->resetBestReducedCost();
     if ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES)){
         // consider last CP as dual values
-        for(auto & requestObj: pInst->requests_)
-            requestObj->dual_ = requestObj->CPDual_;
+ //       for(auto & requestObj: pInst->requests_)
+ //           requestObj->dual_ = requestObj->CPDual_;
         pInst->vehicles_[vehicleID]->dual_ = pInst->vehicles_[vehicleID]->CPDual_;
     }
 
@@ -771,6 +771,8 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
             minReducedCost_ = INFINITY;
             maxReducedCost_ = INFINITY;
             updateDegreeTime_->start();
+            for(auto & requestObj: pInst->requests_)
+                requestObj->dual_ = requestObj->CPDual_;
             for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
             updateDegreeTime_->stop();
@@ -941,6 +943,8 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         minReducedCost_ = INFINITY;
         maxReducedCost_ = INFINITY;
         updateDegreeTime_->start();
+        for(auto & requestObj: pInst->requests_)
+            requestObj->dual_ = requestObj->CPDual_;
         for (auto & vehicleObj : pInst->vehicles_) {
             updateReducedCosts(pInst, vehicleObj->vehicleID_);
         }
