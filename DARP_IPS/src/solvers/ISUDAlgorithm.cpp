@@ -223,8 +223,8 @@ Eigen::MatrixXd ISUDAlgorithm::calcM2Matrix(int nbRows) {
 // function to calculate incompatibility matrix
 void ISUDAlgorithm::calcIncMatrix() {
 //    incRequestToOrder_.clear();
-    for (auto & requestObj : zSolution_)
-        requestObj->taskIncIndex_  =-1;
+    /*for (auto & requestObj : zSolution_)
+        requestObj->taskIncIndex_  =-1;*/
     nbCoveredTasks_ = 0;
     int orderCount = 0;
     sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
@@ -370,6 +370,8 @@ void ISUDAlgorithm::calcIncompatibilityMatrix() {
 // this function update the incompatibility degree of availableRoutes and
 // order them based on the incompatibility degree and reduced cost
 void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
+    for (auto & requestObj : pInst->requests_)
+        requestObj->taskIncIndex_ = -1;
     calcIncMatrix();
  //   calcIncMatrixFull();
     maxIncDegree_ = 0;
