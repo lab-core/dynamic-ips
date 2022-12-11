@@ -776,10 +776,8 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
 
             CompPro_->routesToAdd_.clear();
             updateDegreeTime_->start();
-            CPTime_->stop();
             updateIncDegrees(pInst);
             updateDegreeTime_->stop();
-            CPTime_->start();
             if (pInst->parameters_->useMultiStage_)
                 updateRoutesToAdd(cpIncDegree_, pInst);
             else
@@ -796,11 +794,9 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         CPTime_->start();
         if (!isCPBuilt){
             CompPro_->routesToAdd_.clear();
-            CPTime_->stop();
             updateDegreeTime_->start();
             updateIncDegrees(pInst);
             updateDegreeTime_->stop();
-            CPTime_->start();
             if (pInst->parameters_->useMultiStage_)
                 updateRoutesToAdd(cpIncDegree_, pInst);
             else
@@ -829,11 +825,9 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
                             //                     std::cout << "restarting CP after MIP improve" << std::endl;
                             isCPImproved = true;
                             CompPro_->routesToAdd_.clear();
-                            CPTime_->stop();
                             updateDegreeTime_->start();
                             updateIncDegrees(pInst);
                             updateDegreeTime_->stop();
-                            CPTime_->start();
                             updateRoutesToAdd(maxIncDegree_, pInst);
                             //                  std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
                             CompPro_->buildModel(pInst, zSolution_, routeSolution_);
@@ -918,7 +912,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
                 }
             }
         }
-        CPTime_->stop();
+ //       CPTime_->stop();
         /*ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
         ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;*/
         MIPReducedPro_->requestDuals_ = CompPro_->requestDuals_;
@@ -930,6 +924,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         }
         if (minReducedCost_ > 0)
             restartAlgorithm = false;
+        CPTime_->stop();
     }
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
     std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
@@ -968,7 +963,9 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
         std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
         CPTime_->start();
         CompPro_->routesToAdd_.clear();
+        updateDegreeTime_->start();
         updateIncDegrees(pInst);
+        updateDegreeTime_->stop();
         updateRoutesToAdd(maxIncDegree_, pInst);
 //        std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
         CompPro_->buildModel(pInst, zSolution_, routeSolution_);
@@ -993,7 +990,9 @@ void ISUDAlgorithm::solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &in
 //    ReducedPro_->routesToAdd_.clear();
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
     if (compDegree == 0) {
+        updateDegreeTime_->start();
         updateIncDegrees(pInst);
+        updateDegreeTime_->stop();
         updateRoutesToAdd(compDegree, pInst);
     }
     else
