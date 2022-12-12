@@ -202,12 +202,16 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         instGraph_->addNewNode(vehicleObj->departNode_);
  //       instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
         instGraph_->addNewNode(mainInst->instGraph_->sinkNodes_[vehicleObj->vehicleID_]);
-        instGraph_->sourceNodes_.push_back(vehicleObj->departNode_);
+//        instGraph_->sourceNodes_.push_back(vehicleObj->departNode_);
 
         // adding onboard nodes to the graph
-        for (auto & nodeID: vehicleObj->onboards_) {
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
-        }
+        /*for (auto & nodeID: vehicleObj->onboards_) {
+ //           instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
+            instGraph_->nodes_.emplace(std::pair<std::string, PNode> (nodeID, mainInst->instGraph_->nodes_[nodeID]));
+            mainInst->instGraph_->nodes_[nodeID]->nodeIndex_ = instGraph_->nbNodes_;
+            instGraph_->intToNodeID_.push_back(nodeID);
+            instGraph_->nbNodes_++;
+        }*/
         vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
@@ -223,6 +227,12 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                     instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
  //                   instGraph_->pickNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
  //                   instGraph_->dropNodes_.push_back(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+                }
+                else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                    instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
+                    vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
+                    instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
+                    instGraph_->nbNodes_++;
                 }
             }
         }
