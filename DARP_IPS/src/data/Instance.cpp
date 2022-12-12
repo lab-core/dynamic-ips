@@ -284,6 +284,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         // adding onboard nodes to the graph
         instGraph_->dropNodes_.push_back(nodeObj);
     }
+    nbOnboards_ = onboards.size();
     /*for (auto & vehicleObj : mainInst->vehicles_){
         // adding onboard nodes to the graph
         for (auto & nodeID: vehicleObj->onboards_) {
@@ -721,8 +722,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
 
 void Instance::updateTaskIndexLabeling() {
     int orderCounter = 0;
-    /*sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});*/
+    sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});
 
     for (auto & requestObj : requests_){
         requestObj->taskIndexLabel_ = orderCounter;

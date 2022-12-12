@@ -55,16 +55,16 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
     emptyRoute_->addSource(departNode_, departTime_, numPassengers_);
 
     if (!onboards_.empty()) {
-        if (currentRoute_->routeSize_ > 1){
+        /*if (currentRoute_->routeSize_ > 1){
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
                 if (currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                     emptyRoute_->addNode(currentRoute_->routeNodes_[i]);
                 }
             }
-        }
-        /*for (auto &nodeID: onboards_) {
-            emptyRoute_->addNode(pInst->instGraph_->nodes_[nodeID]);
         }*/
+        for (auto &nodeID: onboards_) {
+            emptyRoute_->addNode(pInst->instGraph_->nodes_[nodeID]);
+        }
     }
 }
 

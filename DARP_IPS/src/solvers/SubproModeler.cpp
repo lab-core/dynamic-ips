@@ -61,7 +61,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
 //    nodes_.clear();
     nbTotalRequest_ = pInst->nbRequests_;
     subGraph_->addNewNode(std::make_shared<Node>((*Vehicle_)->departNode_));
-    subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(*Vehicle_)->vehicleID_]));
+    subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]));
 //    subGraph_->sourceNodes_.push_back(subGraph_->nodes_[(*Vehicle_)->departNode_->nodeID_]);
 //    subGraph_->sinkNodes_.push_back(subGraph_->nodes_[(*Vehicle_)->sinkID_]);
 
@@ -105,8 +105,8 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
             }
         }
     }
-    /*sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});*/
+    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});
     for (auto & requestObj : subRequests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
         std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
