@@ -721,8 +721,9 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
 
 void Instance::updateTaskIndexLabeling() {
     int orderCounter = 0;
-    sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});
+    /*sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
+
     for (auto & requestObj : requests_){
         requestObj->taskIndexLabel_ = orderCounter;
         orderCounter++;
@@ -730,10 +731,6 @@ void Instance::updateTaskIndexLabeling() {
     int firstIndex = orderCounter;
     for (auto & vehicleObj : vehicles_){
         orderCounter = firstIndex;
-        /*for (auto & nodeID : vehicleObj->onboards_){
-            instGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_ = orderCounter;
-            orderCounter++;
-        }*/
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
                 if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
