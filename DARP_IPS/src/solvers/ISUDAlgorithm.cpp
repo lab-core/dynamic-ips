@@ -776,7 +776,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
             for (auto & vehicleObj : pInst->vehicles_)
                 updateReducedCosts(pInst, vehicleObj->vehicleID_);
             updateDegreeTime_->stop();
-            save_IncDegree_RDCost(inputPaths, epoch, isudIter_);
+ //           save_IncDegree_RDCost(inputPaths, epoch, isudIter_);
             if (minReducedCost_ > 0){
                 RPTime_->stop();
                 break;
@@ -790,7 +790,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         if (previousObj != objValue_){
             CPTime_->start();
 //            pInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudIter_);
-            (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
+//            (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
   //          save_ISUDResults(epoch, inputPaths, "RP", MIPReducedPro_->compRoutes_.size());
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", MIPReducedPro_->compRoutes_.size());
             isudIter_++;
@@ -842,7 +842,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
                         solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
-                            (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
+ //                           (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
                             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", MIPReducedPro_->compRoutes_.size());
                             isudIter_++;
                             //                     std::cout << "restarting CP after MIP improve" << std::endl;
@@ -926,7 +926,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
     //                std::cout << "Objective Value after the CP improve: " << objValue_ << std::endl;
  //                   pInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudIter_);
  //                   save_ISUDResults(epoch, inputPaths, "CP", CompPro_->IncRoute_.size() + routeSolution_.size());
-                    (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
+ //                   (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
                     (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", CompPro_->IncRoute_.size() + routeSolution_.size());
                     previousObj = objValue_;
                     isudIter_++;
