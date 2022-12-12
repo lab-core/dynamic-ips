@@ -198,6 +198,7 @@ std::string Instance::solutionToString() {
 // this function update the set of available requests, removed completed requests and update onboards
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
 
+    std::vector<PNode> onboards;
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
  //       instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
@@ -230,6 +231,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 }
                 else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                     instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
+                    onboards.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
                     instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
                     instGraph_->nbNodes_++;
@@ -278,12 +280,16 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         else
             break;
     }
-    for (auto & vehicleObj : mainInst->vehicles_){
+    for (auto & nodeObj: onboards){
+        // adding onboard nodes to the graph
+        instGraph_->dropNodes_.push_back(nodeObj);
+    }
+    /*for (auto & vehicleObj : mainInst->vehicles_){
         // adding onboard nodes to the graph
         for (auto & nodeID: vehicleObj->onboards_) {
             instGraph_->dropNodes_.push_back(instGraph_->nodes_[nodeID]);
         }
-    }
+    }*/
     // calculate vehicle scores
     /*float earliestPick;
     int VehicleId;*/
@@ -724,9 +730,17 @@ void Instance::updateTaskIndexLabeling() {
     int firstIndex = orderCounter;
     for (auto & vehicleObj : vehicles_){
         orderCounter = firstIndex;
-        for (auto & nodeID : vehicleObj->onboards_){
+        /*for (auto & nodeID : vehicleObj->onboards_){
             instGraph_->nodes_[nodeID]->related_Request_->taskIndexLabel_ = orderCounter;
             orderCounter++;
+        }*/
+        if (vehicleObj->currentRoute_->routeSize_ > 1) {
+            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                    vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->taskIndexLabel_ = orderCounter;
+                    orderCounter++;
+                }
+            }
         }
     }
 }

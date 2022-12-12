@@ -69,12 +69,21 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
 //    subGraph_->addNewNode(sinkNode_);
 
     // adding onboard nodes to the graph
-    for (auto & nodeID: (*Vehicle_)->onboards_) {
+    /*for (auto & nodeID: (*Vehicle_)->onboards_) {
         onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
         subGraph_->nodes_[nodeID]  = onboards_.back();
 //        subGraph_->addNewNode(onboards_.back());
 //        onboardRequests_.insert(pInst->instGraph_->nodes_[nodeID]->related_Request_);
 //        subGraph_->nodes_[nodeID]->pairNode_ = pInst->instGraph_->nodes_[nodeID]->pairNode_;
+    }*/
+
+    if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
+        for (int i = 1; i < (*Vehicle_)->currentRoute_->routeSize_; ++i) {
+            if ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                onboards_.emplace_back(std::make_shared<Node>((*Vehicle_)->currentRoute_->routeNodes_[i]));
+                subGraph_->nodes_[(*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]  = onboards_.back();
+            }
+        }
     }
 
     // adding available nodes based on the penalty
