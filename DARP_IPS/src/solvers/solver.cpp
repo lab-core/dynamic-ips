@@ -65,7 +65,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
     isudObj_->initialization(EpochInst);
     // save initial solution
 //    EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
-    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
+//    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
 
     SubproEpochTime_ = 0;
@@ -115,7 +115,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
                 if (EpochInst->getNbUnselectedVehicles() < (0.75 * portion))
                     EpochInst->resetVehicleSelection();
                 for (int v = 0; v < vehicleList.size(); v++) {
-                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[vehicleList[v]->vehicleID_]->selected_))
+                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[vehicleList[v]->vehicleID_]->selected_)
+                    &&(EpochInst->nbRequests_ > 0))
                         subProSolve.emplace_back(
                                 std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[vehicleList[v]->vehicleID_], subProOptions_));
                     else if (!isudObj_->availableRoutes_[EpochInst->vehicles_[vehicleList[v]->vehicleID_]->vehicleID_].empty())
