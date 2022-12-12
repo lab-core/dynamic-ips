@@ -6,11 +6,11 @@ deltaPram = 420
 epochLength = 5
 penaltyL = 30
 committedTime = 10
-nbThreads = 12
+nbThreads = 8
 InitialDual = 1
 mainAlgorithm = 3
 addOneRequestColumn = 0
-solutionMode = 2
+solutionMode = 1
 
 # ISUD PARAMETERS
 #
@@ -24,14 +24,14 @@ useZoom = 0
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 25
+MaxLabel = 30
 isDominanceReleased = 1
 isSuccessorsLimited = 0
 isDropPickPossible = 0
 SubproSolveStartState = 2
-LabelingStrategy = 0
+LabelingStrategy = 1
 subproblemAlgorithm = 1
-Vehicle_portion = 0.5
+Vehicle_portion = 0.25
 Greedy_portion = 0
 
 # CPLEX PARAMETERS

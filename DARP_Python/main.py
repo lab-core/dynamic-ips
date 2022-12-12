@@ -1,10 +1,15 @@
 import constants as c
 import utilities as uf
 import visualize as vf
+from pathlib import Path
+import glob
 from Dataset import *
 
 
 def main(name):
+    for file in glob.glob(c.VEHICLES_DIR + "*.json"):
+        uf.create_vehicle_dataset(Path(file).stem)
+
     manhattan_districts = Network()
     manhattan_districts.read_network_data('manhattan-geo', location_to_cell_file='location_to_cell',
                                           edge_time_matrix_file='edge_time_matrix', stop_matrix_file='stop_matrix')
@@ -12,13 +17,13 @@ def main(name):
     for files in uf.create_file_names():
         day_dataset = Dataset(files)
         day_dataset.prepare_dataset(network=manhattan_districts, capacity=4)
-        day_dataset.restrict_to_district(manhattan_districts.districts)
+#        day_dataset.restrict_to_district(manhattan_districts.districts)
 
 #        vf.show_request_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
-        day_dataset.limit_time_dataset(start_hr=8, end_hr=9, start_min=0, end_min=0)
-        day_dataset.calculate_trip_per_district(network=manhattan_districts)
-        day_dataset.calculate_vehicle_per_district(network=manhattan_districts)
-        uf.create_vehicle_dataset_zone("vehicles_2000_4", districts=manhattan_districts.districts, nb_per_zone=day_dataset.nb_vehicle_per_district)
+        day_dataset.limit_time_dataset(start_hr=7, end_hr=9, start_min=0, end_min=0)
+#        day_dataset.calculate_trip_per_district(network=manhattan_districts)
+#        day_dataset.calculate_vehicle_per_district(network=manhattan_districts)
+
         day_dataset.save_dataset()
 #        vf.plot_districts_by_nb_trips(trip_per_district=day_dataset.nb_trip_per_district,
 #                                      district_network=manhattan_districts,print_id=True,file_name=day_dataset.file_name)
