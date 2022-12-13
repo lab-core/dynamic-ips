@@ -99,7 +99,9 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                     vehicleObj->selected_ = true;
-  //                  subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];
+                    subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];
+                    /*if (subProSolve.back()->maxPickup_ < 2)
+                        subProSolve.back()->maxPickup_ = 2;*/
                 }
                 else
                     subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
@@ -603,8 +605,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        if (epoch_ == 1)
-            break;
+        /*if (epoch_ == 1)
+            break;*/
 
         // resetting a subInstance
         EpochInst->resetInstance();
