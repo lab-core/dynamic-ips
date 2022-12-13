@@ -24,14 +24,14 @@ useZoom = 0
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 30
+MaxLabel = 5
 isDominanceReleased = 1
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
-Vehicle_portion = 0.25
+Vehicle_portion = 0.5
 Greedy_portion = 0
 
 # CPLEX PARAMETERS
