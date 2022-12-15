@@ -11,8 +11,8 @@
 
 
 using namespace std::chrono;
-float saveTime = 290;
-bool middleSave = false;
+float saveTime = 3600;
+bool middleSave = true;
 std::string instNum = "1";
 
 int main(int argc, char** argv) {

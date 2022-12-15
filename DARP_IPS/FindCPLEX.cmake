@@ -23,7 +23,7 @@ if (UNIX)
         set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_osx/static_pic)
     endif()
 endif()
-message("Found studio dirs: ${CPLEX_STUDIO_DIRS}")
+message("Found studio dirs: ${CPLEX_STUDIO_DIR}")
 message("Lib suffixes dirs: ${CPLEX_LIB_PATH_SUFFIXES}")
 
 find_package(Threads)

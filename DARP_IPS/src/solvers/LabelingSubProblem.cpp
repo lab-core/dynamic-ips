@@ -854,10 +854,10 @@ void LabelingSubProblem::solveDynamic() {
     }
 
 
-    if (!subGraph_->sinkNodes_[0]->activeLabels_.empty()) {
+    /*if (!subGraph_->sinkNodes_[0]->activeLabels_.empty()) {
         bestReducedCost_ = subGraph_->sinkNodes_[0]->bestLabelReduceCost_ - (*Vehicle_)->dual_;
         (*Vehicle_)->bestReducedCost_ = bestReducedCost_;
-    }
+    }*/
     nbNegativeColumns_ = 0;
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)

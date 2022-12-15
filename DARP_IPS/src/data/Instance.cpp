@@ -395,7 +395,7 @@ void Instance::setInitialTimes() {
 
 // function to sort vehicles based on ID
 void Instance::restVehicleOrder() {
-    sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+    std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
         return lhs->vehicleID_ < rhs->vehicleID_;});
 }
 

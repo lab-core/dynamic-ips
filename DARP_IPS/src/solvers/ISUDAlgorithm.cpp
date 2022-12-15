@@ -443,11 +443,13 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
                 routeObj->reducedCost_ -= nodeObj->related_Request_->dual_;
             }
         }
-        if (routeObj->reducedCost_ < pInst->vehicles_[vehicleID]->bestReducedCost_) {
+        /*if (routeObj->reducedCost_ < pInst->vehicles_[vehicleID]->bestReducedCost_) {
             pInst->vehicles_[vehicleID]->bestReducedCost_ = routeObj->reducedCost_;
             if (minReducedCost_ > routeObj->reducedCost_)
                 minReducedCost_ = routeObj->reducedCost_;
-        }
+        }*/
+        if (minReducedCost_ > routeObj->reducedCost_)
+            minReducedCost_ = routeObj->reducedCost_;
     }
 
     if (minReducedCost_ < 0)
