@@ -61,7 +61,7 @@ void GreedyModeler::solve(PInstance &PInst) {
     std::vector<PGreedyLabel> preLabelList;
 
     // sort the request based on the earliest possible pickup
-    sort(PInst->requests_.begin(), PInst->requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+    std::stable_sort(PInst->requests_.begin(), PInst->requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
         return lhs->earlyPick_ > rhs->earlyPick_;});
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {

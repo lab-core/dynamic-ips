@@ -227,7 +227,7 @@ void ISUDAlgorithm::calcIncMatrix() {
         requestObj->taskIncIndex_  =-1;*/
     nbCoveredTasks_ = 0;
     int orderCount = 0;
-    sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
+    std::stable_sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
         return lhs->routeRequests_.size() < rhs->routeRequests_.size();});
     if (routeSolution_.back()->routeRequests_.size() <= 1) {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
@@ -267,7 +267,7 @@ void ISUDAlgorithm::calcIncMatrixFull() {
     nbCoveredTasks_ = 0;
     incVehicleToOrder_.clear();
     int orderCount = 0;
-    sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
+    std::stable_sort(routeSolution_.begin(),routeSolution_.end(),[](const PRoute &lhs, const PRoute &rhs){
         return lhs->routeRequests_.size() < rhs->routeRequests_.size();});
     if (routeSolution_.back()->routeRequests_.empty()) {
         incMatrix_ = Eigen::MatrixXd::Zero(0,0);
@@ -398,7 +398,7 @@ void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
     }
 
     // sort the routes based on their incompatibility degree
-    sort(availableRoutes_[vehicleID].begin(),availableRoutes_[vehicleID].end(),[](const PRoute &lhs, const PRoute &rhs){
+    std::stable_sort(availableRoutes_[vehicleID].begin(),availableRoutes_[vehicleID].end(),[](const PRoute &lhs, const PRoute &rhs){
         return std::tie(lhs->incompatibilityDegree_, lhs->reducedCost_) < std::tie(rhs->incompatibilityDegree_, rhs->reducedCost_);
     });
 }

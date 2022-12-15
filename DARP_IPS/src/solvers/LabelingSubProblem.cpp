@@ -58,7 +58,7 @@ void LabelingSubProblem::sortNodes() {
         }
     }*/
     // adding onboard nodes
-    for (auto & nodeObj : onboards_) {
+    for (auto & nodeObj : subGraph_->onboards_) {
 //        requestIDToInt_[subGraph_->nodes_[nodeID]->related_Request_->getRequestId()] = counter;
 //        subGraph_->nodes_[nodeID]->related_Request_->taskIndex_ = counter;
         nodeObj->related_Request_->taskIndexLabel_ = counter;
@@ -101,7 +101,7 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
                         nodeObj->successors_.push_back(&pickNodeObj);
                 }
             }
-            sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
+            std::stable_sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
                 return (*lhs)->travelTimeFromNode_ < (*rhs)->travelTimeFromNode_;});
             if (solverOptions_->isSuccessorsLimited_) {
                 int location = (int)floor(1*nodeObj->successors_.size()/2) + 1;
@@ -115,7 +115,7 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
 // reset that active lists of the nodes, create the first label at the source, add onboards
 void LabelingSubProblem::initialization() {
 
-    activeNodes_.reserve(subGraph_->pickNodes_.size()*2+ onboards_.size()+2);
+    activeNodes_.reserve(subGraph_->pickNodes_.size()*2+ subGraph_->onboards_.size()+2);
 //    nbActivated_ = 0;
     // clear active lists
 
@@ -132,14 +132,14 @@ void LabelingSubProblem::initialization() {
     sortSuccessors(subGraph_->sourceNodes_);
     sortSuccessors(subGraph_->pickNodes_);
     sortSuccessors(subGraph_->dropNodes_);
-    sortSuccessors(onboards_);
+    sortSuccessors(subGraph_->onboards_);
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
-    for (auto &nodeObj: onboards_) {
+    for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
@@ -372,7 +372,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                         selectedLabel->isDropped_ = true;
                                     }
                                 }
-                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + onboards_.size() ||
+                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + subGraph_->onboards_.size() ||
                                     selectedLabel->nbPickUp_ == maxPickup_) {
                                     selectedLabel->status_ = INACTIVE;
                                     activeNodes_[j]->nbActiveLabels_--;
@@ -431,8 +431,8 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
         while (!activeNodes_.empty()) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
-                /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+                std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
                 for (int j = activeNodes_.size()-1; j >= 0; j--) {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
                         activeNodes_.erase(activeNodes_.begin() + j);
@@ -440,7 +440,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                         for (int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
                             if (activeNodes_[j]->activeLabels_[l]->status_ == ACTIVE){
                                 PLabel selectedLabel = activeNodes_[j]->activeLabels_[l];
-                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + onboards_.size() ||
+                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + subGraph_->onboards_.size() ||
                                     selectedLabel->nbPickUp_ == maxPickup_) {
                                     selectedLabel->status_ = INACTIVE;
                                     activeNodes_[j]->nbActiveLabels_--;
@@ -542,8 +542,8 @@ void LabelingSubProblem::solveDynamic_pushing() {
 
 
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -602,8 +602,8 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
 
 
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -668,8 +668,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
         // create initial label
         initialization();
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -730,8 +730,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
         activeNodes_.push_back(subGraph_->sourceNodes_[0]);
         subGraph_->sourceNodes_[0]->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -775,8 +775,8 @@ void LabelingSubProblem::solveDynamic_pushingWave1() {
         // create initial label
         initialization();
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -814,8 +814,8 @@ void LabelingSubProblem::solveDynamic_pushingWave1() {
         activeNodes_.push_back(subGraph_->sourceNodes_[0]);
 //        subGraph_->sourceNodes_[0]->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
-            /*sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
@@ -884,7 +884,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
-    for (auto &nodeObj: onboards_) {
+    for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
@@ -1024,7 +1024,7 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
 
 
 void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels) {
-    sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
+    std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
         return lhs->reducedCost_ < rhs->reducedCost_;});
     for (int i = node->activeLabels_.size()-1; i >=0; i--){
         if (node->nbActiveLabels_ <= MaxLabel)
@@ -1056,7 +1056,7 @@ void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominate
 }
 
 void truncateLabelList(PNode &node, int MaxLabel) {
-    sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
+    std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
         return lhs->reducedCost_ < rhs->reducedCost_;});
     for (int i = node->activeLabels_.size()-1; i >=0; i--){
         if (node->nbActiveLabels_ <= MaxLabel)

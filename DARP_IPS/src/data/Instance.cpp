@@ -34,7 +34,7 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbOnboards_ = mainInst.nbOnboards_;
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
-    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
+//    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
 }
 
 Instance::Instance(const Instance &mainInst, int zoneID) : name_(mainInst.name_){
@@ -60,7 +60,7 @@ void Instance::resetInstance() {
     nbRequests_ = 0;
     nbNewRequests_ = 0;
     nbWaiting_ = 0;
-    instGraph_ = std::make_shared<Graph>();
+//    instGraph_ = std::make_shared<Graph>();
 
     requests_.clear();
     nameToRequest_.clear();
@@ -70,6 +70,8 @@ void Instance::resetInstance() {
     instGraph_->pickNodes_.clear();
     instGraph_->dropNodes_.clear();
     instGraph_->sourceNodes_.clear();
+    instGraph_->onboards_.clear();
+    instGraph_->sinkNodes_.clear();
 }
 
 /*Instance::~Instance() {
@@ -197,8 +199,6 @@ std::string Instance::solutionToString() {
 
 // this function update the set of available requests, removed completed requests and update onboards
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
-
-    std::vector<PNode> onboards;
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
  //       instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
@@ -231,7 +231,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 }
                 else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                     instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
-                    onboards.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+                    instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
                     instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
                     instGraph_->nbNodes_++;
@@ -280,11 +280,11 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         else
             break;
     }
-    for (auto & nodeObj: onboards){
+/*    for (auto & nodeObj: onboards){
         // adding onboard nodes to the graph
         instGraph_->dropNodes_.push_back(nodeObj);
-    }
-    nbOnboards_ = onboards.size();
+    }*/
+    nbOnboards_ = instGraph_->onboards_.size();
     /*for (auto & vehicleObj : mainInst->vehicles_){
         // adding onboard nodes to the graph
         for (auto & nodeID: vehicleObj->onboards_) {
@@ -329,12 +329,20 @@ void Instance::buildStaticData(const PInstance &mainInst) {
     }
     nbNewRequests_ = 0;
     // add drop off onboards to the graph
-    for (auto & vehicleObj : mainInst->vehicles_) {
+//    instGraph_->onboards_ = mainInst->instGraph_->onboards_;
+    for (auto & nodeObj : mainInst->instGraph_->onboards_){
+        instGraph_->nodes_.emplace(std::pair<std::string, PNode> (nodeObj->nodeID_, nodeObj));
+        instGraph_->onboards_.push_back(nodeObj);
+        nodeObj->nodeIndex_ = instGraph_->nbNodes_;
+        instGraph_->intToNodeID_.push_back(nodeObj->nodeID_);
+        instGraph_->nbNodes_++;
+    }
+    /*for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i)
                 instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
         }
-    }
+    }*/
 
     for (auto & requestObj : mainInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
@@ -402,25 +410,25 @@ void Instance::restVehicleOrder() {
 void Instance::sortVehicles(SortVehicle sortBase) {
     switch(sortBase) {
         case DUAL :
-            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->dual_ > rhs->dual_;});
             break;
 
         case DEPART_TIME :
-            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->departTime_ < rhs->departTime_;});
             break;
 
         case ROURE_SIZE :
-            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->currentRoute_->routeSize_ < rhs->currentRoute_->routeSize_;});
             break;
         case BEST_REDUCE_COST :
-            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->bestReducedCost_ < rhs->bestReducedCost_;});
             break;
         case SCORE :
-            sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->score_ < rhs->score_;});
             break;
     }
@@ -722,7 +730,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
 
 void Instance::updateTaskIndexLabeling() {
     int orderCounter = 0;
-    sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+    std::stable_sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
         return lhs->dual_ > rhs->dual_;});
 
     for (auto & requestObj : requests_){

@@ -110,7 +110,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         else {
             if (EpochInst->parameters_->vehicle_portion_ < 1) {
                 std::vector<PVehicle> vehicleList = EpochInst->vehicles_;
-                sort(vehicleList.begin(), vehicleList.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+                std::stable_sort(vehicleList.begin(), vehicleList.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                     return lhs->score_ < rhs->score_;});
    //             EpochInst->sortVehicles(SCORE);
                 int portion = (int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbVehicles_);
@@ -153,7 +153,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
 
         subProOptions_->updateOptions(maxReachTime);*/
         // initializing and solving subproblems
-        sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
+        std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {

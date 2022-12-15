@@ -172,6 +172,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
                 PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
                 PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
+                pInstance->instGraph_->onboards_.push_back(dropNode);
                 pInstance->instGraph_->addRequestToMainGraph(pickNode, dropNode);
                 pInstance->vehicles_[vehicleID]->onboards_.push_back(dropID);
                 pInstance->vehicles_[vehicleID]->numPassengers_+= pInstance->requests_.back()->nbPassengers_;

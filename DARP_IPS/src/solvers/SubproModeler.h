@@ -16,7 +16,7 @@ public:
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
 //    std::vector<PNode> pickNodes_;
 //    std::vector<PNode> dropNodes_;
-    std::vector<PNode> onboards_;
+//    std::vector<PNode> onboards_;
 //    std::map<std::string,PNode> nodes_;
 //    int nbNodes_;
 //    PNode departNode_;

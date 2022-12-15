@@ -348,6 +348,7 @@ bool Label::haveDominatedParent() {
 
 PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
+    newRoute->totalLength_ = passedTime_ - vehicle->departTime_;
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < pathNodes_.size()-1; ++i) {

@@ -68,7 +68,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
 //    subGraph_->addNewNode(departNode_);
 //    subGraph_->addNewNode(sinkNode_);
 
-    // adding onboard nodes to the graph
+
     /*for (auto & nodeID: (*Vehicle_)->onboards_) {
         onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
         subGraph_->nodes_[nodeID]  = onboards_.back();
@@ -76,12 +76,12 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
 //        onboardRequests_.insert(pInst->instGraph_->nodes_[nodeID]->related_Request_);
 //        subGraph_->nodes_[nodeID]->pairNode_ = pInst->instGraph_->nodes_[nodeID]->pairNode_;
     }*/
-
+    // adding onboard nodes to the graph
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         for (int i = 1; i < (*Vehicle_)->currentRoute_->routeSize_; ++i) {
             if ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
-                onboards_.emplace_back(std::make_shared<Node>((*Vehicle_)->currentRoute_->routeNodes_[i]));
-                subGraph_->nodes_[(*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]  = onboards_.back();
+                subGraph_->onboards_.emplace_back(std::make_shared<Node>((*Vehicle_)->currentRoute_->routeNodes_[i]));
+                subGraph_->nodes_[subGraph_->onboards_.back()->nodeID_]  = subGraph_->onboards_.back();
             }
         }
     }
@@ -105,7 +105,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
             }
         }
     }
-    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+    std::stable_sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
         return lhs->dual_ > rhs->dual_;});
     for (auto & requestObj : subRequests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
@@ -115,7 +115,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
         subGraph_->pickNodes_.back()->pairNode_ = &subGraph_->nodes_[dropID];
         subGraph_->dropNodes_.back()->pairNode_ = &subGraph_->nodes_[pickID];
     }
-    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + onboards_.size() + 2;
+    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2;
 }
 
 void SubproModeler::initSubGraph(PInstance &pInst) {
@@ -126,8 +126,8 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
 
     // adding onboard nodes to the graph
     for (auto & nodeID: (*Vehicle_)->onboards_) {
-        onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
-        onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][onboards_.back()->locationID_];
+        subGraph_->onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
+        subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];
     }
 
     // adding available nodes based on the penalty
@@ -142,7 +142,7 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
             }
         }
     }
-    sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+    std::stable_sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
         return lhs->dual_ > rhs->dual_;});
     for (auto & requestObj : subRequests_){
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
@@ -156,7 +156,7 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
         subGraph_->pickNodes_[i]->pairNode_ = &subGraph_->dropNodes_[i];
         subGraph_->dropNodes_[i]->pairNode_ = &subGraph_->pickNodes_[i];
     }
-    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + onboards_.size() + 2;
+    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2;
 }
 
 

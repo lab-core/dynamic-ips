@@ -21,16 +21,10 @@ public:
     int load_;                                              // consume capacity of the vehicle
     float passedTime_;                                      // accumulated time of the path
     PVehicle *vehicle_;                                     // the vehicle for which the route has created
-//    PLabel parent_;                                        // a pointer to the parent of the label
-//    std::unordered_map<std::string, float> travelResource_; // time that vehicle is planned to reach each node
     std::vector<float> travelResources_;
-//    std::set<PNode> openNodes_;                             // set of requests that have been started but not completed
     std::vector<PNode*> openNode_;
-//    std::set<PRequest> completedRequests_;                  // set of completed requests
-//    std::vector<int> completedRequest_;
     std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
-//    std::unordered_map<unsigned int, int> requestIDToInt_;
     std::vector<std::string> pathNodes_;
 
     double reducedCost_;
