@@ -604,7 +604,8 @@ std::string Instance::saveRoutesTimes(int epoch) {
         repStr << vehicleObj->currentRoute_->getRouteId() << ",";
         repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
         repStr << vehicleObj->currentRoute_->routeRequests_.size() << ",";
-        repStr << vehicleObj->currentRoute_->createTime_ << "\n";
+        repStr << vehicleObj->currentRoute_->createTime_ << ",";
+        repStr << vehicleObj->currentRoute_->totalLength_ << "\n";
     }
     return repStr.str();
 }

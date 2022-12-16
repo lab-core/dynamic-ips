@@ -38,7 +38,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
                                  "nbDominated, nbRoutes, solveTime, ConvertRouteTime" << std::endl;
 
     pLogEpochSubRouteStream_ = new Tools::LogOutput(inputPaths.getOutputSubproRouteTime());
-    (*pLogEpochSubRouteStream_) << "Epoch, vehicleID, routeID, totalDelay, nbRequests, createTime" << std::endl;
+    (*pLogEpochSubRouteStream_) << "Epoch, vehicleID, routeID, totalDelay, nbRequests, createTime, totalLength" << std::endl;
 }
 
 solver::~solver() {
