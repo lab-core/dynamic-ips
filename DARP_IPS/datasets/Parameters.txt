@@ -32,7 +32,7 @@ SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 Vehicle_portion = 0.1
-Greedy_portion = 0
+Greedy_portion = 1
 
 # CPLEX PARAMETERS
 #

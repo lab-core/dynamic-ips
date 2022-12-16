@@ -171,9 +171,6 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
             possibleDelay.clear();
 
-            std::string pickID = myTools::createNodeID(PInst->requests_[i]->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(PInst->requests_[i]->getRequestId(), DROPOFF);
-
             for (auto & GreedyObj : solutionList_){
                 /*float minWait = (*GreedyObj->Vehicle_)->departTime_ +
                                 durationMatrix_[PInst->instGraph_->nodes_[(*GreedyObj->Vehicle_)->departID_]->locationID_]
@@ -213,7 +210,8 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
 
 void GreedyModeler::GreedySolverFast(PInstance &PInst) {
     initializationFast(PInst);
-    solveInsertionFast(PInst);
+ //   solveInsertionFast(PInst);
+    solveAssignment(PInst);
     for (auto & greedySol : solutionList_) {
         greedySol->resetLinkedGreedyLabels(removedLabels_);
         greedySol.reset();
@@ -223,6 +221,33 @@ void GreedyModeler::GreedySolverFast(PInstance &PInst) {
         position->prePickup_->currentNode_.reset();
     }*/
     solutionList_.clear();
+}
+
+void GreedyModeler::solveAssignment(PInstance &PInst) {
+    greedySolveTime_->start();
+    greedyTime_->start();
+    std::vector<float> possibleDelay;
+    for (int i = 0; i < PInst->requests_.size(); i++) {
+        if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
+            possibleDelay.clear();
+
+            for (auto & GreedyObj : solutionList_){
+                if (!GreedyObj->selected_){
+                    GreedyObj->findAssignedPlace(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
+                                                 PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
+
+                    possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
+                }
+                else
+                    possibleDelay.push_back(INFINITY);
+            }
+            unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
+            solutionList_[vehicle_ID]->selected_ = true;
+            selectedVehicles_[vehicle_ID]++;
+        }
+    }
+    greedyTime_->stop();
+    greedySolveTime_->stop();
 }
 
 

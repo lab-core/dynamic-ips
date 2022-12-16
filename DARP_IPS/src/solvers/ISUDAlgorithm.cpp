@@ -367,8 +367,8 @@ void ISUDAlgorithm::calcIncompatibilityMatrix() {
 void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     for (auto & requestObj : pInst->requests_)
         requestObj->taskIncIndex_ = -1;
-    calcIncMatrix();
- //   calcIncMatrixFull();
+ //   calcIncMatrix();
+    calcIncMatrixFull();
     maxIncDegree_ = 0;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
 
@@ -386,8 +386,8 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
     for (auto & routeObj : availableRoutes_[vehicleID]) {
-        calcIncompatibility(routeObj);
-//        calcIncompatibilityFull(routeObj);
+//        calcIncompatibility(routeObj);
+        calcIncompatibilityFull(routeObj);
         if (routeObj->incompatibilityDegree_ > maxIncDegree_)
             maxIncDegree_  =routeObj->incompatibilityDegree_;
     }

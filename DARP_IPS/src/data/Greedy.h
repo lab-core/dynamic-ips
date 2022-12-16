@@ -38,6 +38,7 @@ public:
     float totalDelay_;
     float departTime_;
     float idleTime_;
+    bool selected_;
 
     // Constructor
 public:
@@ -82,6 +83,8 @@ public:
     PRoute greedyLabelToRoute() const;
     // Display function
     std::string toString() const;
+    void findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
+                         PInsertPosition & position);
 };
 
 struct insertPosition {

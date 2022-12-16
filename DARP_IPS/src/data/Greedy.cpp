@@ -35,6 +35,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Ve
     totalDelay_ = 0;
     idleTime_ = 0;
     departTime_ = vehicle->departTime_;
+    selected_ = false;
     for (auto &nodeID: (*Vehicle_)->onboards_) {
         PNode onboardNode = pInst->instGraph_->nodes_[nodeID];
         float dropTime = labelToNodeReachTime(tail_, onboardNode);
@@ -61,7 +62,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std:
         source_->setValues((*Vehicle_)->departNode_,vehicle->departTime_,
                            vehicle->numPassengers_);
     }
-
+    selected_ = false;
     head_ = source_;
     tail_ = source_;
     totalDelay_ = 0;
@@ -91,6 +92,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std:
 }
 
 LinkedGreedyLabels::LinkedGreedyLabels(const LinkedGreedyLabels &label) {
+    selected_ = label.selected_;
     Vehicle_ = label.Vehicle_;
     departTime_ = label.departTime_;
     idleTime_ = label.idleTime_;
@@ -900,6 +902,80 @@ std::string LinkedGreedyLabels::toString() const {
     return repStr.str();
 }
 
+void LinkedGreedyLabels::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
+                                           vector<PGreedyLabel> &removedLabels, PInsertPosition &position) {
+    float deltaDelay = INFINITY;
+    bool notFound = true;
+
+    // Tour length increase by adding pickup
+    float pickDeltaT = INFINITY;
+
+    // Tour length increase by adding drop off
+    float dropDeltaT = INFINITY;
+    position->updatePosition(tail_,tail_, deltaDelay, pickDeltaT + dropDeltaT);
+
+    // define the initial position to add the request just after all
+    PGreedyLabel prePick = head_;
+    PGreedyLabel preDrop = head_;
+    while ((prePick != nullptr) && (notFound)) {
+        deltaDelay = INFINITY;
+        if (prePick == tail_) {
+            // it stays at tail and then departs to the pickup point
+            float pickTime = labelToNodeReachTime(prePick, pickNode);
+            deltaDelay =  pickTime - pickNode->requestTime_;
+            pickDeltaT = pickTime - departTime_;
+            preDrop = tail_;
+            if (deltaDelay  < position->deltaDelay_) {
+                position->updatePosition(prePick, preDrop, deltaDelay,pickDeltaT);
+            }
+        }
+        else {
+            //first we check to see is it possible to insert pickup after prePick
+            if (isInsertPossible(prePick, pickNode)) {
+                // we have to find a place to insert drop point
+                // first we make a copy of the list and insert the pickup
+                float endTime = tail_->reachTime_;
+                float curDelay = totalDelay_;
+
+                insertNode(prePick,pickNode, removedLabels);
+                deltaDelay =  totalDelay_ - curDelay;
+                pickDeltaT = tail_->reachTime_ - endTime;
+                preDrop = prePick->child_;
+                PGreedyLabel pickLabel = prePick->child_;
+
+                // we have to check the vehicle capacity violation, if there is one, it should be dropped before that
+                PGreedyLabel endLabel = nullptr;
+                PGreedyLabel currentIndex = pickLabel;
+                while (currentIndex->child_ != nullptr){
+                    if (currentIndex->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
+                        endLabel = currentIndex->child_;
+                        break;
+                    }
+                    else
+                        currentIndex = currentIndex->child_;
+                }
+                while (preDrop != endLabel) {
+                    if (isDropPossible(preDrop, pickLabel, dropNode, maxDuration)) {
+                        if (deltaDelay  <= position->deltaDelay_) {
+                            if (preDrop == pickLabel)
+                                position->updatePosition(prePick, prePick, deltaDelay,
+                                                         pickDeltaT + dropDeltaT);
+                            else
+                                position->updatePosition(prePick, preDrop, deltaDelay,
+                                                         pickDeltaT + dropDeltaT);
+                            notFound = false;
+                            break;
+                        }
+                    }
+                    else
+                        preDrop = preDrop->child_;
+                }
+                removeLabel(pickLabel, removedLabels);
+            }
+        }
+        prePick = prePick->child_;
+    }
+}
 
 
 insertPosition::insertPosition() {}

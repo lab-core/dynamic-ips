@@ -206,6 +206,12 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
+    // add unscheduled requests
+    for (auto & requestObj: penaltyRequests) {
+        addRequest(requestObj);
+        instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
+        instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
+    }
 
     // add unperformed requests
     for (auto & vehicleObj : mainInst->vehicles_) {
@@ -226,13 +232,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 }
             }
         }
-    }
-
-    // add unscheduled requests
-    for (auto & requestObj: penaltyRequests) {
-        addRequest(requestObj);
-        instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
-        instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
     }
 
     // add new requests

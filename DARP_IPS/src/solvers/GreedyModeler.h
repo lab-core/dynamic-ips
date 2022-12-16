@@ -32,6 +32,7 @@ public:
     void GreedySolver(PInstance &PInst);
     void solveInsertionFast(PInstance &PInst);
     void GreedySolverFast(PInstance &PInst);
+    void solveAssignment(PInstance &PInst);
 };
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing
