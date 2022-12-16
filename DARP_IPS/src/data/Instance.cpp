@@ -201,18 +201,8 @@ std::string Instance::solutionToString() {
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
- //       instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
         instGraph_->addNewNode(mainInst->instGraph_->sinkNodes_[vehicleObj->vehicleID_]);
-//        instGraph_->sourceNodes_.push_back(vehicleObj->departNode_);
 
-        // adding onboard nodes to the graph
-        /*for (auto & nodeID: vehicleObj->onboards_) {
- //           instGraph_->addNewNode(mainInst->instGraph_->nodes_[nodeID]);
-            instGraph_->nodes_.emplace(std::pair<std::string, PNode> (nodeID, mainInst->instGraph_->nodes_[nodeID]));
-            mainInst->instGraph_->nodes_[nodeID]->nodeIndex_ = instGraph_->nbNodes_;
-            instGraph_->intToNodeID_.push_back(nodeID);
-            instGraph_->nbNodes_++;
-        }*/
         vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
@@ -221,14 +211,12 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-  //              instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
                 if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP){
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                     instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
                     instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
- //                   instGraph_->pickNodes_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
- //                   instGraph_->dropNodes_.push_back(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                 }
+                // adding onboard nodes to the graph
                 else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                     instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
                     instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
@@ -245,12 +233,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         addRequest(requestObj);
         instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
         instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
-//        instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
-//        instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
-        /*std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-        std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
     }
 
     // add new requests
@@ -260,12 +242,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             addRequest(mainInst->requests_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
- //           instGraph_->pickNodes_.push_back(mainInst->instGraph_->pickNodes_[i]);
- //           instGraph_->dropNodes_.push_back(mainInst->instGraph_->dropNodes_[i]);
-            /*std::string pickID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(mainInst->requests_[i]->getRequestId(), DROPOFF);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);*/
 
             // calculate vehicle scores
             /*if (mainInst->parameters_->vehicle_portion_ < 1){
@@ -325,11 +301,10 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
 void Instance::buildStaticData(const PInstance &mainInst) {
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+        instGraph_->addNewNode(mainInst->instGraph_->sinkNodes_[vehicleObj->vehicleID_]);
     }
     nbNewRequests_ = 0;
     // add drop off onboards to the graph
-//    instGraph_->onboards_ = mainInst->instGraph_->onboards_;
     for (auto & nodeObj : mainInst->instGraph_->onboards_){
         instGraph_->nodes_.emplace(std::pair<std::string, PNode> (nodeObj->nodeID_, nodeObj));
         instGraph_->onboards_.push_back(nodeObj);
@@ -337,21 +312,13 @@ void Instance::buildStaticData(const PInstance &mainInst) {
         instGraph_->intToNodeID_.push_back(nodeObj->nodeID_);
         instGraph_->nbNodes_++;
     }
-    /*for (auto & vehicleObj : mainInst->vehicles_) {
-        if (vehicleObj->currentRoute_->routeSize_ > 1) {
-            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i)
-                instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-        }
-    }*/
 
     for (auto & requestObj : mainInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {
             nbNewRequests_++;
             addRequest(requestObj);
-            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
+            instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
+            instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
         }
     }
 }
@@ -730,8 +697,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
 
 void Instance::updateTaskIndexLabeling() {
     int orderCounter = 0;
-    std::stable_sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});
+    /*std::stable_sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
 
     for (auto & requestObj : requests_){
         requestObj->taskIndexLabel_ = orderCounter;

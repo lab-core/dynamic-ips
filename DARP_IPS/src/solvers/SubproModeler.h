@@ -36,7 +36,7 @@ public:
 //    void initSubGraph(PInstance &pInst);
 
     void initSubGraph2(PInstance &pInst);
-    void initSubGraph(PInstance &pInst);
+//    void initSubGraph(PInstance &pInst);
 
 };
 

@@ -278,7 +278,7 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
         }
     }
     else
-        solutionRoute_->addNode(pInst->instGraph_->nodes_[sinkID_]);
+        solutionRoute_->addNode(pInst->instGraph_->sinkNodes_[vehicleID_]);
 }
 
 

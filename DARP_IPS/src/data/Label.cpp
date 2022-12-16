@@ -14,6 +14,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
     load_ = (*vehicle)->numPassengers_;
     passedTime_ = (*vehicle)->departTime_;
     pathNodes_.push_back(source->nodeID_);
+    pathNode_.push_back(&source);
  //   path_.push_back(&source);
     reducedCost_ = 0;
     totalDelay_ = 0;
@@ -44,6 +45,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
 //    travelResource_ = label.travelResource_;
     travelResources_ = label.travelResources_;
     pathNodes_ = label.pathNodes_;
+    pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
     currentNode_ = label.currentNode_;
@@ -74,6 +76,7 @@ void Label::copyLabel(const Label &label) {
 //    parent_ = nullptr;
     travelResources_ = label.travelResources_;
     pathNodes_ = label.pathNodes_;
+    pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
     currentNode_ = label.currentNode_;
@@ -174,6 +177,7 @@ void Label:: extend(PNode &outNode) {
         passedTime_ = reachTime;
     }
     pathNodes_.push_back(outNode->nodeID_);
+    pathNode_.push_back(&outNode);
  //   path_.push_back(&outNode);
     currentNode_ = &outNode;
 //    extendCheck_.insert(outNode->nodeID_);
@@ -351,8 +355,14 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     newRoute->totalLength_ = passedTime_ - vehicle->departTime_;
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
-    for (int i = 1; i < pathNodes_.size()-1; ++i) {
+    /*for (int i = 1; i < pathNodes_.size()-1; ++i) {
         newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]]);
+    }*/
+    for (int i = 1; i < pathNode_.size()-1; ++i) {
+        if ((*pathNode_[i])->type_ == PICKUP)
+            newRoute->addNode(pInst->instGraph_->pickNodes_[(*pathNode_[i])->related_Request_->getRequestId()]);
+        else
+            newRoute->addNode(pInst->instGraph_->dropNodes_[(*pathNode_[i])->related_Request_->getRequestId()]);
     }
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {

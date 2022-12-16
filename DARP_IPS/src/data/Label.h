@@ -26,6 +26,7 @@ public:
     std::valarray<int> completedRequests_;
     std::vector<int> openRequests_;
     std::vector<std::string> pathNodes_;
+    std::vector<PNode*> pathNode_;
 
     double reducedCost_;
     PNode* currentNode_;

@@ -56,7 +56,7 @@ solver::~solver() {
     delete pLogEpochSubRouteStream_;
 }
 
-void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
+void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
     // define required variables
     double previousObj;
     int nbNegativeFound;
@@ -157,7 +157,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
-                subProblem->initSubGraph(EpochInst);
+                subProblem->initSubGraph2(EpochInst);
                 subProblem->solveDynamic();
 
             });
@@ -177,7 +177,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         for (auto &subProblem: subProSolve){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
+                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst);
             isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
@@ -185,7 +185,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, InputPaths &inputPaths) {
         for (auto &subProblem: subProConst){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], EpochInst);
+                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst);
             isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
@@ -319,7 +319,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
         preprocessTime_->stop();
 
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD(EpochInst,inputPaths);
+            solveCG_ISUD(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
@@ -388,7 +388,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         }
         preprocessTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD(EpochInst,inputPaths);
+            solveCG_ISUD(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
@@ -556,7 +556,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
             }
             else {
                 simulationTime_->start();
-                solveCG_ISUD(StaticInst,inputPaths);
+                solveCG_ISUD(StaticInst, mainInst, inputPaths);
                 simulationTime_->stop();
             }
 
@@ -639,7 +639,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         preprocessTime_->stop();
 
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD(EpochInst,inputPaths);
+            solveCG_ISUD(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();

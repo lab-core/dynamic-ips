@@ -136,14 +136,9 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
 
                 newRoute->addSource(pInst->vehicles_[v]->departNode_,pInst->vehicles_[v]->departTime_,
                                     pInst->vehicles_[v]->numPassengers_);
-                static const NodeType nodeTypesInOrder[] = {PICKUP, DROPOFF};
-                for (const auto t: nodeTypesInOrder) {
-                    std::string ID = myTools::createNodeID(pInst->requests_[i]->getRequestId(), t);
-                    newRoute->addNode(pInst->instGraph_->nodes_[ID]);
-                }
-//                generatedRoutes_.insert(std::pair<std::string, PRoute>(newRoute->name_, newRoute));
+                newRoute->addNode(pInst->instGraph_->pickNodes_[i]);
+                newRoute->addNode(pInst->instGraph_->dropNodes_[i]);
                 availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
- //               ReducedPro_->routesToAdd_.push_back(newRoute);
                 MIPReducedPro_->routesToAdd_.push_back(newRoute);
             }
         }

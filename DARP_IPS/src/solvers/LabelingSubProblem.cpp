@@ -154,7 +154,7 @@ void LabelingSubProblem::initialization() {
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
-            initialLabel->extend((*Vehicle_)->currentRoute_->routeNodes_[i]);
+            initialLabel->extend(subGraph_->nodes_[(*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]);
             i++;
             if (i == (*Vehicle_)->currentRoute_->routeSize_ - 1)
                 break;
@@ -899,7 +899,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
-            initialLabel->extend((*Vehicle_)->currentRoute_->routeNodes_[i]);
+            initialLabel->extend(subGraph_->nodes_[(*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]);
             i++;
             if (i == (*Vehicle_)->currentRoute_->routeSize_ - 1)
                 break;
@@ -914,7 +914,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                 if (subGraph_->nodes_.count(routeObj->routeNodes_[i]->nodeID_)>0 &&
                     routeObj->routeNodes_[i]->type_ != SOURCE){
                     if (newLabel->isExtendFeasible(routeObj->routeNodes_[i], solverOptions_->MaxLabel_)) {
-                        newLabel->extend(routeObj->routeNodes_[i]);
+                        newLabel->extend(subGraph_->nodes_[routeObj->routeNodes_[i]->nodeID_]);
                         if (newLabel->isEliminated()){
                             isRemoved = true;
                             break;
