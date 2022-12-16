@@ -15,7 +15,7 @@ solutionMode = 1
 # ISUD PARAMETERS
 #
 warmStart = 1
-MIP_maxIncDegree = 4
+MIP_maxIncDegree = 10
 CP_IncDegree = 6
 useMultiStage = 0
 minImp = 0.0025

@@ -973,7 +973,6 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
         }
     }
     MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
- //   MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
     MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_);
     setObjValue();
 
@@ -986,23 +985,19 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
     if (previousObj != objValue_){
         isudIter_++;
         std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
-        CPTime_->start();
+        /*CPTime_->start();
         CompPro_->routesToAdd_.clear();
         updateDegreeTime_->start();
         updateIncDegrees(pInst);
         updateDegreeTime_->stop();
         updateRoutesToAdd(maxIncDegree_, pInst);
-//        std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
         CompPro_->buildModel(pInst, zSolution_, routeSolution_);
-  //      CompPro_->solveModel(pInst, zSolution_, routeSolution_, generatedRoutes_);
         CompPro_->solveModel(pInst, zSolution_, routeSolution_);
         setObjValue();
         CPTime_->stop();
         // UPDATE DUAL VALUES AFTER SOLVING CP
-        /*ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
-        ReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;*/
         MIPReducedPro_->requestDuals_ = CompPro_->requestDuals_;
-        MIPReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;
+        MIPReducedPro_->vehicleDuals_ = CompPro_->vehicleDuals_;*/
 
     }
     isudMIPTime_->stop();
