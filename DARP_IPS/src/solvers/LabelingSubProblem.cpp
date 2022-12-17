@@ -136,6 +136,7 @@ void LabelingSubProblem::initialization() {
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
+    initialNodeID_ = subGraph_->sourceNodes_[0]->nodeID_;
     initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
@@ -155,8 +156,9 @@ void LabelingSubProblem::initialization() {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
             initialLabel->extend(subGraph_->nodes_[(*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]);
+            initialNodeID_  = (*Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_;
             i++;
-            if (i == (*Vehicle_)->currentRoute_->routeSize_ - 1)
+            if (i == (*Vehicle_)->currentRoute_->routeSize_)
                 break;
         }
     }
@@ -470,8 +472,9 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                 }
             }
         }
+        PNode initialNode = subGraph_->nodes_[initialNodeID_];
         std::vector<PNode> nodeList = subGraph_->pickNodes_;
-        nodeList.push_back(subGraph_->sourceNodes_[0]);
+        nodeList.push_back(initialNode);
         while (!nodeList.empty()){
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
@@ -707,8 +710,9 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
             for (auto & label: node->activeLabels_)
                 label->status_ = ACTIVE;
         }*/
+        PNode initialNode = subGraph_->nodes_[initialNodeID_];
         std::vector<PNode> nodeList = subGraph_->pickNodes_;
-        nodeList.push_back(subGraph_->sourceNodes_[0]);
+        nodeList.push_back(initialNode);
         while (!nodeList.empty()){
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
@@ -727,8 +731,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                 }
             }
         }
-        activeNodes_.push_back(subGraph_->sourceNodes_[0]);
-        subGraph_->sourceNodes_[0]->activeLabels_[0]->status_ = ACTIVE;
+        activeNodes_.push_back(initialNode);
+        initialNode->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
             std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
                 return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});

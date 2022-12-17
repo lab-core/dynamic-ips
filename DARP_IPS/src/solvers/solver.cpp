@@ -93,15 +93,11 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         EpochInst->updateTaskIndexLabeling();
         std::vector<PLabelingSubPro> subProSolve;
         std::vector<PLabelingSubPro> subProConst;
-        if (EpochInst->parameters_->greedyPortion_){
+        if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbRequests_ > 20)){
             GreedyModel_->GreedySolverFast(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-//                    vehicleObj->selected_ = true;
-//                    subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];
-                    /*if (subProSolve.back()->maxPickup_ < 2)
-                        subProSolve.back()->maxPickup_ = 2;*/
                 }
                 else
                     isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -149,17 +145,15 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
         std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
-        /*if (EpochInst->parameters_->SubproSolveMode_ == TIME_RESTRICTED)
-            maxReachTime = static_cast<float>(4 * EpochInst->parameters_->epochLength_);
 
-        subProOptions_->updateOptions(maxReachTime);*/
         // initializing and solving subproblems
         std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);
-                subProblem->solveDynamic();
+                if (!subProblem->subRequests_.empty())
+                    subProblem->solveDynamic();
 
             });
             pPool->run(job);
@@ -365,7 +359,6 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
-            isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
 
@@ -628,7 +621,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             break;
         }
 
-        if (epoch_ == 0 && nbReceivedRequest == 0) {
+        if (EpochInst->nbRequests_ == 0) {
 
             preprocessTime_->stop();
             simulationTime_->stop();

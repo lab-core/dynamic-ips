@@ -29,6 +29,7 @@ public:
     myTools::Timer *subproTime_;
     myTools::Timer *subproRouteTime_;
     myTools::Timer *sortTime_;
+    std::string initialNodeID_;
 //    std::unordered_map<unsigned int, int> requestIDToInt_;
 
 //    std::vector<PNode> nodesOrder_;

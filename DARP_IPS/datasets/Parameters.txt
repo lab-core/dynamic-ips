@@ -8,9 +8,9 @@ penaltyL = 30
 committedTime = 10
 nbThreads = 8
 InitialDual = 1
-mainAlgorithm = 0
+mainAlgorithm = 3
 addOneRequestColumn = 0
-solutionMode = 1
+solutionMode = 2
 
 # ISUD PARAMETERS
 #
@@ -31,7 +31,7 @@ isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 1
-Vehicle_portion = 0.1
+Vehicle_portion = 1
 Greedy_portion = 1
 
 # CPLEX PARAMETERS
