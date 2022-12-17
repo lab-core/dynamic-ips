@@ -98,13 +98,13 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                    vehicleObj->selected_ = true;
+//                    vehicleObj->selected_ = true;
 //                    subProSolve.back()->maxPickup_ = GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_];
                     /*if (subProSolve.back()->maxPickup_ < 2)
                         subProSolve.back()->maxPickup_ = 2;*/
                 }
-                else
-                    subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+//                else
+//                    subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
             }
         }
         else {
@@ -378,11 +378,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
-        if (epoch_ == 0 && nbReceivedRequest == 0) {
+        if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
             preprocessTime_->stop();
  //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
-            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+ //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }

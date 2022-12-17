@@ -8,9 +8,9 @@ penaltyL = 30
 committedTime = 10
 nbThreads = 8
 InitialDual = 1
-mainAlgorithm = 0
+mainAlgorithm = 3
 addOneRequestColumn = 0
-solutionMode = 0
+solutionMode = 2
 
 # ISUD PARAMETERS
 #

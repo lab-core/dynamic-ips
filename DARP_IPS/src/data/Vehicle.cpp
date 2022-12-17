@@ -182,7 +182,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
     }
     if (currentRoute_->routeSize_ > 1) {
-        currentRoute_->resetRoute();
+ //       currentRoute_->resetRoute();
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + elapsedTime) {
             onboards_.clear();
