@@ -103,7 +103,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                     /*if (subProSolve.back()->maxPickup_ < 2)
                         subProSolve.back()->maxPickup_ = 2;*/
                 }
-//                else
+                else
+                    isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
 //                    subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
             }
         }

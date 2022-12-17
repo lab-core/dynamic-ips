@@ -3,14 +3,14 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 4
+epochLength = 1
 penaltyL = 30
 committedTime = 10
 nbThreads = 8
 InitialDual = 1
 mainAlgorithm = 3
 addOneRequestColumn = 0
-solutionMode = 2
+solutionMode = 1
 
 # ISUD PARAMETERS
 #
