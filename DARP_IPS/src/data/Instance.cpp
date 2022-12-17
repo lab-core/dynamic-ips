@@ -223,7 +223,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                     instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                 }
                 // adding onboard nodes to the graph
-                else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
+                    (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && vehicleObj->currentRoute_->routeNodes_[i]->type_ == DROPOFF)){
                     instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
                     instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
                     vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
@@ -709,7 +710,8 @@ void Instance::updateTaskIndexLabeling() {
         orderCounter = firstIndex;
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
+                    (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && vehicleObj->currentRoute_->routeNodes_[i]->type_ == DROPOFF)){
                     vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->taskIndexLabel_ = orderCounter;
                     orderCounter++;
                 }
