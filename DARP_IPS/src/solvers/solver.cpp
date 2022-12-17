@@ -202,7 +202,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         for (auto & subProblem : subProConst) {
             repStr << subProblem->toStringOut(epoch_);
         }
-        (*pLogEpochSubRuntimeStream_) << repStr.str();
+ //       (*pLogEpochSubRuntimeStream_) << repStr.str();
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
         /*std::cout << "# ==============================================================" << std::endl;
@@ -250,14 +250,14 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
 //        std::cout << EpochInst->vehicles_[routeObj->vehicleID_]->currentRoute_->toString() << std::endl;
     }
-    (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
+ //   (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
     isudObj_->setObjValue();
 //    std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
 //    std::cout << isudObj_->toString();
 
 //    EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
 
-    (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
+//    (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
 }
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
@@ -605,8 +605,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        if (epoch_ == 1)
-            break;
+        /*if (epoch_ == 1)
+            break;*/
 
         // resetting a subInstance
         EpochInst->resetInstance();
