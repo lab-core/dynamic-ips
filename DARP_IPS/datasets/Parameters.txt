@@ -14,7 +14,7 @@ solutionMode = 1
 
 # ISUD PARAMETERS
 #
-warmStart = 1
+warmStart = 0
 MIP_maxIncDegree = 10
 CP_IncDegree = 6
 useMultiStage = 0
@@ -29,7 +29,7 @@ isDominanceReleased = 0
 isSuccessorsLimited = 0
 isDropPickPossible = 0
 SubproSolveStartState = 2
-LabelingStrategy = 1
+LabelingStrategy = 0
 subproblemAlgorithm = 1
 Vehicle_portion = 0.1
 Greedy_portion = 1

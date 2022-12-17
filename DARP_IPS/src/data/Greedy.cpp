@@ -809,7 +809,7 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
     }
 }
 // this function convert a greedyLabel list to a route
-PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
+PRoute LinkedGreedyLabels::greedyLabelToRoute(bool update) const {
     /*std::cout << "GreedyLinkList before converting to the route" << std::endl;
     std::cout << toString() << std::endl;*/
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
@@ -830,14 +830,16 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute() const {
                 myTools::throwException("Route-Validation");
             }
         }
-        newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
-        newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
-        newRoute->routeNodes_.back()->nodeStatus_ = DONE;
-        if (newRoute->routeNodes_.back()->type_ == PICKUP)
-            newRoute->routeNodes_.back()->related_Request_->pickTime_ = currentLabel->reachTime_;
-        else if (newRoute->routeNodes_.back()->type_ == DROPOFF) {
-            newRoute->routeNodes_.back()->related_Request_->dropTime_ = currentLabel->reachTime_;
-            newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
+        if (update) {
+            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
+            newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
+            newRoute->routeNodes_.back()->nodeStatus_ = DONE;
+            if (newRoute->routeNodes_.back()->type_ == PICKUP)
+                newRoute->routeNodes_.back()->related_Request_->pickTime_ = currentLabel->reachTime_;
+            else if (newRoute->routeNodes_.back()->type_ == DROPOFF) {
+                newRoute->routeNodes_.back()->related_Request_->dropTime_ = currentLabel->reachTime_;
+                newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
+            }
         }
         currentLabel = currentLabel->child_;
     }

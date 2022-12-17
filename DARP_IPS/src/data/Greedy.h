@@ -80,7 +80,7 @@ public:
     void updateReachTimes(PGreedyLabel &preLabel);
 
     // this function convert a greedyLabel list to a route
-    PRoute greedyLabelToRoute() const;
+    PRoute greedyLabelToRoute(bool update) const;
     // Display function
     std::string toString() const;
     void findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,

@@ -117,13 +117,15 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
         PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
         GreedyModel->GreedySolver(pInst);
         for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleObj->currentRoute_->resetRoute();
+ //           vehicleObj->currentRoute_->resetRoute();
             /*generatedRoutes_.insert(std::pair<std::string, PRoute>((vehicleObj->currentRoute_)->name_,
                                                                    (vehicleObj->currentRoute_)));*/
 //            ReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
             MIPReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
             routeSolution_.push_back(vehicleObj->currentRoute_);
         }
+        setObjValue();
+        std::cout << "Objective value of Greedy Warm start: " << objValue_ << std::endl;
     }
 
     if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
@@ -367,8 +369,8 @@ void ISUDAlgorithm::calcIncompatibilityMatrix() {
 void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     for (auto & requestObj : pInst->requests_)
         requestObj->taskIncIndex_ = -1;
- //   calcIncMatrix();
-    calcIncMatrixFull();
+    calcIncMatrix();
+ //   calcIncMatrixFull();
     maxIncDegree_ = 0;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
 
@@ -386,8 +388,8 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
     for (auto & routeObj : availableRoutes_[vehicleID]) {
-//        calcIncompatibility(routeObj);
-        calcIncompatibilityFull(routeObj);
+        calcIncompatibility(routeObj);
+//        calcIncompatibilityFull(routeObj);
         if (routeObj->incompatibilityDegree_ > maxIncDegree_)
             maxIncDegree_  =routeObj->incompatibilityDegree_;
     }
@@ -782,6 +784,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
         // solve RP with MIP solver
         CompPro_->fractionalZ_.clear();
         solveRP_MIP(pInst, 0, inputPaths);
+        std::cout << "Objective value after RP improve: " << objValue_ << std::endl;
         RPTime_->stop();
         // if objective improves, the CP is build
         if (previousObj != objValue_){
@@ -831,6 +834,7 @@ void ISUDAlgorithm::solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPat
      //           CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
                 setObjValue();
+                std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
 
                 if (CompPro_->status_ == FRACTIONAL) {
     //                std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
