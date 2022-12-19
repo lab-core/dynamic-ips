@@ -30,6 +30,7 @@ class Dataset(object):
         self.end_min = 0
         self.nb_vehicles = 2000
         self.nb_vehicle_per_district = nb_vehicle_per_district
+        self.nb_customers = 0
 
     def read_dataset_data(self):
         """ read data """
@@ -95,6 +96,7 @@ class Dataset(object):
         self.instance = self.instance[self.instance.request_time_sec >= start_seconds]
         self.instance = self.instance[self.instance.request_time_sec < end_seconds]
         print("\nThe number of data records after time limit:", len(self.instance.index))
+        print("\nThe number of passengers:", self.nb_customers)
 
     def limit_time_dataset(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -110,13 +112,15 @@ class Dataset(object):
         self.calculate_times_seconds()
         self.dataset = self.dataset[self.dataset.request_time_sec >= start_seconds]
         self.dataset = self.dataset[self.dataset.request_time_sec < end_seconds]
-        print("\nThe number of data records after time limit:", len(self.dataset.index))
         self.update_state()
+        print("\nThe number of trips after time limit:", self.nb_requests)
+        print("The number of customers after time limit:", self.nb_customers)
         self.instance = self.dataset
 
     def update_state(self):
         self.nb_requests = len(self.dataset.index)
-        self.max_capacity = self.dataset.max()['passenger_count']
+        self.max_capacity = self.dataset.max(numeric_only=True)['passenger_count']
+        self.nb_customers = self.dataset.sum(numeric_only=True)['passenger_count']
 
     def save_dataset(self):
         folder_name = c.DAYS_DIR + "Main"
@@ -130,6 +134,7 @@ class Dataset(object):
         self.dataset = self.dataset[self.dataset.passenger_count <= capacity]
         self.update_state()
         print("\nThe number of data records based on capacity:", self.nb_requests)
+        print("The number of passengers:", self.nb_customers)
 
     """ this function split ride requests with number of passengers more than the vehicle capacity"""
 
@@ -149,6 +154,7 @@ class Dataset(object):
         self.dataset = pd.concat([self.dataset, df_removed_rows])
         self.dataset = self.dataset.sort_values(by=['tpep_pickup_datetime'])
         self.update_state()
+        print("The number of trips after split:", self.nb_requests)
 
     def add_district_id(self, network):
         pickup_id = []

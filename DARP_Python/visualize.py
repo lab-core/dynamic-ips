@@ -1,4 +1,6 @@
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+
 from Network import *
 import pandas as pd
 import math
@@ -150,7 +152,7 @@ def show_request_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
         text_size = c.OS_TEXT_SIZE
     df_dataset['count'] = 1
     df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
-    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='H')).sum()
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='H')).sum(numeric_only=True)
 
     hour_list = tuple([dtime.datetime.strftime(d, '%H:%M') for d in df_grouped.index.tolist()])
     y_pos = np.arange(len(hour_list))
@@ -172,6 +174,113 @@ def show_request_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
     ax.set_xticklabels(hour_list)
 
     ax.set_ylabel('Number of requests', fontsize=text_size, fontweight='bold')
+
+    if save_image:
+        parent_folder = c.DAYS_DIR + "Images_trip"
+        if not os.path.exists(parent_folder):
+            os.mkdir(parent_folder)
+        image_dir = parent_folder + "/"
+        file_name = str(year) + str(month) + str(day) + '.png'
+        fig.savefig(image_dir + file_name)
+
+    fig.show()
+    if pause:
+        plt.pause(10)
+
+def show_customer_per_hr(df_dataset, time_origin, save_image=False, os_type=None, pause=False):
+    year = time_origin.year
+    month = time_origin.month
+    day = time_origin.day
+    if os_type is None:
+        os_type = "osx"
+    title_size = c.WIN_TITLE_SIZE
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    df_dataset['count'] = df_dataset['passenger_count']
+    df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='H')).sum(numeric_only=True)
+
+    hour_list = tuple([dtime.datetime.strftime(d, '%H:%M') for d in df_grouped.index.tolist()])
+    y_pos = np.arange(len(hour_list))
+    num_requests = df_grouped['count'].tolist()
+    if os_type == "windows":
+        fig, ax = plt.subplots(figsize=c.WIN_FIG_SIZE)
+    else:
+        fig, ax = plt.subplots(figsize=c.OS_FIG_SIZE)
+    title = "Number of arrival requests per hour (" + str(year) + "-" + str(month) + "-" + str(day) + ")"
+    ax.set_title(title, fontsize=title_size, fontweight='bold')
+    ax.bar(y_pos, num_requests, align='center', alpha=1, color='orange', width=0.6)
+    for i in range(len(hour_list)):
+        ax.annotate(num_requests[i], (0 + i, num_requests[i] + num_requests[4] * 0.2), weight='bold',
+                    size=text_size, ha='center', va='center', color='maroon')
+
+    ax.tick_params(axis='both', labelsize=text_size)
+
+    ax.set_xticks(y_pos)
+    ax.set_xticklabels(hour_list)
+
+    ax.set_ylabel('Number of requests', fontsize=text_size, fontweight='bold')
+
+    if save_image:
+        parent_folder = c.DAYS_DIR + "Images_customers"
+        if not os.path.exists(parent_folder):
+            os.mkdir(parent_folder)
+        image_dir = parent_folder + "/"
+        file_name = str(year) + str(month) + str(day) + '.png'
+        fig.savefig(image_dir + file_name)
+
+    fig.show()
+    if pause:
+        plt.pause(10)
+
+
+def show_dataset_per_hr(df_dataset, time_origin, save_image=False, os_type=None, pause=False):
+    year = time_origin.year
+    month = time_origin.month
+    day = time_origin.day
+    if os_type is None:
+        os_type = "osx"
+    title_size = c.WIN_TITLE_SIZE
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    df_dataset['count'] = 1
+    df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='H')).sum(numeric_only=True)
+
+    hour_list = tuple([dtime.datetime.strftime(d, '%H:%M') for d in df_grouped.index.tolist()])
+    y_pos = np.arange(len(hour_list))
+    num_requests = df_grouped['count'].tolist()
+    num_customers = df_grouped['passenger_count'].tolist()
+    if os_type == "windows":
+        fig = plt.figure(figsize=c.WIN_FIG_SIZE)
+    else:
+        fig = plt.figure(figsize=c.OS_FIG_SIZE)
+    gs = fig.add_gridspec(2, hspace=0)
+    ax = gs.subplots(sharex=True)
+    title = "Number of requests/customers per hour (" + str(year) + "-" + str(month) + "-" + str(day) + ")"
+    fig.suptitle(title, fontsize=title_size, fontweight='bold')
+    ax[0].bar(y_pos, num_requests, align='center', alpha=1, color='yellowgreen', width=0.6)
+    for i in range(len(hour_list)):
+        ax[0].annotate(num_requests[i], (0 + i, num_requests[i] + num_requests[4] * 0.3), weight='bold',
+                       size=text_size, ha='center', va='center', color='darkgreen')
+
+    ax[1].bar(y_pos, num_customers, align='center', alpha=1, color='yellow', width=0.6)
+    for i in range(len(hour_list)):
+        ax[1].annotate(num_customers[i], (0 + i, num_customers[i] + num_customers[4] * 0.3), weight='bold',
+                       size=text_size, ha='center', va='center', color='darkgreen')
+    ax[0].tick_params(axis='both', labelsize=text_size)
+    ax[0].set_xticks(y_pos)
+    ax[0].set_xticklabels(hour_list)
+    ax[0].set_ylabel('Number of requests', fontsize=text_size, fontweight='bold')
+
+    ax[1].tick_params(axis='both', labelsize=text_size)
+    ax[1].set_xticks(y_pos)
+    ax[1].set_xticklabels(hour_list)
+    ax[1].set_ylabel('Number of customers', fontsize=text_size, fontweight='bold')
 
     if save_image:
         parent_folder = c.DAYS_DIR + "Images"

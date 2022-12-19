@@ -11,15 +11,18 @@ def main(name):
     manhattan_districts.read_network_data('manhattan-geo', location_to_cell_file='location_to_cell',
                                           edge_time_matrix_file='edge_time_matrix', stop_matrix_file='stop_matrix')
     for file in glob.glob(c.VEHICLES_DIR + "*.json"):
-        uf.create_vehicle_dataset(Path(file).stem, districts=manhattan_districts.districts)
+        uf.create_vehicle_dataset(Path(file).stem)
  #   vf.plot_districts(district_network=manhattan_districts,print_id=True,add_legend=True, file_name="districts")
     for files in uf.create_file_names():
         day_dataset = Dataset(files)
-        day_dataset.prepare_dataset(network=manhattan_districts, capacity=4)
+        day_dataset.prepare_dataset(network=manhattan_districts)
 #        day_dataset.restrict_to_district(manhattan_districts.districts)
 
-#        vf.show_request_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
+        vf.show_dataset_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
+        vf.show_request_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
+        vf.show_customer_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
         day_dataset.limit_time_dataset(start_hr=7, end_hr=9, start_min=0, end_min=0)
+        day_dataset.split_requests(capacity = 4)
 #        day_dataset.calculate_trip_per_district(network=manhattan_districts)
 #        day_dataset.calculate_vehicle_per_district(network=manhattan_districts)
 
