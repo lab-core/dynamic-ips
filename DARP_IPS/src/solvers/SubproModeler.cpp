@@ -90,8 +90,8 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
         }
     }
     /*std::stable_sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});*/
-    /*for (auto & requestObj : subRequests_){
+        return lhs->dual_ > rhs->dual_;});
+    for (auto & requestObj : subRequests_){
         subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->pickNodes_[requestObj->getRequestId()]));
         subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[requestObj->getRequestId()]));
         subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
@@ -104,55 +104,5 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
     subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2;
 }
 
-/*void SubproModeler::initSubGraph(PInstance &pInst) {
-    // adding source and sink
-
-    nbTotalRequest_ = pInst->nbRequests_;
-    subGraph_->sourceNodes_.emplace_back(std::make_shared<Node>((*Vehicle_)->departNode_));
-    subGraph_->sinkNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(*Vehicle_)->vehicleID_]));
-
-    // adding onboard nodes to the graph
-    if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
-        for (int i = 1; i < (*Vehicle_)->currentRoute_->routeSize_; ++i) {
-            if ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
-                subGraph_->onboards_.emplace_back(std::make_shared<Node>((*Vehicle_)->currentRoute_->routeNodes_[i]));
-                subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];
-            }
-        }
-    }
-*//*    for (auto & nodeID: (*Vehicle_)->onboards_) {
-        subGraph_->onboards_.emplace_back(std::make_shared<Node>(pInst->instGraph_->nodes_[nodeID]));
-        subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];
-    }*//*
-
-    // adding available nodes based on the penalty
-    for (int i = 0; i < pInst->requests_.size(); i++) {
-        if (pInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            float minWait = (*Vehicle_)->departTime_ +
-                            durationMatrix_[(*Vehicle_)->departNode_->locationID_]
-                            [pInst->instGraph_->pickNodes_[i]->locationID_]- pInst->requests_[i]->earlyPick_;
-            if (minWait <= pInst->requests_[i]->penalty_) {
-                subRequests_.push_back(pInst->requests_[i]);
-                subGraph_->pickNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->pickNodes_[i]));
-                subGraph_->dropNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]));
-                subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
-                subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
-            }
-        }
-    }
-    *//*std::stable_sort(subRequests_.begin(),subRequests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});*//*
-    *//*for (int i = 0; i < subRequests_.size(); i++){
-        subGraph_->pickNodes_.emplace_back(std::make_shared<Node>(pInst->instGraph_->pickNodes_[requestObj->getRequestId()]));
-        subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[requestObj->getRequestId()]));
-        subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
-        subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
-    }*//*
-    for (int i=0; i < subGraph_->pickNodes_.size(); i++){
-        subGraph_->pickNodes_[i]->pairNode_ = &subGraph_->dropNodes_[i];
-        subGraph_->dropNodes_[i]->pairNode_ = &subGraph_->pickNodes_[i];
-    }
-    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2;
-}*/
 
 

@@ -16,8 +16,6 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
                  std::string sinkID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
                                                    endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)){
     numPassengers_ = 0;
-//    departID_ = myTools::createNodeID(0, SOURCE);
-//    sinkID_ = myTools::createNodeID(0, SINK);
     dual_=0;
     CPDual_ = 0;
     bestReducedCost_ = INFINITY;
@@ -30,8 +28,6 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
                  std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
                  endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)) , zoneID_(zoneID){
     numPassengers_ = 0;
-//    departID_ = myTools::createNodeID(0, SOURCE);
-//    sinkID_ = myTools::createNodeID(0, SINK);
     dual_=0;
     CPDual_ = 0;
     bestReducedCost_ = INFINITY;
@@ -55,16 +51,17 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
     emptyRoute_->addSource(departNode_, departTime_, numPassengers_);
 
     if (!onboards_.empty()) {
-        /*if (currentRoute_->routeSize_ > 1){
+        if (currentRoute_->routeSize_ > 1){
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                if (currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                if ((currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
+                    (currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)){
                     emptyRoute_->addNode(currentRoute_->routeNodes_[i]);
                 }
             }
-        }*/
-        for (auto &nodeID: onboards_) {
-            emptyRoute_->addNode(pInst->instGraph_->nodes_[nodeID]);
         }
+        /*for (auto &nodeID: onboards_) {
+            emptyRoute_->addNode(pInst->instGraph_->nodes_[nodeID]);
+        }*/
     }
 }
 
@@ -100,7 +97,6 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
-//        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
     }
     if (currentRoute_->routeSize_ > 1) {
  //       currentRoute_->resetRoute();

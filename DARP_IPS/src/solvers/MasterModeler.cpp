@@ -105,13 +105,10 @@ void MasterModeler::addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarS
 void MasterModeler::initializeModel(PInstance &pInst, int rhs) {
 // update order of requests
 //    updateRequestOrder(pInst);
-//    requestToOrder_ = pInst->requestToOrder_;
     orderToRequest_ = pInst->orderToRequest_;
 
     // define and add objective
 
-
-//    createIloNumArray (requestRHS_, pInst->nbRequests_, rhs);
     createIloNumArray (requestRHS_, orderToRequest_.size(), rhs);
     createIloNumArray (vehicleRHS_, pInst->nbVehicles_, rhs);
 

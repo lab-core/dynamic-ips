@@ -16,24 +16,33 @@ bool middleSave = false;
 std::string instNum = "1";
 
 int main(int argc, char** argv) {
-
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
-    std::string instFolder = "test";
-//    std::string instanceNamefile = "datasets/InstanceNames.txt";
-//    std::vector<std::string> instNames;
-//    ReadWrite::readInstNames(instanceNamefile, instNames , 24);
-
+    int nbLocations = 1718;
+    // build the path of input files
+    // create output files for epoch results
+    InputPaths inputPaths(dataDir);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
+    std::vector<std::string> instNames;         // vector of instance file names
+    std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
-//    for (auto & fileName : instNames){
-  //  for (int i = 1; i < argc; ++i) {
-//        std::string instanceName = fileName;
-        std::string instanceName = argv[1];
-        std::cout << "Instance : " << argv[1]  << std::endl;
-
-        // build the path of input files
+    if (argc == 2){
+        std::string instanceNames = "datasets/InstanceNames.txt";
+        ReadWrite::readInstNames(instanceNames, instNames , 24);
+        std::cout << "24 Instance read!! " << std::endl;
+        instFolder = argv[1];
+    }
+    else if (argc == 3){
+        instFolder = argv[1];
+        instNames.push_back(argv[2]);
+        std::cout << "Instance : " << argv[1] << "/" << argv[2]  << std::endl;
+    }
+    else
+        myTools::throwError("There should be at least 2 arguments!");
+    Tools::LogOutput finalInstanceStream("datasets/results.csv", true);
+    for (auto & instanceName : instNames){
         // create output files for epoch results
-        InputPaths inputPaths(dataDir, instFolder, instanceName);
+        inputPaths.initializeInputs(instFolder, instanceName);
 
         // Read data files and initialize instance and parameters in output path
         std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
@@ -41,27 +50,34 @@ int main(int argc, char** argv) {
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
         ReadWrite::readDatafiles(inputPaths, mainInst);
         std::cout << mainInst->toString();
-        ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, mainInst->nbLocations_);
 
         // create solver
         std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
-        /*PInstance zoneInst = std::make_shared<Instance>(*mainInst, 291);
-        int i = 0;
-        for (auto & vehicleObj : zoneInst->vehicles_){
-            vehicleObj->vehicleID_ = i;
-            i++;
-        }
-
-        zoneInst->buildDataZone(mainInst, 291);*/
-
         if (mainInst->parameters_->solutionMode_ == DYNAMIC){
-            instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+            try {
+                instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+            } catch (const std::exception &e) {
+                std::cout << "DYNAMIC solving caught an exception=: "
+                          << e.what() << std::endl;
+            }
         }
-        else if (mainInst->parameters_->solutionMode_ == ANYTIME)
-            instanceSolver->anyTimeSolver(mainInst, inputPaths);
-        else
-            instanceSolver->staticSolver(mainInst, inputPaths, "1", middleSave, saveTime);
+        else if (mainInst->parameters_->solutionMode_ == ANYTIME){
+            try {
+                instanceSolver->anyTimeSolver(mainInst, inputPaths);
+            } catch (const std::exception &e) {
+                std::cout << "ANY_TIME solving caught an exception=: "
+                          << e.what() << std::endl;
+            }
+        }
 
+        else {
+            try {
+                instanceSolver->staticSolver(mainInst, inputPaths, "1", middleSave, saveTime);
+            } catch (const std::exception &e) {
+                std::cout << "STATIC solving caught an exception=: "
+                          << e.what() << std::endl;
+            }
+        }
         // testing the solution route
         for(auto  &vehicleObj : mainInst->vehicles_)
             vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_->mainAlgorithm_ );
@@ -72,21 +88,17 @@ int main(int argc, char** argv) {
         Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
         finalStream << instanceSolver->toString(mainInst);
         finalStream.close();
-        /*std::ofstream myFile;
-        myFile.open (inputPaths.getOutputFinalLog());
-        myFile << instanceSolver->toString(mainInst);
-        myFile.close();*/
 
+        // print final routes to csv
         Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
         solutionRoutesStream << mainInst->saveSolutionRoutes();
         solutionRoutesStream.close();
 
+        // print requests results to csv
         Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
         requestResultsStream << mainInst->saveRequestsResults();
         requestResultsStream.close();
-
- //       mainInst->saveSolutionRoutes(inputPaths.getOutputFinalRoutes());
- //       mainInst->saveRequestsResults(inputPaths.getOutputFinalRequests());
-        // save the final route solution
-//    }
+        finalInstanceStream << mainInst->instRepStr_.str();
+    }
+    finalInstanceStream.close();
 }

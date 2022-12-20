@@ -16,7 +16,6 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     simulationTime_ = new myTools::Timer(); simulationTime_->init();
     subProblemTime_ = new myTools::Timer(); subProblemTime_->init();
     preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
-    preprocessBuildTime_ = new myTools::Timer(); preprocessBuildTime_->init();
 
     isudEpochTime_ = 0;
     RPEpochTime_ = 0;
@@ -26,9 +25,10 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     epochRuntime_ = 0;
     GreedyTime_ = 0;
 
+    // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
     (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, RP_Runtime, "
-                              "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime, PreProcessBuildTime, GreedyTime, minSubSize, maxSubSize, avgSubSize" << std::endl;
+                              "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime, SubAssignTime, GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, ISUD_Obj" << std::endl;
 
     pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
     (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
@@ -45,7 +45,6 @@ solver::~solver() {
     delete simulationTime_;
     delete subProblemTime_;
     delete preprocessTime_;
-    delete preprocessBuildTime_;
     pLogRunTimesStream_->close();
     pLogEpochSolutionStream_->close();
     pLogEpochSubRuntimeStream_->close();
@@ -61,18 +60,14 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
     double previousObj;
     int nbNegativeFound;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-
+    if (EpochInst->parameters_->initialStart_ == GREEDY_START)
+        GreedyModel_->GreedySolver(EpochInst);
     isudObj_->initialization(EpochInst);
     // save initial solution
-//    EpochInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
 
     SubproEpochTime_ = 0;
-    /*isudEpochTime_ = 0;
-    RPEpochTime_ = 0;
-    CPEpochTime_ = 0;
-    isudMIPEpochTime_ = 0;*/
 
     while (true) {
         nbNegativeFound = 0;
@@ -131,17 +126,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
             }
         }
-        //int vehicleMaxPick = std::max(maxPick, EpochInst->vehicles_[v]->capacity_);
-        //   subProOptions->maxPickup_ = vehicleMaxPick;
-        //subProOptions_->maxPickup_ = maxPick;
-        /*if (EpochInst->parameters_->SubproSolveMode_ == NUM_PICK_RESTRICTED){
-            if (subProSolve.empty())
-                maxPick = 2;
-            else {
-   //             maxPick = (int)floor(EpochInst->nbRequests_ / subProSolve.size())+1;
-                maxPick = 2;
-            }
-        }*/
+
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
         std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
@@ -200,134 +185,35 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
  //       (*pLogEpochSubRuntimeStream_) << repStr.str();
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
-        /*std::cout << "# ==============================================================" << std::endl;
-        std::cout << "# TIME SPENT ON SOLVING SUBPROBLEMS =";
-        std::cout << subProblemTime_->dSinceStart().count() << " (s)" << std::endl;
-        std::cout << "# ==============================================================" << std::endl;
-        std::cout << "#" << std::endl;*/
         subProSolve.clear();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
-  //          std::cout << " *****************************  The Column Generation Terminated!  *****************************" << std::endl;
             break;
         }
         else {
             if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
                 isudObj_->solveISUDMIP(EpochInst, inputPaths);
-
-                /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
-                RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
-                CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
-
                 break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                isudObj_->solveISUD3(EpochInst, epoch_, inputPaths);
-                break;
-                /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
-                RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
-                CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
-                if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
+                if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
         }
         if (previousObj == isudObj_->objValue_) {
-            /*std::cout
-                    << " *****************************  The Column Generation Terminated!  *****************************"
-                    << std::endl;*/
             break;
         }
     }  // end of CG while
     for (auto & routeObj : isudObj_->routeSolution_) {
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
-//        std::cout << EpochInst->vehicles_[routeObj->vehicleID_]->currentRoute_->toString() << std::endl;
     }
  //   (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
     isudObj_->setObjValue();
-//    std::cout << "# FINAL SOLUTION OF ISUD AFTER EPOCH " << epoch_ << " : " << std::endl;
-//    std::cout << isudObj_->toString();
-
-//    EpochInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
-
 //    (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
 }
 
-void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths) {
-    // define required variables
-    int nbReceivedRequest;
-    epoch_ = 0;
-
-    // start simulation timer
-    mainInst->setInitialTimes();
-    for (int v = 0; v < mainInst->nbVehicles_; ++v) {
-        mainInst->vehicles_[v]->setEmptyRoute(mainInst);
-        mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
-    }
-
-    nbReceivedRequest = mainInst->nbOnboards_;
-    PInstance EpochInst = std::make_shared<Instance>(*mainInst);
-
-    while (nbReceivedRequest < mainInst->nbRequests_) {
-        nextEpoch:
-        simulationTime_->start();
-        preprocessTime_->start();
-
-        elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "*************************************************************************************"<< std::endl;
-        std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
-        std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;
-        // update vehicle status
-        mainInst->nbOnboards_ = 0;
-        isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
-        for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
-            mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
- //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
-        }
-        isudObj_->nbRoutes_ = 0;
-
-        // resetting a subInstance
-        EpochInst->resetInstance();
-        preprocessBuildTime_->start();
-        // reading the data received in previous epoch
-        EpochInst->buildPartialData(mainInst, isudObj_->zSolution_,
-                                    static_cast<float>((epoch_) * mainInst->parameters_->epochLength_),
-                                    nbReceivedRequest);
-        preprocessBuildTime_->stop();
-        EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
-        nbReceivedRequest += EpochInst->nbNewRequests_;
-     //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
-
-        if (epoch_ == 0 && nbReceivedRequest == 0) {
-
-            preprocessTime_->stop();
-            simulationTime_->stop();
- //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
-            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
-            epoch_++;
-            goto nextEpoch;
-        }
-        preprocessTime_->stop();
-
-        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD(EpochInst, mainInst, inputPaths);
-        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
-            GreedyModel_->GreedySolver(EpochInst);
-        simulationTime_->stop();
-//        saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
-        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
-        epoch_++;
-    }
-
-    for (auto & vehicleObj : mainInst->vehicles_) {
-        vehicleObj->finalizeSolutionRoutes(mainInst);
-    }
-
-}
 void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
     // define required variables
     int nbReceivedRequest;
@@ -364,10 +250,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
 
         // resetting a subInstance
         EpochInst->resetInstance();
-        preprocessBuildTime_->start();
         // reading the data received in previous epoch
         EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
-        preprocessBuildTime_->stop();
         EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
@@ -375,7 +259,6 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
             preprocessTime_->stop();
- //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
  //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
@@ -386,7 +269,6 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
- //       saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
@@ -398,7 +280,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
 }
 
 void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
-// define required variables
+    // define required variables
     epoch_ = 0;
 
     // start simulation timer
@@ -458,15 +340,9 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
                 isudObj_->initialization(StaticInst);
                 // save initial solution
-            //    StaticInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch_, isudObj_->isudIter_);
    //             (*isudObj_->pLogIterSolutionStream_) << StaticInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
                 isudObj_->isudIter_++;
-
                 SubproEpochTime_ = 0;
-                /*isudEpochTime_ = 0;
-                RPEpochTime_ = 0;
-                CPEpochTime_ = 0;
-                isudMIPEpochTime_ = 0;*/
 
                 while (true) {
                     nbNegativeFound = 0;
@@ -515,25 +391,12 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                         if (StaticInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
                             isudObj_->solveISUDMIP(StaticInst, inputPaths);
 
-                            /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
-                            RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
-                            CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
-
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD) {
-                            isudObj_->solveISUD3(StaticInst, epoch_, inputPaths);
-
-                            /*isudEpochTime_ += isudObj_->isudTime_->dSinceStart().count();
-                            RPEpochTime_ += isudObj_->RPTime_->dSinceStart().count();
-                            CPEpochTime_ += isudObj_->CPTime_->dSinceStart().count();
-                            isudMIPEpochTime_ += isudObj_->isudMIPTime_->dSinceStart().count();*/
+                            isudObj_->solveISUD(StaticInst, epoch_, inputPaths);
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
-                        /*std::cout
-                                << " *****************************  The Column Generation Terminated!  *****************************"
-                                << std::endl;*/
                         break;
                     }
                 }  // end of CG while
@@ -561,7 +424,6 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
             vehicleObj->finalizeSolutionRoutes(mainInst);
         }
     }
-//    StaticInst->saveEpochRoutes(inputPaths.getOutputEpochFinal(), epoch_);
     (*pLogEpochSolutionStream_) << StaticInst->saveEpochRoutes( epoch_);
 }
 
@@ -599,17 +461,15 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        /*if (epoch_ == 1)
-            break;*/
+        if (epoch_ == 10)
+            break;
 
         // resetting a subInstance
         EpochInst->resetInstance();
-        preprocessBuildTime_->start();
         // reading the data received in previous epoch
         EpochInst->buildPartialData(mainInst, isudObj_->zSolution_,
                                     static_cast<float>((epoch_) * mainInst->parameters_->epochLength_),
                                     nbReceivedRequest);
-        preprocessBuildTime_->stop();
         EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
         //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
@@ -622,11 +482,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
 
         if (EpochInst->nbRequests_ == 0) {
-
             preprocessTime_->stop();
             simulationTime_->stop();
-            //           saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
-            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }
@@ -637,7 +494,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
-//        saveRuntimes(EpochInst, inputPaths.getOutputEpochRunTime());
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
@@ -649,35 +505,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 }
 
 // function to print epoch runTime to file
-void solver::saveRuntimes(PInstance & EpochInst, const string &EpochRunTimeDir) {
-    epochRuntime_ = simulationTime_->dSinceStart().count();
-    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / (epoch_ + 1);
-
-    std::ofstream myFile;
-    myFile.open (EpochRunTimeDir, std::ofstream::app);
-    myFile << epoch_ << ",";
-    myFile << EpochInst->nbRequests_ << ",";
-    myFile << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ",";
-    myFile << epochRuntime_ << ",";
-    myFile << avgEpochRuntime_ << ",";
-    myFile << simulationTime_->dSinceInit().count() << ",";
-
-    // isud Times
-    myFile << isudObj_->isudTime_->dSinceInit().count() - isudEpochTime_ << ",";
-    myFile << isudObj_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
-    myFile << isudObj_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
-    myFile << isudObj_->isudMIPTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
-
-    isudEpochTime_ = isudObj_->isudTime_->dSinceInit().count();
-    RPEpochTime_ = isudObj_->RPTime_->dSinceInit().count();
-    CPEpochTime_ = isudObj_->CPTime_->dSinceInit().count();
-    isudMIPEpochTime_ = isudObj_->isudMIPTime_->dSinceInit().count();
-
-    myFile << SubproEpochTime_ << ",";
-    myFile << preprocessTime_ ->dSinceStart().count()<< "\n";
-    myFile.close();
-}
-
 std::string solver::saveRuntimes(PInstance &EpochInst) {
     std::stringstream repStr;
     epochRuntime_ = simulationTime_->dSinceStart().count();
@@ -703,12 +530,15 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
 
     repStr << SubproEpochTime_ << ",";
     repStr << preprocessTime_ ->dSinceStart().count()<< ",";
-    repStr << preprocessBuildTime_ ->dSinceStart().count()<< ",";
+    repStr << GreedyModel_->greedyAssignTime_->dSinceInit().count() - AssignTime_ << ",";
     repStr << GreedyModel_->greedyTime_->dSinceInit().count() - GreedyTime_ << ",";
+    AssignTime_ = GreedyModel_->greedyAssignTime_->dSinceInit().count();
     GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     repStr << minSubSize_ << ",";
     repStr << maxSubSize_ << ",";
-    repStr << avgSubSize_<< "\n";
+    repStr << avgSubSize_<< ",";
+    repStr << isudObj_->GreedyobjValue_ << ",";
+    repStr << isudObj_->objValue_ << "\n";
     return repStr.str();
 }
 
@@ -741,10 +571,16 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << isudObj_->toStringTimersTotal();
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedySolveTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedySolTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << isudObj_->toStringTimersAvg(epoch_);
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
+    mainInst->instRepStr_ << epoch_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << isudObj_->RPTime_->dSinceInit().count() << "," << isudObj_->CPTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << isudObj_->isudMIPTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << subProblemTime_->dSinceInit().count() << "," << GreedyModel_->greedyTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << GreedyModel_->greedyAssignTime_->dSinceInit().count() << ",";
     return repStr.str();
 }
 

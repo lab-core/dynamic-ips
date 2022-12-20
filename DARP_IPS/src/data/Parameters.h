@@ -24,6 +24,7 @@ public:
     MainAlgorithm mainAlgorithm_;
     bool addOneRequestColumn_{};
     SolutionMode solutionMode_;
+    bool oneIter_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -53,7 +54,7 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
+               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
                warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
                bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,

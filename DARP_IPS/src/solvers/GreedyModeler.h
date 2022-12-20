@@ -14,8 +14,7 @@ class GreedyModeler {
 public:
     std::vector<PLinkedGreedyLabels> solutionList_;
     myTools::Timer *greedyTime_;
-    myTools::Timer *greedySolveTime_;
-    myTools::Timer *greedySolTime_;
+    myTools::Timer *greedyAssignTime_;
     std::vector<int> selectedVehicles_;
     std::vector<PGreedyLabel> removedLabels_;
     std::vector<PInsertPosition> positionList_;

@@ -13,8 +13,6 @@
 ReducedProblem::ReducedProblem() : MasterModeler() {
 
     // defining variable
-//    zVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
-//    routeVar_ = IloNumVarArray(env_, 0.0, 0.0, ILOFLOAT);
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
     routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
     compRoutes_.clear();

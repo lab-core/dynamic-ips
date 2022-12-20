@@ -111,16 +111,19 @@ std::string Instance::toString() {
 }
 
 std::string Instance::solutionToString() {
-    int numServed = 0;
-    float totalWaiting = 0;
-    float totalTripDelay = 0;
-    int totalNumServed = 0;
-    double penalty = 0;
-    float idleTime = 0;
-
+    int numServed = 0;              // total requests in routes
+    float totalWaiting = 0;         // total route waiting times
+    float totalTripDelay = 0;       // total trip delay considering the initial onboards
+    int totalNumServed = 0;         // total requests served considering initial onboards
+    double penalty = 0;             // total penalty of un-served
+    float idleTime = 0;             // total vehicle idle times
+    int totalCustomers = 0;
 
     std::stringstream repStr;
 
+    instRepStr_ << "\n" << name_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
+    instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
+    instRepStr_ << nbRequests_ << "," << nbVehicles_ << "," << parameters_->nbThreads_ << ",";
 
     // print table header
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
@@ -145,8 +148,6 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
             repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
 
-/*            double travelTime =
-                    instGraph_->nodes_[dropID]->reachTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;*/
             float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
 
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
@@ -154,9 +155,10 @@ std::string Instance::solutionToString() {
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
                 myTools::throwException("Trip delay Validation");
             }
-//
+
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
             totalNumServed ++;
+            totalCustomers += requests_[i]->nbPassengers_;
         }
         else {
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
@@ -184,16 +186,23 @@ std::string Instance::solutionToString() {
     repStr << "#" << std::endl;
     repStr << std::setw(sentenceSize) << "# NUMBER OF UNSERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
     repStr << "#" << std::endl;
     repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
 
     if (numServed != 0) {
         repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# WAIT TIME PER PASSENGER" << " = " << totalWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
         repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(totalNumServed) << " (s)" << std::endl;
     }
 
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
+
+    instRepStr_ << totalNumServed << "," << totalWaiting/static_cast<float>(numServed) << ",";
+    instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
+    instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << ",";
+    instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
     return repStr.str();
 }
 
@@ -243,49 +252,15 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
 
-            // calculate vehicle scores
-            /*if (mainInst->parameters_->vehicle_portion_ < 1){
-                for (auto & vehicleObj: mainInst->vehicles_){
-                    float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
-                    [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
-                    if (earliestPick < vehicleObj->score_)
-                        vehicleObj->score_ = earliestPick;
-                }
-            }*/
         }
         else
             break;
     }
-/*    for (auto & nodeObj: onboards){
-        // adding onboard nodes to the graph
-        instGraph_->dropNodes_.push_back(nodeObj);
-    }*/
+
     nbOnboards_ = instGraph_->onboards_.size();
-    /*for (auto & vehicleObj : mainInst->vehicles_){
-        // adding onboard nodes to the graph
-        for (auto & nodeID: vehicleObj->onboards_) {
-            instGraph_->dropNodes_.push_back(instGraph_->nodes_[nodeID]);
-        }
-    }*/
+
     // calculate vehicle scores
-    /*float earliestPick;
-    int VehicleId;*/
     if (mainInst->parameters_->vehicle_portion_ < 1){
-        /*for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
-            earliestPick = INFINITY;
-            for (auto & vehicleObj: mainInst->vehicles_){
-                if (vehicleObj->score_ > 0){
-                    float minReachTime = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
-                    [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
-                    if ( minReachTime < earliestPick){
-                        earliestPick = minReachTime;
-                        VehicleId = vehicleObj->vehicleID_;
-                    }
-                }
-            }
-            mainInst->vehicles_[VehicleId]->score_ = 0;
-            mainInst->vehicles_[VehicleId]->selected_ = false;
-        }*/
         for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
             for (auto & vehicleObj: mainInst->vehicles_){
                 float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
@@ -429,28 +404,6 @@ void Instance::updateRequestOrder() {
 }
 
 // print solutions in csv files
-void Instance::saveSolutionRoutes(const std::string& routeResultDir) {
-    std::ofstream myFile;
-    myFile.open (routeResultDir);
-    myFile << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad" << std::endl;
-    for (auto & vehicleObj : vehicles_) {
-        int i = 0;
-        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
-            myFile << vehicleObj->vehicleID_ << ",";
-            myFile << nodeObj->nodeID_ << ",";
-            myFile << nodeObj->requestTime_ << ",";
-            myFile << nodeObj->reachTime_ << ",";
-            myFile << nodeObj->initialType_ << ",";
-            myFile << nodeObj->locationID_ << ",";
-            myFile << nodeObj->departTime_ << ",";
-            myFile << nodeObj->nbPassengers_ << ",";
-            myFile << vehicleObj->solutionRoute_->plannedPassengers_[i] << "\n";
-            i++;
-        }
-    }
-    myFile.close();
-}
-
 std::string Instance::saveSolutionRoutes() {
     std::stringstream repStr;
     repStr << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad" << std::endl;
@@ -471,38 +424,6 @@ std::string Instance::saveSolutionRoutes() {
     }
     return repStr.str();
 }
-
-void Instance::saveRequestsResults(const std::string& requestResultDir) {
-    std::ofstream myFile;
-    myFile.open (requestResultDir);
-    myFile << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
-              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime" << std::endl;
-
-    for (auto & requestObj : requests_) {
-        myFile << requestObj->getRequestId() << ",";
-        myFile << requestObj->nbPassengers_ << ",";
-        myFile << requestObj->PickUpID_ << ",";
-        myFile << requestObj->DropOffID_ << ",";
-        myFile << requestObj->earlyPick_ << ",";
-        myFile << requestObj->pickTime_ << ",";
-        myFile << requestObj->dropTime_ << ",";
-        myFile << requestObj->vehicleID_ << ",";
-        myFile << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
-        myFile << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
-        myFile << requestObj->maxTravelTime_ << ",";
-        myFile << requestObj->minTravelTime_ << "\n";
-/*        if (requests_[i]->requestStatus_ != NO_ACTION) {
-            myFile << requests_[i]->pickTime_ << ",";
-            myFile << requests_[i]->dropTime_ << "\n";
-        }
-        else {
-            myFile << "--" << ",";
-            myFile << "--" << "\n";
-        }*/
-    }
-    myFile.close();
-}
-
 
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
@@ -526,23 +447,6 @@ std::string Instance::saveRequestsResults() {
     return repStr.str();
 }
 
-void Instance::saveEpochRoutes(const std::string& finalSolutionDir , int epoch) {
-    std::ofstream myFile;
-    myFile.open (finalSolutionDir, std::ofstream::app);
-    for (auto & vehicleObj : vehicles_) {
-        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
-            myFile << epoch << ",";
-            myFile << vehicleObj->vehicleID_ << ",";
-            myFile << nodeObj->nodeID_ << ",";
-            myFile << nodeObj->requestTime_ << ",";
-            myFile << nodeObj->reachTime_ << ",";
-            myFile << nodeObj->type_ << ",";
-            myFile << nodeObj->locationID_ << "\n";
-        }
-    }
-    myFile.close();
-}
-
 std::string Instance::saveEpochRoutes(int epoch) {
     std::stringstream repStr;
     for (auto & vehicleObj : vehicles_) {
@@ -557,25 +461,6 @@ std::string Instance::saveEpochRoutes(int epoch) {
         }
     }
     return repStr.str();
-}
-
-void Instance::saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter) {
-    std::ofstream myFile;
-    myFile.open (isudSolutionDir, std::ofstream::app);
-    for (auto & vehicleObj : vehicles_) {
-        for (auto & nodeObj : vehicleObj->currentRoute_->routeNodes_) {
-            myFile << epoch << ",";
-            myFile << isudIter << ",";
-            myFile << vehicleObj->vehicleID_ << ",";
-            myFile << nodeObj->nodeID_ << ",";
-            myFile << nodeObj->requestTime_ << ",";
-            myFile << nodeObj->reachTime_ << ",";
-            myFile << nodeObj->type_ << ",";
-            myFile << nodeObj->locationID_ << ",";
-            myFile << vehicleObj->currentRoute_->getRouteId() << "\n";
-        }
-    }
-    myFile.close();
 }
 
 std::string Instance::saveISUDRoutes(int epoch, int isudIter) {

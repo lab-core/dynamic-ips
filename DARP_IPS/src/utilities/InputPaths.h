@@ -5,8 +5,6 @@
 #ifndef INPUTPATHS_H
 #define INPUTPATHS_H
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING 1
-
 #include <sstream>
 #include <string>
 #include <ctime>
@@ -23,6 +21,7 @@
 class InputPaths {
 protected:
     // input data addresses
+    std::string dataDir_;
     std::string instanceName_;
     std::string instanceDir_;
     std::string outputDir_;
@@ -66,8 +65,8 @@ protected:
 public:
 
     // Constructors
-    InputPaths();
-    InputPaths(const std::string& datadir, const std::string& instFolder, const std::string& instanceName);
+    explicit InputPaths(std::string  datadir);
+    InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName);
 
     // getters
     const std::string &getInstanceName() const;
@@ -80,11 +79,9 @@ public:
     const std::string &getInputVehicleFileGeneral() const;
     const std::string &getInputOnboardsFile() const;
     const std::string &getInputWaitRequests() const;
-
     const std::string &getOutputEpochIsud() const;
     const std::string &getOutputEpochFinal() const;
     const std::string &getOutputEpochResults() const;
-
     const std::string &getOutputFinalLog() const;
     const std::string &getOutputSolutionLog() const;
     const std::string &getOutputFinalRoutes() const;
@@ -101,23 +98,22 @@ public:
     const std::string &getOutputEpochRunTime() const;
     const std::string &getInstanceNameOut() const;
     const std::string &getOutputTrip() const;
-
     const std::string &getOutputSubproSize() const;
-
     const std::string &getOutputSubproRouteTime() const;
 
-    double getTimeOut() const;
+    const std::string &getOutputDir() const;
 
-    // setters
-    void setInstanceName(const std::string &instanceName);
-    void setTripData(const std::string &tripData);
-    void setInstanceData(const std::string &instanceData);
+    double getTimeOut() const;
     void setTimeOUt(double timeOUt);
 
+    // this function defines the path to input data files
+    void initializeInputs(const std::string& instFolder, const std::string& instanceName);
+
+    // this function defines the path to outputs
     void initializeOutputs(const std::string &algorithm, const std::string &solutionMode);
 
     // this function create a directory to build a new instance
-    void makeInstanceOutput(std::string instNum);
+    void makeInstanceOutput(const std::string& instNum);
 };
 
 

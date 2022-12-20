@@ -303,7 +303,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, vehicle_portion = -1;
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
-    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false;
+    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1;
@@ -345,6 +345,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "solutionMode "))
             file >> solutionMode;
+
+        else if (strEndWith(title, "OneIter "))
+            file >> oneIter;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -406,7 +409,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
-                                                          static_cast<MainAlgorithm>(mainAlgorithm),
+                                                          static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, isTruncated, maxLabel, isSuccessorsLimited,

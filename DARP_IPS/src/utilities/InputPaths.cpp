@@ -4,33 +4,38 @@
 
 #include "InputPaths.h"
 
+#include <utility>
+
 //-----------------------------------------------------------------------------
 //  getInputDurationData Path Class
 //  Instances of this class contain the paths of the inputs
 //-----------------------------------------------------------------------------
 
-InputPaths::InputPaths() {
+InputPaths::InputPaths(std::string  datadir) : dataDir_(std::move(datadir)){
     input_TripData_ = "";
     input_InstanceData_ = "";
     instanceName_ = "";
     instanceDir_ = "";
     input_durationData_ = "";
+    input_durationData_ = dataDir_ + "edge_time_matrix.txt";
+    input_paramFile_ = dataDir_ + "Parameters.txt";
+    input_vehicleFileGeneral_ = dataDir_ + "manhattan-vehicles/vehicles_2000_4.txt";
 }
 
-InputPaths::InputPaths(const std::string& datadir, const std::string& instFolder, const std::string& instanceName)
-        : instanceName_(instanceName) {
+InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName)
+        : dataDir_(std::move(datadir)), instanceName_(instanceName) {
 
-    instanceDir_ = datadir + instFolder + "/" + instanceName + "/";
+    instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
 
     //initialize the file names for trip records and instance data
     input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
     input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
  //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
-    input_durationData_ = datadir + "edge_time_matrix.txt";
+    input_durationData_ = dataDir_ + "edge_time_matrix.txt";
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
-    input_paramFile_ = datadir + "Parameters.txt";
+    input_paramFile_ = dataDir_ + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFileGeneral_ = datadir + "manhattan-vehicles/vehicles_2000_4.txt";
+    input_vehicleFileGeneral_ = dataDir_ + "manhattan-vehicles/vehicles_2000_4.txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
@@ -68,24 +73,23 @@ const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
 const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
 const std::string &InputPaths::getOutputSubproSize() const {return output_subproSize_;}
 const std::string &InputPaths::getOutputSubproRouteTime() const {return output_subproRouteTime_;}
+const std::string &InputPaths::getOutputDir() const {return outputDir_;}
+
 
 double InputPaths::getTimeOut() const {return timeOut_; }
 
-// setters
-void InputPaths::setInstanceName(const std::string &instanceName) {
-    instanceName_ = instanceName;
-}
+void InputPaths::setTimeOUt(double timeOUt) {InputPaths::timeOut_ = timeOUt;}
 
-void InputPaths::setTripData(const std::string &tripData) {
-    input_TripData_ = tripData;
-}
+void InputPaths::initializeInputs(const std::string &instFolder, const std::string &instanceName) {
+    instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
 
-void InputPaths::setInstanceData(const std::string &instanceData) {
-    input_InstanceData_ = instanceData;
-}
-
-void InputPaths::setTimeOUt(double timeOUt) {
-    InputPaths::timeOut_ = timeOUt;
+    //initialize the file names for trip records and instance data
+    input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
+    input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
+    input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
+    input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
+    input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
+    input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
 
 void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode) {
@@ -97,9 +101,6 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     std::string folder_name = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder;
     char *path = const_cast<char *>(folder_name.c_str());
     int check = mkdir(path, 0777);
-
-//  std::__fs::filesystem::create_directory(instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder);
-
     outputDir_ = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
 
     //initialize the file names for saving outputs
@@ -120,33 +121,16 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
 
     // create output files for epoch results
     std::ofstream myFile;
-    /*myFile.open(output_epochISUD_);
-    myFile << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID,RouteID" << std::endl;
-    myFile.close();*/
-    /*myFile.open(output_epochFinal_);
-    myFile << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
-    myFile.close();*/
-
-    /*myFile.open(output_epochRunTime_);
-    myFile << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, RP_Runtime, "
-              "CP_Runtime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime" << std::endl;
-    myFile.close();*/
-    /*myFile.open(output_epochResults_);
-    myFile << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue" << std::endl;
-    myFile.close();*/
-
     myFile.open(output_incDegree_RDCost_);
     myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, CreateTime, RouteID" << std::endl;
     myFile.close();
 }
 
-void InputPaths::makeInstanceOutput(std::string instNum) {
+void InputPaths::makeInstanceOutput(const std::string& instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
     std::string folder_name = outputDir_ + instanceNameOut_;
     char *path = const_cast<char *>(folder_name.c_str());
     int check = mkdir(path, 0777);
-
-    //   std::__fs::filesystem::create_directory(outputDir_ + instanceNameOut_);
     std::string outputDir = outputDir_ + instanceNameOut_ + "/";
     output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
@@ -154,6 +138,8 @@ void InputPaths::makeInstanceOutput(std::string instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
+
 
 
 

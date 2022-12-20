@@ -22,9 +22,7 @@ public:
     int numPassengers_;                     // number of passengers in the vehicle
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
-//    std::vector<PRoute> generatedRoutes_;   // list of generated routes
     PNode departNode_;
-//    std::string departID_;
     std::string sinkID_;
     PRoute currentRoute_;
     PRoute solutionRoute_;
@@ -48,6 +46,8 @@ public:
     void setDepartTime(float departTime);
     void setEmptyRoute(PInstance &pInst);
     void setCurrentRoute(PRoute &currentRoute);
+
+    // this function set bestReducedCost_ to infinity
     void resetBestReducedCost();
 
     // Display function
@@ -55,7 +55,6 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-
     void updateState(int epoch, int &epochLength);
     void updateStateTime(float elapsedTime, float &epochLength);
 

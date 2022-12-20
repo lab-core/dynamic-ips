@@ -41,10 +41,7 @@ public:
     vector<unsigned int> orderToRequest_;
     PGraph instGraph_;
     PParameters parameters_;
-    /*std::vector<PNode> pickNodes_;
-    std::vector<PNode> dropNodes_;
-    std::vector<PNode> sourceNodes_;
-    std::vector<PNode> sinkNodes_;*/
+    std::stringstream instRepStr_;   // save all the results as one record
 
 
     // Constructor and Destructor
@@ -90,16 +87,15 @@ public:
     void updateTaskIndexLabeling();
 
     // print solution in csv files
-    void saveSolutionRoutes(const std::string& routeResultDir);
     std::string saveSolutionRoutes();
-    void saveRequestsResults(const std::string& requestResultDir);
     std::string saveRequestsResults();
     // save the solution route of the vehicles (current solution of ISUD)
-    void saveEpochRoutes(const std::string& finalSolutionDir , int epoch);
     std::string saveEpochRoutes(int epoch);
+
     // save the current route of the vehicles (current solution of ISUD)
-    void saveISUDRoutes(const std::string& isudSolutionDir, int epoch, int isudIter);
     std::string saveISUDRoutes(int epoch, int isudIter);
+
+    // this function save the creation time of the current solution in a csv
     std::string saveRoutesTimes(int epoch);
     void saveStatus(InputPaths &inputPaths, float simulationStart);
 

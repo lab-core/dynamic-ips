@@ -183,18 +183,6 @@ void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
     nodes_[dropNode->nodeID_]->pairNode_ = &nodes_[pickNode->nodeID_];
 }
 
-/*void Graph::addNewRequestToGraph(PInstance &pInstance) {
-// create pickup node and drop off nodes
-
-    std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
-    std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
-
-    addNewNode(std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP, dropID));
-    addNewNode(std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF, pickID));
-    nodes_[pickID]->pairNode_ = & nodes_[dropID];
-    nodes_[dropID]->pairNode_ = & nodes_[pickID];
-}*/
-
 /*double calcTravelTime(PNode startNode, PNode endNode) {
     double dist = myTools::calcDistance(startNode->locLatitude_, startNode->locLongitude_,
                                       endNode->locLatitude_, endNode->locLongitude_);

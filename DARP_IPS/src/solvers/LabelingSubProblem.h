@@ -22,7 +22,6 @@ public:
     int nbDominated_;                               // number of labels removed via Domination Rules
     int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
-//    int nbActivated_;
     int nbOutputs_;
     int maxPickup_;
     PSolverOption solverOptions_;
@@ -30,9 +29,6 @@ public:
     myTools::Timer *subproRouteTime_;
     myTools::Timer *sortTime_;
     std::string initialNodeID_;
-//    std::unordered_map<unsigned int, int> requestIDToInt_;
-
-//    std::vector<PNode> nodesOrder_;
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
@@ -41,7 +37,6 @@ public:
 
 
     // this function sort the list of nodes based of their dual values
-    void sortNodes();
     void sortSuccessors(std::vector<PNode> &nodeList);
 
     // reset that active lists of the nodes, create the first label at the source, add onboards
@@ -50,14 +45,11 @@ public:
     void labelExtend(PLabel &parentLabel, PNode &outNode);
     void labelExtend2(PLabel &parentLabel, PNode &outNode);
     void labelDrop(PLabel &parentLabel);
-
-//    bool isLabelAdded(PLabel &newLabel, PNode &outNode);
     bool isLabelAdded2(PLabel &newLabel, PNode &outNode);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     void solveDynamic_pushingDrop();
     void solveDynamic_pushingWave();
-    void solveDynamic_pushingWave1();
     void solveDynamic_pulling();
     void solveDynamic_pullingWave();
     void solveDynamic();
@@ -65,7 +57,6 @@ public:
     void reconstructLabels(std::vector<PRoute> &availableRoutes);
 
     // function to convert solution to routes and save them in vehicle object
-//    void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes);
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
     // Display function
     std::string toString() const;

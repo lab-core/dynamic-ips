@@ -40,6 +40,7 @@ public:
 
     int isudIter_;
     double objValue_;
+    double GreedyobjValue_;
     myTools::Timer *isudTime_;
     myTools::Timer *RPTime_;
     myTools::Timer *CPTime_;
@@ -83,10 +84,7 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(int &vehicleID);
     void updateReducedCosts(PInstance &pInst, int &vehicleID);
-
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD3(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
@@ -101,11 +99,8 @@ public:
     void updateRoutesToAddZoom(PInstance &pInst);
     static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::map<unsigned int, int> &requestToOrder);
 
-    void restGeneratedRoutes(PInstance &pInst);
-
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    void save_ISUDResults(int epoch, InputPaths &inputPaths, std::string model, int nbColumns);
     std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns);
 
 //    void updatePatterns(PInstance &pInst);

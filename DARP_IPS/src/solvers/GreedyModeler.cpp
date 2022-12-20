@@ -6,8 +6,7 @@
 
 GreedyModeler::GreedyModeler() {
     greedyTime_ = new myTools::Timer(); greedyTime_->init();
-    greedySolveTime_ = new myTools::Timer(); greedySolveTime_->init();
-    greedySolTime_ = new myTools::Timer(); greedySolTime_->init();
+    greedyAssignTime_ = new myTools::Timer(); greedyAssignTime_->init();
     float deltaDelay = INFINITY;
 
     // Tour length increase by adding pickup
@@ -19,8 +18,7 @@ GreedyModeler::GreedyModeler() {
 
 GreedyModeler::~GreedyModeler() {
     delete greedyTime_;
-    delete greedySolveTime_;
-    delete greedySolTime_;
+    delete greedyAssignTime_;
     for (auto & label : removedLabels_){
         label->child_.reset();
         label->parent_.reset();
@@ -31,21 +29,17 @@ GreedyModeler::~GreedyModeler() {
 
 void GreedyModeler::initialization(PInstance &PInst) {
     selectedVehicles_.clear();
-    greedyTime_->start();
     for (auto & vehicleObj : PInst->vehicles_) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst));
     }
-    greedyTime_->stop();
     selectedVehicles_.resize(PInst->nbVehicles_,0);
 }
 
 void GreedyModeler::initializationFast(PInstance &PInst) {
     selectedVehicles_.clear();
-    greedyTime_->start();
     for (auto & vehicleObj : PInst->vehicles_) {
         solutionList_.emplace_back(std::make_shared<LinkedGreedyLabels>(vehicleObj, PInst, removedLabels_));
     }
-    greedyTime_->stop();
     selectedVehicles_.resize(PInst->nbVehicles_,0);
     if (positionList_.empty()){
         for (auto & vehicleObj : PInst->vehicles_) {
@@ -56,7 +50,6 @@ void GreedyModeler::initializationFast(PInstance &PInst) {
 
 
 void GreedyModeler::solve(PInstance &PInst) {
-    greedyTime_->start();
     std::vector<float> possibleDelay;
     std::vector<PGreedyLabel> preLabelList;
 
@@ -98,12 +91,9 @@ void GreedyModeler::solve(PInstance &PInst) {
 //            std::cout << solutionList_[vehicle_ID]->toString() << std::endl;
         }
     }
-    greedyTime_->stop();
 }
 
 void GreedyModeler::solveInsertion(PInstance &PInst) {
-    greedySolveTime_->start();
-    greedyTime_->start();
     std::vector<float> possibleDelay;
     std::vector<PInsertPosition> positionList;
     for (auto & requestObj : PInst->requests_) {
@@ -139,12 +129,8 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
             selectedVehicles_[vehicle_ID]++;
         }
     }
-    greedyTime_->stop();
-    greedySolveTime_->stop();
 }
 void GreedyModeler::solutionToRoute(PInstance &PInst) {
-    greedyTime_->start();
-    greedySolTime_->start();
     for (auto & greedySol : solutionList_) {
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ = greedySol->idleTime_;
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_.reset();
@@ -155,31 +141,26 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
         greedySol->resetLinkedGreedyLabels(removedLabels_);
         greedySol.reset();
     }
-    greedyTime_->stop();
-    greedySolTime_->stop();
     solutionList_.clear();
     removedLabels_.clear();
 }
 
 void GreedyModeler::GreedySolver(PInstance &PInst) {
+    greedyTime_->start();
     initializationFast(PInst);
     solveInsertionFast(PInst);
     solutionToRoute(PInst);
     solutionList_.clear();
+    greedyTime_->stop();
 }
 
 void GreedyModeler::solveInsertionFast(PInstance &PInst) {
-    greedySolveTime_->start();
-    greedyTime_->start();
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
             possibleDelay.clear();
 
             for (auto & GreedyObj : solutionList_){
-                /*float minWait = (*GreedyObj->Vehicle_)->departTime_ +
-                                durationMatrix_[PInst->instGraph_->nodes_[(*GreedyObj->Vehicle_)->departID_]->locationID_]
-                                [PInst->instGraph_->nodes_[pickID]->locationID_]- requestObj->earlyPick_;*/
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
                 // after arrival of each request, the vehicle positions should be updated
                 if (GreedyObj->departTime_ < PInst->requests_[i]->earlyPick_) {
@@ -193,15 +174,10 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
                         GreedyObj->tail_->departTime_ = PInst->requests_[i]->earlyPick_;
                     }
                 }
- //               if (minWait <= requestObj->penalty_) {
-                    GreedyObj->findInsertPlace(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
-                                               PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
+                GreedyObj->findInsertPlace(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
+                                           PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
-                    possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
- //               }
- //               else{
-//                    possibleDelay.push_back(INFINITY);
- //               }
+                possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
@@ -209,11 +185,10 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
             selectedVehicles_[vehicle_ID]++;
         }
     }
-    greedyTime_->stop();
-    greedySolveTime_->stop();
 }
 
 void GreedyModeler::GreedySolverFast(PInstance &PInst) {
+    greedyAssignTime_->start();
     initializationFast(PInst);
  //   solveInsertionFast(PInst);
     solveAssignment(PInst);
@@ -226,11 +201,10 @@ void GreedyModeler::GreedySolverFast(PInstance &PInst) {
         position->prePickup_->currentNode_.reset();
     }*/
     solutionList_.clear();
+    greedyAssignTime_->stop();
 }
 
 void GreedyModeler::solveAssignment(PInstance &PInst) {
-    greedySolveTime_->start();
-    greedyTime_->start();
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
@@ -251,8 +225,6 @@ void GreedyModeler::solveAssignment(PInstance &PInst) {
             selectedVehicles_[vehicle_ID]++;
         }
     }
-    greedyTime_->stop();
-    greedySolveTime_->stop();
 }
 
 

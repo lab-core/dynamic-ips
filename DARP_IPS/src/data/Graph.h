@@ -27,8 +27,7 @@ class Node {
 public:
     string nodeID_;                     // node ID
     PRequest related_Request_;          // pointer to its request
-//    string pairNodeID_;                 // related pickup/drop off
-    PNode *pairNode_;
+    PNode *pairNode_;                   // pointer to the pair node
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
     NodeType initialType_;              // initial type (the type maybe change to source)
@@ -41,16 +40,12 @@ public:
     double bestLabelReduceCost_;        // smallest reduced cost af active vehicles
     int nbActiveLabels_;                // Number of active labels in labeling approach
     std::vector<PNode *> successors_;
-//    std::set<PNode> predecessor_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
     float travelTimeFromSource_;          // is used in labeling for sorting successors_
     int nodeIndex_;
     double maxLabelReducedCost_;
 
     std::vector<PLabel> activeLabels_;
-    // generatedLabels_ save the labels based on the number of completed requests in different spaces
-//    std::map<int, std::vector<PLabel>> generatedLabels_;
-//    vector2D<PLabel> generatedLabel_;
 
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type);
@@ -78,7 +73,6 @@ public:
     std::vector<PNode> sourceNodes_;
     std::vector<PNode> sinkNodes_;
     std::map<std::string,PNode> nodes_;
-//    std::unordered_map<std::string, int> nodeIDToInt_;
     std::vector<std::string> intToNodeID_;
 
 
@@ -92,7 +86,6 @@ public:
     // function for updating the graph and adding new request
     void addRequestToGraph(PRequest &newRequest);
     void addRequestToMainGraph(PNode & pickNode, PNode & dropNode);
-//    void addNewRequestToGraph(PInstance &pInstance);
 };
 
 
