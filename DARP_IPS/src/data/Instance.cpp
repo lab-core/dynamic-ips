@@ -288,12 +288,12 @@ void Instance::buildStaticData(const PInstance &mainInst) {
         instGraph_->nbNodes_++;
     }
 
-    for (auto & requestObj : mainInst->requests_) {
-        if (requestObj->requestStatus_ == NO_ACTION) {
+    for (int i = 0; i < mainInst->nbRequests_; ++i) {
+        if (mainInst->requests_[i]->requestStatus_ == NO_ACTION) {
             nbNewRequests_++;
-            addRequest(requestObj);
-            instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
-            instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
+            addRequest(mainInst->requests_[i]);
+            instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+            instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
         }
     }
 }
