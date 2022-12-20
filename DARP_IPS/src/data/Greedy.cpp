@@ -122,7 +122,7 @@ LinkedGreedyLabels::~LinkedGreedyLabels() {
 void LinkedGreedyLabels::resetLinkedGreedyLabels(vector<PGreedyLabel> &removedLabels) {
     PGreedyLabel currentLabel = source_;
     while (currentLabel->child_ != nullptr) {
-        currentLabel->currentNode_.reset();
+//        currentLabel->currentNode_.reset();
         removedLabels.push_back(currentLabel);
         currentLabel = currentLabel->child_;
     }

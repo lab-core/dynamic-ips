@@ -142,7 +142,7 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
         greedySol.reset();
     }
     solutionList_.clear();
-    removedLabels_.clear();
+ //   removedLabels_.clear();
 }
 
 void GreedyModeler::GreedySolver(PInstance &PInst) {
