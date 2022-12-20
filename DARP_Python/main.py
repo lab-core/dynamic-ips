@@ -22,7 +22,7 @@ def main(name):
 #        vf.show_request_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
 #        vf.show_customer_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
         day_dataset.limit_time_dataset(start_hr=7, end_hr=8, start_min=0, end_min=0)
-        day_dataset.split_requests(capacity = 4)
+        day_dataset.split_requests(capacity = 5)
 #        day_dataset.calculate_trip_per_district(network=manhattan_districts)
 #        day_dataset.calculate_vehicle_per_district(network=manhattan_districts)
 
