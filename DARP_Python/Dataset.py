@@ -154,6 +154,7 @@ class Dataset(object):
         self.dataset = pd.concat([self.dataset, df_removed_rows])
         self.dataset = self.dataset.sort_values(by=['tpep_pickup_datetime'])
         self.update_state()
+        self.instance = self.dataset
         print("The number of trips after split:", self.nb_requests)
 
     def add_district_id(self, network):
