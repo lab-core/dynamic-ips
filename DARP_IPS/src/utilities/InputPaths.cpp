@@ -82,6 +82,7 @@ double InputPaths::getTimeOut() const {return timeOut_; }
 void InputPaths::setTimeOUt(double timeOUt) {InputPaths::timeOut_ = timeOUt;}
 
 void InputPaths::initializeInputs(const std::string &instFolder, const std::string &instanceName) {
+    instanceName_ = instanceName;
     instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
 
     //initialize the file names for trip records and instance data
