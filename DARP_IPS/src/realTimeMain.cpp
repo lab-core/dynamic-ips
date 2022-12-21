@@ -14,20 +14,22 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 std::string instNum = "1";
+int numVehicles = 1500;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
+    std::string vehicleFile = "vehicles_1500_5";
     int nbLocations = 1718;
     // build the path of input files
     // create output files for epoch results
-    InputPaths inputPaths(dataDir);
+    InputPaths inputPaths(dataDir, vehicleFile);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::vector<std::string> instNames;         // vector of instance file names
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     if (argc == 2){
-        std::string instanceNames = "datasets/InstanceNames.txt";
+        std::string instanceNames = "datasets/InstanceNames1.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
@@ -47,6 +49,7 @@ int main(int argc, char** argv) {
         // Read data files and initialize instance and parameters in output path
         std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+        mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
         ReadWrite::readDatafiles(inputPaths, mainInst);
         std::cout << mainInst->toString();

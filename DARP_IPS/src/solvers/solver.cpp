@@ -306,9 +306,9 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
         case MIP_CPLEX :
             simulationTime_->start();
             MIPSolver(StaticInst, inputPaths);
-            std::cout << "# FINAL SOLUTION OF MIP solution : " << std::endl;
+            /*std::cout << "# FINAL SOLUTION OF MIP solution : " << std::endl;
             for (int v = 0; v < StaticInst->nbVehicles_; ++v)
-                std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();
+                std::cout << StaticInst->vehicles_[v]->currentRoute_->toString();*/
             simulationTime_->stop();
             break;
         case GREEDY:
