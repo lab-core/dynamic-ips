@@ -8,7 +8,7 @@ OS = "osx"
 DAYS_DIR = "NYC/days/"
 VEHICLES_DIR = "NYC/manhattan-vehicles/"
 NETWORK_DIR = "NYC/manhattan-network/"
-OUT_BOUND = 99
+OUT_BOUND = 999
 
 WIN_TITLE_SIZE = 25
 WIN_TEXT_SIZE = 20

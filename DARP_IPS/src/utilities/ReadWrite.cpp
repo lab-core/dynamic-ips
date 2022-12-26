@@ -107,7 +107,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> endTime;
                 file >> departID;
                 file >> sinkID;
-//                file >> zoneID;
+                file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID));
@@ -157,7 +157,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> pickTime;
 
                 file >> vehicleID;
- //               file >> zoneID;
+                file >> zoneID;
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
@@ -219,7 +219,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> pickUpID;
                 file >> dropOffID;
                 file >> earlyPick;
-//                file >> zoneID;
+                file >> zoneID;
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);

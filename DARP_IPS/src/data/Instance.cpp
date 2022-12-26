@@ -428,7 +428,7 @@ std::string Instance::saveSolutionRoutes() {
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
     repStr << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
-              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime" << std::endl;
+              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
 
     for (auto & requestObj : requests_) {
         repStr << requestObj->getRequestId() << ",";
@@ -442,7 +442,8 @@ std::string Instance::saveRequestsResults() {
         repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
         repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
         repStr << requestObj->maxTravelTime_ << ",";
-        repStr << requestObj->minTravelTime_ << "\n";
+        repStr << requestObj->minTravelTime_ << ",";
+        repStr << requestObj->zoneID_ << "\n";
     }
     return repStr.str();
 }
