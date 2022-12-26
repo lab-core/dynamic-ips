@@ -4,8 +4,9 @@ DARP_IPS/bin/*
 DARP_IPS/cmake-build-debug/*
 DARP_IPS/lib/*
 DARP_IPS/cmake-build-release/*
-DARP_IPS/datasets/small_test/.DS_Store
-DARP_IPS/datasets/Instances-120/.DS_Store
+.DS_Store
+**/.DS_Store
+*.csv
 DARP_IPS/datasets/Instances-120/20151230_07-120m/*
 DARP_IPS/datasets/Instances-120/20150828_07-120m/*
 DARP_IPS/datasets/Instances-120/20150917_07-120m/*
