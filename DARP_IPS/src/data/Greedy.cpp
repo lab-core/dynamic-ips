@@ -511,6 +511,10 @@ void LinkedGreedyLabels::findInsertPlace(PNode &pickNode, PNode &dropNode, float
     while (prePick != nullptr) {
         deltaDelay = INFINITY;
         if (prePick == tail_) {
+            if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_){
+                std::cout << "Instance error! split the trip!" << std::endl;
+                myTools::throwException("instance definition error");
+            }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
             deltaDelay =  pickTime - pickNode->requestTime_;
@@ -831,9 +835,10 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute(bool update) const {
             }
         }
         if (update) {
-            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
+//            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
             newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
             newRoute->routeNodes_.back()->nodeStatus_ = DONE;
+            newRoute->routeNodes_.back()->reachTime_ = newRoute->plannedReachTime_.back();
             if (newRoute->routeNodes_.back()->type_ == PICKUP)
                 newRoute->routeNodes_.back()->related_Request_->pickTime_ = currentLabel->reachTime_;
             else if (newRoute->routeNodes_.back()->type_ == DROPOFF) {

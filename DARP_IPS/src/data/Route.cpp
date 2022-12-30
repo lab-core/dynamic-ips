@@ -181,7 +181,7 @@ std::string Route::toString() const {
 // this function is for testing the validation of the route
 void Route::testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm) {
     PRoute testRoute = std::make_shared<Route>(vehicleID_);
-    testRoute->addSource(routeNodes_[0], vehicle->solutionRoute_->routeNodes_[0]->reachTime_,
+    testRoute->addSource(routeNodes_[0], vehicle->solutionRoute_->routeNodes_[0]->departTime_,
                          vehicle->solutionRoute_->plannedPassengers_[0]);
 
     for (int i = 1; i < routeSize_; ++i) {

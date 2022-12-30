@@ -10,7 +10,7 @@ nbThreads = 8
 InitialDual = 1
 mainAlgorithm = 0
 addOneRequestColumn = 0
-solutionMode = 1
+solutionMode = 0
 OneIter = 1
 
 # ISUD PARAMETERS
@@ -26,7 +26,7 @@ useZoom = 0
 #
 isTruncated = 1
 MaxLabel = 15
-isDominanceReleased = 0
+isDominanceReleased = 1
 isSuccessorsLimited = 0
 isDropPickPossible = 0
 SubproSolveStartState = 2
