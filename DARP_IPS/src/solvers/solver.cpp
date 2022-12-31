@@ -88,6 +88,16 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         EpochInst->updateTaskIndexLabeling();
         std::vector<PLabelingSubPro> subProSolve;
         std::vector<PLabelingSubPro> subProConst;
+
+        if (std::floor(EpochInst->nbRequests_/50) == 1)
+            subProOptions_->MaxLabel_ = 50;
+        else if (std::floor(EpochInst->nbRequests_/50) == 2)
+            subProOptions_->MaxLabel_ = 25;
+        else if (std::floor(EpochInst->nbRequests_/50) == 3)
+            subProOptions_->MaxLabel_ = 15;
+        else if (std::floor(EpochInst->nbRequests_/50) > 3)
+            subProOptions_->MaxLabel_ = 10;
+
         if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbRequests_ >= 15)){
             GreedyModel_->GreedySolverFast(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
