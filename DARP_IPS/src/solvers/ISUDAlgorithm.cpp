@@ -633,6 +633,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
                     CPCounter++;
                 }
             }
+            else
+                restartAlgorithm = false;
         }
  //       CPTime_->stop();
         /*ReducedPro_->requestDuals_ = CompPro_->requestDuals_;
