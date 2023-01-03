@@ -151,6 +151,18 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
     initializationFast(PInst);
     solveInsertionFast(PInst);
     solutionToRoute(PInst);
+    greedyTime_->stop();
+}
+
+void GreedyModeler::GreedySolver(PInstance &PInst, vector2D<PRoute> &availableRoutes) {
+    greedyTime_->start();
+    initializationFast(PInst);
+    solveInsertionFast(PInst);
+    for (auto & greedySol : solutionList_) {
+        availableRoutes[(*greedySol->Vehicle_)->vehicleID_].emplace_back(greedySol->greedyLabelToRoute(false));
+        greedySol->resetLinkedGreedyLabels(removedLabels_);
+        greedySol.reset();
+    }
     solutionList_.clear();
     greedyTime_->stop();
 }
@@ -191,16 +203,11 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
 void GreedyModeler::GreedySolverFast(PInstance &PInst) {
     greedyAssignTime_->start();
     initializationFast(PInst);
- //   solveInsertionFast(PInst);
     solveAssignment(PInst);
     for (auto & greedySol : solutionList_) {
         greedySol->resetLinkedGreedyLabels(removedLabels_);
         greedySol.reset();
     }
-    /*for (auto & position : positionList_){
-        position->preDrop_->currentNode_.reset();
-        position->prePickup_->currentNode_.reset();
-    }*/
     solutionList_.clear();
     greedyAssignTime_->stop();
 }

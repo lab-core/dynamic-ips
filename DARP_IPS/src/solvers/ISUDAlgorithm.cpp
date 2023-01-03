@@ -104,7 +104,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
     else if (pInst->parameters_->initialStart_ == GREEDY_START){
         routeSolution_.clear();
         zSolution_.clear();
-        PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
+//        PGreedyModeler GreedyModel = std::make_shared<GreedyModeler>();
         /*GreedyModel->GreedySolver(pInst);*/
         for (auto &vehicleObj: pInst->vehicles_) {
             MIPReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
@@ -357,7 +357,7 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     for (auto & requestObj : pInst->requests_)
         requestObj->taskIncIndex_ = -1;
     calcIncMatrix();
- //   calcIncMatrixFull();
+//    calcIncMatrixFull();
     maxIncDegree_ = 0;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
 
@@ -452,7 +452,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
     int CPCounter;
 
     while (restartAlgorithm){
-        restartAlgorithm = false;
+        isCPImproved = true;
+        restartAlgorithm = true;
+        isCPBuilt = false;
         /************************************************************************************************/
         //                                     REDUCED PROBLEM
         /************************************************************************************************/
@@ -648,6 +650,11 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         updateDegreeTime_->stop();
         if (minReducedCost_ > 0)
             restartAlgorithm = false;
+
+        CompPro_.reset();
+        CompPro_ = std::make_shared<ComplementPro>();
+        MIPReducedPro_.reset();
+        MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
         CPTime_->stop();
     }
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;

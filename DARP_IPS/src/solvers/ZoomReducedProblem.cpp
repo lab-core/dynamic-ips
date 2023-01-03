@@ -30,6 +30,11 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
   //      std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
+//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
+//        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+
+//        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.3);
         Cplex_.setOut(env_.getNullStream());
         Cplex_.solve();
 

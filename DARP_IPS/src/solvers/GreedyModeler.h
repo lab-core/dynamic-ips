@@ -29,6 +29,8 @@ public:
     void solveInsertion(PInstance &PInst);
     void solutionToRoute(PInstance &PInst);
     void GreedySolver(PInstance &PInst);
+    // this function onluy solve greedy and does not change the current routes
+    void GreedySolver(PInstance &PInst, vector2D<PRoute> &availableRoutes);
     void solveInsertionFast(PInstance &PInst);
     void GreedySolverFast(PInstance &PInst);
     void solveAssignment(PInstance &PInst);

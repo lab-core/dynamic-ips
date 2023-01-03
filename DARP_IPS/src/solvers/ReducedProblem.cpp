@@ -94,7 +94,7 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
 void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution) {
 
     // model initialization (defining empty set of constraints and adding objective)
-    ResetRPModel();
+//    ResetRPModel();
     int rhs = 1;
     MasterModeler::initializeModel(pInst, rhs);
 
