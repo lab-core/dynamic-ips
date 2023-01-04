@@ -336,7 +336,7 @@ void Instance::setInitialTimes() {
     }
 
     // if the vehicles start from the source depart time is after the first epoch
-    if ((nbOnboards_ == 0) &&(parameters_->mainAlgorithm_ != GREEDY)) {
+    if ((nbOnboards_ == 0) &&(parameters_->solutionMode_ == DYNAMIC)) {
         for (auto &vehicleObj: vehicles_) {
             vehicleObj->setDepartTime(vehicleObj->startTime_ + static_cast<float>(parameters_->epochLength_));
         }
