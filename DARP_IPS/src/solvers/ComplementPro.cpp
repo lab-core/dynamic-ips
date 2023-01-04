@@ -63,7 +63,8 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
 // this function build the model at each iteration
 void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     // model initialization (defining empty set of constraints and adding objective)
-    ResetCPModel();
+//    ResetCPModel();
+
 //    clearModel();
     initializeCPModel(pInst);
 
@@ -339,6 +340,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     OutRequestVar.push_back(i);
                 }
             }
+            Cplex_.clearModel();
 
             if (isColumnDisjoint(zResult, routeResult,pInst->nbVehicles_)) {
                 // remove outgoing variable
@@ -406,7 +408,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
         } else
             status_ = POSITIVE_VALUE;
     }
-    Cplex_.clearModel();
+//    Cplex_.clearModel();
 }
 
 // this function check the situation of the CP solution to be column disjoint

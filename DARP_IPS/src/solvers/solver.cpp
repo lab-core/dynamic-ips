@@ -89,14 +89,14 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         std::vector<PLabelingSubPro> subProSolve;
         std::vector<PLabelingSubPro> subProConst;
 
-        if (std::floor(EpochInst->nbRequests_/50) == 1)
+        /*if (std::floor(EpochInst->nbRequests_/50) == 1)
             subProOptions_->MaxLabel_ = 50;
         else if (std::floor(EpochInst->nbRequests_/50) == 2)
             subProOptions_->MaxLabel_ = 25;
         else if (std::floor(EpochInst->nbRequests_/50) == 3)
             subProOptions_->MaxLabel_ = 15;
         else if (std::floor(EpochInst->nbRequests_/50) > 3)
-            subProOptions_->MaxLabel_ = 10;
+            subProOptions_->MaxLabel_ = 10;*/
 
         if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbRequests_ >= 15)){
             GreedyModel_->GreedySolverFast(EpochInst);
@@ -473,7 +473,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        /*if (epoch_ == 10)
+        /*if (epoch_ == 1)
             break;*/
 
         // resetting a subInstance
