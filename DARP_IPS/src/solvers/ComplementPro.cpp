@@ -340,9 +340,10 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     OutRequestVar.push_back(i);
                 }
             }
-            Cplex_.clearModel();
+
 
             if (isColumnDisjoint(zResult, routeResult,pInst->nbVehicles_)) {
+                Cplex_.clearModel();
                 // remove outgoing variable
                 for (auto & r : OutRouteVar) {
                     addRouteVar(routeIncVar_, routeSolution[r], POSITIVE);
@@ -388,20 +389,23 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             {
                 status_ = FRACTIONAL;
    //             std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
-                fractionalRoutes_.clear();
-                fractionalZ_.clear();
-                // add incoming variables
-                for (int r = 0; r < routeIncVar_.getSize(); ++r) {
-                    if (Cplex_.getValue(routeIncVar_[r]) > 0) {
- //                       fractionalRoutes_.push_back(generatedRoutes[routeIncVar_[r].getName()]);
-                        fractionalRoutes_.push_back(IncRoute_[r]);
+                if (pInst->parameters_->useZoom_ || pInst->parameters_->useMultiStage_) {
+                    fractionalRoutes_.clear();
+                    fractionalZ_.clear();
+                    // add incoming variables
+                    for (int r = 0; r < routeIncVar_.getSize(); ++r) {
+                        if (Cplex_.getValue(routeIncVar_[r]) > 0) {
+                            //                       fractionalRoutes_.push_back(generatedRoutes[routeIncVar_[r].getName()]);
+                            fractionalRoutes_.push_back(IncRoute_[r]);
+                        }
+                    }
+                    for (int i = 0; i < zIncVar_.getSize(); ++i) {
+                        if (Cplex_.getValue(zIncVar_[i]) > 0) {
+                            fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
+                        }
                     }
                 }
-                for (int i = 0; i < zIncVar_.getSize(); ++i) {
-                    if (Cplex_.getValue(zIncVar_[i]) > 0) {
-                        fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
-                    }
-                }
+                Cplex_.clearModel();
             }
             routeResult.clear();
             zResult.clear();
