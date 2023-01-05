@@ -142,7 +142,7 @@ PGreedyLabel LinkedGreedyLabels::findInsertPosition(PNode &pickNode, PNode &drop
     PGreedyLabel dropLabel = curLabel;
     while (dropLabel->child_ != nullptr) {
         float pickTime;
-        if (curLabel->reachTime_ + curLabel->currentNode_->deltaTime_ < pickNode->requestTime_)
+        if (curLabel->departTime_ + curLabel->currentNode_->deltaTime_ < pickNode->requestTime_)
             pickTime = departTime_ + durationMatrix_[curLabel->currentNode_->locationID_][pickNode->locationID_];
         else
             pickTime = curLabel->reachTime_ + curLabel->currentNode_->deltaTime_ +
@@ -750,11 +750,10 @@ void LinkedGreedyLabels::insertRequest(PInsertPosition &position, PNode &pickNod
 // this function calculate the reachTime from a Label to a node
 float LinkedGreedyLabels::labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) {
     if (Node->type_ == PICKUP) {
-        if ((preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ < Node->requestTime_) && (Node->type_ == PICKUP))
+        if (preLabel->departTime_ <= Node->requestTime_)
             return Node->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
         else
-            return preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
-                   durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+            return preLabel->departTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
     }
     else {
         return preLabel->reachTime_ + preLabel->currentNode_->deltaTime_ +
@@ -808,7 +807,7 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         currentLabel = currentLabel->child_;
     }
     if (totalDelay_ < 0 ) {
-        std::cout << "error";
+        myTools::throwException("Delay Error");
         std::cout << toString() << std::endl;
     }
 }
@@ -836,6 +835,7 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute(bool update) const {
         }
         if (update) {
 //            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
+            newRoute->routeNodes_.back()->related_Request_->vehicleID_ = newRoute->vehicleID_;
             newRoute->routeNodes_.back()->departTime_ = currentLabel->departTime_;
             newRoute->routeNodes_.back()->nodeStatus_ = DONE;
             newRoute->routeNodes_.back()->reachTime_ = newRoute->plannedReachTime_.back();

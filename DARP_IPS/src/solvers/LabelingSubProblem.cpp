@@ -215,6 +215,8 @@ bool LabelingSubProblem::isLabelAdded2(PLabel &newLabel, PNode &outNode) {
     else{
         outNode->activeLabels_.push_back(newLabel);
         outNode->nbActiveLabels_++;
+        if (newLabel->openNode_.empty())
+            labelExtend(newLabel, subGraph_->sinkNodes_[0]);
 //        this->nbActivated_++;
     }
     return true;
@@ -362,10 +364,10 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
             for (auto & selectedLabel: currentNode->activeLabels_){
-                if (selectedLabel->openNode_.empty())
-                    labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
-                    // drop onboards
-                else {
+                /*if (selectedLabel->openNode_.empty())
+                    labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);*/
+                // drop onboards
+                if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
                         nbActive = (*neighbourNode)->nbActiveLabels_;
                         labelExtend(selectedLabel, *neighbourNode);
@@ -384,19 +386,19 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
             activeNodes_.pop_back();
 
             // decrease the number of active labels if truncated strategy is used
-            if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
+            /*if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
                 truncateLabelList(currentNode, solverOptions_->MaxLabel_, dominatedLabels_);
-            }
+            }*/
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
                     // terminate to sink
-                    if (selectedLabel->openNode_.empty())
-                        labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
-                        // drop onboards
-                    else {
+                    /*if (selectedLabel->openNode_.empty())
+                    labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);*/
+                    // drop onboards
+                    if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
                             nbActive = (*neighbourNode)->nbActiveLabels_;
                             labelExtend(selectedLabel, *neighbourNode);
@@ -591,10 +593,10 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
             for (auto & selectedLabel: currentNode->activeLabels_){
-                if (selectedLabel->openNode_.empty())
-                    labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
+                /*if (selectedLabel->openNode_.empty())
+                    labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);*/
                     // drop onboards
-                else {
+                if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
                         nbActive = (*neighbourNode)->nbActiveLabels_;
                         labelExtend(selectedLabel, *neighbourNode);
@@ -616,19 +618,19 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
             activeNodes_.pop_back();
 
             // decrease the number of active labels if truncated strategy is used
-            if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
+            /*if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
                 truncateLabelList(currentNode, solverOptions_->MaxLabel_, dominatedLabels_);
-            }
+            }*/
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
                     // terminate to sink
-                    if (selectedLabel->openNode_.empty())
-                        labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
+ //                   if (selectedLabel->openNode_.empty())
+ //                       labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
                     // drop onboards
-                    else {
+                    if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
                             nbActive = (*neighbourNode)->nbActiveLabels_;
                             labelExtend(selectedLabel, *neighbourNode);

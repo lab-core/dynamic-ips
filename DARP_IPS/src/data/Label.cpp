@@ -109,7 +109,11 @@ void Label:: extend(PNode &outNode) {
 
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_]+ (*currentNode_)->deltaTime_;
-    float reachTime = passedTime_ + travelTime;
+    float reachTime;
+    if (passedTime_ < outNode->requestTime_)
+        reachTime = outNode->requestTime_ + travelTime;
+    else
+        reachTime = passedTime_ + travelTime;
     /*for (auto & item: travelResource_) {
         item.second -= travelTime;
     }*/
@@ -118,7 +122,7 @@ void Label:: extend(PNode &outNode) {
         travelResources_[node->related_Request_->taskIndexLabel_] -= travelTime;
     }*/
     for (auto & node: openNode_) {
-        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= travelTime;
+        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (reachTime - passedTime_);
     }
 
     if (outNode->type_ == DROPOFF) {
@@ -133,7 +137,7 @@ void Label:: extend(PNode &outNode) {
         }
 //        openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 0;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        passedTime_ = reachTime;
+        passedTime_ = reachTime + outNode->deltaTime_;
 
 
     }
@@ -149,27 +153,29 @@ void Label:: extend(PNode &outNode) {
         completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
-        nbPickUp_ ++;
+//        nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
 
 
-        if (reachTime < outNode->requestTime_){
+        /*if (reachTime < outNode->requestTime_){
             passedTime_ = outNode->requestTime_;
-            /*for (auto & item: travelResource_) {
+            *//*for (auto & item: travelResource_) {
                 item.second -= (outNode->requestTime_ - reachTime);
-            }*/
-            /*for (auto & node: openNodes_) {
+            }*//*
+            *//*for (auto & node: openNodes_) {
                 travelResources_[node->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
-            }*/
+            }*//*
             for (auto & node: openNode_) {
                 travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
             }
         }
-        else {
-            passedTime_ = reachTime;
+        else {*/
+            if (travelTime > 0)
+                nbPickUp_ ++;
+            passedTime_ = reachTime + outNode->deltaTime_;
             totalDelay_ += (reachTime - outNode->requestTime_);
             reducedCost_ += (reachTime - outNode->requestTime_);
-        }
+//        }
 //        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_));
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_;
     }
@@ -252,7 +258,10 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 }
                 else {
                     if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                        return true;
+                        if ((this->passedTime_ == otherLabel->passedTime_)&&(this->reducedCost_ == otherLabel->reducedCost_))
+                            return false;
+                        else
+                            return true;
                     }
                 }
 
