@@ -65,7 +65,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
             extendCheck_.insert(nodeObj->nodeID_);
     }*/
     nbUsed_ = 0;
-    isDropped_ = false;
+    isDropped_ = label.isDropped_;
     createTime_ = 0;
 }
 void Label::copyLabel(const Label &label) {
@@ -88,7 +88,7 @@ void Label::copyLabel(const Label &label) {
     if ((*currentNode_)->type_ != SOURCE)
         extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
     nbPickUp_ = label.nbPickUp_;
-    isDropped_ = false;
+    isDropped_ = label.isDropped_;
     nbUsed_ = 1;
 }
 Label::~Label() {
@@ -138,7 +138,8 @@ void Label:: extend(PNode &outNode) {
 //        openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 0;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
         passedTime_ = reachTime + outNode->deltaTime_;
-
+        if (!isDropped_ && travelTime > 0)
+            isDropped_ = true;
 
     }
     else if (outNode->type_ == PICKUP){
@@ -179,9 +180,9 @@ void Label:: extend(PNode &outNode) {
 //        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_));
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_;
     }
-    else if (outNode->type_ == SINK){
+    /*else if (outNode->type_ == SINK){
         passedTime_ = reachTime;
-    }
+    }*/
     pathNodes_.push_back(outNode->nodeID_);
     pathNode_.push_back(&outNode);
  //   path_.push_back(&outNode);
@@ -195,8 +196,9 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
     if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
         return false;
     if (outNode->type_ == PICKUP) {
-        if (nbPickUp_ == maxPickUp)
+        if (nbPickUp_ >= maxPickUp && (*currentNode_)->locationID_ != outNode->locationID_)
             return false;
+
  //       if (completedRequests_.count(outNode->related_Request_))
  //       if (completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)
         if (completedRequests_[outNode->related_Request_->taskIndexLabel_] == 1)
@@ -258,8 +260,12 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 }
                 else {
                     if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                        if ((this->passedTime_ == otherLabel->passedTime_)&&(this->reducedCost_ == otherLabel->reducedCost_))
-                            return false;
+                        if ((this->passedTime_ == otherLabel->passedTime_)&&(this->reducedCost_ == otherLabel->reducedCost_)){
+                            if (this->travelResources_ == otherLabel->travelResources_)
+                                return true;
+                            else
+                                return false;
+                        }
                         else
                             return true;
                     }
