@@ -473,8 +473,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             //           isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
         }
         isudObj_->nbRoutes_ = 0;
-        /*if (epoch_ == 1)
-            break;*/
 
         // resetting a subInstance
         EpochInst->resetInstance();
