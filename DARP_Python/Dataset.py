@@ -75,10 +75,10 @@ class Dataset(object):
             self.instance = self.instance.drop(columns=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
         if 'dropoff_district' in self.instance.columns:
             self.instance = self.instance.drop(columns=['dropoff_district'])
-            self.instance = self.instance.drop(columns=['pickup_district'])
+#            self.instance = self.instance.drop(columns=['pickup_district'])
         if 'pickup_latitude' in self.instance.columns:
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
-        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec']]
+        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
 
     def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -144,11 +144,21 @@ class Dataset(object):
         temp_df = []
         num_passengers = []
         for row in removed_rows.itertuples(index=False):
-            temp_df.extend([list(row)] * (row.passenger_count // capacity))
-            num_passengers.extend([capacity] * (row.passenger_count // capacity))
+            num_rows = row.passenger_count // capacity
             if row.passenger_count % capacity > 0:
-                temp_df.extend([list(row)] * 1)
-                num_passengers.extend([(row.passenger_count % capacity)] * 1)
+                num_rows = num_rows + 1
+            temp_df.extend([list(row)] * num_rows)
+            new_passenger = row.passenger_count // num_rows
+            num_passengers.extend([new_passenger] * (num_rows-1))
+            num_passengers.extend([row.passenger_count - (new_passenger * (num_rows-1))] * 1)
+#
+# #            temp_df.extend([list(row)] * (row.passenger_count // capacity))
+#             temp_df.extend([list(row)] * num_rows)
+#             num_passengers.extend([row.passenger_count // num_rows] * num_rows)
+# #            num_passengers.extend([capacity] * (row.passenger_count // capacity))
+#             if row.passenger_count % capacity > 0:
+#                 temp_df.extend([list(row)] * 1)
+#                 num_passengers.extend([(row.passenger_count % capacity)] * 1)
         df_removed_rows = pd.DataFrame(temp_df, columns=self.dataset.columns)
         df_removed_rows["passenger_count"] = pd.DataFrame(num_passengers, columns=['passenger_count'])
         self.dataset = pd.concat([self.dataset, df_removed_rows])
