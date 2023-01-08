@@ -54,6 +54,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
     completedRequests_ = label.completedRequests_;
+    numCompleted_ = label.numCompleted_;
     extendCheck_ = completedRequests_;
     if ((*currentNode_)->type_ != SOURCE)
         extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
@@ -84,6 +85,7 @@ void Label::copyLabel(const Label &label) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
     completedRequests_ = label.completedRequests_;
+    numCompleted_ = label.numCompleted_;
     extendCheck_ = label.completedRequests_;
     if ((*currentNode_)->type_ != SOURCE)
         extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
@@ -110,9 +112,9 @@ void Label:: extend(PNode &outNode) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_]+ (*currentNode_)->deltaTime_;
     float reachTime;
-    if (passedTime_ < outNode->requestTime_)
-        reachTime = outNode->requestTime_ + travelTime;
-    else
+//    if (passedTime_ < outNode->requestTime_)
+//        reachTime = outNode->requestTime_ + travelTime;
+//    else
         reachTime = passedTime_ + travelTime;
     /*for (auto & item: travelResource_) {
         item.second -= travelTime;
@@ -121,8 +123,10 @@ void Label:: extend(PNode &outNode) {
     /*for (auto & node: openNodes_) {
         travelResources_[node->related_Request_->taskIndexLabel_] -= travelTime;
     }*/
-    for (auto & node: openNode_) {
-        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (reachTime - passedTime_);
+    if (travelTime > 0) {
+        for (auto &node: openNode_) {
+            travelResources_[(*node)->related_Request_->taskIndexLabel_] -= travelTime;
+        }
     }
 
     if (outNode->type_ == DROPOFF) {
@@ -152,6 +156,7 @@ void Label:: extend(PNode &outNode) {
  //       openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
 
         completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
+        numCompleted_++;
         extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
 //        nbPickUp_ ++;
@@ -217,6 +222,25 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
         if (!openNode_.empty())
             return false;
     }
+    if ((*currentNode_)->locationID_ != outNode->locationID_) {
+        for (auto &nodeObj: openNode_) {
+            float travelToDrop =
+                    (*currentNode_)->deltaTime_ + durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
+                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+            /*if (travelResource_[nodeObj->nodeID_] <  travelToDrop)
+                return false;*/
+            if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
+                return false;
+        }
+    }
+    else{
+        for (auto &nodeObj: openNode_) {
+            float travelToDrop = (*currentNode_)->deltaTime_ + outNode->deltaTime_ +
+                    durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+            if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
+                return false;
+        }
+    }
 
     /*for (auto & nodeObj: openNodes_) {
         float travelToDrop = currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][outNode->locationID_] +
@@ -227,14 +251,8 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
             return false;
     }*/
 
-    for (auto & nodeObj: openNode_) {
-        float travelToDrop = (*currentNode_)->deltaTime_ + durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
-                             outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
-        /*if (travelResource_[nodeObj->nodeID_] <  travelToDrop)
-            return false;*/
-        if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] <  travelToDrop)
-            return false;
-    }
+
+
 
     /*for (auto & nodeObj : openNodes_) {
         float travelDuration = reachTime - openReachTime_[nodeObj->nodeID_] + outNode->deltaTime_ +
@@ -253,24 +271,25 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
 
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
-            if (this->openRequests_ == otherLabel->openRequests_) {
-                if (solverOption->isDominanceReleased_) {
-                    if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
-                        return true;
-                }
-                else {
-                    if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                        if ((this->passedTime_ == otherLabel->passedTime_)&&(this->reducedCost_ == otherLabel->reducedCost_)){
-                            if (this->travelResources_ == otherLabel->travelResources_)
-                                return true;
-                            else
-                                return false;
-                        }
-                        else
+            if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                if (this->openRequests_ == otherLabel->openRequests_) {
+                    if (solverOption->isDominanceReleased_) {
+                        if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
                             return true;
+                    } else {
+                        if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                            if ((this->passedTime_ == otherLabel->passedTime_) &&
+                                (this->reducedCost_ == otherLabel->reducedCost_)) {
+                                if (this->travelResources_ == otherLabel->travelResources_)
+                                    return true;
+                                else
+                                    return false;
+                            } else
+                                return true;
+                        }
                     }
-                }
 
+                }
             }
         }
     }

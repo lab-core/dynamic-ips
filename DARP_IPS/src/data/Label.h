@@ -24,6 +24,7 @@ public:
     std::vector<float> travelResources_;
     std::vector<PNode*> openNode_;
     std::valarray<int> completedRequests_;
+    int numCompleted_;
     std::vector<int> openRequests_;
     std::vector<std::string> pathNodes_;
     std::vector<PNode*> pathNode_;

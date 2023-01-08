@@ -71,6 +71,7 @@ void LabelingSubProblem::initialization() {
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+        initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                 nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
 
@@ -548,6 +549,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
 }
 
 void LabelingSubProblem::solveDynamic_pushingWave() {
+
     // create initial label
     int nbActive;
     while(true) {
@@ -704,6 +706,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+        initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                              nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
 

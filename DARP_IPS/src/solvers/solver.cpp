@@ -194,7 +194,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         for (auto & subProblem : subProConst) {
             repStr << subProblem->toStringOut(epoch_);
         }
- //       (*pLogEpochSubRuntimeStream_) << repStr.str();
+//        (*pLogEpochSubRuntimeStream_) << repStr.str();
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
         subProSolve.clear();
@@ -464,6 +464,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
         std::cout << "*************************************************************************************"<< std::endl;
+
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
