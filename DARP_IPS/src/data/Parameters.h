@@ -81,7 +81,7 @@ struct solverOption {
     bool isDropPickPossible_;
     LabelingStrategy LabelingStrategy_;
     int MaxLabel_;
-
+    bool usePick_;
     // Constructor and Destructor
     solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased,
                  bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);

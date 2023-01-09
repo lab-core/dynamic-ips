@@ -24,6 +24,7 @@ public:
     int nbGenerated_;
     int nbOutputs_;
     int maxPickup_;
+
     PSolverOption solverOptions_;
     myTools::Timer *subproTime_;
     myTools::Timer *subproRouteTime_;

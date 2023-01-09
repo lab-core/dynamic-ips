@@ -271,7 +271,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                 }
                                 // pull all labels to the current node
                                 else if ((selectedLabel->extendCheck_[currentNode->related_Request_->taskIndexLabel_]==0) &&
-                                         (selectedLabel->isExtendFeasible(currentNode,maxPickup_))) {
+                                         (selectedLabel->isExtendFeasible(currentNode,maxPickup_, solverOptions_->usePick_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, currentNode, false);
 
@@ -339,7 +339,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                                 }
                                 // pull all labels to the current node
                                 else if ((selectedLabel->extendCheck_[currentNode->related_Request_->taskIndexLabel_]==0) &&
-                                         (selectedLabel->isExtendFeasible(currentNode,maxPickup_))) {
+                                         (selectedLabel->isExtendFeasible(currentNode,maxPickup_, solverOptions_->usePick_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, currentNode, false);
 
@@ -465,7 +465,7 @@ void LabelingSubProblem::solveDynamic_pushing() {
                     if (selectedLabel->nbPickUp_ != maxPickup_) {
                         // push to pickup points
                         for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
-                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, solverOptions_->usePick_)) {
                                 nbActive = (*neighbourNode)->nbActiveLabels_;
                                 labelExtend(selectedLabel, (*neighbourNode), false);
                                 if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -525,7 +525,7 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                     if (!selectedLabel->isDropped_) {
                         // push to pickup points
                         for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
-                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, solverOptions_->usePick_)) {
                                 nbActive = (*neighbourNode)->nbActiveLabels_;
                                 labelExtend(selectedLabel, (*neighbourNode), false);
                                 if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -574,7 +574,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     selectedLabel->status_ = INACTIVE;
                     // push to pickup points
                     for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
-                        if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_)) {
+                        if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, solverOptions_->usePick_)) {
                             nbActive = (*neighbourNode)->nbActiveLabels_;
                             labelExtend(selectedLabel, (*neighbourNode), true);
                             if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -733,7 +733,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
             for (int i = 1; i < routeObj->routeNodes_.size(); ++i) {
                 if (subGraph_->nodes_.count(routeObj->routeNodes_[i]->nodeID_)>0 &&
                     routeObj->routeNodes_[i]->type_ != SOURCE){
-                    if (newLabel->isExtendFeasible(routeObj->routeNodes_[i], solverOptions_->MaxLabel_)) {
+                    if (newLabel->isExtendFeasible(routeObj->routeNodes_[i], solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
                         newLabel->extend(subGraph_->nodes_[routeObj->routeNodes_[i]->nodeID_]);
                         if (newLabel->isEliminated()){
                             isRemoved = true;
@@ -745,7 +745,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
             if (!isRemoved){
                 if (!newLabel->openNode_.empty()){
                     for (auto &neighbourNode: newLabel->openNode_) {
-                        if (newLabel->isExtendFeasible(*neighbourNode, solverOptions_->MaxLabel_)) {
+                        if (newLabel->isExtendFeasible(*neighbourNode, solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
                             newLabel->extend(*neighbourNode);
                             if (newLabel->isEliminated()){
                                 isRemoved = true;

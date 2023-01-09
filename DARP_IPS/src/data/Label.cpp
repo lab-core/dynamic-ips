@@ -26,6 +26,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
  //   completedRequest_.clear();
     currentNode_ = &source;
     nbPickUp_ = 0;
+    nbPickMove_ = 0;
 //    extendCheck_.insert(source->nodeID_);
 //    parent_ = nullptr;
     isDropped_ = false;
@@ -61,6 +62,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
  //   completedRequest_ = label.completedRequest_;
 //    requestIDToInt_ = label.requestIDToInt_;
     nbPickUp_ = label.nbPickUp_;
+    nbPickMove_ = label.nbPickMove_;
     /*for (auto & nodeObj:label.pathNodes_) {
         if (nodeObj->type_ == PICKUP)
             extendCheck_.insert(nodeObj->nodeID_);
@@ -90,6 +92,7 @@ void Label::copyLabel(const Label &label) {
     if ((*currentNode_)->type_ != SOURCE)
         extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
     nbPickUp_ = label.nbPickUp_;
+    nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
     nbUsed_ = 1;
 }
@@ -176,8 +179,10 @@ void Label:: extend(PNode &outNode) {
             }
         }
         else {*/
-            if (travelTime > 0)
-                nbPickUp_ ++;
+            if (travelTime > 0){
+                nbPickMove_++;
+            }
+            nbPickUp_ ++;
             passedTime_ = reachTime + outNode->deltaTime_;
             totalDelay_ += (reachTime - outNode->requestTime_);
             reducedCost_ += (reachTime - outNode->requestTime_);
@@ -196,13 +201,19 @@ void Label:: extend(PNode &outNode) {
 }
 
 // this function check the feasibility of the label before extension
-bool Label::isExtendFeasible(PNode &outNode, int maxPickUp) {
+bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
     extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
     if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
         return false;
     if (outNode->type_ == PICKUP) {
-        if (nbPickUp_ >= maxPickUp && (*currentNode_)->locationID_ != outNode->locationID_)
-            return false;
+        if (usePick){
+            if (nbPickUp_ >= maxPickUp)
+                return false;
+        }
+        else{
+            if (nbPickMove_ >= maxPickUp && (*currentNode_)->locationID_ != outNode->locationID_)
+                return false;
+        }
 
  //       if (completedRequests_.count(outNode->related_Request_))
  //       if (completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)

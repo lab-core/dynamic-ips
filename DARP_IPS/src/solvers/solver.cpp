@@ -98,6 +98,9 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         else if (std::floor(EpochInst->nbRequests_/50) > 3)
             subProOptions_->MaxLabel_ = 10;*/
 
+        if (EpochInst->nbRequests_ >= 200)
+            subProOptions_->usePick_ = true;
+
         if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbRequests_ >= 15)){
             GreedyModel_->GreedySolverFast(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -180,8 +183,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
-        /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
-            GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);*/
+        if (EpochInst->parameters_->initialStart_ != GREEDY_START)
+            GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);
         std::stringstream repStr;
         for (auto & subProblem : subProSolve) {
             if (maxSubSize_ < subProblem->subGraph_->nbNodes_)

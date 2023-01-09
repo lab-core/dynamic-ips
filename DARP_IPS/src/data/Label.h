@@ -33,7 +33,8 @@ public:
     PNode* currentNode_;
     float totalDelay_;
     LabelStatus status_;
-    int nbPickUp_;
+    int nbPickUp_;                      // the number of time the vehicle visit pick up points
+    int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
     std::valarray<int> extendCheck_;
     bool isDropped_;
     int nbUsed_;
@@ -52,7 +53,7 @@ public:
 
     void extend(PNode &outNode);
     // this function check the feasibility of the label before extension
-    bool isExtendFeasible(PNode &outNode, int maxPickUp);
+    bool isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
     bool isEliminated();
