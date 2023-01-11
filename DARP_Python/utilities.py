@@ -5,29 +5,69 @@ import constants as c
 import datetime as dtime
 
 
-def create_vehicle_dataset(vehicle_file, districts=None):
+def create_resticted_vehicle_dataset(vehicle_file, districts, cell_to_district):
     # read data
     f = open(c.VEHICLES_DIR + vehicle_file + ".json")
     df_vehicles = json.load(f)
     f.close()
     source_ids = []
-    if districts is not None:
-        for item in districts:
-            for cell in item.cells:
-                source_ids.append(int(cell[0]))
+    for item in districts:
+        for cell in item.cells:
+            source_ids.append(int(cell[0]))
+    source_ids = sorted(source_ids)
+    # covert data to matrix
+    vehicle_data = []
+    for i in range(len(df_vehicles)):
+        source_id = source_ids[i%len(source_ids)]
+        zone_id = cell_to_district[int(source_id)]
+        vehicle_data.append(
+            [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id, zone_id])
+
+    df_vehicles = pd.DataFrame(vehicle_data,
+                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID',
+                                        'zone_ID'])
+
+    # save data file
+    folder_name = c.VEHICLES_DIR + "limited_manhattan-vehicles"
+    if not os.path.exists(folder_name):
+        os.mkdir(folder_name)
+    file_to_save = folder_name + "/" + vehicle_file + ".txt"
+    df_columns = df_vehicles.columns.tolist()
+    file = open(file_to_save, "w")
+    file.write("COLUMNS\n\n")
+
+    for col in df_columns:
+        file.write(col)
+        file.write("\n")
+    file.write("\nVEHICLES_INFO\n")
+    df_as_string = df_vehicles.to_string(header=False, index=False)
+    file.write(df_as_string)
+    file.close()
+
+
+def create_vehicle_dataset_with_zone(vehicle_file, network):
+    # read data
+    f = open(c.VEHICLES_DIR + vehicle_file + ".json")
+    df_vehicles = json.load(f)
+    f.close()
+    source_ids = []
+    for item in network.districts:
+        for cell in item.cells:
+            source_ids.append(int(cell[0]))
+    for item in network.outbound_cells:
+        source_ids.append(int(cell[0]))
     source_ids = sorted(source_ids)
     # covert data to matrix
     vehicle_data = []
     for i in range(len(df_vehicles)):
         source_id = df_vehicles[i]['start_stop_id']
-
-        if districts is not None:
-            source_id = source_ids[i%len(source_ids)]
+        zone_id = network.cell_to_district[int(source_id)]
         vehicle_data.append(
-            [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id])
+            [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id, zone_id])
 
     df_vehicles = pd.DataFrame(vehicle_data,
-                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID'])
+                               columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID',
+                                        'zone_ID'])
 
     # save data file
     folder_name = c.VEHICLES_DIR + "manhattan-vehicles"
@@ -45,7 +85,6 @@ def create_vehicle_dataset(vehicle_file, districts=None):
     df_as_string = df_vehicles.to_string(header=False, index=False)
     file.write(df_as_string)
     file.close()
-
 
 def create_vehicle_dataset_zone(vehicle_file, districts, nb_per_zone):
     # read data
