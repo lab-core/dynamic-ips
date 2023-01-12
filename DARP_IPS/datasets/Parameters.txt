@@ -3,10 +3,10 @@
 alphaParam = 1.5
 betaParam = 240
 deltaPram = 420
-epochLength = 30
+epochLength = 20
 penaltyL = 30
 committedTime = 10
-nbThreads = 1
+nbThreads = 8
 InitialDual = 1
 mainAlgorithm = 3
 addOneRequestColumn = 0
@@ -34,6 +34,7 @@ LabelingStrategy = 0
 subproblemAlgorithm = 1
 Vehicle_portion = 1
 Greedy_portion = 1
+usePick = 1
 
 # CPLEX PARAMETERS
 #
