@@ -14,7 +14,7 @@ def create_resticted_vehicle_dataset(vehicle_file, districts, cell_to_district):
     for item in districts:
         for cell in item.cells:
             source_ids.append(int(cell[0]))
-    source_ids = sorted(source_ids)
+#    source_ids = sorted(source_ids)
     # covert data to matrix
     vehicle_data = []
     for i in range(len(df_vehicles)):
