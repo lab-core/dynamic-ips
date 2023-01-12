@@ -30,6 +30,7 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
 //    extendCheck_.insert(source->nodeID_);
 //    parent_ = nullptr;
     isDropped_ = false;
+    isDropExtend_ = false;
     nbUsed_ = 0;
     createTime_ = 0;
 }
@@ -69,6 +70,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     }*/
     nbUsed_ = 0;
     isDropped_ = label.isDropped_;
+    isDropExtend_ = false;
     createTime_ = 0;
 }
 void Label::copyLabel(const Label &label) {
@@ -94,6 +96,7 @@ void Label::copyLabel(const Label &label) {
     nbPickUp_ = label.nbPickUp_;
     nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
+    isDropExtend_ = false;
     nbUsed_ = 1;
 }
 Label::~Label() {
@@ -280,26 +283,45 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (currentNode_ != otherLabel->currentNode_)
         myTools::throwException("Label Domination error!!");
 
-    if (this->passedTime_ >= otherLabel->passedTime_) {
-        if (this->reducedCost_ >= otherLabel->reducedCost_) {
-            if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                if (this->openRequests_ == otherLabel->openRequests_) {
+    if ((*currentNode_)->type_ == SINK){
+        if (this->passedTime_ >= otherLabel->passedTime_) {
+            if (this->reducedCost_ >= otherLabel->reducedCost_) {
+                if (this->numCompleted_ >= otherLabel->numCompleted_) {
                     if (solverOption->isDominanceReleased_) {
-                        if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
-                            return true;
-                    } else {
+                        return true;
+                    }
+                    else {
                         if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                            if ((this->passedTime_ == otherLabel->passedTime_) &&
-                                (this->reducedCost_ == otherLabel->reducedCost_)) {
-                                if (this->travelResources_ == otherLabel->travelResources_)
-                                    return true;
-                                else
-                                    return false;
-                            } else
-                                return true;
+                            return true;
                         }
                     }
+                }
+            }
+        }
+    }
+    else {
 
+        if (this->passedTime_ >= otherLabel->passedTime_) {
+            if (this->reducedCost_ >= otherLabel->reducedCost_) {
+                if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                    if (this->openRequests_ == otherLabel->openRequests_) {
+                        if (solverOption->isDominanceReleased_) {
+                            if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
+                                return true;
+                        } else {
+                            if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                                if ((this->passedTime_ == otherLabel->passedTime_) &&
+                                    (this->reducedCost_ == otherLabel->reducedCost_)) {
+                                    if (this->travelResources_ == otherLabel->travelResources_)
+                                        return true;
+                                    else
+                                        return false;
+                                } else
+                                    return true;
+                            }
+                        }
+
+                    }
                 }
             }
         }

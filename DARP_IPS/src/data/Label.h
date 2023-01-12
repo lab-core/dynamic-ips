@@ -37,6 +37,7 @@ public:
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
     std::valarray<int> extendCheck_;
     bool isDropped_;
+    bool isDropExtend_;
     int nbUsed_;
     double createTime_;
 
