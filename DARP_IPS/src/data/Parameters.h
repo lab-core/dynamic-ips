@@ -46,6 +46,7 @@ public:
     subproblemAlgorithm subAlgorithm_;
     float vehicle_portion_;
     bool greedyPortion_{};
+    bool usePick_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -58,7 +59,7 @@ public:
                warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
                bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-               subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, int bigM,
+               subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode);
 
     virtual ~Parameters();

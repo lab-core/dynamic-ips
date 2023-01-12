@@ -14,7 +14,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
                        bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, int bigM,
+                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
                        int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
@@ -23,8 +23,9 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
+        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), bigM_(bigM),
+        solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
+        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
 }
 
 Parameters::~Parameters() = default;
@@ -73,6 +74,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
     repStr << std::setw(setwLength) << "# use greedy to select vehicle portion " << " = " << greedyPortion_ << std::endl;
+    repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
@@ -96,7 +98,7 @@ solverOption::solverOption(float maxReachTime, bool isTruncated, int maxLabel, b
                            maxReachTime_(maxReachTime), isTruncated_(isTruncated),
                            MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
                            isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-                           LabelingStrategy_(labelingStrategy) {}
+                           LabelingStrategy_(labelingStrategy), usePick_(false) {}
 
 solverOption::~solverOption() = default;
 
@@ -113,6 +115,7 @@ solverOption::solverOption(PParameters &MainParams) {
     LabelingStrategy_ = MainParams->LabelingStrategy_;
     isSuccessorsLimited_ = MainParams->isSuccessorsLimited_;
     isDropPickPossible_ = MainParams->isDropPickPossible_;
+    usePick_ = MainParams->usePick_;
 }
 
 void solverOption::updateOptions(float maxReachTime) {
