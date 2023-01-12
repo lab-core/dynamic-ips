@@ -14,7 +14,7 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 std::string instNum = "1";
-int numVehicles = 500;
+int numVehicles = 300;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
