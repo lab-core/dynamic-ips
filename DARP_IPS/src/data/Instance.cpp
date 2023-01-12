@@ -118,6 +118,9 @@ std::string Instance::solutionToString() {
     double penalty = 0;             // total penalty of un-served
     float idleTime = 0;             // total vehicle idle times
     int totalCustomers = 0;
+    int nbIdle = 0;
+    int totalStops = 0;
+    int totalStopLoad = 0;
 
     std::stringstream repStr;
 
@@ -176,6 +179,12 @@ std::string Instance::solutionToString() {
         totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
         numServed += (int)vehicleObj->solutionRoute_->routeRequests_.size();
         idleTime += vehicleObj->idleTime_;
+        if (vehicleObj->solutionRoute_->routeSize_ == 1)
+            nbIdle++;
+        totalStopLoad+= std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
+                                        vehicleObj->solutionRoute_->plannedPassengers_.end(),
+                                        decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
+        totalStops += vehicleObj->solutionRoute_->routeSize_;
     }
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "#" << std::endl;
@@ -187,6 +196,7 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# NUMBER OF UNSERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF EMPTY VEHICLES" << " = " << nbIdle << std::endl;
     repStr << "#" << std::endl;
     repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
 
@@ -195,7 +205,7 @@ std::string Instance::solutionToString() {
         repStr << std::setw(sentenceSize) << "# WAIT TIME PER PASSENGER" << " = " << totalWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
         repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(totalNumServed) << " (s)" << std::endl;
     }
-
+    repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << totalStopLoad/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
 
@@ -203,6 +213,8 @@ std::string Instance::solutionToString() {
     instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
     instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << ",";
     instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
+    instRepStr_ << nbIdle << ",";
+    instRepStr_ << totalStopLoad/static_cast<float>(totalStops) << ",";
     return repStr.str();
 }
 
