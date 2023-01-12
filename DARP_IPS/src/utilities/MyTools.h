@@ -25,6 +25,7 @@
 #include <queue>
 #include <algorithm>
 #include <valarray>
+#include <numeric>
 
 
 using std::string;

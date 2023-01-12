@@ -11,7 +11,7 @@
 //  Instances of this class contain the paths of the inputs
 //-----------------------------------------------------------------------------
 
-InputPaths::InputPaths(std::string  datadir, std::string vehicleFile) : dataDir_(std::move(datadir)){
+InputPaths::InputPaths(std::string  datadir, std::string vehicleFile, std::string vehicleFolder) : dataDir_(std::move(datadir)){
     input_TripData_ = "";
     input_InstanceData_ = "";
     instanceName_ = "";
@@ -19,11 +19,11 @@ InputPaths::InputPaths(std::string  datadir, std::string vehicleFile) : dataDir_
     input_durationData_ = "";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
     input_paramFile_ = dataDir_ + "Parameters.txt";
-    input_vehicleFileGeneral_ = dataDir_ + "manhattan-vehicles/" + vehicleFile + ".txt";
+    input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
 }
 
 InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-                       std::string vehicleFile)
+                       std::string vehicleFile, std::string vehicleFolder)
         : dataDir_(std::move(datadir)), instanceName_(instanceName) {
 
     instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
@@ -36,7 +36,7 @@ InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, cons
     input_MIPStart_ = instanceDir_ + "MIPStart_" + instanceName;
     input_paramFile_ = dataDir_ + "Parameters.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFileGeneral_ = dataDir_ + "manhattan-vehicles/" + vehicleFile + ".txt";
+    input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }

@@ -304,7 +304,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
-    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false;
+    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1;
 
@@ -397,6 +397,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Greedy_portion "))
             file >> greedyPortion;
 
+        else if (strEndWith(title, "usePick "))
+            file >> usePick;
+
         else if (strEndWith(title, "BigM "))
             file >> bigM;
 
@@ -417,7 +420,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          vehicle_portion, greedyPortion, bigM, solveTimeLimit,
+                                                          vehicle_portion, greedyPortion, usePick, bigM, solveTimeLimit,
                                                           populateTimeLimit, addOneRequestColumn,
                                                           static_cast<SolutionMode>(solutionMode));
 }
