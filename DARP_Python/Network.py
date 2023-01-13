@@ -5,7 +5,8 @@ import constants as c
 
 
 class Network(object):
-    def __init__(self, districts=None, outbound_cells=None, durations=None, cell_to_district=None):
+    def __init__(self, districts=None, outbound_cells=None, durations=None, cell_to_district=None,
+                 cell_to_latitude=None, cell_to_longitude=None):
         if outbound_cells is None:
             outbound_cells = []
         if districts is None:
@@ -14,10 +15,16 @@ class Network(object):
             durations = []
         if cell_to_district is None:
             cell_to_district = {}
+        if cell_to_latitude is None:
+            cell_to_latitude = {}
+        if cell_to_longitude is None:
+            cell_to_longitude = {}
         self.districts = districts
         self.outbound_cells = outbound_cells
         self.durations = durations
         self.cell_to_district = cell_to_district
+        self.cell_to_latitude = cell_to_latitude
+        self.cell_to_longitude = cell_to_longitude
 
     def __str__(self):
         class_string = str(self.__class__) + ": {"
@@ -61,6 +68,9 @@ class Network(object):
         location_to_cell = dict(sorted(location_to_cell.items(), key=lambda item: item[1]))
         for index, (key, value) in enumerate(location_to_cell.items()):
             cells.append([value, float(key.split(",")[0]), float(key.split(",")[1])])
+            self.cell_to_latitude[value] = float(key.split(",")[0])
+            self.cell_to_longitude[value] = float(key.split(",")[1])
+
         for cell in cells:
             cell_added = False
             for item in self.districts:

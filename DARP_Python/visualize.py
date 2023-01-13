@@ -46,7 +46,7 @@ def calc_color(data, color=None):
     return color_ton, bins, color_sq
 
 
-def plot_districts(district_network, print_id, x_lim=None, y_lim=None, figsize=c.OS_MAP_SIZE,add_legend=False,
+def plot_districts(district_network, print_id, x_lim=None, y_lim=None, figsize=c.OS_MAP_SIZE, add_legend=False,
                    file_name=None):
     fig, ax = plt.subplots(figsize=figsize)
     ax.set_aspect('equal')
@@ -104,6 +104,85 @@ def plot_map_cells(district_network, print_id, pause=False, file_name=None):
         fig.savefig(image_dir + file_name)
     if pause:
         plt.pause(10)
+
+
+def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
+    """ PLOT POCKUP POINTS """
+    fig, ax = plot_districts(district_network, print_id)
+    points = dataset.dataset["pickup_ID"]
+    request_cells = []
+    for item in points:
+        request_cells.append([item, district_network.cell_to_latitude[item], district_network.cell_to_longitude[item]])
+    request_cells = pd.DataFrame(request_cells, columns=['cell_ID', 'latitude', 'longitude'])
+    request_points = request_cells.groupby(['cell_ID', 'latitude', 'longitude'])['cell_ID'].size().reset_index(
+        name='cell_size')
+    x = np.array(request_points['latitude'])
+    y = np.array(request_points['longitude'])
+    cell_size = np.array(request_points['cell_size'])
+    colors = np.random.randint(100, size=(len(x)))
+    # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
+    plt.scatter(x, y, c='green', s=cell_size, alpha=0.4)
+    ax.set_title(file_name + ' pickup points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
+    fig.show()
+
+    if file_name is not None:
+        parent_folder = c.DAYS_DIR + "Request_Cells"
+        if not os.path.exists(parent_folder):
+            os.mkdir(parent_folder)
+        image_dir = parent_folder + "/"
+        fig.savefig(image_dir + file_name + '_pickup')
+
+    """ PLOT DROP OFF POINT """
+    fig, ax = plot_districts(district_network, print_id)
+    points = dataset.dataset["dropoff_ID"]
+    request_cells = []
+    for item in points:
+        request_cells.append([item, district_network.cell_to_latitude[item], district_network.cell_to_longitude[item]])
+    request_cells = pd.DataFrame(request_cells, columns=['cell_ID', 'latitude', 'longitude'])
+    request_points = request_cells.groupby(['cell_ID', 'latitude', 'longitude'])['cell_ID'].size().reset_index(
+        name='cell_size')
+    x = np.array(request_points['latitude'])
+    y = np.array(request_points['longitude'])
+    cell_size = np.array(request_points['cell_size'])
+    colors = np.random.randint(100, size=(len(x)))
+    # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
+    plt.scatter(x, y, c='blue', s=cell_size, alpha=0.4)
+    ax.set_title(file_name + ' dropoff points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
+    fig.show()
+
+    if file_name is not None:
+        parent_folder = c.DAYS_DIR + "Request_Cells"
+        if not os.path.exists(parent_folder):
+            os.mkdir(parent_folder)
+        image_dir = parent_folder + "/"
+        fig.savefig(image_dir + file_name + '_dropoff')
+
+
+def plot_map_vehicle_cells(district_network, df_vehicle, print_id, file_name=None):
+    """ PLOT POCKUP POINTS """
+    fig, ax = plot_districts(district_network, print_id)
+    points = df_vehicle["depart_ID"].astype('int')
+    vehicle_cells = []
+    for item in points:
+        vehicle_cells.append([item, district_network.cell_to_latitude[item], district_network.cell_to_longitude[item]])
+    vehicle_cells = pd.DataFrame(vehicle_cells, columns=['cell_ID', 'latitude', 'longitude'])
+    vehicle_points = vehicle_cells.groupby(['cell_ID', 'latitude', 'longitude'])['cell_ID'].size().reset_index(
+        name='cell_size')
+    x = np.array(vehicle_points['latitude'])
+    y = np.array(vehicle_points['longitude'])
+    cell_size = 10 *np.array(vehicle_points['cell_size'])
+    colors = np.random.randint(100, size=(len(x)))
+    # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
+    plt.scatter(x, y, c='red', s=cell_size, alpha=1)
+    ax.set_title(file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
+    fig.show()
+
+    if file_name is not None:
+        parent_folder = c.DAYS_DIR + "Vehicle_Cells"
+        if not os.path.exists(parent_folder):
+            os.mkdir(parent_folder)
+        image_dir = parent_folder + "/"
+        fig.savefig(image_dir + file_name)
 
 
 def plot_districts_fill_by_id(district_network, print_id, color_ton, colors, bins, pause=False, file_name=None):
@@ -186,6 +265,7 @@ def show_request_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
     fig.show()
     if pause:
         plt.pause(10)
+
 
 def show_customer_per_hr(df_dataset, time_origin, save_image=False, os_type=None, pause=False):
     year = time_origin.year

@@ -3,9 +3,10 @@ import pandas as pd
 import os
 import constants as c
 import datetime as dtime
+import visualize as vf
 
 
-def create_resticted_vehicle_dataset(vehicle_file, districts, cell_to_district):
+def create_resticted_vehicle_dataset(vehicle_file, districts, network):
     # read data
     f = open(c.VEHICLES_DIR + vehicle_file + ".json")
     df_vehicles = json.load(f)
@@ -19,14 +20,14 @@ def create_resticted_vehicle_dataset(vehicle_file, districts, cell_to_district):
     vehicle_data = []
     for i in range(len(df_vehicles)):
         source_id = source_ids[i%len(source_ids)]
-        zone_id = cell_to_district[int(source_id)]
+        zone_id = network.cell_to_district[int(source_id)]
         vehicle_data.append(
             [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id, zone_id])
 
     df_vehicles = pd.DataFrame(vehicle_data,
                                columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID',
                                         'zone_ID'])
-
+    vf.plot_map_vehicle_cells(network, df_vehicles, print_id=False, file_name=vehicle_file)
     # save data file
     folder_name = c.VEHICLES_DIR + "limited_manhattan-vehicles"
     if not os.path.exists(folder_name):
@@ -68,6 +69,7 @@ def create_vehicle_dataset_with_zone(vehicle_file, network):
     df_vehicles = pd.DataFrame(vehicle_data,
                                columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID', 'sink_ID',
                                         'zone_ID'])
+    vf.plot_map_vehicle_cells(network, df_vehicles, print_id=False, file_name=vehicle_file)
 
     # save data file
     folder_name = c.VEHICLES_DIR + "manhattan-vehicles"
