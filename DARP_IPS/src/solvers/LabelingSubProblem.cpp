@@ -35,11 +35,18 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
     for (auto & nodeObj: nodeList){
         if (nodeObj->type_ != SINK){
             nodeObj->successors_.clear();
+            nodeObj->closeSuccessors_.clear();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
                     pickNodeObj->travelTimeFromNode_ = durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_];
-                    if (pickNodeObj->nodeStatus_ != COMMITTED)
-                        nodeObj->successors_.push_back(&pickNodeObj);
+                    if (pickNodeObj->nodeStatus_ != COMMITTED){
+                        if (nodeObj->locationID_ == pickNodeObj->locationID_){
+                            nodeObj->closeSuccessors_.push_back(&pickNodeObj);
+                            nodeObj->successors_.push_back(&pickNodeObj);
+                        }
+                        else
+                            nodeObj->successors_.push_back(&pickNodeObj);
+                    }
                 }
             }
             std::stable_sort(nodeObj->successors_.begin(),nodeObj->successors_.end(),[](std::shared_ptr<Node> *lhs, std::shared_ptr<Node> *rhs){
@@ -130,14 +137,27 @@ void LabelingSubProblem::labelExtend(PLabel &parentLabel, PNode &outNode, bool T
 
     newLabel->extend(outNode);
     nbGenerated_++;
-    if (!newLabel->isEliminated()) {
-        if (!isLabelAdded(newLabel, outNode, Terminate))
-            nbDominated_++;
+    if (outNode->type_ == PICKUP && outNode->related_Request_->minTravelTime_ == 0){
+        newLabel->extend(*outNode->pairNode_);
+        if (!newLabel->isEliminated()) {
+            if (!isLabelAdded(newLabel, (*outNode->pairNode_), Terminate))
+                nbDominated_++;
+        }
+        else {
+            nbEliminated_++;
+            newLabel->status_ = DOMINATED;
+            dominatedLabels_.push_back(std::move(newLabel));
+        }
     }
     else {
-        nbEliminated_++;
-        newLabel->status_ = DOMINATED;
-        dominatedLabels_.push_back(std::move(newLabel));
+        if (!newLabel->isEliminated()) {
+            if (!isLabelAdded(newLabel, outNode, Terminate))
+                nbDominated_++;
+        } else {
+            nbEliminated_++;
+            newLabel->status_ = DOMINATED;
+            dominatedLabels_.push_back(std::move(newLabel));
+        }
     }
 }
 
@@ -593,6 +613,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                             if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
                                 activeNodes_.push_back(*neighbourNode);
                             }
+                            if ((*(*neighbourNode)->pairNode_)->nbActiveLabels_ == 1)
+                                activeNodes_.push_back(*(*neighbourNode)->pairNode_);
                         }
                     }
                 }
@@ -641,14 +663,12 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     selectedLabel->status_ = INACTIVE;
                     if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1){
                         // the drop has been done in one of the pick points
-                        for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
-                            if ((*selectedLabel->currentNode_)->locationID_ == (*neighbourNode)->locationID_) {
-                                if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, true)) {
-                                    nbActive = (*neighbourNode)->nbActiveLabels_;
-                                    labelExtend(selectedLabel, (*neighbourNode), true);
-                                    if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                        activeNodes_.push_back(*neighbourNode);
-                                    }
+                        for (auto &neighbourNode: (*selectedLabel->currentNode_)->closeSuccessors_) {
+                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, true)) {
+                                nbActive = (*neighbourNode)->nbActiveLabels_;
+                                labelExtend(selectedLabel, (*neighbourNode), true);
+                                if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(*neighbourNode);
                                 }
                             }
                         }
