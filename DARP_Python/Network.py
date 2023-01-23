@@ -2,11 +2,12 @@ from District import *
 import json
 import pandas as pd
 import constants as c
+import visualize as vf
 
 
 class Network(object):
     def __init__(self, districts=None, outbound_cells=None, durations=None, cell_to_district=None,
-                 cell_to_latitude=None, cell_to_longitude=None):
+                 cell_to_latitude=None, cell_to_longitude=None, locations=None, nb_trip_per_district=None):
         if outbound_cells is None:
             outbound_cells = []
         if districts is None:
@@ -19,12 +20,16 @@ class Network(object):
             cell_to_latitude = {}
         if cell_to_longitude is None:
             cell_to_longitude = {}
+        if locations is None:
+            locations = np.empty(shape=[0, 3])
         self.districts = districts
         self.outbound_cells = outbound_cells
         self.durations = durations
         self.cell_to_district = cell_to_district
         self.cell_to_latitude = cell_to_latitude
         self.cell_to_longitude = cell_to_longitude
+        self.locations = locations
+
 
     def __str__(self):
         class_string = str(self.__class__) + ": {"
@@ -70,6 +75,7 @@ class Network(object):
             cells.append([value, float(key.split(",")[0]), float(key.split(",")[1])])
             self.cell_to_latitude[value] = float(key.split(",")[0])
             self.cell_to_longitude[value] = float(key.split(",")[1])
+        self.locations = np.array(cells, dtype='double')
 
         for cell in cells:
             cell_added = False
@@ -120,10 +126,13 @@ class Network(object):
         file.close()
 
     def read_network_data(self, manhattan_geo_file, location_to_cell_file=None,
-                          edge_time_matrix_file=None, stop_matrix_file=None):
+                          edge_time_matrix_file=None, stop_matrix_file=None, make_plot=False):
         self.read_district_data(manhattan_geo_file)
         if location_to_cell_file is not None:
             self.update_cells(location_to_cell_file)
         if edge_time_matrix_file is not None and stop_matrix_file is not None:
             self.read_duration_matrix(edge_time_matrix_file, stop_matrix_file)
+        if make_plot:
+            vf.plot_districts(district_network=self, print_id=True, add_legend=True,
+                              file_name="districts")
 

@@ -4,9 +4,12 @@ import os
 import constants as c
 import datetime as dtime
 import visualize as vf
+from Vehicle import *
+import glob
+from pathlib import Path
 
 
-def create_resticted_vehicle_dataset(vehicle_file, districts, network):
+def create_restricted_vehicle_dataset(vehicle_file, districts, network):
     # read data
     f = open(c.VEHICLES_DIR + vehicle_file + ".json")
     df_vehicles = json.load(f)
@@ -15,11 +18,10 @@ def create_resticted_vehicle_dataset(vehicle_file, districts, network):
     for item in districts:
         for cell in item.cells:
             source_ids.append(int(cell[0]))
-#    source_ids = sorted(source_ids)
     # covert data to matrix
     vehicle_data = []
     for i in range(len(df_vehicles)):
-        source_id = source_ids[i%len(source_ids)]
+        source_id = source_ids[i % len(source_ids)]
         zone_id = network.cell_to_district[int(source_id)]
         vehicle_data.append(
             [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id, zone_id])
@@ -55,9 +57,6 @@ def create_vehicle_dataset_with_zone(vehicle_file, network):
     for item in network.districts:
         for cell in item.cells:
             source_ids.append(int(cell[0]))
-    for item in network.outbound_cells:
-        source_ids.append(int(cell[0]))
-    source_ids = sorted(source_ids)
     # covert data to matrix
     vehicle_data = []
     for i in range(len(df_vehicles)):
@@ -87,6 +86,7 @@ def create_vehicle_dataset_with_zone(vehicle_file, network):
     df_as_string = df_vehicles.to_string(header=False, index=False)
     file.write(df_as_string)
     file.close()
+
 
 def create_vehicle_dataset_zone(vehicle_file, districts, nb_per_zone):
     # read data
@@ -127,12 +127,21 @@ def create_vehicle_dataset_zone(vehicle_file, districts, nb_per_zone):
     file.write(df_as_string)
     file.close()
 
+
 def create_file_names():
     file_names = []
     for item in c.DATES_2015:
         file_names.append("2015-" + item + "_manhattan")
     for item in c.DATES_2016:
         file_names.append("2016-" + item + "_manhattan")
+    return file_names
+
+
+def create_vehicle_file_names():
+    file_names = []
+    for num in c.NB_VEHICLES:
+        for cap in c.CAPACITY:
+            file_names.append("vehicles_" + num + "_" + cap)
     return file_names
 
 
@@ -151,3 +160,26 @@ def calculate_time_from_origin_sec(time_origin, start_hr, end_hr, start_min, end
     end_seconds = (period_end - time_origin).total_seconds()
     return start_seconds, end_seconds
 
+
+def create_vehicles_from_files(network, selected_districts=None):
+    for file in glob.glob(c.VEHICLES_DIR + "*.json"):
+        vehicle_obj = Vehicle(len(network.districts), file_name=Path(file).stem)
+        vehicle_obj.create_vehicle_data_from_file(network=network, selected_districts=selected_districts)
+        if selected_districts is not None:
+            vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="limited_vehicles_plots")
+            vehicle_obj.save_vehicle(folder_name="limited_manhattan-vehicles")
+        else:
+            vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="vehicles_plots")
+            vehicle_obj.save_vehicle(folder_name="manhattan-vehicles")
+
+
+def create_vehicles_files(network, initial_vehicle):
+    for num in c.NB_VEHICLES:
+        for cap in c.CAPACITY:
+            file = "vehicles_" + str(num) + "_" + str(cap)
+            vehicle_obj = Vehicle(len(network.districts), nb_trip_per_district=initial_vehicle.nb_trip_per_district,
+                                  file_name=file, nb_vehicles=num, capacity=cap)
+            vehicle_obj.calculate_vehicle_per_district()
+            vehicle_obj.create_vehicle_data_from_districts(network=network)
+            vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
+            vehicle_obj.save_vehicle(folder_name="sufficient_manhattan-vehicles")

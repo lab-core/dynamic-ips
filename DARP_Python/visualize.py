@@ -46,7 +46,7 @@ def calc_color(data, color=None):
     return color_ton, bins, color_sq
 
 
-def plot_districts(district_network, print_id, x_lim=None, y_lim=None, figsize=c.OS_MAP_SIZE, add_legend=False,
+def plot_districts(district_network, print_id=False, x_lim=None, y_lim=None, figsize=c.OS_MAP_SIZE, add_legend=False,
                    file_name=None):
     fig, ax = plt.subplots(figsize=figsize)
     ax.set_aspect('equal')
@@ -104,7 +104,7 @@ def plot_map_cells(district_network, print_id, pause=False, file_name=None):
         fig.savefig(image_dir + file_name)
     if pause:
         plt.pause(10)
-
+    plt.close(fig)
 
 def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
     """ PLOT POCKUP POINTS """
@@ -131,6 +131,7 @@ def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         fig.savefig(image_dir + file_name + '_pickup')
+    plt.close(fig)
 
     """ PLOT DROP OFF POINT """
     fig, ax = plot_districts(district_network, print_id)
@@ -156,6 +157,7 @@ def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         fig.savefig(image_dir + file_name + '_dropoff')
+    plt.close(fig)
 
 
 def plot_map_vehicle_cells(district_network, df_vehicle, print_id, file_name=None):
@@ -170,7 +172,7 @@ def plot_map_vehicle_cells(district_network, df_vehicle, print_id, file_name=Non
         name='cell_size')
     x = np.array(vehicle_points['latitude'])
     y = np.array(vehicle_points['longitude'])
-    cell_size = 10 *np.array(vehicle_points['cell_size'])
+    cell_size = 10 * np.array(vehicle_points['cell_size'])
     colors = np.random.randint(100, size=(len(x)))
     # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
     plt.scatter(x, y, c='red', s=cell_size, alpha=1)
@@ -183,6 +185,30 @@ def plot_map_vehicle_cells(district_network, df_vehicle, print_id, file_name=Non
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         fig.savefig(image_dir + file_name)
+    plt.close(fig)
+
+
+def plot_unused_vehicle(district_network, result_file, instance_name, instance_folder, nb_vehicles):
+    result_dir = c.DATASETS_DIR + instance_folder + "/" + instance_name + "/" + result_file
+    fig, ax = plot_districts(district_network)
+    routes_filename = result_dir + "/Routes_" + instance_name + ".csv"
+    df_routes = pd.read_csv(routes_filename, sep=',', header=0)
+    routes_data = df_routes.drop(columns=['NodeID']).to_numpy(dtype='double')
+    route_results = []
+    for v in range(nb_vehicles):
+        route_results.append(np.array(routes_data[routes_data[:, 0] == v]))
+
+    for v in range(nb_vehicles):
+        if len(routes_data[routes_data[:, 0] == v]) == 1:
+            route_nodes = np.array(
+                [district_network.locations[index] for index in (route_results[v][:, 4]).astype(int)])
+            plt.plot(route_nodes[:, 1], route_nodes[:, 2], marker="s", c='red', markersize=2)
+
+    ax.set_title("Idle Vehicles in test " + instance_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
+    fig.show()
+
+    fig.savefig(result_dir + "/IdleVehicles.png")
+    plt.close(fig)
 
 
 def plot_districts_fill_by_id(district_network, print_id, color_ton, colors, bins, pause=False, file_name=None):
@@ -211,6 +237,7 @@ def plot_districts_fill_by_id(district_network, print_id, color_ton, colors, bin
         fig.savefig(image_dir + file_name)
     if pause:
         plt.pause(10)
+    plt.close(fig)
 
 
 def plot_districts_by_nb_trips(trip_per_district, district_network, print_id, pause=False, file_name=None):
@@ -265,6 +292,7 @@ def show_request_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
     fig.show()
     if pause:
         plt.pause(10)
+    plt.close(fig)
 
 
 def show_customer_per_hr(df_dataset, time_origin, save_image=False, os_type=None, pause=False):
@@ -314,6 +342,7 @@ def show_customer_per_hr(df_dataset, time_origin, save_image=False, os_type=None
     fig.show()
     if pause:
         plt.pause(10)
+    plt.close(fig)
 
 
 def show_dataset_per_hr(df_dataset, time_origin, save_image=False, os_type=None, pause=False):
@@ -373,3 +402,5 @@ def show_dataset_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
     fig.show()
     if pause:
         plt.pause(10)
+
+    plt.close(fig)

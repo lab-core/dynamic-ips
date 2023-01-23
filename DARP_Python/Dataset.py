@@ -75,10 +75,11 @@ class Dataset(object):
             self.instance = self.instance.drop(columns=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
         if 'dropoff_district' in self.instance.columns:
             self.instance = self.instance.drop(columns=['dropoff_district'])
-#            self.instance = self.instance.drop(columns=['pickup_district'])
+        #            self.instance = self.instance.drop(columns=['pickup_district'])
         if 'pickup_latitude' in self.instance.columns:
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
-        self.instance = self.instance[['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
+        self.instance = self.instance[
+            ['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
 
     def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -149,16 +150,16 @@ class Dataset(object):
                 num_rows = num_rows + 1
             temp_df.extend([list(row)] * num_rows)
             new_passenger = row.passenger_count // num_rows
-            num_passengers.extend([new_passenger] * (num_rows-1))
-            num_passengers.extend([row.passenger_count - (new_passenger * (num_rows-1))] * 1)
-#
-# #            temp_df.extend([list(row)] * (row.passenger_count // capacity))
-#             temp_df.extend([list(row)] * num_rows)
-#             num_passengers.extend([row.passenger_count // num_rows] * num_rows)
-# #            num_passengers.extend([capacity] * (row.passenger_count // capacity))
-#             if row.passenger_count % capacity > 0:
-#                 temp_df.extend([list(row)] * 1)
-#                 num_passengers.extend([(row.passenger_count % capacity)] * 1)
+            num_passengers.extend([new_passenger] * (num_rows - 1))
+            num_passengers.extend([row.passenger_count - (new_passenger * (num_rows - 1))] * 1)
+        #
+        # #            temp_df.extend([list(row)] * (row.passenger_count // capacity))
+        #             temp_df.extend([list(row)] * num_rows)
+        #             num_passengers.extend([row.passenger_count // num_rows] * num_rows)
+        # #            num_passengers.extend([capacity] * (row.passenger_count // capacity))
+        #             if row.passenger_count % capacity > 0:
+        #                 temp_df.extend([list(row)] * 1)
+        #                 num_passengers.extend([(row.passenger_count % capacity)] * 1)
         df_removed_rows = pd.DataFrame(temp_df, columns=self.dataset.columns)
         df_removed_rows["passenger_count"] = pd.DataFrame(num_passengers, columns=['passenger_count'])
         self.dataset = pd.concat([self.dataset, df_removed_rows])
@@ -194,13 +195,12 @@ class Dataset(object):
         self.nb_trip_per_district = []
         for item in network.districts:
             selected_records = self.dataset[self.dataset.pickup_district == item.cartodb_id]
-            # selected_records = selected_records[selected_records.dropoff_district == item.cartodb_id]
             self.nb_trip_per_district.append(len(selected_records))
             total_record = total_record + len(selected_records)
         """ find out bound requests"""
-        selected_records = self.dataset[self.dataset.pickup_district == c.OUT_BOUND]
-        # selected_records = selected_records[selected_records.dropoff_district == c.OUT_BOUND]
-        self.nb_trip_per_district.append(len(selected_records))
+
+    #        selected_records = self.dataset[self.dataset.pickup_district == c.OUT_BOUND]
+    #        self.nb_trip_per_district.append(len(selected_records))
 
     def calculate_vehicle_per_district(self, network, nb_vehicles=None):
         if nb_vehicles is not None:
@@ -208,31 +208,30 @@ class Dataset(object):
         self.nb_vehicle_per_district.clear()
         total = 0
         for count, item in enumerate(network.districts):
-            self.nb_vehicle_per_district.append(round((self.nb_vehicles*self.nb_trip_per_district[count])/self.nb_requests))
+            self.nb_vehicle_per_district.append(
+                round((self.nb_vehicles * self.nb_trip_per_district[count]) / self.nb_requests))
             total = total + self.nb_vehicle_per_district[count]
-        self.nb_vehicle_per_district.append(round((self.nb_vehicles*self.nb_trip_per_district[-1])/self.nb_requests))
-        total = total + self.nb_vehicle_per_district[len(self.nb_vehicle_per_district)-1]
+        self.nb_vehicle_per_district.append(
+            round((self.nb_vehicles * self.nb_trip_per_district[-1]) / self.nb_requests))
+        total = total + self.nb_vehicle_per_district[len(self.nb_vehicle_per_district) - 1]
         if total != self.nb_vehicles:
             self.nb_vehicle_per_district[0] = self.nb_vehicle_per_district[0] + self.nb_vehicles - total
 
-
-
-
     def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None):
         self.read_dataset_data()
-        if capacity is not None:
-            self.split_requests(capacity)
         if network is not None:
             self.add_district_id(network)
             self.calculate_trip_per_district(network)
         if start_hr is not None:
             self.limit_time_dataset(start_hr, end_hr, start_min, end_min)
+        if capacity is not None:
+            self.split_requests(capacity)
 
     def save_instance(self, nb_vehicles=None):
         period_start, period_end = uf.calculate_time_from_origin(self.origin, self.start_hr, self.end_hr,
                                                                  self.start_min, self.end_min)
         start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr,
-                                                                 self.start_min, self.end_min)
+                                                                       self.start_min, self.end_min)
 
         file_name = period_start.strftime("%Y%m%d") + "_" + period_start.strftime("%H") + "-" + str(
             int((period_end - period_start).seconds / 60)) + "m"
@@ -299,3 +298,8 @@ class Dataset(object):
         self.dataset = self.dataset[self.dataset.passenger_count <= capacity]
         self.update_state()
         print("\nThe number of data records based on capacity:", self.nb_requests)
+
+    def visualize_dataset(self, network):
+        vf.plot_map_request_cells(district_network=network, dataset=self, print_id=False, file_name=self.file_name)
+        vf.plot_districts_by_nb_trips(trip_per_district=self.nb_trip_per_district, district_network=network,
+                                      print_id=True, file_name=self.file_name)
