@@ -272,7 +272,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
 
-        if (EpochInst->nbRequests_ >= 700)
+        if (epochRuntime_ > 150)
             break;
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
@@ -282,7 +282,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        if ((EpochInst->parameters_->mainAlgorithm_ == GREEDY)||(epochRuntime_ >= 60))
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
             solveCG_ISUD(EpochInst, mainInst, inputPaths);
