@@ -183,8 +183,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
-        if (EpochInst->parameters_->initialStart_ != GREEDY_START)
-            GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);
+        /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
+            GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);*/
         std::stringstream repStr;
         for (auto & subProblem : subProSolve) {
             if (maxSubSize_ < subProblem->subGraph_->nbNodes_)
