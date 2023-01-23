@@ -226,7 +226,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
     }
  //   (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
     isudObj_->setObjValue();
-//    (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
 }
 
 void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
@@ -251,6 +250,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         elapsedTime_ = simulationTime_->dSinceInit().count();
         std::cout << "*************************************************************************************"<< std::endl;
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
+        std::cout << "                      PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
         std::cout << "*************************************************************************************"<< std::endl;
 
@@ -271,6 +271,9 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
+
+        if (EpochInst->nbRequests_ >= 700)
+            break;
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
             preprocessTime_->stop();
@@ -279,10 +282,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
             goto nextEpoch;
         }
         preprocessTime_->stop();
-        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD(EpochInst, mainInst, inputPaths);
-        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+        if ((EpochInst->parameters_->mainAlgorithm_ == GREEDY)||(epochRuntime_ >= 60))
             GreedyModel_->GreedySolver(EpochInst);
+        else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
+            solveCG_ISUD(EpochInst, mainInst, inputPaths);
+
         simulationTime_->stop();
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
@@ -509,6 +513,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+        (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
         epoch_++;
     }
 
