@@ -310,13 +310,13 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                                 return true;
                         } else {
                             if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
-                                if ((this->passedTime_ == otherLabel->passedTime_) &&
+                                /*if ((this->passedTime_ == otherLabel->passedTime_) &&
                                     (this->reducedCost_ == otherLabel->reducedCost_)) {
                                     if (this->travelResources_ == otherLabel->travelResources_)
                                         return true;
                                     else
                                         return false;
-                                } else
+                                } else*/
                                     return true;
                             }
                         }

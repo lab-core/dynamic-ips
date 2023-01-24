@@ -645,8 +645,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
         activeNodes_.push_back(initialNode);
         initialNode->activeLabels_[0]->status_ = ACTIVE;
         while (!activeNodes_.empty()) {
-            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
-                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+            /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const PNode &lhs, const PNode &rhs){
+                return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
 
             // select a node to extend active labels
             PNode currentNode = activeNodes_.back();
