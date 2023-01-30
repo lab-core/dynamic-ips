@@ -60,6 +60,7 @@ public:
 
     // this function check the situation of the CP solution to be column disjoint
     bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
+//    bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle, int size);
 
     // Display function
     std::string toString() const override;

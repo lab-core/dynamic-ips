@@ -370,7 +370,11 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
 //            updateRoutesIncDegree(vehicleObj->vehicleID_);
         }
     }
-    pPool->wait();
+//    pPool->wait();
+    while(true){
+        if (!pPool->wait())
+            break;
+    }
 }
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 

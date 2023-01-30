@@ -24,6 +24,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
 }
 Route::~Route(){
     delete[] name_;
+//    delete column_;
 }
 
 // Getters and Setters
@@ -268,6 +269,12 @@ void Route::resetRoute() {
         }
     }
 }
+
+/*void Route::createColumn(int size) {
+    column_ = new myTools::BitVector(size);
+    for (auto & requestObj: routeRequests_)
+        column_->add(requestObj->taskIndex_);
+}*/
 
 
 /*void Route::createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
