@@ -20,7 +20,7 @@ void ComplementPro::initializeCPModel(PInstance &pInst) {
     int rhs = 0;
     initializeModel(pInst, rhs);
     normalConst_ = IloRangeArray(env_,1,1.0,1.0);
-    Model_.add(normalConst_);
+//    Model_.add(normalConst_);
     IncRoute_.clear();
 }
 
@@ -91,6 +91,10 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         if (flagAdd == 0)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
     }
+    Model_.add(normalConst_);
+    Model_.add(requestConst_);
+    Model_.add(vehicleConst_);
+    Model_.add(objFunction_);
 }
 
 // this function update the model and variables
@@ -341,8 +345,8 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                 }
             }
 
-
             if (isColumnDisjoint(zResult, routeResult,pInst->nbVehicles_)) {
+ //           if (isColumnDisjointBit(zResult, routeResult,pInst->nbVehicles_, pInst->requests_.size())) {
                 Cplex_.clearModel();
                 // remove outgoing variable
                 for (auto & r : OutRouteVar) {
@@ -406,6 +410,8 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     }
                 }
                 Cplex_.clearModel();
+                if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
             }
             routeResult.clear();
             zResult.clear();
@@ -438,6 +444,22 @@ bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> 
     else
         return false;
 }
+
+/*bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRoute> &routeResults, int nbVehicle, int size) {
+    myTools::BitVector results = myTools::BitVector(size);
+    for (int i = 0; i < zResults.size(); ++i)
+        results.add(zResults[i]->taskIndex_);
+
+    for (int r = 0; r < routeResults.size(); ++r){
+        for (int i = 0; i < results.getArraySize(); i++) {
+            if (results.isIntersectionEmpty(*routeResults[r]->column_))
+                results.AddSet(*routeResults[r]->column_);
+            else
+                return false;
+        }
+    }
+    return true;
+}*/
 
 // Display function
 std::string ComplementPro::toString() const {

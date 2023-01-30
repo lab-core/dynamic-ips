@@ -14,12 +14,12 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 std::string instNum = "1";
-int numVehicles = 1500;
+int numVehicles = 1000;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
-    std::string vehicleFile = "vehicles_1500_4";
+    std::string vehicleFile = "vehicles_1000_4";
     std::string vehicleFolder = "limited_manhattan-vehicles";
     int nbLocations = 1718;
     // build the path of input files
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     if (argc == 2){
-        std::string instanceNames = "datasets/InstanceNames-120.txt";
+        std::string instanceNames = "datasets/InstanceNames-60.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];

@@ -18,12 +18,17 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
         addRouteVar(routeObj);
     }
 
+
+
     for (auto & zRequest : fractionalZ)
         addZVar(zRequest);
 }
 
 void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     try {
+        Model_.add(requestConst_);
+        Model_.add(vehicleConst_);
+        Model_.add(objFunction_);
         Model_.add(IloConversion(env_, zVar_, ILOINT));
         Model_.add(IloConversion(env_, routeVar_, ILOINT));
 
@@ -71,6 +76,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
                   << " are selected to served." << std::endl;
         Cplex_.clearModel();
+        if (routeSolution.size() != pInst->nbVehicles_)
+            myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
     }
     catch (IloException& e) {
         env_.out() << Model_ << std::endl;

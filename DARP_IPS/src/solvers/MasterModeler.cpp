@@ -8,7 +8,7 @@
 MasterModeler::MasterModeler() {
     Model_ = IloModel(env_);
     objFunction_ = IloMinimize(env_);
-    Model_.add(objFunction_);
+//    Model_.add(objFunction_);
 
     requestDuals_ = IloNumArray(env_);
     vehicleDuals_ = IloNumArray(env_);
@@ -90,15 +90,15 @@ void MasterModeler::addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sig
 void MasterModeler::addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
     IloNumArray columnVar(env_, (signed) orderToRequest_.size());
     createPattern(columnVar, newRoute, sign);
-    IloNumVar numVar;
+//    IloNumVar numVar;
     if (sign == POSITIVE)
-        numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                                 + vehicleConst_[newRoute->vehicleID_](1));
+        routeVar.add(IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
+                                 + vehicleConst_[newRoute->vehicleID_](1)));
     else
-        numVar = IloNumVar(objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                           + vehicleConst_[newRoute->vehicleID_](-1));
-    numVar.setName(newRoute->name_);
-    routeVar.add(numVar);
+        routeVar.add(IloNumVar(objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
+                           + vehicleConst_[newRoute->vehicleID_](-1)));
+ //   numVar.setName(newRoute->name_);
+ //   routeVar.add(numVar);
 }
 
 // this function initialized the model
@@ -115,7 +115,7 @@ void MasterModeler::initializeModel(PInstance &pInst, int rhs) {
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
     vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
 
-    Model_.add(requestConst_);
-    Model_.add(vehicleConst_);
+//    Model_.add(requestConst_);
+//    Model_.add(vehicleConst_);
 }
 
