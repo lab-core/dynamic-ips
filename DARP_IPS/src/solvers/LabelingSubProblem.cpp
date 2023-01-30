@@ -70,23 +70,25 @@ void LabelingSubProblem::initialization() {
     sortSuccessors(subGraph_->onboards_);
 
     // create the initial label at the source and add the source to the list active nodes
-    PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
+    PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0], nbTotalRequest_);
     initialNodeID_ = subGraph_->sourceNodes_[0]->nodeID_;
-    initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
-    initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
+//    initialLabel->completedRequests_.resize(nbTotalRequest_,0);
+    initialLabel->openRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size(), 0);
+    initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size(),0);
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
-        initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+ //       initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+        initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                 nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
 
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
-    for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){
+    /*for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){
         initialLabel->openRequests_.push_back(initialLabel->completedRequests_[i]);
-    }
+    }*/
 
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
@@ -98,7 +100,7 @@ void LabelingSubProblem::initialization() {
                 break;
         }
     }
-    initialLabel->extendCheck_ = initialLabel->completedRequests_;
+//    initialLabel->extendCheck_ = initialLabel->completedRequests_;
 
     (*initialLabel->currentNode_)->nbActiveLabels_++;
     (*initialLabel->currentNode_)->bestLabelReduceCost_ = initialLabel->reducedCost_;
@@ -281,8 +283,8 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                         selectedLabel->isDropped_ = true;
                                     }*/
                                 }
-                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + subGraph_->onboards_.size() ||
-                                        (selectedLabel->nbPickUp_ >= maxPickup_ && solverOptions_->usePick_)) {
+                                if (selectedLabel->numExtendCheck_ == subGraph_->pickNodes_.size() ||
+                                    (selectedLabel->nbPickUp_ >= maxPickup_ && solverOptions_->usePick_)) {
                                     selectedLabel->status_ = INACTIVE;
                                     activeNodes_[j]->nbActiveLabels_--;
                                     if (activeNodes_[j]->nbActiveLabels_ == 0) {
@@ -291,7 +293,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                     }
                                 }
                                 // pull all labels to the current node
-                                else if ((selectedLabel->extendCheck_[currentNode->related_Request_->taskIndexLabel_]==0) &&
+                                else if ((!selectedLabel->extendCheck_->contains(currentNode->related_Request_->taskIndexLabel_)) &&
                                          (selectedLabel->isExtendFeasible(currentNode,maxPickup_, solverOptions_->usePick_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, currentNode, true);
@@ -349,7 +351,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                         for (int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
                             if (activeNodes_[j]->activeLabels_[l]->status_ == ACTIVE){
                                 PLabel selectedLabel = activeNodes_[j]->activeLabels_[l];
-                                if (selectedLabel->extendCheck_.sum() == subGraph_->pickNodes_.size() + subGraph_->onboards_.size() ||
+                                if (selectedLabel->numExtendCheck_ == subGraph_->pickNodes_.size() ||
                                     (selectedLabel->nbPickUp_ >= maxPickup_ && solverOptions_->usePick_))  {
                                     selectedLabel->status_ = INACTIVE;
                                     activeNodes_[j]->nbActiveLabels_--;
@@ -359,7 +361,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                                     }
                                 }
                                 // pull all labels to the current node
-                                else if ((selectedLabel->extendCheck_[currentNode->related_Request_->taskIndexLabel_]==0) &&
+                                else if ((!selectedLabel->extendCheck_->contains(currentNode->related_Request_->taskIndexLabel_)) &&
                                          (selectedLabel->isExtendFeasible(currentNode,maxPickup_, solverOptions_->usePick_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, currentNode, true);
@@ -734,13 +736,14 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     subproTime_->start();
 
     // create the initial label at the source and add the source to the list active nodes
-    PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
-    initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
+    PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0], nbTotalRequest_);
+//    initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
+    initialLabel->openRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size(), 0);
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
-        initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+        initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                              nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
@@ -748,9 +751,6 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
 
-    for (int i = 0; i < nbTotalRequest_ + (*Vehicle_)->onboards_.size(); ++i){
-        initialLabel->openRequests_.push_back(initialLabel->completedRequests_[i]);
-    }
     if ((*Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((*Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
