@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicle_(vehicle) {
+Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(labelCount_++), vehicle_(vehicle) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -24,6 +24,9 @@ Label::Label(PVehicle *vehicle, PNode &source) : labelID_(labelCount_++), vehicl
     openRequests_.clear();
  //   completedRequests_.clear();
  //   completedRequest_.clear();
+    completeRequests_ = new myTools::BitVector(numRequests);
+    extendCheck_ = new myTools::BitVector(numRequests);
+    numExtendCheck_ = 0;
     currentNode_ = &source;
     nbPickUp_ = 0;
     nbPickMove_ = 0;
@@ -55,11 +58,14 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
 //    openNodes_ = label.openNodes_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
-    completedRequests_ = label.completedRequests_;
+//    completedRequests_ = label.completedRequests_;
+    completeRequests_ = new myTools::BitVector(*label.completeRequests_);
+    extendCheck_ = new myTools::BitVector(*label.completeRequests_);
     numCompleted_ = label.numCompleted_;
-    extendCheck_ = completedRequests_;
-    if ((*currentNode_)->type_ != SOURCE)
-        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
+    numExtendCheck_ = label.numCompleted_;
+//    extendCheck_ = completedRequests_;
+//    if ((*currentNode_)->type_ == PICKUP)
+//        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
  //   completedRequest_ = label.completedRequest_;
 //    requestIDToInt_ = label.requestIDToInt_;
     nbPickUp_ = label.nbPickUp_;
@@ -88,11 +94,14 @@ void Label::copyLabel(const Label &label) {
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
-    completedRequests_ = label.completedRequests_;
+//    completedRequests_ = label.completedRequests_;
+    completeRequests_->copyValues(*label.completeRequests_);
+    extendCheck_->copyValues(*label.completeRequests_);
     numCompleted_ = label.numCompleted_;
-    extendCheck_ = label.completedRequests_;
-    if ((*currentNode_)->type_ != SOURCE)
-        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
+    numExtendCheck_ = label.numCompleted_;
+//    extendCheck_ = label.completedRequests_;
+//    if ((*currentNode_)->type_ == PICKUP)
+//        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
     nbPickUp_ = label.nbPickUp_;
     nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
@@ -103,6 +112,7 @@ Label::~Label() {
 //    openNode_.clear();
 //    pathNodes_.clear();
     delete[] name_;
+    delete completeRequests_;
 }
 
 unsigned int Label::getLabelId() const {
@@ -161,9 +171,12 @@ void Label:: extend(PNode &outNode) {
  //       completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
  //       openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
 
-        completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
+//        completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
+        completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
         numCompleted_++;
-        extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
+        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        numExtendCheck_++;
+ //       extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
 //        nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
@@ -205,7 +218,10 @@ void Label:: extend(PNode &outNode) {
 
 // this function check the feasibility of the label before extension
 bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
-    extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
+    if (outNode->type_ == PICKUP){
+        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        numExtendCheck_++;
+    }
     if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
         return false;
     if (outNode->type_ == PICKUP) {
@@ -220,8 +236,10 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
 
  //       if (completedRequests_.count(outNode->related_Request_))
  //       if (completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 1)
-        if (completedRequests_[outNode->related_Request_->taskIndexLabel_] == 1)
+        if (completeRequests_->contains(outNode->related_Request_->taskIndexLabel_))
             return false;
+        /*if (completedRequests_[outNode->related_Request_->taskIndexLabel_] == 1)
+            return false;*/
     }
     if (outNode->type_ == DROPOFF) {
  //       if (openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] == 0)
@@ -291,9 +309,8 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                         return true;
                     }
                     else {
-                        if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                        if (otherLabel->completeRequests_->isSubset(*this->completeRequests_))
                             return true;
-                        }
                     }
                 }
             }
@@ -306,18 +323,19 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 if (this->numCompleted_ >= otherLabel->numCompleted_) {
                     if (this->openRequests_ == otherLabel->openRequests_) {
                         if (solverOption->isDominanceReleased_) {
-                            if (this->completedRequests_.sum() >= otherLabel->completedRequests_.sum())
+                            if (this->numCompleted_ > otherLabel->numCompleted_)
                                 return true;
                         } else {
-                            if (myTools::isLess_equal(otherLabel->completedRequests_, this->completedRequests_)) {
+                            if (otherLabel->completeRequests_->isSubset(*this->completeRequests_)){
+                                return true;
                                 /*if ((this->passedTime_ == otherLabel->passedTime_) &&
                                     (this->reducedCost_ == otherLabel->reducedCost_)) {
                                     if (this->travelResources_ == otherLabel->travelResources_)
                                         return true;
                                     else
                                         return false;
-                                } else*/
-                                    return true;
+                                } else
+                                    return true;*/
                             }
                         }
 
@@ -453,10 +471,6 @@ std::string Label::toString() const {
     repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
     repStr << "#" << std::endl;
     repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : " ;
-
-    /*for (auto & nodeObj : openNodes_) {
-        repStr << nodeObj->related_Request_->getRequestId() << "  ";
-    }*/
     for (auto & nodeObj : openNode_) {
         repStr << (*nodeObj)->related_Request_->getRequestId() << "  ";
     }

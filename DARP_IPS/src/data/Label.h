@@ -23,7 +23,8 @@ public:
     PVehicle *vehicle_;                                     // the vehicle for which the route has created
     std::vector<float> travelResources_;
     std::vector<PNode*> openNode_;
-    std::valarray<int> completedRequests_;
+ //   std::valarray<int> completedRequests_;
+    myTools::BitVector * completeRequests_;
     int numCompleted_;
     std::vector<int> openRequests_;
     std::vector<std::string> pathNodes_;
@@ -35,14 +36,16 @@ public:
     LabelStatus status_;
     int nbPickUp_;                      // the number of time the vehicle visit pick up points
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
-    std::valarray<int> extendCheck_;
+//    std::valarray<int> extendCheck_;
+    myTools::BitVector * extendCheck_;
+    int numExtendCheck_;
     bool isDropped_;
     bool isDropExtend_;
     int nbUsed_;
     double createTime_;
 
     // Constructor and Destructor
-    Label(PVehicle *vehicle, PNode &source);
+    Label(PVehicle *vehicle, PNode &source, int numRequests);
     Label(const Label &label);
     void copyLabel(const Label &label);
 
