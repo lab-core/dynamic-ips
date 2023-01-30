@@ -156,7 +156,11 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             });
             pPool->run(job);
         }
-        pPool->wait();
+  //      pPool->wait();
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
         for (auto &subProblem: subProConst){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);
@@ -165,7 +169,10 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             });
             pPool->run(job);
         }
-        pPool->wait();
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
 
         for (auto &subProblem: subProSolve){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
@@ -272,7 +279,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
 
-        if (epochRuntime_ > 150)
+        if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
             break;
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
