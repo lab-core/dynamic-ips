@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <valarray>
 #include <numeric>
+#include <bitset>
 
 
 using std::string;
@@ -247,6 +248,70 @@ namespace myTools {
         // time it was started
         std::chrono::duration<double> dSinceInit();
         std::chrono::duration<double> dSinceStart();
+    };
+
+
+    //-----------------------------------------------------------------------------
+    //  SET CLASS WITH BIT ARRAY
+    //  Functions for defining sets with bit array
+    //-----------------------------------------------------------------------------
+
+#include <iostream>
+
+    class BitVector {
+    private:
+        const int max_elem_;    // maximum element that can be stored in the set
+        const int array_size_;  // size of the bit array
+        unsigned long long* bit_array_;  // the bit array to represent the set
+        static const int WORD_SIZE = sizeof(unsigned long long) * 8;  // number of bits in a word
+
+        int getArrayIndex(int elem) const { return elem /WORD_SIZE; }
+        int getBitIndex(int elem) const { return elem % WORD_SIZE; }
+
+
+    public:
+        // Constructor
+        BitVector(int max_elem);
+
+        // Copy constructor
+        BitVector(const BitVector& other);
+
+        // Destructor
+        virtual ~BitVector();
+
+        // Add an element to the set
+        void add(int x);
+
+        // Remove an element from the set
+        void remove(int x);
+
+        // Check if an element is in the set
+        bool contains(int x) const;
+
+        // Check if one set is a subset of another set
+        bool isSubset(const BitVector& other) const;
+
+        // Check if one set is equal to another set
+        bool operator==(const BitVector& other) const;
+        bool isEqual(const BitVector& other) const;
+
+        void copyValues(const BitVector& other) const;
+
+        // Check if the intersection of two sets is empty
+        bool isIntersectionEmpty(const BitVector& other) const;
+        void AddSet(const BitVector& other);
+
+        // function to return the number of elements in the set
+        int numElements() const;
+
+        const int getMaxElem() const;
+
+        const int getArraySize() const;
+
+        unsigned long long int *getBitArray() const;
+
+        // Display function
+        std::string toString() const;
     };
 
 } // myTools namespace

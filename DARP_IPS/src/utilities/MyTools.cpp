@@ -211,6 +211,157 @@ namespace myTools {
         return cpuSinceStart_;
     } //end dSinceStart
 
+    //************************************************************************
+    //                     FUNCTIONS FOR BitVector CLASS
+    //************************************************************************
+    BitVector::BitVector(int max_elem) : max_elem_(max_elem),
+                                         array_size_((max_elem + WORD_SIZE - 1) / WORD_SIZE),
+                                         bit_array_(new unsigned long long[array_size_]) {
+        // initialize all bits to 0
+        for (int i = 0; i < array_size_; i++) {
+            bit_array_[i] = 0;
+        }
+    }
+
+    // Copy constructor
+    BitVector::BitVector(const BitVector &other) : max_elem_(other.max_elem_), array_size_(other.array_size_),
+                                                   bit_array_(new unsigned long long[array_size_]){
+        for (int i = 0; i < array_size_; i++) {
+            bit_array_[i] = other.bit_array_[i];
+        }
+    }
+
+    BitVector::~BitVector() {
+        delete[] bit_array_;
+    }
+
+    // Add an element to the set
+    void BitVector::add(int x) {
+        if (x > max_elem_) return;
+        /*int array_index = getArrayIndex(x);
+        int bit_index = getBitIndex(x);
+        bit_array_[array_index] |= (1u << bit_index);*/
+        bit_array_[x / WORD_SIZE] |= (1ull << (x % WORD_SIZE));
+    }
+
+    // Remove an element from the set
+    void BitVector::remove(int x) {
+        if (x > max_elem_) return;
+        int array_index = getArrayIndex(x);
+        int bit_index = getBitIndex(x);
+        bit_array_[array_index] &= ~(1u << bit_index);
+    }
+
+    // Check if an element is in the set
+    bool BitVector::contains(int x) const {
+        if (x > max_elem_) return false;
+        /*int array_index = getArrayIndex(x);
+        int bit_index = getBitIndex(x);
+        return (bit_array_[array_index] & (1u << bit_index)) != 0;*/
+        return (bit_array_[x / WORD_SIZE] & (1ull << (x % WORD_SIZE))) != 0;
+    }
+
+    // Check if one set is a subset of another set
+    bool BitVector::isSubset(const BitVector &other) const {
+        if (max_elem_ != other.max_elem_) {
+            return false;
+        }
+        for (int i = 0; i < array_size_; i++) {
+            if ((bit_array_[i] & other.bit_array_[i]) != bit_array_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Check if one set is equal to another set
+    bool BitVector::operator==(const BitVector &other) const {
+        if (max_elem_ != other.max_elem_) {
+            return false;
+        }
+        for (int i = 0; i < array_size_; i++) {
+            if (bit_array_[i] != other.bit_array_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool BitVector::isEqual(const BitVector &other) const {
+        if (max_elem_ != other.max_elem_) {
+            return false;
+        }
+        for (int i = 0; i < array_size_; i++) {
+            if (bit_array_[i] != other.bit_array_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void BitVector::copyValues(const BitVector &other) const {
+        for (int i = 0; i < array_size_; i++) {
+            bit_array_[i] = other.bit_array_[i];
+        }
+    }
+
+    bool BitVector::isIntersectionEmpty(const BitVector &other) const {
+        if (max_elem_ != other.max_elem_) {
+            return true;
+        }
+        for (int i = 0; i < array_size_; i++) {
+            if ((bit_array_[i] & other.bit_array_[i]) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const int BitVector::getMaxElem() const {
+        return max_elem_;
+    }
+
+    std::string BitVector::toString() const {
+        std::stringstream repStr;
+        for (int j = 0; j < array_size_; j++) {
+            for (int i = WORD_SIZE; i>= 0; i--){
+                if (bit_array_[j] & (1 << i)) {
+                    repStr << "1";
+                } else {
+                    repStr << "0";
+                }
+            }
+        }
+        repStr << std::endl;
+        return repStr.str();
+    }
+
+    const int BitVector::getArraySize() const {
+        return array_size_;
+    }
+
+    unsigned long long int *BitVector::getBitArray() const {
+        return bit_array_;
+    }
+
+    void BitVector::AddSet(const BitVector &other) {
+        for (int i = 0; i < array_size_; i++) {
+            bit_array_[i] =  bit_array_[i] || other.bit_array_[i];
+        }
+    }
+
+    int BitVector::numElements() const {
+        int count = 0;
+        for (int j = 0; j < array_size_; j++) {
+            for (int i = WORD_SIZE; i>= 0; i--){
+                if (bit_array_[j]) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
 
 } // end namespace
 
