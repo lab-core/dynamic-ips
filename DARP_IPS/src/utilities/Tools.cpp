@@ -41,6 +41,7 @@ namespace Tools {
 
     void Task::detach() {
         std::unique_lock<mutex> l(mutex_);
+        pThreadsPool_->removePtr();
         pThreadsPool_ = nullptr;
         cResume_.notify_all();
     }
