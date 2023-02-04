@@ -24,9 +24,9 @@ public:
     float travelResource_;
 
     // Constructor
-    GreedyLabel(PNode currentNode, float reachTime, int nbPassengers);
+    GreedyLabel(PNode currentNode, float reachTime, float departTime, int nbPassengers);
     // this function is for reusing the previous labels
-    void setValues(PNode currentNode, float reachTime, int nbPassengers);
+    void setValues(PNode currentNode, float reachTime, float departTime, int nbPassengers);
 };
 
 class LinkedGreedyLabels {
