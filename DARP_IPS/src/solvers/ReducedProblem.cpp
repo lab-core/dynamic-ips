@@ -63,7 +63,17 @@ void ReducedProblem::addRouteVar(PRoute &newRoute) {
         compRoutes_.push_back(newRoute);
 }
 
+void ReducedProblem::addRouteVars(std::vector<PRoute> &newRoutes) {
+    MasterModeler::addRouteVars(routeVar_, newRoutes, POSITIVE);
+    for (auto & newRoute : newRoutes)
+        compRoutes_.push_back(newRoute);
+}
+
 // this function adds zVar to the model used for the routes that served only one request
+void ReducedProblem:: addZVars(std::vector<PRequest> &requests) {
+    MasterModeler::addZVars(zVar_, requests, POSITIVE);
+}
+
 void ReducedProblem:: addZVar(PRequest &request) {
     MasterModeler::addZVar(zVar_, request, POSITIVE);
 }
@@ -99,14 +109,16 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     MasterModeler::initializeModel(pInst, rhs);
 
     // adding request columns (z variables)
+//    addZVars(zSolution);
     for (auto & zSol : zSolution)
         addZVar(zSol);
 
     // adding route solution columns
     compRoutes_.reserve(routeSolution.size()+routesToAdd_.size());
-    for (auto & routeSol : routeSolution){
+    addRouteVars(routeSolution);
+    /*for (auto & routeSol : routeSolution){
         addRouteVar(routeSol);
-    }
+    }*/
 
 
 

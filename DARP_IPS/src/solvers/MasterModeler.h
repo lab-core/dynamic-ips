@@ -36,6 +36,7 @@ public:
     // set of constraints
     IloRangeArray requestConst_;
     IloRangeArray vehicleConst_;
+    myTools::Timer *AddVarTime_;
 
 
     vector<unsigned int> orderToRequest_;
@@ -65,9 +66,11 @@ public:
 
     // this function adds zVar to the model
     void addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sign);
+    void addZVars(IloNumVarArray &zVar, std::vector<PRequest> &requests, VarSign sign);
 
     // this function adds routeVar to the model
     void addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVars(IloNumVarArray &routeVar, std::vector<PRoute> &newRoutes, VarSign sign);
 
 };
 

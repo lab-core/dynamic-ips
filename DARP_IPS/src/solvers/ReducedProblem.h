@@ -30,8 +30,10 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVar(PRoute &newRoute);
+    void addRouteVars(std::vector<PRoute> &newRoutes);
 
     // this function adds zVar to the model used for the routes that served only one request
+    void addZVars(std::vector<PRequest> &requests);
     void addZVar(PRequest &request);
 
     // this function add one route at each iteration of the algorithm during one epoch

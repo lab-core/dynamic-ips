@@ -14,13 +14,13 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 std::string instNum = "1";
-int numVehicles = 1000;
+int numVehicles = 2000;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
-    std::string vehicleFile = "vehicles_1000_4";
-    std::string vehicleFolder = "limited_manhattan-vehicles";
+    std::string vehicleFile = "vehicles_2000_4";
+    std::string vehicleFolder = "manhattan-vehicles";
     int nbLocations = 1718;
     // build the path of input files
     // create output files for epoch results
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         }
         // testing the solution route
         for(auto  &vehicleObj : mainInst->vehicles_)
-            vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_->mainAlgorithm_ );
+            vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_ );
 
         std::cout << std::endl << std::endl;
 

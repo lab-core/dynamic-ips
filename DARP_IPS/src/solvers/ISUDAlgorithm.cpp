@@ -70,11 +70,10 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
     isudIter_ = 0;
 
     for (auto &vehicleObj: pInst->vehicles_) {
-        if (vehicleObj->departTime_ != vehicleObj->emptyRoute_->plannedReachTime_[0]) {
+        if (vehicleObj->departTime_ != vehicleObj->emptyRoute_->plannedDepartTime_[0]) {
             if (vehicleObj->currentRoute_->routeSize_ == 1)
                 vehicleObj->emptyRoute_ = vehicleObj->currentRoute_;
             else {
-                std::string routeName = vehicleObj->emptyRoute_->name_;
                 // define new empty route and remove the old one
                 vehicleObj->setEmptyRoute(pInst);
             }
@@ -359,22 +358,22 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     calcIncMatrix();
 //    calcIncMatrixFull();
     maxIncDegree_ = 0;
-    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
+//    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
-            Tools::Job job([&]() {
+            /*Tools::Job job([&]() {
                 updateRoutesIncDegree(vehicleObj->vehicleID_);
             });
-            pPool->run(job);
-//            updateRoutesIncDegree(vehicleObj->vehicleID_);
+            pPool->run(job);*/
+            updateRoutesIncDegree(vehicleObj->vehicleID_);
         }
     }
 //    pPool->wait();
-    while(true){
+    /*while(true){
         if (!pPool->wait())
             break;
-    }
+    }*/
 }
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 

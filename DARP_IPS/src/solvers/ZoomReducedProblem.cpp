@@ -14,14 +14,15 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
     }
 
     // add the new compatible column to the model
-    for (auto routeObj : routesToAdd_) {
+    /*for (auto routeObj : routesToAdd_) {
         addRouteVar(routeObj);
-    }
+    }*/
+    ReducedProblem::addRouteVars(routesToAdd_);
 
 
-
-    for (auto & zRequest : fractionalZ)
-        addZVar(zRequest);
+    addZVars(fractionalZ);
+    /*for (auto & zRequest : fractionalZ)
+        addZVar(zRequest);*/
 }
 
 void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
@@ -80,7 +81,6 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
     }
     catch (IloException& e) {
-        env_.out() << Model_ << std::endl;
         std::cout << e << std::endl;
     }
 }

@@ -341,8 +341,11 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
             simulationTime_->start();
             GreedyModel_->GreedySolver(StaticInst);
             std::cout << "# FINAL SOLUTION OF Greedy solution : " << std::endl;
-            for (auto & vehicleObj : StaticInst->vehicles_)
-                std::cout << vehicleObj->currentRoute_->toString();
+            for (auto & vehicleObj : StaticInst->vehicles_){
+                vehicleObj->currentRoute_->testRoute(vehicleObj, StaticInst->parameters_);
+//                std::cout << vehicleObj->currentRoute_->toString();
+            }
+
             if (middleSave) {
                 inputPaths.makeInstanceOutput(instNum);
                 float length = 0;
@@ -354,7 +357,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                 for (auto & vehicleObj : StaticInst->vehicles_)
                     vehicleObj->solutionRoute_ = vehicleObj->currentRoute_;
             }
-            std::cout << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY " << "=" << GreedyModel_->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
+            std::cout << "# TIME SPENT ON GREEDY " << "=" << GreedyModel_->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
             simulationTime_->stop();
             break;
         default: // CG_CPLEX and CG_ISUD
@@ -458,7 +461,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     int nbReceivedRequest;
     epoch_ = 0;
 
-    // start simulation timer
+
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
@@ -470,6 +473,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 
     while (nbReceivedRequest < mainInst->nbRequests_) {
         nextEpoch:
+        // start simulation timer
         simulationTime_->start();
         preprocessTime_->start();
 
@@ -478,7 +482,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
         std::cout << "*************************************************************************************"<< std::endl;
-        
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
