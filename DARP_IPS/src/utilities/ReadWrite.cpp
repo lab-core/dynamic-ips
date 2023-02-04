@@ -160,7 +160,8 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> zoneID;
 
                 // the starting time of the instance is 16pm
-                deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+ //               deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                deltaTime = static_cast<float>(ServiceTime);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime, zoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
@@ -222,7 +223,8 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> zoneID;
 
                 // the starting time of the instance is 16pm
-                deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+        //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                deltaTime = static_cast<float>(ServiceTime);
                 pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
                                                                              nbPassengers, deltaTime, zoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
