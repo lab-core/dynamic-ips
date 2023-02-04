@@ -26,6 +26,7 @@ public:
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
     std::vector<PRequest> routeRequests_;   // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
+    std::vector<float> plannedDepartTime_;       // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
     double reducedCost_;
     int incompatibilityDegree_;
@@ -47,7 +48,6 @@ public:
     void addSource(PNode &node, float departTime, int departPassengers);
     void addNode(PNode &node);
     void addNode(PNode &node, float reachTime);
-    void addNode(PNode &node, float departTime, int departPassengers);
 
     // this function is used to remove completed nodes from the routes
     void removeNode(int nodeIndex);
@@ -56,7 +56,7 @@ public:
     std::string toString() const;
 
     // this function is for testing the validation of the route
-    void testRoute(PVehicle & vehicle, MainAlgorithm &mainAlgorithm);
+    void testRoute(PVehicle & vehicle, PParameters &parameters);
 
     // This function is to reset the status of the nodes in the route
     void resetRoute();
