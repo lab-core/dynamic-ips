@@ -92,7 +92,7 @@ std::string Instance::toString() {
     repStr << "# " << std::endl;
 
     // display 3 requests information
-    repStr << "--------------------- REQUESTS_INFO (Max 3 records) ---------------------" << std::endl;
+    /*repStr << "--------------------- REQUESTS_INFO (Max 3 records) ---------------------" << std::endl;
     int n = std::min(3, nbRequests_);
     for (int i = 0; i < n; ++i) {
         repStr << requests_[i]->toString();
@@ -103,7 +103,7 @@ std::string Instance::toString() {
         repStr << vehicles_[i]->toString();
     }
 
-    repStr << "# " << std::endl;
+    repStr << "# " << std::endl;*/
     repStr << "------------------------ PARAMETERS AND OPTIONS -------------------------" << std::endl;
     repStr << parameters_->toString();
     repStr << "# " << std::endl;
@@ -348,9 +348,10 @@ void Instance::setInitialTimes() {
     }
 
     // if the vehicles start from the source depart time is after the first epoch
-    if ((nbOnboards_ == 0) &&(parameters_->solutionMode_ == DYNAMIC)) {
-        for (auto &vehicleObj: vehicles_) {
-            vehicleObj->setDepartTime(vehicleObj->startTime_ + static_cast<float>(parameters_->epochLength_));
+    if (parameters_->solutionMode_ == DYNAMIC){
+        for (auto & vehicleObj : vehicles_){
+            if (vehicleObj->onboards_.empty())
+                vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
         }
     }
 }

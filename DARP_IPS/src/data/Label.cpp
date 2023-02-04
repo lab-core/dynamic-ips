@@ -113,6 +113,7 @@ Label::~Label() {
 //    pathNodes_.clear();
     delete[] name_;
     delete completeRequests_;
+    delete extendCheck_;
 }
 
 unsigned int Label::getLabelId() const {
@@ -124,9 +125,8 @@ bool Label::operator () (const Label &rhs) const {
 }
 
 void Label:: extend(PNode &outNode) {
-
     load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_]+ (*currentNode_)->deltaTime_;
+    float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_];
     float reachTime;
 //    if (passedTime_ < outNode->requestTime_)
 //        reachTime = outNode->requestTime_ + travelTime;
@@ -135,42 +135,26 @@ void Label:: extend(PNode &outNode) {
     /*for (auto & item: travelResource_) {
         item.second -= travelTime;
     }*/
-
-    /*for (auto & node: openNodes_) {
-        travelResources_[node->related_Request_->taskIndexLabel_] -= travelTime;
-    }*/
-    if (travelTime > 0) {
-        for (auto &node: openNode_) {
-            travelResources_[(*node)->related_Request_->taskIndexLabel_] -= travelTime;
-        }
+    for (auto &node: openNode_) {
+        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (reachTime + outNode->deltaTime_ - passedTime_);
     }
-
     if (outNode->type_ == DROPOFF) {
-//        travelResource_.erase(outNode->nodeID_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
-//        openNodes_.erase(outNode);
         for (int i = 0; i < openNode_.size(); i++){
             if ((*openNode_[i])->nodeID_ == outNode->nodeID_){
                 openNode_.erase(openNode_.begin()+i);
                 break;
             }
         }
-//        openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 0;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        passedTime_ = reachTime + outNode->deltaTime_;
         if (!isDropped_ && travelTime > 0)
             isDropped_ = true;
 
     }
     else if (outNode->type_ == PICKUP){
  //       extendCheck_.insert(outNode->nodeID_);
-//        openNodes_.insert(*outNode->pairNode_);
         openNode_.push_back(outNode->pairNode_);
- //       completedRequests_.insert(outNode->related_Request_);
- //       completedRequest_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
- //       completedRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
  //       openRequests_[requestIDToInt_[outNode->related_Request_->getRequestId()]] = 1;
-
 //        completedRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
         numCompleted_++;
@@ -178,37 +162,22 @@ void Label:: extend(PNode &outNode) {
         numExtendCheck_++;
  //       extendCheck_[outNode->related_Request_->taskIndexLabel_] = 1;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
-//        nbPickUp_ ++;
         reducedCost_ -= (outNode->related_Request_)->dual_;
-
-
-        /*if (reachTime < outNode->requestTime_){
-            passedTime_ = outNode->requestTime_;
-            *//*for (auto & item: travelResource_) {
-                item.second -= (outNode->requestTime_ - reachTime);
-            }*//*
-            *//*for (auto & node: openNodes_) {
-                travelResources_[node->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
-            }*//*
-            for (auto & node: openNode_) {
-                travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (outNode->requestTime_ - reachTime);
-            }
+        if (travelTime > 0){
+            nbPickMove_++;
         }
-        else {*/
-            if (travelTime > 0){
-                nbPickMove_++;
-            }
-            nbPickUp_ ++;
-            passedTime_ = reachTime + outNode->deltaTime_;
-            totalDelay_ += (reachTime - outNode->requestTime_);
-            reducedCost_ += (reachTime - outNode->requestTime_);
-//        }
-//        travelResource_.insert(std::pair<std::string, float> (outNode->pairNodeID_, outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_));
+        nbPickUp_ ++;
+        totalDelay_ += (reachTime - outNode->requestTime_);
+        reducedCost_ += (reachTime - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_ + outNode->deltaTime_;
     }
     /*else if (outNode->type_ == SINK){
         passedTime_ = reachTime;
     }*/
+
+
+    passedTime_ = reachTime + outNode->deltaTime_;
+
     pathNodes_.push_back(outNode->nodeID_);
     pathNode_.push_back(&outNode);
  //   path_.push_back(&outNode);
