@@ -36,8 +36,6 @@ public:
     // set of constraints
     IloRangeArray requestConst_;
     IloRangeArray vehicleConst_;
-    myTools::Timer *AddVarTime_;
-
 
     vector<unsigned int> orderToRequest_;
 //    std::unordered_map<unsigned int, int> requestToOrder_;

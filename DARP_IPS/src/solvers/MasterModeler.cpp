@@ -15,7 +15,6 @@ MasterModeler::MasterModeler() {
 
     requestRHS_ = IloNumArray(env_);
     vehicleRHS_ = IloNumArray(env_);
-    AddVarTime_ = new myTools::Timer(); AddVarTime_->init();
 }
 
 MasterModeler::~MasterModeler() {
