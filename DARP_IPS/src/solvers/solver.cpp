@@ -279,8 +279,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
 
-        if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
-            break;
+        /*if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
+            break;*/
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
             preprocessTime_->stop();
