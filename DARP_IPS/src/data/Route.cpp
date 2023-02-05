@@ -116,7 +116,7 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(12) << "NODE_ID" << std::right;
     repStr << std::right << std::setw(11) << " REACH_TIME"<< "(s)  ";
     repStr << std::right << std::setw(12) << " DEPART_TIME"<< "(s)  ";
-    repStr << std::right << std::setw(12) << " PLAN_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(12) << " TRAVEL_TIME"<< "(s)  ";
     repStr << "#PASSENGERS" <<std::endl;
     repStr << "# -----------------------------------------------------------------------------------------------------------" << std::endl;
 
@@ -126,7 +126,7 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(11) << routeNodes_[0]->nodeID_;
     repStr << std::right << std::setw(11) << routeNodes_[0]->reachTime_ << " (s)  ";
     repStr << std::right << std::setw(11) << routeNodes_[0]->departTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << plannedReachTime_[0] << " (s)  ";
+    repStr << std::right << std::setw(11) << "0" << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
 
     // print the internal nodes of the route
@@ -139,22 +139,14 @@ std::string Route::toString() const {
             repStr << std::left << std::setw(6) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << routeNodes_[i]->nodeID_;
-        if (routeNodes_[i]->reachTime_ == 0)
-            repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
-        else
-            repStr << std::right << std::setw(11) << routeNodes_[i]->reachTime_ << " (s)  ";
-        if (routeNodes_[i]->departTime_ == 0)
-            repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
-        else
-        {
-            repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
-            if (routeNodes_[i]->departTime_ != plannedDepartTime_[i]){
-                std::cout << "Connectivity constraint violated at node : ";
-                std::cout << routeNodes_[i]->nodeID_ << std::endl;
-                myTools::throwException("Route-Validation");
-            }
+        repStr << std::right << std::setw(11) << routeNodes_[i]->reachTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << routeNodes_[i]->departTime_ << " (s)  ";
+        if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i])||(routeNodes_[i]->reachTime_ != plannedReachTime_[i])){
+            std::cout << "Connectivity constraint violated at node : ";
+            std::cout << routeNodes_[i]->nodeID_ << std::endl;
+            myTools::throwException("Route-Validation");
         }
-        repStr << std::right << std::setw(11) << plannedReachTime_[i] << " (s)  ";
+        repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
     }
 

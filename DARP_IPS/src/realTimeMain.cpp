@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     if (argc == 2){
-        std::string instanceNames = "datasets/InstanceNames-60.txt";
+        std::string instanceNames = "datasets/InstanceNames-120.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];

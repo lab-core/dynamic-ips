@@ -92,10 +92,10 @@ std::string Vehicle::toString() const {
 void Vehicle::updateState(int epoch, int &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
-        solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
-        emptyRoute_->routeNodes_[0]->nodeStatus_ = DONE;
         emptyRoute_->routeNodes_[0]->reachTime_ = startTime_;
         emptyRoute_->routeNodes_[0]->departTime_ = departTime_;
+        solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
+        emptyRoute_->routeNodes_[0]->nodeStatus_ = DONE;
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch

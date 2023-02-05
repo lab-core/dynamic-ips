@@ -208,7 +208,13 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << totalStopLoad/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
-
+    instRepStr_ << totalCustomers << ",";
+    if (totalCustomers > 50000)
+        instRepStr_ << "50000 <" << ",";
+    else if (totalCustomers < 40000)
+        instRepStr_ << "< 40000" << ",";
+    else
+        instRepStr_ << "40000 - 50000" << ",";
     instRepStr_ << totalNumServed << "," << totalWaiting/static_cast<float>(numServed) << ",";
     instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
     instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << ",";
@@ -419,20 +425,24 @@ void Instance::updateRequestOrder() {
 // print solutions in csv files
 std::string Instance::saveSolutionRoutes() {
     std::stringstream repStr;
-    repStr << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad" << std::endl;
+    repStr << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad, PlanedReach, PlanedDepart, TravelTime" << std::endl;
     for (auto & vehicleObj : vehicles_) {
-        int i = 0;
-        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
+        for (int j = 0; j< vehicleObj->solutionRoute_->routeNodes_.size(); j++) {
             repStr << vehicleObj->vehicleID_ << ",";
-            repStr << nodeObj->nodeID_ << ",";
-            repStr << nodeObj->requestTime_ << ",";
-            repStr << nodeObj->reachTime_ << ",";
-            repStr << nodeObj->initialType_ << ",";
-            repStr << nodeObj->locationID_ << ",";
-            repStr << nodeObj->departTime_ << ",";
-            repStr << nodeObj->nbPassengers_ << ",";
-            repStr << vehicleObj->solutionRoute_->plannedPassengers_[i] << "\n";
-            i++;
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->nodeID_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->requestTime_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->reachTime_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->initialType_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->locationID_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->departTime_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->nbPassengers_ << ",";
+            repStr << vehicleObj->solutionRoute_->plannedPassengers_[j] << ",";
+            repStr << vehicleObj->solutionRoute_->plannedReachTime_[j] << ",";
+            repStr << vehicleObj->solutionRoute_->plannedDepartTime_[j] << ",";
+            if (j == 0)
+                repStr << 0 << "\n";
+            else
+                repStr << durationMatrix_[vehicleObj->solutionRoute_->routeNodes_[j-1]->locationID_][vehicleObj->solutionRoute_->routeNodes_[j]->locationID_] << "\n";
         }
     }
     return repStr.str();
