@@ -25,7 +25,8 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
 }
 Route::~Route(){
     delete[] name_;
-    delete column_;
+    if (column_ != NULL)
+        delete column_;
 }
 
 // Getters and Setters
