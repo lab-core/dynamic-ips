@@ -34,7 +34,8 @@ public:
     double createTime_;
     float totalLength_;
 //    Eigen::MatrixXd fullPattern_;
-//    myTools::BitVector * column_;
+    myTools::BitVector * column_;
+    bool isCompatible_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
@@ -72,7 +73,7 @@ public:
     // this function is for creating the column pattern from the route for CPLEX or IncDegree
     /*void createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
                            std::unordered_map<int, int> &incVehicleToOrder);*/
-//    void createColumn(int size);
+    void createColumn(int size);
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {

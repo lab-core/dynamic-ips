@@ -79,6 +79,7 @@ public:
     // this function update the incompatibility degree of availableRoutes and
     // order them based on the incompatibility degree and reduced cost
     void updateIncDegrees(PInstance &pInst);
+    void updateIncDegreesBit(PInstance &pInst);
     void updateRoutesIncDegree(int &vehicleID);
 
     // this function updates the reduced cost for the routes in the pool
@@ -96,6 +97,7 @@ public:
 
     // function to evaluate available routes and find proper ones to be added to the models
     void updateRoutesToAdd(int compDegree, PInstance &pInst);
+    void updateRoutesToAdd(bool compatible, PInstance &pInst);
     void updateRoutesToAddZoom(PInstance &pInst);
     static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::map<unsigned int, int> &requestToOrder);
 

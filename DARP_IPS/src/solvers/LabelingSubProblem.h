@@ -58,7 +58,7 @@ public:
     void reconstructLabels(std::vector<PRoute> &availableRoutes);
 
     // function to convert solution to routes and save them in vehicle object
-    void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
+    void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst, int size);
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;

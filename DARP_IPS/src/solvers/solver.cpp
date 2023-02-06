@@ -177,7 +177,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         for (auto &subProblem: subProSolve){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst);
+                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst,
+                                         EpochInst->nbRequests_);
             isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
@@ -185,7 +186,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         for (auto &subProblem: subProConst){
             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
             subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst);
+                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst,
+                                         EpochInst->nbRequests_);
             isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 

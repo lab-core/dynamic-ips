@@ -11,7 +11,7 @@ using std::thread;
 //************************************************************************
 
 namespace Tools {
-    int ThreadsPool::maxGlobalThreads_ = 12;
+    int ThreadsPool::maxGlobalThreads_ = 16;
     PThreadsPool::~PThreadsPool() {
         if (get())
             get()->removePtr();

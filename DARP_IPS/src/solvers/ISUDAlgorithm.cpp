@@ -358,22 +358,52 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     calcIncMatrix();
 //    calcIncMatrixFull();
     maxIncDegree_ = 0;
-//    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(pInst->parameters_->nbThreads_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
-            /*Tools::Job job([&]() {
+            Tools::Job job([&]() {
                 updateRoutesIncDegree(vehicleObj->vehicleID_);
             });
-            pPool->run(job);*/
-            updateRoutesIncDegree(vehicleObj->vehicleID_);
+            pPool->run(job);
+//            updateRoutesIncDegree(vehicleObj->vehicleID_);
         }
     }
-//    pPool->wait();
+    pPool->wait();
     /*while(true){
         if (!pPool->wait())
             break;
     }*/
+}
+void ISUDAlgorithm::updateIncDegreesBit(PInstance &pInst) {
+    myTools::BitVector * zList = new myTools::BitVector(pInst->nbRequests_);
+    myTools::BitVector * coveredList = new myTools::BitVector(pInst->nbRequests_);
+    for (auto & requestObj : zSolution_)
+        zList->add(requestObj->taskIndex_);
+
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
+            coveredList->copyValues(*zList);
+            myTools::BitVector * currentSolution = new myTools::BitVector(pInst->nbRequests_);
+            for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
+                coveredList->add(requestObj->taskIndex_);
+                currentSolution->add(requestObj->taskIndex_);
+            }
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
+                if (routeObj->column_->isSubset(*coveredList) && currentSolution->isSubset(*routeObj->column_))
+                    routeObj->isCompatible_ = true;
+                else
+                    routeObj->isCompatible_ = false;
+                /*if ((routeObj->isCompatible_ && routeObj->incompatibilityDegree_ >0 )||
+                (!routeObj->isCompatible_ && routeObj->incompatibilityDegree_ == 0)){
+                    std::cout << "error" << std::endl;
+                }*/
+            }
+            delete currentSolution;
+        }
+    }
+    delete zList;
+    delete coveredList;
 }
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 
@@ -445,8 +475,6 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst, int &vehicleID) {
 }
 
 void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths) {
-//    CompPro_->routesToAdd_.reserve(nbRoutes_);
-//    MIPReducedPro_->routesToAdd_.reserve(nbRoutes_);
     isudTime_->start();
     double previousObj = objValue_;
     bool restartAlgorithm = true;
@@ -719,13 +747,19 @@ void ISUDAlgorithm::solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &in
 //    isudMIPTime_->start();
     // improve by solving the Reduced problem
     MIPReducedPro_->routesToAdd_.clear();
-//    ReducedPro_->routesToAdd_.clear();
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
     if (compDegree == 0) {
         updateDegreeTime_->start();
-        updateIncDegrees(pInst);
+        if (isudIter_ ==1){
+            updateIncDegreesBit(pInst);
+            updateRoutesToAdd(true, pInst);
+        }
+        else{
+            updateIncDegrees(pInst);
+            updateRoutesToAdd(compDegree, pInst);
+        }
+
         updateDegreeTime_->stop();
-        updateRoutesToAdd(compDegree, pInst);
     }
     else
     {
@@ -833,6 +867,27 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
                     else {
                         CompPro_->routesToAdd_.push_back(availableRoutes_[vehicleObj->vehicleID_][r]);
                     }
+                }
+            }
+        }
+    }
+//    pInst->restVehicleOrder();
+}
+void ISUDAlgorithm::updateRoutesToAdd(bool compatible, PInstance &pInst) {
+//    pInst->sortVehicles(BEST_REDUCE_COST);
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (compatible) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                if ((routeObj->isCompatible_) && (routeObj->reducedCost_ < -0.001)) {
+                    if (!routeObj->equal(*vehicleObj->currentRoute_))
+                        MIPReducedPro_->routesToAdd_.push_back(routeObj);
+                }
+            }
+        }
+        else {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                if (!routeObj->isCompatible_) {
+                    CompPro_->routesToAdd_.push_back(routeObj);
                 }
             }
         }

@@ -806,11 +806,12 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
     subproTime_->stop();
 }
 
-void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
+void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst, int size) {
 
     subproRouteTime_->start();
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst));
+        availableRoutes.back()->createColumn(size);
         nbOutputs_++;
     }
     subproRouteTime_->stop();

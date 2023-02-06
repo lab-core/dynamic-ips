@@ -21,10 +21,11 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
+    isCompatible_ = false;
 }
 Route::~Route(){
     delete[] name_;
-//    delete column_;
+    delete column_;
 }
 
 // Getters and Setters
@@ -254,11 +255,11 @@ void Route::resetRoute() {
     }
 }
 
-/*void Route::createColumn(int size) {
+void Route::createColumn(int size) {
     column_ = new myTools::BitVector(size);
     for (auto & requestObj: routeRequests_)
         column_->add(requestObj->taskIndex_);
-}*/
+}
 
 
 /*void Route::createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
