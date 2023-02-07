@@ -24,6 +24,10 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
     nbRoutes_ = 0;
     nbCoveredTasks_ = 0;
     cpIncDegree_ = 2;
+    GreedyObjValue_ = 0;
+    maxIncDegree_ = 0;
+    minReducedCost_ = INFINITY;
+    maxReducedCost_ = INFINITY;
 
     pLogIsudResultsStream_ = new Tools::LogOutput(inputPaths.getOutputEpochResults());
     (*pLogIsudResultsStream_) << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue" << std::endl;
@@ -110,8 +114,8 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
             routeSolution_.push_back(vehicleObj->currentRoute_);
         }
         setObjValue();
-        GreedyobjValue_ = objValue_;
-        std::cout << "Objective value of Greedy Warm start: " << GreedyobjValue_ << std::endl;
+        GreedyObjValue_ = objValue_;
+        std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
 
     if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
@@ -471,8 +475,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
     isudTime_->start();
     double previousObj = objValue_;
     bool restartAlgorithm = true;
-    bool isCPImproved = true;
-    bool isCPBuilt = false;
+    bool isCPImproved;
+    bool isCPBuilt;
     int CPCounter;
 
     while (restartAlgorithm){
@@ -514,7 +518,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
 //            pInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudIter_);
 //            (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
   //          save_ISUDResults(epoch, inputPaths, "RP", MIPReducedPro_->compRoutes_.size());
-            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", MIPReducedPro_->compRoutes_.size());
+            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
             isudIter_++;
             previousObj = objValue_;
  //           std::cout << "Objective Value after the RP improve: " << objValue_ << std::endl;
@@ -566,7 +570,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
  //                           (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
-                            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", MIPReducedPro_->compRoutes_.size());
+                            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", (int)MIPReducedPro_->compRoutes_.size());
                             isudIter_++;
                             //                     std::cout << "restarting CP after MIP improve" << std::endl;
                             isCPImproved = true;
@@ -575,9 +579,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
                             updateIncDegrees(pInst);
                             updateDegreeTime_->stop();
                             updateRoutesToAdd(maxIncDegree_, pInst);
-                            //                  std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
+                            std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
                             CompPro_->buildModel(pInst, zSolution_, routeSolution_);
-                            isCPBuilt = true;
                             isudMIPTime_->stop();
                         }
                         else {
@@ -650,7 +653,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
  //                   pInst->saveISUDRoutes(inputPaths.getOutputEpochIsud(), epoch, isudIter_);
  //                   save_ISUDResults(epoch, inputPaths, "CP", CompPro_->IncRoute_.size() + routeSolution_.size());
  //                   (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
-                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", CompPro_->IncRoute_.size() + routeSolution_.size());
+                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int)(CompPro_->IncRoute_.size() + routeSolution_.size()));
                     previousObj = objValue_;
                     isudIter_++;
                     isCPImproved = true;
@@ -976,7 +979,7 @@ void ISUDAlgorithm::save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int
 }
 
 
-std::string ISUDAlgorithm::save_ISUDResults(int epoch, const std::string& model, int nbColumns) {
+std::string ISUDAlgorithm::save_ISUDResults(int epoch, const std::string& model, int nbColumns) const {
     std::stringstream repStr;
 
     repStr << epoch << ",";

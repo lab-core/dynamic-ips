@@ -40,7 +40,7 @@ public:
 
     int isudIter_;
     double objValue_;
-    double GreedyobjValue_;
+    double GreedyObjValue_;
     myTools::Timer *isudTime_;
     myTools::Timer *RPTime_;
     myTools::Timer *CPTime_;
@@ -103,7 +103,7 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns);
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();

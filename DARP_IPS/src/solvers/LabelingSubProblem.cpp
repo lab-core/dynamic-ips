@@ -737,7 +737,6 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0], nbTotalRequest_);
-//    initialLabel->completedRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     initialLabel->openRequests_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size(), 0);
     initialLabel->travelResources_.resize(nbTotalRequest_ + (*Vehicle_)->onboards_.size());
     // update travel resource for the initial label based on the onboards

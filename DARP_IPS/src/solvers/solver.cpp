@@ -24,6 +24,11 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     avgEpochRuntime_ = 0;
     epochRuntime_ = 0;
     GreedyTime_ = 0;
+    AssignTime_ = 0;
+    minSubSize_ = 0;
+    maxSubSize_ = 0;
+    avgSubSize_ = 0;
+
 
     // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
@@ -71,7 +76,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
     while (true) {
         nbNegativeFound = 0;
-        float maxReachTime = MAXReachTime;
         previousObj = isudObj_->objValue_;
 
 
@@ -307,7 +311,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
 
 }
 
-void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
+void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
 
@@ -379,13 +383,12 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                     nbNegativeFound = 0;
 
                     int maxPick = StaticInst->nbRequests_;
-                    float maxReachTime = MAXReachTime;
                     previousObj = isudObj_->objValue_;
 
                     if (StaticInst->parameters_->SubproSolveMode_ == NUM_PICK_RESTRICTED)
                         maxPick = (int) floor(StaticInst->nbRequests_ / StaticInst->nbVehicles_) + 2;
-                    if (StaticInst->parameters_->SubproSolveMode_ == TIME_RESTRICTED)
-                        maxReachTime = static_cast<float>(4 * StaticInst->parameters_->epochLength_);
+                    /*if (StaticInst->parameters_->SubproSolveMode_ == TIME_RESTRICTED)
+                        maxReachTime = static_cast<float>(4 * StaticInst->parameters_->epochLength_);*/
 
                     //***********************************************************************************//
                     //                    C P L E X   M E T H O D
@@ -486,6 +489,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "*************************************************************************************"<< std::endl;
         // update vehicle status
         mainInst->nbOnboards_ = 0;
+        if (epoch_ > 20)
+            break;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
@@ -568,7 +573,7 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << minSubSize_ << ",";
     repStr << maxSubSize_ << ",";
     repStr << avgSubSize_<< ",";
-    repStr << isudObj_->GreedyobjValue_ << ",";
+    repStr << isudObj_->GreedyObjValue_ << ",";
     repStr << isudObj_->objValue_ << "\n";
     return repStr.str();
 }

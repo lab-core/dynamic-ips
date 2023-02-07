@@ -26,6 +26,7 @@ Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(label
  //   completedRequest_.clear();
     completeRequests_ = std::make_shared<myTools::BitVector>(numRequests);
     extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);
+    this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     currentNode_ = &source;
     nbPickUp_ = 0;
@@ -34,7 +35,6 @@ Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(label
 //    parent_ = nullptr;
     isDropped_ = false;
     isDropExtend_ = false;
-    nbUsed_ = 0;
     createTime_ = 0;
 }
 
@@ -74,7 +74,6 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
         if (nodeObj->type_ == PICKUP)
             extendCheck_.insert(nodeObj->nodeID_);
     }*/
-    nbUsed_ = 0;
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
     createTime_ = 0;
@@ -106,7 +105,6 @@ void Label::copyLabel(const Label &label) {
     nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
-    nbUsed_ = 1;
 }
 Label::~Label() {
 //    openNode_.clear();
@@ -145,7 +143,7 @@ void Label:: extend(PNode &outNode) {
             }
         }
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        if (!isDropped_ && travelTime > 0)
+        if ((!isDropped_ && travelTime) > 0 || (travelTime == 0 && ServiceTime > 0))
             isDropped_ = true;
 
     }

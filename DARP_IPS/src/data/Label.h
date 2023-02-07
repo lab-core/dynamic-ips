@@ -41,7 +41,6 @@ public:
     int numExtendCheck_;
     bool isDropped_;
     bool isDropExtend_;
-    int nbUsed_;
     double createTime_;
 
     // Constructor and Destructor
