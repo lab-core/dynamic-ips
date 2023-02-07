@@ -24,8 +24,8 @@ Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(label
     openRequests_.clear();
  //   completedRequests_.clear();
  //   completedRequest_.clear();
-    completeRequests_ = new myTools::BitVector(numRequests);
-    extendCheck_ = new myTools::BitVector(numRequests);
+    completeRequests_ = std::make_shared<myTools::BitVector>(numRequests);
+    extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);
     numExtendCheck_ = 0;
     currentNode_ = &source;
     nbPickUp_ = 0;
@@ -59,8 +59,8 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
 //    completedRequests_ = label.completedRequests_;
-    completeRequests_ = new myTools::BitVector(*label.completeRequests_);
-    extendCheck_ = new myTools::BitVector(*label.completeRequests_);
+    completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
+    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 //    extendCheck_ = completedRequests_;
@@ -112,8 +112,6 @@ Label::~Label() {
 //    openNode_.clear();
 //    pathNodes_.clear();
     delete[] name_;
-    delete completeRequests_;
-    delete extendCheck_;
 }
 
 unsigned int Label::getLabelId() const {

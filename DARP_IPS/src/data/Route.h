@@ -34,7 +34,8 @@ public:
     double createTime_;
     float totalLength_;
 //    Eigen::MatrixXd fullPattern_;
-    myTools::BitVector * column_;
+//    myTools::BitVector * column_;
+    std::shared_ptr<myTools::BitVector> column_;
     bool isCompatible_;
 
     // Constructor and Destructor

@@ -376,15 +376,15 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     }*/
 }
 void ISUDAlgorithm::updateIncDegreesBit(PInstance &pInst) {
-    myTools::BitVector * zList = new myTools::BitVector(pInst->nbRequests_);
-    myTools::BitVector * coveredList = new myTools::BitVector(pInst->nbRequests_);
+    std::shared_ptr<myTools::BitVector>  zList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
+    std::shared_ptr<myTools::BitVector>  coveredList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
     for (auto & requestObj : zSolution_)
         zList->add(requestObj->taskIndex_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             coveredList->copyValues(*zList);
-            myTools::BitVector * currentSolution = new myTools::BitVector(pInst->nbRequests_);
+            std::shared_ptr<myTools::BitVector>  currentSolution = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
             for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
                 coveredList->add(requestObj->taskIndex_);
                 currentSolution->add(requestObj->taskIndex_);
@@ -394,16 +394,9 @@ void ISUDAlgorithm::updateIncDegreesBit(PInstance &pInst) {
                     routeObj->isCompatible_ = true;
                 else
                     routeObj->isCompatible_ = false;
-                /*if ((routeObj->isCompatible_ && routeObj->incompatibilityDegree_ >0 )||
-                (!routeObj->isCompatible_ && routeObj->incompatibilityDegree_ == 0)){
-                    std::cout << "error" << std::endl;
-                }*/
             }
-            delete currentSolution;
         }
     }
-    delete zList;
-    delete coveredList;
 }
 void ISUDAlgorithm::updateRoutesIncDegree(int &vehicleID) {
 

@@ -24,7 +24,7 @@ public:
     std::vector<float> travelResources_;
     std::vector<PNode*> openNode_;
  //   std::valarray<int> completedRequests_;
-    myTools::BitVector * completeRequests_;
+ std::shared_ptr<myTools::BitVector> completeRequests_;
     int numCompleted_;
     std::vector<int> openRequests_;
     std::vector<std::string> pathNodes_;
@@ -37,7 +37,7 @@ public:
     int nbPickUp_;                      // the number of time the vehicle visit pick up points
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
 //    std::valarray<int> extendCheck_;
-    myTools::BitVector * extendCheck_;
+    std::shared_ptr<myTools::BitVector> extendCheck_;
     int numExtendCheck_;
     bool isDropped_;
     bool isDropExtend_;

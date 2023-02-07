@@ -25,8 +25,6 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
 }
 Route::~Route(){
     delete[] name_;
-    if (column_ != NULL)
-        delete column_;
 }
 
 // Getters and Setters
@@ -257,7 +255,7 @@ void Route::resetRoute() {
 }
 
 void Route::createColumn(int size) {
-    column_ = new myTools::BitVector(size);
+    column_ = std::make_shared<myTools::BitVector>(size);
     for (auto & requestObj: routeRequests_)
         column_->add(requestObj->taskIndex_);
 }
