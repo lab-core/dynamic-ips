@@ -105,15 +105,17 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;
 
-        if ((EpochInst->parameters_->greedyPortion_)&&(EpochInst->nbRequests_ >= 15)){
+        if (EpochInst->parameters_->greedyPortion_){
             GreedyModel_->GreedySolverFast(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 }
-                else
+                else {
                     isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
-//                    subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty())
+                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                }
             }
         }
         else {
@@ -146,7 +148,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
-        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
+        std::cout << "nb of sub problems: " << subProSolve.size()+subProConst.size() << std::endl;
 
         // initializing and solving subproblems
         std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
@@ -168,7 +170,10 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         for (auto &subProblem: subProConst){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);
-                subProblem->reconstructLabels(isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_]);
+                subProblem->maxPickup_ = 1;
+                if (!subProblem->subRequests_.empty())
+                    subProblem->solveDynamic();
+//                subProblem->reconstructLabels(isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_]);
 
             });
             pPool->run(job);
@@ -489,7 +494,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "*************************************************************************************"<< std::endl;
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        if (epoch_ > 20)
+        if (epoch_ > 5)
             break;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
