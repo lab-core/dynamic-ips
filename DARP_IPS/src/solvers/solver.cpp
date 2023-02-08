@@ -494,8 +494,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "*************************************************************************************"<< std::endl;
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        if (epoch_ > 5)
-            break;
+        /*if (epoch_ > 5)
+            break;*/
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
