@@ -219,6 +219,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
         subProSolve.clear();
+        subProConst.clear();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
