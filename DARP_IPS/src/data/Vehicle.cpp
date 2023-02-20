@@ -182,6 +182,13 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
     }
     if (currentRoute_->routeSize_ > 1) {
+        if (idle_){
+            if (startTime_ + elapsedTime < departTime_){
+                std::cout << idleTime_ << std::endl;
+                idleTime_ -= (departTime_ - (startTime_ + elapsedTime));
+                updateDepartTime(startTime_ + elapsedTime);
+            }
+        }
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + elapsedTime) {
             onboards_.clear();
@@ -203,15 +210,6 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
-                    // check travelTime violation
-                    /*float travelTime = currentRoute_->routeNodes_[i]->related_Request_->dropTime_ -
-                                       currentRoute_->routeNodes_[i]->related_Request_->pickTime_ -
-                                       currentRoute_->routeNodes_[i]->related_Request_->deltaTime_;
-                    if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
-                        std::cout << "Trip delay constraint is violated by request: " <<
-                                  currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;
-                        myTools::throwException("Trip delay Validation");
-                    }*/
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
@@ -221,13 +219,14 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                     departTime_ = currentRoute_->plannedDepartTime_[i];
 
                     // if we have reached the end of the route, next condition is checked
-                    if (departTime_ < startTime_ + elapsedTime) {
-                        idleTime_ += (startTime_ + elapsedTime - departTime_);
-                        departTime_ = startTime_ + elapsedTime;
+                    if (departTime_ < startTime_ + elapsedTime + epochLength) {
+                        idleTime_ += (startTime_ + elapsedTime + epochLength - departTime_);
+                        departTime_ = startTime_ + elapsedTime + epochLength;
                         currentRoute_->routeNodes_[i]->departTime_ = departTime_;
                         currentRoute_->plannedDepartTime_[i] = departTime_;
                         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
                         solutionRoute_->plannedDepartTime_.back() = departTime_;
+                        idle_ = true;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
                     departNode_ =  currentRoute_->routeNodes_[i];
@@ -253,12 +252,13 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
-    else if (departTime_ < startTime_ + elapsedTime){
-        idleTime_ += (startTime_ + elapsedTime - departTime_);
-        departTime_ = startTime_ + elapsedTime;
+    else if (departTime_ < startTime_ + elapsedTime + epochLength){
+        idleTime_ += (startTime_ + elapsedTime + epochLength - departTime_);
+        departTime_ = startTime_ + elapsedTime + epochLength;
         currentRoute_->plannedReachTime_[0] = departTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
         solutionRoute_->plannedDepartTime_.back() = departTime_;
+        idle_ = true;
     }
 }
 
@@ -285,6 +285,23 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
     }
     else
         solutionRoute_->addNode1(pInst->instGraph_->sinkNodes_[vehicleID_]);
+}
+
+void Vehicle::updateDepartTime(float departTime) {
+    currentRoute_->plannedReachTime_[0] = departTime;
+    solutionRoute_->routeNodes_.back()->departTime_ = departTime;
+    solutionRoute_->plannedDepartTime_.back() = departTime;
+    departTime_ = departTime;
+    idle_ = false;
+    currentRoute_->totalDelay_ = 0;
+    PRoute newRoute = std::make_shared<Route>(vehicleID_);
+    newRoute->addSource(departNode_, departTime_, numPassengers_);
+    for (int i = 1; i < currentRoute_->routeNodes_.size(); ++i) {
+        newRoute->addNode1(currentRoute_->routeNodes_[i]);
+    }
+    currentRoute_->plannedDepartTime_ = newRoute->plannedDepartTime_;
+    currentRoute_->plannedReachTime_ = newRoute->plannedReachTime_;
+    currentRoute_->totalDelay_ = newRoute->totalDelay_;
 }
 
 
