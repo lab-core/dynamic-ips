@@ -231,7 +231,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
+                isudObj_->solveISUD1(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -435,7 +435,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD) {
-                            isudObj_->solveISUD(StaticInst, epoch_, inputPaths);
+                            isudObj_->solveISUD1(StaticInst, epoch_, inputPaths);
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
