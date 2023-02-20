@@ -54,7 +54,7 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
                 if ((currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
                     (currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)){
-                    emptyRoute_->addNode(currentRoute_->routeNodes_[i]);
+                    emptyRoute_->addNode1(currentRoute_->routeNodes_[i]);
                 }
             }
         }
@@ -106,7 +106,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-                solutionRoute_->addNode(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i]);
+                solutionRoute_->addNode1(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i],
+                                        currentRoute_->plannedDepartTime_[i]);
 
                 // set request status
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
@@ -121,7 +122,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     // check travelTime violation
                     float travelTime = currentRoute_->routeNodes_[i]->related_Request_->dropTime_ -
                             currentRoute_->routeNodes_[i]->related_Request_->pickTime_ -
-                            currentRoute_->routeNodes_[i]->related_Request_->deltaTime_;
+                            currentRoute_->routeNodes_[i]->deltaTime_;
                     if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
                         std::cout << "Trip delay constraint is violated by request: " <<
                                   currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;
@@ -169,7 +170,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         departTime_ = startTime_ + static_cast<float>((epoch+1) * epochLength);
         currentRoute_->plannedDepartTime_[0] = departTime_;
         currentRoute_->routeNodes_.back()->departTime_ = departTime_;
-//        solutionRoute_->routeNodes_.back()->reachTime_ = departTime_;
+//        solutionRoute_->routeNodes_.back()->reachTime_ = departureTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
         solutionRoute_->plannedDepartTime_.back() = departTime_;
     }
@@ -189,7 +190,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-                solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
+                solutionRoute_->addNode1(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i],
+                                        currentRoute_->plannedDepartTime_[i]);
 
                 // set request status
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
@@ -267,7 +269,8 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
             currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
             currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-            solutionRoute_->addNode(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i]);
+            solutionRoute_->addNode1(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i],
+                                     currentRoute_->plannedDepartTime_[i]);
 
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
@@ -281,7 +284,7 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
         }
     }
     else
-        solutionRoute_->addNode(pInst->instGraph_->sinkNodes_[vehicleID_]);
+        solutionRoute_->addNode1(pInst->instGraph_->sinkNodes_[vehicleID_]);
 }
 
 

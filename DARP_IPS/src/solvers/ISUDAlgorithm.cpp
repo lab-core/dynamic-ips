@@ -125,8 +125,8 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
 
                 newRoute->addSource(pInst->vehicles_[v]->departNode_,pInst->vehicles_[v]->departTime_,
                                     pInst->vehicles_[v]->numPassengers_);
-                newRoute->addNode(pInst->instGraph_->pickNodes_[i]);
-                newRoute->addNode(pInst->instGraph_->dropNodes_[i]);
+                newRoute->addNode1(pInst->instGraph_->pickNodes_[i]);
+                newRoute->addNode1(pInst->instGraph_->dropNodes_[i]);
                 availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
                 MIPReducedPro_->routesToAdd_.push_back(newRoute);
             }

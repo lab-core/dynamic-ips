@@ -383,7 +383,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             while (currentNodeIndex != sinkIndex) {
                 for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
                     if (xVal[currentNodeIndex][i] > 0.9) {
-                        newRoute->addNode(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]);
+                        newRoute->addNode1(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]);
                         currentNodeIndex = i;
                         break;
                     }
