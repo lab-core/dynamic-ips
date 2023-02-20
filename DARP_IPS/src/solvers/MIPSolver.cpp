@@ -193,7 +193,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             // constraints 13a -------------------
             IloExpr expr13(env);
             expr13 = U[v][PInst->instGraph_->nodes_[onboardID]->nodeIndex_] - PInst->instGraph_->nodes_[onboardID]->related_Request_->pickTime_
-                     - PInst->instGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
+                     - PInst->instGraph_->nodes_[onboardID]->deltaTime_;
             MIPModel.add(expr13 <= PInst->instGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
             MIPModel.add(expr13 >= PInst->instGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
         }
