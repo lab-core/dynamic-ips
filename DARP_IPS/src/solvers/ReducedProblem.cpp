@@ -59,7 +59,7 @@ void ReducedProblem::ResetRPModel() {
 
 // this function adds routeVar to the model
 void ReducedProblem::addRouteVar(PRoute &newRoute) {
-        MasterModeler::addRouteVar(routeVar_, newRoute, POSITIVE);
+    MasterModeler::addRouteVarInt(routeVar_, newRoute, POSITIVE);
         compRoutes_.push_back(newRoute);
 }
 
@@ -75,7 +75,7 @@ void ReducedProblem:: addZVars(std::vector<PRequest> &requests) {
 }
 
 void ReducedProblem:: addZVar(PRequest &request) {
-    MasterModeler::addZVar(zVar_, request, POSITIVE);
+    MasterModeler::addZVarInt(zVar_, request, POSITIVE);
 }
 
 // this function add one route at each iteration of the algorithm during one epoch
@@ -94,7 +94,7 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
     // just z variables related to requests that are served in routes with one request are compatible
     /*for (int r = 0; r < routeSolution.size(); ++r) {
         if (routeSolution[r]->routeRequests_.size() == 1) {
-            addZVar(routeSolution[r]->routeNodes_[1]->related_Request_);
+            addZVarInt(routeSolution[r]->routeNodes_[1]->related_Request_);
         }
     }*/
 }
@@ -114,18 +114,16 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         addZVar(zSol);
 
     // adding route solution columns
-    compRoutes_.reserve(routeSolution.size()+routesToAdd_.size());
-    addRouteVars(routeSolution);
-    /*for (auto & routeSol : routeSolution){
+ //   addRouteVars(routeSolution);
+    for (auto & routeSol : routeSolution){
         addRouteVar(routeSol);
-    }*/
+    }
 
 
 
     //adding new route variables
     for (auto & routeObj : routesToAdd_) {
         addRouteVar(routeObj);
- //       compRoutes_.push_back(routeObj);
     }
 //    env_.out() << Model_;
 }
