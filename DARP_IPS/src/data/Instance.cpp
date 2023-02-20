@@ -151,11 +151,17 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
             repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
 
-            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
-
+//            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
+            float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
+            if (instGraph_->pickNodes_[i]->locationID_ == instGraph_->dropNodes_[i]->locationID_)
+                travelTime = 0;
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
+                myTools::throwException("Trip delay Validation");
+            }
+            if (travelTime - requests_[i]->minTravelTime_ < 0){
+                std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
                 myTools::throwException("Trip delay Validation");
             }
 
