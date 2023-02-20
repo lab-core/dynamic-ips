@@ -78,11 +78,10 @@ void LabelingSubProblem::initialization() {
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
- //       initialLabel->completedRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
-                nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
+                (*nodeObj->pairNode_)->departTime_;
 
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
@@ -584,7 +583,6 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
 
 void LabelingSubProblem::solveDynamic_pushingWave() {
 
-
     // create initial label
     int nbActive;
     while(true) {
@@ -666,7 +664,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1){
                         // the drop has been done in one of the pick points
                         for (auto &neighbourNode: (*selectedLabel->currentNode_)->closeSuccessors_) {
-                            if (selectedLabel->isExtendFeasible(*neighbourNode, maxPickup_, true)) {
+                            if (selectedLabel->isExtendFeasible1(*neighbourNode, maxPickup_, true)) {
                                 nbActive = (*neighbourNode)->nbActiveLabels_;
                                 labelExtend(selectedLabel, (*neighbourNode), true);
                                 if (((*neighbourNode)->nbActiveLabels_ == 1) && (nbActive == 0)) {

@@ -68,18 +68,32 @@ void MasterModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign s
 }
 
 // this function adds zVar to the model
-void MasterModeler::addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+void MasterModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
 
     try {
-        IloNumVar numVar;
+        IloNumColumn numVar;
         if (sign == POSITIVE)
-            numVar = IloNumVar(objFunction_(request->penalty_) +
-                               requestConst_[request->taskIndex_](1));
+            numVar = objFunction_(request->penalty_) + requestConst_[request->taskIndex_](1);
         else
-            numVar = IloNumVar(objFunction_(-request->penalty_) +
-                               requestConst_[request->taskIndex_](-1));
-        numVar.setName(request->name_);
-        zVar.add(numVar);
+            numVar = objFunction_(-request->penalty_) + requestConst_[request->taskIndex_](-1);
+        zVar.add(IloNumVar(numVar,0,1,ILOINT));
+        zVar[zVar.getSize()-1].setName(request->name_);
+    }
+    catch (IloException& e) {
+        std::cout << e << std::endl;
+    }
+}
+
+void MasterModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+
+    try {
+        IloNumColumn numVar;
+        if (sign == POSITIVE)
+            numVar = objFunction_(request->penalty_) + requestConst_[request->taskIndex_](1);
+        else
+            numVar = objFunction_(-request->penalty_) + requestConst_[request->taskIndex_](-1);
+        zVar.add(IloNumVar(numVar));
+        zVar[zVar.getSize()-1].setName(request->name_);
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
@@ -106,18 +120,39 @@ void MasterModeler::addZVars(IloNumVarArray &zVar, std::vector<PRequest> &reques
 }
 
 // this function adds routeVar to the model
-void MasterModeler::addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
+void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
     IloNumArray columnVar(env_, (signed) orderToRequest_.size());
     createPattern(columnVar, newRoute, sign);
-//    IloNumVar numVar;
-    if (sign == POSITIVE)
-        routeVar.add(IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                                 + vehicleConst_[newRoute->vehicleID_](1)));
-    else
-        routeVar.add(IloNumVar(objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                           + vehicleConst_[newRoute->vehicleID_](-1)));
+    IloNumColumn numVar;
+    if (sign == POSITIVE) {
+        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
+                 + vehicleConst_[newRoute->vehicleID_](1);
+    }
+    else {
+        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
+                 + vehicleConst_[newRoute->vehicleID_](-1);
+    }
+    routeVar.add(IloNumVar(numVar,0,1,ILOINT));
  //   numVar.setName(newRoute->name_);
- //   routeVar.add(numVar);
+    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
+}
+
+// this function adds routeVar to the model
+void MasterModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
+    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
+    createPattern(columnVar, newRoute, sign);
+    IloNumColumn numVar;
+    if (sign == POSITIVE) {
+        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
+                 + vehicleConst_[newRoute->vehicleID_](1);
+    }
+    else {
+        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
+                 + vehicleConst_[newRoute->vehicleID_](-1);
+
+    }
+    routeVar.add(IloNumVar(numVar));
+    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
 }
 
 // this function initialized the model
