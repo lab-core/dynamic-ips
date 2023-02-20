@@ -14,15 +14,15 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
     }
 
     // add the new compatible column to the model
-    /*for (auto routeObj : routesToAdd_) {
+    for (auto routeObj : routesToAdd_) {
         addRouteVar(routeObj);
-    }*/
-    ReducedProblem::addRouteVars(routesToAdd_);
+    }
+//    ReducedProblem::addRouteVars(routesToAdd_);
 
 
-    addZVars(fractionalZ);
-    /*for (auto & zRequest : fractionalZ)
-        addZVar(zRequest);*/
+ //   addZVars(fractionalZ);
+    for (auto & zRequest : fractionalZ)
+        addZVar(zRequest);
 }
 
 void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
@@ -30,8 +30,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
         Model_.add(objFunction_);
-        Model_.add(IloConversion(env_, zVar_, ILOINT));
-        Model_.add(IloConversion(env_, routeVar_, ILOINT));
+        /*Model_.add(IloConversion(env_, zVar_, ILOINT));
+        Model_.add(IloConversion(env_, routeVar_, ILOINT));*/
 
   //      std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
@@ -79,6 +79,106 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.clearModel();
         if (routeSolution.size() != pInst->nbVehicles_)
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+    }
+    catch (IloException& e) {
+        std::cout << e << std::endl;
+    }
+}
+
+void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+    try {
+        Model_.add(requestConst_);
+        Model_.add(vehicleConst_);
+        Model_.add(objFunction_);
+
+        Cplex_ = IloCplex(Model_);
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        Cplex_.setOut(env_.getNullStream());
+        Cplex_.solve();
+
+ //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;
+
+        // printing solution status
+        //       std::cout << toString();
+
+        // saving the result and remove out of base variables
+        zSolution.clear();
+        routeSolution.clear();
+
+        IloNumArray zVal(env_);
+        IloNumArray routeVal(env_);
+
+
+        Cplex_.getValues(zVal, zVar_);
+        Cplex_.getValues(routeVal, routeVar_);
+
+        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+            if (routeVal[r] > 0.9) {
+//                std::cout << routeVal[r] << std::endl;
+                routeSolution.push_back(compRoutes_[r]);
+                pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+            }
+        }
+
+        for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+            if (zVal[i] > 0.9) {
+                zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+            }
+        }
+
+        /*std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+                  << " are selected to served." << std::endl;*/
+
+        if (routeSolution.size() != pInst->nbVehicles_)
+            myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+
+        IloInt incomID = Cplex_.getIncumbentNode();
+        // fixed the values on integer solution
+        /*for (int r = 0; r < routeVal.getSize(); r++) {
+            routeVar_[r].setLB(routeVal[r]);
+            routeVar_[r].setUB(routeVal[r]);
+        }
+        for (int i = 0; i < zVal.getSize(); i++) {
+            zVar_[i].setLB(zVal[i]);
+            zVar_[i].setUB(zVal[i]);
+        }*/
+
+        Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
+        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));
+        Cplex_.solveFixed(incomID);
+//        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
+
+
+//        Cplex_.solve();
+
+        // getting dual values
+        requestDuals_.clear();
+        vehicleDuals_.clear();
+
+        // define dual container size
+        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+        for (auto &requestObj: pInst->requests_) {
+            int rowIndex = requestObj->taskIndex_;
+            requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+//            std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->dual_;
+            requestObj->dual_ = requestDuals_[rowIndex];
+            requestObj->CPDual_ = requestDuals_[rowIndex];
+ //           std::cout << " --> " << requestObj->dual_ << std:: endl;
+        }
+
+        for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+//            if (vehicleObj->dual_ != 0)
+ //               std::cout << "request " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->dual_;
+            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+//            if (vehicleObj->dual_ != 0)
+//                std::cout << " --> " << vehicleObj->dual_ << std:: endl;
+        }
+        Cplex_.clearModel();
     }
     catch (IloException& e) {
         std::cout << e << std::endl;
