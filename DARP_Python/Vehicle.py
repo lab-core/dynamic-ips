@@ -30,7 +30,7 @@ class Vehicle(object):
         self.capacity = capacity
         self.file_name = file_name
 
-    def create_vehicle_data_from_file(self, network, selected_districts=None):
+    def create_vehicle_data_from_file(self, network, selected_districts=None, replace=False):
         """ read data """
         f = open(c.VEHICLES_DIR + self.file_name + ".json")
         df_vehicles = json.load(f)
@@ -49,6 +49,9 @@ class Vehicle(object):
             source_id = df_vehicles[i]['start_stop_id']
             if selected_districts is not None:
                 source_id = source_ids[i % len(source_ids)]
+            if replace:
+                if int(source_id) in network.outbound_replace:
+                    source_id = network.outbound_replace[int(source_id)]
             zone_id = network.cell_to_district[int(source_id)]
             vehicle_data.append(
                 [i, df_vehicles[i]['capacity'], df_vehicles[i]['start_time'], 90000, source_id, source_id, zone_id])

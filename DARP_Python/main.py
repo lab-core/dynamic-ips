@@ -12,12 +12,13 @@ def main(name):
                                           edge_time_matrix_file='edge_time_matrix', stop_matrix_file='stop_matrix',
                                           make_plot=True)
     vehicle_obj = Vehicle(len(manhattan_districts.districts))
+    vf.plot_unused_vehicle(manhattan_districts, result_file="STATIC_GREEDY_20230217-0912", instance_name="20160225_07-120m", instance_folder="Instances-120", nb_vehicles=2000)
     """CREATE DATASETS"""
     for files in uf.create_file_names():
         day_dataset = Dataset(files)
         day_dataset.prepare_dataset(network=manhattan_districts)
         vf.show_dataset_per_hr(day_dataset.dataset, day_dataset.origin, save_image=True)
-        day_dataset.limit_time_dataset(start_hr=7, end_hr=8, start_min=0, end_min=0)
+        day_dataset.limit_time_dataset(start_hr=7, end_hr=9, start_min=0, end_min=0)
         day_dataset.visualize_dataset(network=manhattan_districts)
         day_dataset.split_requests(capacity=4)
         day_dataset.save_dataset()
@@ -35,11 +36,11 @@ def main(name):
 
     """CREATE VEHICLES"""
     uf.create_vehicles_files(network=manhattan_districts, initial_vehicle=vehicle_obj)
-    uf.create_vehicles_from_files(network=manhattan_districts)
+    uf.create_vehicles_from_files(network=manhattan_districts,replace=True)
     uf.create_vehicles_from_files(network=manhattan_districts, selected_districts=selected_districts)
 
 
-#    vf.plot_unused_vehicle(manhattan_districts, result_file="STATIC_GREEDY_20230121-1226",
+#    vf.plot_unused_vehicle(manhattan_districts, result_file="STATIC_GREEDY_20230217-0809",
 #                           instance_name="20150706_07-60m", instance_folder="Instances-60", nb_vehicles=1500)
 
 

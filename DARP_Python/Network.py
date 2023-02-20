@@ -7,7 +7,7 @@ import visualize as vf
 
 class Network(object):
     def __init__(self, districts=None, outbound_cells=None, durations=None, cell_to_district=None,
-                 cell_to_latitude=None, cell_to_longitude=None, locations=None, nb_trip_per_district=None):
+                 cell_to_latitude=None, cell_to_longitude=None, locations=None, outbound_replace=None):
         if outbound_cells is None:
             outbound_cells = []
         if districts is None:
@@ -20,6 +20,8 @@ class Network(object):
             cell_to_latitude = {}
         if cell_to_longitude is None:
             cell_to_longitude = {}
+        if outbound_replace is None:
+            outbound_replace = {}
         if locations is None:
             locations = np.empty(shape=[0, 3])
         self.districts = districts
@@ -29,6 +31,7 @@ class Network(object):
         self.cell_to_latitude = cell_to_latitude
         self.cell_to_longitude = cell_to_longitude
         self.locations = locations
+        self.outbound_replace = outbound_replace
 
 
     def __str__(self):
@@ -89,6 +92,8 @@ class Network(object):
                 self.outbound_cells.append(cell)
                 self.cell_to_district[cell[0]] = c.OUT_BOUND
         for item in self.districts:
+            if item.cartodb_id in [50, 247, 257, 142]:
+                self.outbound_cells.extend(item.cells)
             item.cells = np.array(item.cells)
         self.outbound_cells = np.array(self.outbound_cells)
 
@@ -132,7 +137,24 @@ class Network(object):
             self.update_cells(location_to_cell_file)
         if edge_time_matrix_file is not None and stop_matrix_file is not None:
             self.read_duration_matrix(edge_time_matrix_file, stop_matrix_file)
+        """determining outbound points replacements"""
+        filtered_df = self.durations[self.durations['startID'].isin(self.outbound_cells[:,0])]
+        filtered_data = filtered_df[~filtered_df['EndID'].isin(self.outbound_cells[:,0])]
+        # Group the DataFrame by 'group' column and find the minimum value in 'startID' column
+        min_df = filtered_data.groupby('startID')['duration'].min()
+        # Merge the original DataFrame with the minimum values DataFrame on the 'startID' column
+        df_result = pd.merge(filtered_data, min_df, on='startID')
+        # Select only the rows where 'duration' is equal to the minimum value for each group
+        df_result = df_result[df_result['duration_x'] == df_result['duration_y']]
+        # Drop duplicates in 'startID' column and keep the first row
+        df_result = df_result.drop_duplicates(subset='startID', keep='first')
+        df_result = df_result.drop('duration_y', axis=1)
+        df_result = df_result.rename(columns={'duration_x': 'duration'})
+        for idx, row in df_result.iterrows():
+            self.outbound_replace[row['startID']] = row['EndID']
         if make_plot:
             vf.plot_districts(district_network=self, print_id=True, add_legend=True,
                               file_name="districts")
+
+
 
