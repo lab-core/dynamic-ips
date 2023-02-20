@@ -41,7 +41,7 @@ SubproModeler::~SubproModeler() {
     for (auto & requestObj : pInst->requests_) {
 //        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->selectStatus_ == NOT_SELECTED)) {
         if (requestObj->requestStatus_ == NO_ACTION) {
-            float minWait = (*Vehicle_)->departTime_ +
+            float minWait = (*Vehicle_)->departureTime_ +
                             durationMatrix_[(*Vehicle_)->departNode_->locationID_]
                             [pInst->instGraph_->nodes_[myTools::createNodeID(requestObj->getRequestId(), PICKUP)]->locationID_]
                             - requestObj->earlyPick_;
@@ -70,6 +70,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
                 subGraph_->onboards_.emplace_back(std::make_shared<Node>((*Vehicle_)->currentRoute_->routeNodes_[i]));
                 subGraph_->nodes_[subGraph_->onboards_.back()->nodeID_]  = subGraph_->onboards_.back();
                 subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];
+                subGraph_->onboards_.back()->pairNode_ = (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_;
             }
         }
     }
