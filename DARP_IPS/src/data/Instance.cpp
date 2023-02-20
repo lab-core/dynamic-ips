@@ -366,6 +366,15 @@ void Instance::setInitialTimes() {
                 vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
         }
     }
+    else if (parameters_->solutionMode_ == ANYTIME){
+        for (auto & vehicleObj : vehicles_){
+            if (vehicleObj->onboards_.empty()){
+                vehicleObj->idle_ = true;
+                vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
+                vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
+            }
+        }
+    }
 }
 
 // function to sort vehicles based on ID

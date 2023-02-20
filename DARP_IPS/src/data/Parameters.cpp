@@ -73,7 +73,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
-    repStr << std::setw(setwLength) << "# use greedy to select vehicle portion " << " = " << greedyPortion_ << std::endl;
+    repStr << std::setw(setwLength) << "# use greedy for vehicle portion " << " = " << greedyPortion_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::endl;
 

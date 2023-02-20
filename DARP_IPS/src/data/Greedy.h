@@ -36,7 +36,7 @@ public:
     PGreedyLabel tail_;         // Last node in the partial path
     PGreedyLabel source_;       // starting node of the route
     float totalDelay_;
-    float departTime_;
+    float departureTime_;
     float idleTime_;
     bool selected_;
 
@@ -49,35 +49,35 @@ public:
     virtual ~LinkedGreedyLabels();
     void resetLinkedGreedyLabels(std::vector<PGreedyLabel> &removedLabels);
 
-    // this function find a position to insert pickup point and add drop off point at the end
-    PGreedyLabel findInsertPosition(PNode &pickNode, PNode &dropNode, float maxDuration) const;
-    // this function insert a request based on the pick-up position and add drop off at the end
-    void insertRequest(PGreedyLabel &preLabel, PNode &pickNode, PNode &dropNode, float maxDuration);
-
     /********************* New approach **********************/
     bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
     bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
-    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration);
-    PInsertPosition findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels);
+    bool isDropPossible1 (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
+    // this function find a position to insert pickup point and add drop off point at the end
     void findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
                          PInsertPosition & position);
-    void insertNode(PGreedyLabel &preLabel, PNode &newNode);
+
+    void findInsertPlace1(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
+                         PInsertPosition & position);
     void insertNode(PGreedyLabel &preLabel, PNode &newNode, std::vector<PGreedyLabel> &removedLabels);
+    void insertNode1(PGreedyLabel &preLabel, PNode &newNode, std::vector<PGreedyLabel> &removedLabels);
 
     // This function remove the Label from the list and update the data based on that
-    void removeLabel(PGreedyLabel &label);
     void removeLabel(PGreedyLabel &label, std::vector<PGreedyLabel> &removedLabels);
-    void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration);
+    // this function insert a request based on the pick-up position and add drop off at the end
     void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
                        std::vector<PGreedyLabel> &removedLabels);
     // this function calculate the reachTime from a Label to a node
     static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;
+    static float labelToNodeReachTime1(PGreedyLabel &preLabel, PNode &Node) ;
 
     // this function calculate the reachTime from a node to a Label
     static float nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) ;
+    static float nodeToLabelReachTime1(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) ;
 
     // this function starts from a label in the list and update reachTimes and departTimes afterwards to the tail
     void updateReachTimes(PGreedyLabel &preLabel);
+    void updateReachTimes1(PGreedyLabel &preLabel);
 
     // this function convert a greedyLabel list to a route
     PRoute greedyLabelToRoute(bool update) const;
@@ -85,6 +85,9 @@ public:
     std::string toString() const;
     void findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
                          PInsertPosition & position);
+
+    void updateTailDepart();
+    void updateTailDepart1();
 };
 
 struct insertPosition {

@@ -20,14 +20,14 @@ public:
     const char* name_;
     int load_;                                              // consume capacity of the vehicle
     float passedTime_;                                      // accumulated time of the path
+    float reachedTime_;
     PVehicle *vehicle_;                                     // the vehicle for which the route has created
     std::vector<float> travelResources_;
     std::vector<PNode*> openNode_;
- //   std::valarray<int> completedRequests_;
- std::shared_ptr<myTools::BitVector> completeRequests_;
+     std::shared_ptr<myTools::BitVector> completeRequests_;
     int numCompleted_;
     std::vector<int> openRequests_;
-    std::vector<std::string> pathNodes_;
+//    std::vector<std::string> pathNodes_;
     std::vector<PNode*> pathNode_;
 
     double reducedCost_;
@@ -36,7 +36,6 @@ public:
     LabelStatus status_;
     int nbPickUp_;                      // the number of time the vehicle visit pick up points
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
-//    std::valarray<int> extendCheck_;
     std::shared_ptr<myTools::BitVector> extendCheck_;
     int numExtendCheck_;
     bool isDropped_;
@@ -55,8 +54,10 @@ public:
     bool operator() (const Label &rhs) const;
 
     void extend(PNode &outNode);
+    void extend1(PNode &outNode);
     // this function check the feasibility of the label before extension
     bool isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick);
+    bool isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
     bool isEliminated();
@@ -69,6 +70,6 @@ public:
 
 };
 
-inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNodes_.size() < rhs->pathNodes_.size()); }
+inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNode_.size() < rhs->pathNode_.size()); }
 
 #endif //LABEL_H
