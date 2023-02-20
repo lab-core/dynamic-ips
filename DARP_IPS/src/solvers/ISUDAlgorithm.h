@@ -46,7 +46,6 @@ public:
     myTools::Timer *CPTime_;
     myTools::Timer *isudMIPTime_;
     myTools::Timer *updateDegreeTime_;
-    myTools::Timer *timer1;
 
     Tools::LogOutput* pLogIsudResultsStream_;
     Tools::LogOutput* pLogIterSolutionStream_;
@@ -83,9 +82,9 @@ public:
     void updateRoutesIncDegree(int &vehicleID);
 
     // this function updates the reduced cost for the routes in the pool
-    void updateReducedCosts(int &vehicleID);
-    void updateReducedCosts(PInstance &pInst, int &vehicleID);
+    void updateReducedCosts(PInstance &pInst);
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD1(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
