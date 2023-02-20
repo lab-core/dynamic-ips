@@ -63,11 +63,13 @@ public:
     void initializeModel(PInstance &pInst, int rhs);
 
     // this function adds zVar to the model
-    void addZVar(IloNumVarArray &zVar, PRequest &request, VarSign sign);
+    void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
+    void addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign);
     void addZVars(IloNumVarArray &zVar, std::vector<PRequest> &requests, VarSign sign);
 
     // this function adds routeVar to the model
-    void addRouteVar(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
     void addRouteVars(IloNumVarArray &routeVar, std::vector<PRoute> &newRoutes, VarSign sign);
 
 };
