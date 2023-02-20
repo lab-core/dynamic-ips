@@ -34,6 +34,7 @@ public:
     float score_;
     int zoneID_;
     bool selected_;                         // this variable indicates which subProblem is selected to be solved
+    bool idle_;
 
 
     // Constructor and Destructor
@@ -60,6 +61,7 @@ public:
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
     void finalizeSolutionRoutes(PInstance & pInst) const;
+    void updateDepartTime(float departTime);
 };
 
 
