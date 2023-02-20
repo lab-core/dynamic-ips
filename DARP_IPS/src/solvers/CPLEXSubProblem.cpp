@@ -202,7 +202,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
         /*expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
                  - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;*/
         expr12 = U[subGraph_->nodes_[onboardID]->nodeIndex_] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
-                 - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;
+                 - subGraph_->nodes_[onboardID]->deltaTime_;
 
 //        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
         SubProModel_.add(expr12 <= subGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
