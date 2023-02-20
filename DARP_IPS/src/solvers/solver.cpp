@@ -273,6 +273,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << "                               EPOCH: " << epoch_ << std::endl;
         std::cout << "*************************************************************************************"<< std::endl;
 
+        if (epoch_ > 100)
+            break;
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
@@ -495,8 +497,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << "*************************************************************************************"<< std::endl;
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        /*if (epoch_ > 5)
-            break;*/
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
@@ -536,7 +536,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
-        (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
+ //       (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
         epoch_++;
     }
 
