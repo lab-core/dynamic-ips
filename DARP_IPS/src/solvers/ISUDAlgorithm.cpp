@@ -670,9 +670,10 @@ void ISUDAlgorithm::solveISUD1(PInstance &pInst, int epoch, InputPaths &inputPat
                 break;
             }
             solveRP_MIP(pInst, 0, inputPaths);
+            std::cout << "Objective value after RP improve: " << objValue_ << std::endl;
+            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
             isudIter_++;
             if (previousObj < objValue_){
-                (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
                 previousObj = objValue_;
                 MIPReducedPro_.reset();
                 MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
@@ -716,7 +717,7 @@ void ISUDAlgorithm::solveISUD1(PInstance &pInst, int epoch, InputPaths &inputPat
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
                 setObjValue();
-                //std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
+                std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
 
                 if (CompPro_->status_ == FRACTIONAL) {
                     //  std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;

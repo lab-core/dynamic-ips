@@ -267,11 +267,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
         preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "*************************************************************************************"<< std::endl;
-        std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
-        std::cout << "                      PRE EPOCH TIME: " << epochRuntime_ << std::endl;
-        std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "---------------------"<< std::endl;
+        std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
+        std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
+        std::cout << " EPOCH: " << epoch_ << std::endl;
+        std::cout << "---------------------"<< std::endl;
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
@@ -489,10 +489,10 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         preprocessTime_->start();
 
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "*************************************************************************************"<< std::endl;
-        std::cout << "                        ELAPSED TIME: " << elapsedTime_ << std::endl;
-        std::cout << "                               EPOCH: " << epoch_ << std::endl;
-        std::cout << "*************************************************************************************"<< std::endl;
+        std::cout << "---------------------"<< std::endl;
+        std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
+        std::cout << " EPOCH: " << epoch_ << std::endl;
+        std::cout << "---------------------"<< std::endl;
         // update vehicle status
 
         mainInst->nbOnboards_ = 0;
