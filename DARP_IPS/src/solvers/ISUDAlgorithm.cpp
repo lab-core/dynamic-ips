@@ -803,7 +803,7 @@ void ISUDAlgorithm::solveISUD1(PInstance &pInst, int epoch, InputPaths &inputPat
                 else {
                     //                std::cout << "# The Complementary Problems solved and find integer direction. " << std::endl;
                     setObjValue();
-                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int)(CompPro_->IncRoute_.size() + routeSolution_.size()));
+                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int)(CompPro_->IncRoute_.size()));
                     previousObj = objValue_;
                     isudIter_++;
                     isCPImproved = true;
