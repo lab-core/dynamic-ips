@@ -183,11 +183,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
     }
     if (currentRoute_->routeSize_ > 1) {
         if (idle_){
-            if (startTime_ + elapsedTime < departTime_){
-                std::cout << idleTime_ << std::endl;
-                idleTime_ -= (departTime_ - (startTime_ + elapsedTime));
-                updateDepartTime(startTime_ + elapsedTime);
-            }
+            idleTime_ -= (departTime_ - (startTime_ + elapsedTime));
+            updateDepartTime(startTime_ + elapsedTime);
         }
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + elapsedTime) {
