@@ -183,6 +183,8 @@ void Label::extend1(PNode &outNode) {
                                                                              passedTime_);
         }
     }
+    else
+        reachedTime_ = passedTime_;
 
     if (outNode->type_ == DROPOFF) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
@@ -327,17 +329,17 @@ bool Label::isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick) {
         if (!openNode_.empty())
             return false;
     }
-    for (auto &nodeObj: openNode_){
-        float travelToDrop;
-        if (outNode->locationID_ != (*nodeObj)->locationID_){
-            travelToDrop = durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
-                           outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+    float travelTime = durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_];
+    if (travelTime > 0){
+        for (auto &nodeObj: openNode_) {
+            float travelToDrop =
+                    durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
+                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+
             if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
                 return false;
         }
-
     }
-
     return true;
 }
 

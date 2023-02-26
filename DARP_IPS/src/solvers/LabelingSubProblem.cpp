@@ -79,7 +79,7 @@ void LabelingSubProblem::initialization() {
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&nodeObj);
         initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
-        initialLabel->numCompleted_++;
+//        initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (*Vehicle_)->departTime_ +
                 (*nodeObj->pairNode_)->departTime_;
 
@@ -765,7 +765,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
             for (int i = 1; i < routeObj->routeNodes_.size(); ++i) {
                 if (subGraph_->nodes_.count(routeObj->routeNodes_[i]->nodeID_)>0 &&
                     routeObj->routeNodes_[i]->type_ != SOURCE){
-                    if (newLabel->isExtendFeasible1(routeObj->routeNodes_[i], solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
+                    if (newLabel->isExtendFeasible(routeObj->routeNodes_[i], solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
                         newLabel->extend1(subGraph_->nodes_[routeObj->routeNodes_[i]->nodeID_]);
                         if (newLabel->isEliminated()){
                             isRemoved = true;
@@ -777,7 +777,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
             if (!isRemoved){
                 if (!newLabel->openNode_.empty()){
                     for (auto &neighbourNode: newLabel->openNode_) {
-                        if (newLabel->isExtendFeasible1(*neighbourNode, solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
+                        if (newLabel->isExtendFeasible(*neighbourNode, solverOptions_->MaxLabel_, solverOptions_->usePick_)) {
                             newLabel->extend1(*neighbourNode);
                             if (newLabel->isEliminated()){
                                 isRemoved = true;

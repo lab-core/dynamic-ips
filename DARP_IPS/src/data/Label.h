@@ -38,8 +38,8 @@ public:
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
     std::shared_ptr<myTools::BitVector> extendCheck_;
     int numExtendCheck_;
-    bool isDropped_;
-    bool isDropExtend_;
+    bool isDropped_;                    // used in pushing for not extending a label to pick after a drop
+    bool isDropExtend_;                 // used in pulling to check if a label is extended to onboards before
     double createTime_;
 
     // Constructor and Destructor

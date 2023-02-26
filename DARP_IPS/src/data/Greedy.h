@@ -52,13 +52,17 @@ public:
     /********************* New approach **********************/
     bool isInsertPossible (PGreedyLabel &preLabel, PNode & newNode) const;
     bool isDropPossible (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
-    bool isDropPossible1 (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
+//    bool isDropPossible1 (PGreedyLabel &preDrop, PGreedyLabel &pickLabel, PNode & dropNode, float maxDuration) const;
     // this function find a position to insert pickup point and add drop off point at the end
     void findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
                          PInsertPosition & position);
 
     void findInsertPlace1(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
                          PInsertPosition & position);
+
+    void findInsertPlace2(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
+                          PInsertPosition & position);
+
     void insertNode(PGreedyLabel &preLabel, PNode &newNode, std::vector<PGreedyLabel> &removedLabels);
     void insertNode1(PGreedyLabel &preLabel, PNode &newNode, std::vector<PGreedyLabel> &removedLabels);
 
@@ -69,7 +73,7 @@ public:
                        std::vector<PGreedyLabel> &removedLabels);
     // this function calculate the reachTime from a Label to a node
     static float labelToNodeReachTime(PGreedyLabel &preLabel, PNode &Node) ;
-    static float labelToNodeReachTime1(PGreedyLabel &preLabel, PNode &Node) ;
+//    static float labelToNodeReachTime1(PGreedyLabel &preLabel, PNode &Node) ;
 
     // this function calculate the reachTime from a node to a Label
     static float nodeToLabelReachTime(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) ;
@@ -85,9 +89,13 @@ public:
     std::string toString() const;
     void findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
                          PInsertPosition & position);
+    void findAssignedPlace1(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PGreedyLabel> &removedLabels,
+                           PInsertPosition & position);
 
     void updateTailDepart();
     void updateTailDepart1();
+
+    bool isTimeViolated(PGreedyLabel &startLabel);
 };
 
 struct insertPosition {

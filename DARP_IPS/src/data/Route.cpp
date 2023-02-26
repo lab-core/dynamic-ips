@@ -50,7 +50,6 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
     }
 }
 void Route::addNode(PNode &node) {
-
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_)
@@ -69,37 +68,17 @@ void Route::addNode(PNode &node) {
 void Route::addNode1(PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
+    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_)
+        plannedDepartTime_.back() = node->requestTime_;
 
-    float reachTime;
-    if ((routeNodes_.back()->locationID_ == node->locationID_)&&(routeNodes_.back()->type_!= SOURCE)){
-        if (node->initialType_ == PICKUP && plannedReachTime_.back() < node->requestTime_) {
-            reachTime = node->requestTime_;
-            if (plannedDepartTime_.back() < node->requestTime_)
-                plannedDepartTime_.back() = node->requestTime_;
-        }
-        else
-            reachTime = plannedReachTime_.back();
-        if (reachTime < plannedDepartTime_.back())
-            plannedDepartTime_.push_back(plannedDepartTime_.back());
-        else{
-            plannedDepartTime_.push_back(reachTime);
-        }
-    }
-    else{
-        if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_){
-            plannedDepartTime_.back() = node->requestTime_;
-            reachTime = node->requestTime_ + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
-        }
-        else
-            reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
-        if ((routeNodes_.back()->type_ == SOURCE)&&(routeNodes_.back()->initialType_!=SOURCE)&&(routeNodes_.back()->locationID_ == node->locationID_))
-            plannedDepartTime_.push_back(reachTime);
-        else
-            plannedDepartTime_.push_back(reachTime + node->deltaTime_);
-    }
+    float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     plannedReachTime_.push_back(reachTime);
-    routeNodes_.push_back(node);
+    if ((routeNodes_.back()->locationID_ == node->locationID_)&&(routeNodes_.back()->initialType_ != SOURCE))
+        plannedDepartTime_.push_back(reachTime);
+    else
+        plannedDepartTime_.push_back(reachTime + node->deltaTime_);
 
+    routeNodes_.push_back(node);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
         totalDelay_ += (reachTime - node->requestTime_);
@@ -107,19 +86,6 @@ void Route::addNode1(PNode &node) {
 }
 
 void Route::addNode(PNode &node, float reachTime, float departTime) {
-    routeSize_ ++;
-    plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    plannedReachTime_.push_back(reachTime);
-    plannedDepartTime_.push_back(departTime);
-//    plannedDepartTime_.push_back(reachTime + node->deltaTime_);
-    if (node->initialType_ == PICKUP) {
-        routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
-    }
-    routeNodes_.push_back(node);
-}
-
-void Route::addNode1(PNode &node, float reachTime, float departTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     plannedReachTime_.push_back(reachTime);
@@ -269,8 +235,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
         // checking trip delay constraint
         if (testRoute->routeNodes_.back()->initialType_ == DROPOFF){
             float travelTime = testRoute->routeNodes_.back()->related_Request_->dropTime_ -
-                    testRoute->routeNodes_.back()->related_Request_->pickTime_-
-                    testRoute->routeNodes_.back()->deltaTime_;
+                    (*testRoute->routeNodes_.back()->pairNode_)->departTime_;
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
                 testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;

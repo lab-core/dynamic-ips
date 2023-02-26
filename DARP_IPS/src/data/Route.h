@@ -51,7 +51,6 @@ public:
     void addNode(PNode &node);
     void addNode1(PNode &node);
     void addNode(PNode &node, float reachTime, float departTime);
-    void addNode1(PNode &node, float reachTime, float departTime);
 
     // this function is used to remove completed nodes from the routes
     void removeNode(int nodeIndex);
