@@ -99,16 +99,12 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
 
  //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;
 
-        // printing solution status
-        //       std::cout << toString();
-
         // saving the result and remove out of base variables
         zSolution.clear();
         routeSolution.clear();
 
         IloNumArray zVal(env_);
         IloNumArray routeVal(env_);
-
 
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
@@ -135,22 +131,11 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
 
         IloInt incomID = Cplex_.getIncumbentNode();
         // fixed the values on integer solution
-        /*for (int r = 0; r < routeVal.getSize(); r++) {
-            routeVar_[r].setLB(routeVal[r]);
-            routeVar_[r].setUB(routeVal[r]);
-        }
-        for (int i = 0; i < zVal.getSize(); i++) {
-            zVar_[i].setLB(zVal[i]);
-            zVar_[i].setUB(zVal[i]);
-        }*/
 
         Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
         Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));
         Cplex_.solveFixed(incomID);
 //        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
-
-
-//        Cplex_.solve();
 
         // getting dual values
         requestDuals_.clear();
