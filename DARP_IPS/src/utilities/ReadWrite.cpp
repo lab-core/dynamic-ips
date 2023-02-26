@@ -148,14 +148,14 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 // attributes for reading trip requests file
                 int nbPassengers = -1, vehicleID = -1, zoneID = -1;
  //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
-                float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, deltaTime = -1;
+                float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1, deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
                 file >> dropOffID;
                 file >> earlyPick;
                 file >> pickTime;
-
+                file >> pickup_depart;
                 file >> vehicleID;
                 file >> zoneID;
 
@@ -180,7 +180,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->instGraph_->dropNodes_.back()->nodeStatus_ = PLANNED;
                 pInstance->instGraph_->pickNodes_.back()->nodeStatus_ = DONE;
                 pInstance->instGraph_->pickNodes_.back()->reachTime_ = pickTime;
-                pInstance->instGraph_->pickNodes_.back()->departTime_ = pickTime;
+                pInstance->instGraph_->pickNodes_.back()->departTime_ = pickup_depart;
             }
         }
     }
