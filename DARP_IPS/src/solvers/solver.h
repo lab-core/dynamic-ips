@@ -25,6 +25,8 @@ public:
     double isudEpochTime_;
     double RPEpochTime_;
     double CPEpochTime_;
+    double RPEpochBuildTime_;
+    double CPEpochBuildTime_;
     double GreedyTime_;
     double AssignTime_;
     double isudMIPEpochTime_;
