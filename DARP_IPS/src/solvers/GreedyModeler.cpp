@@ -81,8 +81,12 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
+            /*if (PInst->requests_[i]->getRequestId() == 137)
+                std::cout << "stop";*/
             possibleDelay.clear();
             for (auto & GreedyObj : solutionList_){
+                /*if((*GreedyObj->Vehicle_)->vehicleID_ == 84)
+                    std::cout << "stop";*/
                 // if a vehicle is idle before arrival of a request, its departure time should be after the request time
                 // after arrival of each request, the vehicle positions should be updated
                 if (GreedyObj->departureTime_ < PInst->requests_[i]->earlyPick_) {
@@ -96,12 +100,14 @@ void GreedyModeler::solveInsertionFast(PInstance &PInst) {
                         GreedyObj->tail_->departTime_ = PInst->requests_[i]->earlyPick_;
                     }
                 }
-                GreedyObj->findInsertPlace1(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
+                GreedyObj->findInsertPlace2(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
                                            PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
                 possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
+            /*if (vehicle_ID == 0)
+                std::cout << "stop";*/
             solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                      PInst->instGraph_->dropNodes_[i],PInst->requests_[i]->maxTravelTime_, removedLabels_);
             selectedVehicles_[vehicle_ID]++;
@@ -121,7 +127,7 @@ void GreedyModeler::solveAssignment(PInstance &PInst) {
 
             for (auto & GreedyObj : solutionList_){
                 if (!GreedyObj->selected_){
-                    GreedyObj->findAssignedPlace(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
+                    GreedyObj->findAssignedPlace1(PInst->instGraph_->pickNodes_[i],PInst->instGraph_->dropNodes_[i],
                                                  PInst->requests_[i]->maxTravelTime_, removedLabels_, positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
 
                     possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
@@ -154,8 +160,8 @@ void GreedySolver_noShare(PInstance &PInst) {
                 possibleDelay.push_back(requestPickTime);
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode1(PInst->instGraph_->nodes_[pickID]);
-            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode1(PInst->instGraph_->nodes_[dropID]);
+            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode(PInst->instGraph_->nodes_[pickID]);
+            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode(PInst->instGraph_->nodes_[dropID]);
         }
     }
 }
