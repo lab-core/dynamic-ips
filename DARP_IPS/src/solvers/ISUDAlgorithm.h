@@ -44,8 +44,11 @@ public:
     myTools::Timer *isudTime_;
     myTools::Timer *RPTime_;
     myTools::Timer *CPTime_;
+
+    myTools::Timer *RPBuildTime_;
+    myTools::Timer *CPBuildTime_;
+
     myTools::Timer *isudMIPTime_;
-    myTools::Timer *updateDegreeTime_;
 
     Tools::LogOutput* pLogIsudResultsStream_;
     Tools::LogOutput* pLogIterSolutionStream_;
@@ -84,10 +87,12 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD1(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
+    void solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
 
     // Display function
     std::string toString() const;
