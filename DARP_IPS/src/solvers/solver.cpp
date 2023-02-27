@@ -233,7 +233,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
-                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
+                isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -499,7 +499,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
         // update vehicle status
-
+        if (epoch_ > 10)
+            break;
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {

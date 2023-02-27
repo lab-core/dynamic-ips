@@ -1079,7 +1079,7 @@ void ISUDAlgorithm::solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &in
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
     if (compDegree == 0) {
-        if (isudIter_ ==1){
+        if ((isudIter_ ==1)&&(pInst->parameters_->initialStart_ != GREEDY_START)){
             updateIncDegreesBit(pInst);
             updateRoutesToAdd(true, pInst);
         }
@@ -1119,7 +1119,7 @@ void ISUDAlgorithm::solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPath
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
     if (compDegree == 0) {
-        if (isudIter_ ==1){
+        if ((isudIter_ ==1)&&(pInst->parameters_->initialStart_ != GREEDY_START)){
             updateIncDegreesBit(pInst);
             updateRoutesToAdd(true, pInst);
         }
