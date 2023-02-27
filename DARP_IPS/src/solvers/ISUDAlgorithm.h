@@ -41,6 +41,9 @@ public:
     int isudIter_;
     double objValue_;
     double GreedyObjValue_;
+    double RPEpochSolveTime_;
+    double CPEpochSolveTime_;
+
     myTools::Timer *isudTime_;
     myTools::Timer *RPTime_;
     myTools::Timer *CPTime_;

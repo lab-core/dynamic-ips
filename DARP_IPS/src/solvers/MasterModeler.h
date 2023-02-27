@@ -41,6 +41,7 @@ public:
 //    std::unordered_map<unsigned int, int> requestToOrder_;
 
     std::vector<PRoute> routesToAdd_;
+    myTools::Timer *solveTime_;
 
     // Constructor and Destructor
     MasterModeler();

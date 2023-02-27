@@ -20,6 +20,8 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     isudEpochTime_ = 0;
     RPEpochTime_ = 0;
     CPEpochTime_ = 0;
+    RPEpochBuildTime_ = 0;
+    CPEpochBuildTime_ = 0;
     isudMIPEpochTime_ = 0;
     avgEpochRuntime_ = 0;
     epochRuntime_ = 0;
@@ -33,9 +35,9 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
     (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, "
-                              "RP_Runtime, RP_BuildRuntime, CP_Runtime, CP_BuildRuntime, MIPISUD_Runtime, "
-                              "SubProblemRuntime, PreProcessTime, SubAssignTime, GreedyTime, minSubSize, maxSubSize, "
-                              "avgSubSize, GreedyObj, ISUD_Obj" << std::endl;
+                              "RP_Runtime, RP_BuildRuntime, RP_SolveRuntime, CP_Runtime, CP_BuildRuntime, "
+                              "CP_SolveRuntime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime, SubAssignTime, "
+                              "GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, ISUD_Obj" << std::endl;
 
     pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
     (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
@@ -568,8 +570,10 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << isudObj_->isudTime_->dSinceInit().count() - isudEpochTime_ << ",";
     repStr << isudObj_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
     repStr << isudObj_->RPBuildTime_->dSinceInit().count() - RPEpochBuildTime_ << ",";
+    repStr << isudObj_->RPEpochSolveTime_ << ",";
     repStr << isudObj_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
     repStr << isudObj_->CPBuildTime_->dSinceInit().count() - CPEpochBuildTime_ << ",";
+    repStr << isudObj_->CPEpochSolveTime_ << ",";
     repStr << isudObj_->isudMIPTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
 
     isudEpochTime_ = isudObj_->isudTime_->dSinceInit().count();

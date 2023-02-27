@@ -263,13 +263,15 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setOut(env_.getNullStream());
 
+        solveTime_->start();
         if (!Cplex_.solve()) {
+            solveTime_->stop();
             status_ = INFEASIBLE;
 //            env_.out() << Model_ << std::endl;
             std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
         } else {
-
+            solveTime_->stop();
             // printing solution status
             //       std::cout << MasterModeler::toString();
 

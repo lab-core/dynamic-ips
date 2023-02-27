@@ -42,7 +42,9 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 
 //        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.3);
         Cplex_.setOut(env_.getNullStream());
+        solveTime_->start();
         Cplex_.solve();
+        solveTime_->stop();
 
         // printing solution status
  //       std::cout << toString();
@@ -95,7 +97,9 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         Cplex_.setOut(env_.getNullStream());
+        solveTime_->start();
         Cplex_.solve();
+        solveTime_->stop();
 
  //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;
 

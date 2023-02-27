@@ -67,6 +67,8 @@ void ISUDAlgorithm::setObjValue() {
 // this function create initial routes serving only one request and fill zSolution_ with available requests
 // Reduced problem is also solved to initialized dual costs
 void ISUDAlgorithm::initialization(PInstance &pInst) {
+    RPEpochSolveTime_ = 0;
+    CPEpochSolveTime_ = 0;
     cpIncDegree_ = 2;
     maxIncDegree_ = pInst->parameters_->CP_IncDegree_;
     isudTime_->start();
@@ -511,6 +513,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
    //             std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
      //           CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
 
@@ -718,6 +721,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
 
@@ -908,6 +912,7 @@ void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "Objective value after CP improve: " << objValue_ << std::endl;
 
@@ -1042,6 +1047,7 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
     MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
     RPBuildTime_->stop();
     MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_);
+    RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
     setObjValue();
 
     /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -1107,6 +1113,7 @@ void ISUDAlgorithm::solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &in
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
         MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_);
+        RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
     }
 //    isudMIPTime_->stop();
@@ -1147,6 +1154,7 @@ void ISUDAlgorithm::solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPath
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
         MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_);
+        RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
     }
 //    isudMIPTime_->stop();
