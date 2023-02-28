@@ -117,8 +117,10 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 }
                 else {
                     isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                    if (!vehicleObj->currentRoute_->routeRequests_.empty())
-                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    if (EpochInst->parameters_->initialStart_!= GREEDY_START) {
+                        if (!vehicleObj->currentRoute_->routeRequests_.empty())
+                            subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    }
                 }
             }
         }
@@ -177,7 +179,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 subProblem->maxPickup_ = 1;
                 if (!subProblem->subRequests_.empty())
                     subProblem->solveDynamic();
-//                subProblem->reconstructLabels(isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_]);
+     //               subProblem->reconstructLabels(isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_]);
 
             });
             pPool->run(job);
