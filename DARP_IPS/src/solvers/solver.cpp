@@ -69,8 +69,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
     double previousObj;
     int nbNegativeFound;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    if (EpochInst->parameters_->initialStart_ == GREEDY_START)
-        GreedyModel_->GreedySolver(EpochInst);
+    /*if (EpochInst->parameters_->initialStart_ == GREEDY_START)
+        GreedyModel_->GreedySolver(EpochInst);*/
     isudObj_->initialization(EpochInst);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
@@ -97,15 +97,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         std::vector<PLabelingSubPro> subProSolve;
         std::vector<PLabelingSubPro> subProConst;
 
-        /*if (std::floor(EpochInst->nbRequests_/50) == 1)
-            subProOptions_->MaxLabel_ = 50;
-        else if (std::floor(EpochInst->nbRequests_/50) == 2)
-            subProOptions_->MaxLabel_ = 25;
-        else if (std::floor(EpochInst->nbRequests_/50) == 3)
-            subProOptions_->MaxLabel_ = 15;
-        else if (std::floor(EpochInst->nbRequests_/50) > 3)
-            subProOptions_->MaxLabel_ = 10;*/
-
         if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;
 
@@ -117,10 +108,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 }
                 else {
                     isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                    if (EpochInst->parameters_->initialStart_!= GREEDY_START) {
-                        if (!vehicleObj->currentRoute_->routeRequests_.empty())
-                            subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                    }
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty())
+                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 }
             }
         }
@@ -151,6 +140,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
             }
         }
+        if (EpochInst->parameters_->initialStart_ == GREEDY_START)
+            GreedyModel_->GreedySolver(EpochInst);
 
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;

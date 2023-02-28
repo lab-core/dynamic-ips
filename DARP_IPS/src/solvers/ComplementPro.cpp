@@ -350,7 +350,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     Cplex_.clearModel();
                     // remove outgoing variable
                     for (auto &r: OutRouteVar) {
-                        addRouteVar(routeIncVar_, routeSolution[r], POSITIVE);
+            //            addRouteVar(routeIncVar_, routeSolution[r], POSITIVE);
                         routeSolution.erase(routeSolution.begin() + r);
                         routeSolVar_[r].end();
                         routeSolVar_.remove(r, 1);
