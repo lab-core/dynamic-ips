@@ -495,6 +495,18 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         //                                     COMPLEMENTARY PROBLEM
         /************************************************************************************************/
         CPTime_->start();
+        if (pInst->parameters_->initialStart_ == GREEDY_START){
+            routeSolution_.clear();
+            zSolution_.clear();
+            // it has been solved before in solver
+            for (auto &vehicleObj: pInst->vehicles_) {
+                //    MIPReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
+                routeSolution_.push_back(vehicleObj->currentRoute_);
+            }
+            setObjValue();
+            GreedyObjValue_ = objValue_;
+            std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
+        }
         if (!isCPBuilt){
             CompPro_->routesToAdd_.clear();
             updateIncDegrees(pInst);
@@ -861,6 +873,19 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
 }
 void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths) {
     isudTime_->start();
+    if (pInst->parameters_->initialStart_ == GREEDY_START){
+        routeSolution_.clear();
+        zSolution_.clear();
+        // it has been solved before in solver
+        for (auto &vehicleObj: pInst->vehicles_) {
+            //    MIPReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
+            routeSolution_.push_back(vehicleObj->currentRoute_);
+        }
+        setObjValue();
+        GreedyObjValue_ = objValue_;
+        std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
+    }
+
     double previousObj = objValue_;
     bool restartAlgorithm = true;
     bool isCPImproved;
