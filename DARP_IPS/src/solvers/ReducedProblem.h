@@ -30,6 +30,7 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVar(PRoute &newRoute);
+    void addRouteVarPartial(PRoute &newRoute, PInstance &pInst);
     void addRouteVars(std::vector<PRoute> &newRoutes);
 
     // this function adds zVar to the model used for the routes that served only one request
@@ -41,6 +42,8 @@ public:
 
     // this function build the model at the start of each epoch
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                           int nbVehicles);
 
      // this function solve the model and remove all columns except than the current base
      virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,

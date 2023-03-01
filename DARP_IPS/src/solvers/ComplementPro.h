@@ -19,6 +19,7 @@ public:
     // Variables
     IloNumVarArray routeIncVar_;
     vector<PRoute> IncRoute_;
+    std::vector<int> solIndexes_;
     IloNumVarArray zIncVar_;
     IloNumVarArray routeSolVar_;
     IloNumVarArray zSolVar_;
@@ -36,15 +37,19 @@ public:
 
     // this function initialized the model and define empty set of constraints
     void initializeCPModel(PInstance &pInst);
+    void initializeCPModelPartial(PInstance &pInst, int nbVehicles);
 
     // this function adds zVar to the model
     void addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign);
 
     // this function adds routeVar to the model
     void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVarPartial(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
 
     // this function build the model at each iteration
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                           int nbVehicles);
 
     // this function update the model and variables
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
@@ -57,6 +62,7 @@ public:
     /*void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     std::unordered_map<std::string , PRoute> &generatedRoutes);*/
     void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function check the situation of the CP solution to be column disjoint
     bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);

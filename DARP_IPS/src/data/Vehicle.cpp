@@ -23,6 +23,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     idleTime_ = 0;
     startTime_ = departTime;
     selected_ = false;
+    vehicleIndex_ = -1;
 }
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
@@ -35,6 +36,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     idleTime_ = 0;
     startTime_ = departTime;
     selected_ = false;
+    vehicleIndex_ = -1;
 }
 
 Vehicle::~Vehicle() = default;

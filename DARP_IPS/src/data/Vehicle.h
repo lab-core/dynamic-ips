@@ -35,6 +35,7 @@ public:
     int zoneID_;
     bool selected_;                         // this variable indicates which subProblem is selected to be solved
     bool idle_;
+    int vehicleIndex_;
 
 
     // Constructor and Destructor

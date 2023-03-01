@@ -63,6 +63,11 @@ void ReducedProblem::addRouteVar(PRoute &newRoute) {
         compRoutes_.push_back(newRoute);
 }
 
+void ReducedProblem::addRouteVarPartial(PRoute &newRoute, PInstance &pInst) {
+    MasterModeler::addRouteVarIntPartial(routeVar_, newRoute, POSITIVE, pInst);
+    compRoutes_.push_back(newRoute);
+}
+
 void ReducedProblem::addRouteVars(std::vector<PRoute> &newRoutes) {
     MasterModeler::addRouteVars(routeVar_, newRoutes, POSITIVE);
     for (auto & newRoute : newRoutes)
@@ -127,7 +132,35 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     }
 //    env_.out() << Model_;
 }
+void ReducedProblem::buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution,
+                                       std::vector<PRoute> &routeSolution, int nbVehicles) {
 
+    // model initialization (defining empty set of constraints and adding objective)
+//    ResetRPModel();
+    int rhs = 1;
+    MasterModeler::initializeModelPartial(pInst, rhs, nbVehicles);
+
+    // adding request columns (z variables)
+//    addZVars(zSolution);
+    for (auto & zSol : zSolution)
+        addZVar(zSol);
+
+    // adding route solution columns
+    //   addRouteVars(routeSolution);
+    for (auto & routeSol : routeSolution){
+        if (pInst->vehicles_[routeSol->vehicleID_]->vehicleIndex_ > -1)
+            addRouteVarPartial(routeSol, pInst);
+    }
+
+
+
+    //adding new route variables
+    for (auto & routeObj : routesToAdd_) {
+        if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
+            addRouteVarPartial(routeObj, pInst);
+    }
+//    env_.out() << Model_;
+}
 // this function solve the model and remove all columns except than the current base
 void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                                 std::vector<PRoute> &routeSolution, std::map<std::string ,PRoute> &generatedRoutes) {

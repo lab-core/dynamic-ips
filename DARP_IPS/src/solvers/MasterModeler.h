@@ -62,6 +62,7 @@ public:
 
     // this function initialized the model
     void initializeModel(PInstance &pInst, int rhs);
+    void initializeModelPartial(PInstance &pInst, int rhs, int nbVehicles);
 
     // this function adds zVar to the model
     void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
@@ -70,7 +71,9 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVarIntPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
     void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
+    void addRouteVarFloatPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
     void addRouteVars(IloNumVarArray &routeVar, std::vector<PRoute> &newRoutes, VarSign sign);
 
 };

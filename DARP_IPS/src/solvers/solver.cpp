@@ -69,8 +69,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
     double previousObj;
     int nbNegativeFound;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    /*if (EpochInst->parameters_->initialStart_ == GREEDY_START)
-        GreedyModel_->GreedySolver(EpochInst);*/
+    if (EpochInst->parameters_->initialStart_ == GREEDY_START)
+        GreedyModel_->GreedySolver(EpochInst);
     isudObj_->initialization(EpochInst);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
@@ -100,16 +100,24 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;
 
+        isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
             GreedyModel_->GreedySolverFast(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
+                vehicleObj->vehicleIndex_ = -1;
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
                     subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
+                    isudObj_->nbVehicles_++;
                 }
                 else {
                     isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                    if (!vehicleObj->currentRoute_->routeRequests_.empty())
-                        subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                        if (EpochInst->parameters_->initialStart_ != GREEDY_START)
+                            subProConst.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                        vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
+                        isudObj_->nbVehicles_++;
+                    }
                 }
             }
         }
@@ -140,8 +148,6 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
             }
         }
-        if (EpochInst->parameters_->initialStart_ == GREEDY_START)
-            GreedyModel_->GreedySolver(EpochInst);
 
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
@@ -228,6 +234,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                 break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
+                isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
                 isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
@@ -494,7 +501,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
         // update vehicle status
-        if (epoch_ > 10)
+        if (epoch_ > 20)
             break;
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);

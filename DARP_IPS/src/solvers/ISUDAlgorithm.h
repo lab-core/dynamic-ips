@@ -24,6 +24,8 @@ public:
 //    std::unordered_map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
     vector2D<PRoute> availableRoutes_;
     int nbRoutes_;
+    int nbVehicles_;
+    float availableTime_;
 
     // Solution containers
     std::vector<PRoute> routeSolution_;
@@ -92,11 +94,12 @@ public:
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
-
+    void solveRP_MIP_Partial(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     // Display function
     std::string toString() const;
     std::string toStringTimersTotal() const;
