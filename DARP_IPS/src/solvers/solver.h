@@ -34,6 +34,7 @@ public:
     int maxSubSize_;
     int avgSubSize_;
     int epoch_;
+    std::vector<PLabelingSubPro> subProSolve_;
 
     std::shared_ptr<ISUDAlgorithm> isudObj_;
     PGreedyModeler GreedyModel_;
@@ -54,6 +55,7 @@ public:
 
     // this function is to solve the epoch instance with CG using ISUD
     void solveCG_ISUD(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
+    void solveCG_ISUD1(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
 
     // this function is to solve the main instance in anytime mode
     void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths);

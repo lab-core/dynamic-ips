@@ -62,6 +62,7 @@ public:
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;
+    void restProblem();
 };
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
 void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels);

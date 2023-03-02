@@ -220,7 +220,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, PNode &outNode, bool Ter
  //               this->nbActivated_--;
             }
             outNode->activeLabels_[i]->status_ = DOMINATED;
-            dominatedLabels_.push_back(outNode->activeLabels_[i]);
+            dominatedLabels_.push_back(std::move(outNode->activeLabels_[i]));
             outNode->activeLabels_.erase(outNode->activeLabels_.begin() + i);
             this->nbDominated_++;
         }
@@ -606,6 +606,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
                     // push to pickup points
+
                     for (auto &neighbourNode: (*selectedLabel->currentNode_)->successors_) {
                         if (selectedLabel->isExtendFeasible1(*neighbourNode, maxPickup_, solverOptions_->usePick_)) {
                             nbActive = (*neighbourNode)->nbActiveLabels_;
@@ -850,6 +851,24 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     return repStr.str();
 }
 
+void LabelingSubProblem::restProblem() {
+    for (auto & nodeObj : subGraph_->nodes_){
+        for (auto & labelObj : nodeObj.second->activeLabels_)
+            dominatedLabels_.push_back(std::move(labelObj));
+    }
+    subGraph_.reset();
+    subGraph_ = std::make_shared<Graph>();
+    bestReducedCost_ = INFINITY;
+    score_ = (*Vehicle_)->score_;
+    nbNegativeColumns_ = 0;
+    nbTotalRequest_ = 0;
+    nbDominated_ = 0;
+    nbEliminated_ = 0;
+    nbGenerated_ = 0;
+    nbOutputs_ = 0;
+    maxPickup_ = 2;
+}
+
 
 void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels) {
     std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
@@ -861,7 +880,7 @@ void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominate
             if (node->activeLabels_[i]->status_ == ACTIVE){
                 node->nbActiveLabels_--;
                 node->activeLabels_[i]->status_ = DOMINATED;
-                dominatedLabels.push_back(node->activeLabels_[i]);
+                dominatedLabels.push_back(std::move(node->activeLabels_[i]));
                 node->activeLabels_.erase(node->activeLabels_.begin() + i);
             }
         }
