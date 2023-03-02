@@ -26,9 +26,9 @@ public:
     int maxPickup_;
 
     PSolverOption solverOptions_;
-    myTools::Timer *subproTime_;
-    myTools::Timer *subproRouteTime_;
-    myTools::Timer *sortTime_;
+//    myTools::Timer *subproTime_;
+//    myTools::Timer *subproRouteTime_;
+//    myTools::Timer *sortTime_;
     std::string initialNodeID_;
 
     // Constructor and Destructor

@@ -22,7 +22,6 @@ SubproModeler::~SubproModeler() {
 */
 //    subGraph_->nodes_.clear();
 //    subGraph_.reset();
-    subGraph_.reset();
 }
 
 // calculation of penalties and initialization of the subgraph

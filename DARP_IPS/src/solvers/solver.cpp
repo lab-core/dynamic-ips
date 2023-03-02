@@ -36,7 +36,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
     (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, "
                               "RP_Runtime, RP_BuildRuntime, RP_SolveRuntime, CP_Runtime, CP_BuildRuntime, "
-                              "CP_SolveRuntime, MIPISUD_Runtime, SubProblemRuntime, PreProcessTime, SubAssignTime, "
+                              "CP_SolveRuntime, MIPISUD_Runtime, SubProblemRuntime, destructorTime, SubAssignTime, "
                               "GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, ISUD_Obj" << std::endl;
 
     pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
@@ -221,8 +221,10 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 //        (*pLogEpochSubRuntimeStream_) << repStr.str();
         if (!subProSolve.empty())
             avgSubSize_ = (int) avgSubSize_/subProSolve.size();
+        preprocessTime_->start();
         subProSolve.clear();
         subProConst.clear();
+        preprocessTime_->stop();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
@@ -235,7 +237,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
                 isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
-                isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
+                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -269,7 +271,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
     while (nbReceivedRequest < mainInst->nbRequests_) {
         nextEpoch:
         simulationTime_->start();
-        preprocessTime_->start();
+ //       preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
         std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
@@ -302,12 +304,12 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
             break;*/
         if (EpochInst->nbRequests_ == 0) {
             simulationTime_->stop();
-            preprocessTime_->stop();
+ //           preprocessTime_->stop();
  //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }
-        preprocessTime_->stop();
+//        preprocessTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
@@ -341,12 +343,12 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
         vehicleObj->solutionRoute_->addSource(vehicleObj->emptyRoute_->routeNodes_[0], vehicleObj->departTime_, vehicleObj->numPassengers_);
     }
     simulationTime_->start();
-    preprocessTime_->start();
+//    preprocessTime_->start();
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst);
     StaticInst->updatePenalties(0);
     simulationTime_->stop();
-    preprocessTime_->stop();
+//    preprocessTime_->stop();
     switch(StaticInst->parameters_->mainAlgorithm_) {
         case MIP_CPLEX :
             simulationTime_->start();
@@ -493,7 +495,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
-        preprocessTime_->start();
+//        preprocessTime_->start();
 
         elapsedTime_ = simulationTime_->dSinceInit().count();
         std::cout << "---------------------"<< std::endl;
@@ -501,7 +503,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
         // update vehicle status
-        if (epoch_ > 20)
+        if (epoch_ > 90)
             break;
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
@@ -530,12 +532,12 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
 
         if (EpochInst->nbRequests_ == 0) {
-            preprocessTime_->stop();
+ //           preprocessTime_->stop();
             simulationTime_->stop();
             epoch_++;
             goto nextEpoch;
         }
-        preprocessTime_->stop();
+ //       preprocessTime_->stop();
 
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
             solveCG_ISUD(EpochInst, mainInst, inputPaths);

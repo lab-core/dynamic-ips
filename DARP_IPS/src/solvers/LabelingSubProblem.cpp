@@ -20,15 +20,15 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     nbGenerated_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = 2;
-    subproTime_ = new myTools::Timer(); subproTime_->init();
+    /*subproTime_ = new myTools::Timer(); subproTime_->init();
     subproRouteTime_ = new myTools::Timer(); subproRouteTime_->init();
-    sortTime_ = new myTools::Timer(); sortTime_->init();
+    sortTime_ = new myTools::Timer(); sortTime_->init();*/
 }
 LabelingSubProblem::~LabelingSubProblem() {
 
-    delete subproTime_;
+    /*delete subproTime_;
     delete subproRouteTime_;
-    delete sortTime_;
+    delete sortTime_;*/
 }
 
 void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
@@ -115,8 +115,8 @@ void LabelingSubProblem::labelExtend2(PLabel &parentLabel, PNode &outNode) {
     if (!newLabel->isEliminated()) {
         if (!isLabelAdded(newLabel, outNode, false))
             nbDominated_++;
-        else if(outNode->type_ == SINK)
-            newLabel->createTime_ = subproTime_->dSinceInit().count();
+        /*else if(outNode->type_ == SINK)
+            newLabel->createTime_ = subproTime_->dSinceInit().count();*/
     }
     else {
         nbEliminated_++;
@@ -232,7 +232,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, PNode &outNode, bool Ter
 
     if (outNode->type_ == SINK){
         newLabel->status_ = TERMINATED;
-        newLabel->createTime_ = subproTime_->dSinceInit().count();
+//        newLabel->createTime_ = subproTime_->dSinceInit().count();
         outNode->activeLabels_.push_back(std::move(newLabel));
     }
     else{
@@ -700,7 +700,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 //***************************************************************************************//
 
 void LabelingSubProblem::solveDynamic() {
-    subproTime_->start();
+//    subproTime_->start();
     if ((solverOptions_->LabelingStrategy_ == PUSHING)||(subRequests_.empty())){
         if (solverOptions_->isDropPickPossible_)
             this->solveDynamic_pushing();
@@ -726,12 +726,12 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (*Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
-    subproTime_->stop();
+//    subproTime_->stop();
 //    std::cout << this->toString() << std::endl;
 }
 
 void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes) {
-    subproTime_->start();
+//    subproTime_->start();
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0], nbTotalRequest_);
@@ -794,24 +794,24 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
                         subGraph_->sinkNodes_[0]->activeLabels_.push_back(newLabel);
                         if (subGraph_->sinkNodes_[0]->bestLabelReduceCost_ > newLabel->reducedCost_)
                             subGraph_->sinkNodes_[0]->bestLabelReduceCost_ = newLabel->reducedCost_;
-                        newLabel->createTime_ = subproTime_->dSinceInit().count();
+ //                       newLabel->createTime_ = subproTime_->dSinceInit().count();
                     }
                 }
             }
         }
     }
-    subproTime_->stop();
+//    subproTime_->stop();
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst, int size) {
 
-    subproRouteTime_->start();
+//    subproRouteTime_->start();
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst));
         availableRoutes.back()->createColumn(size);
         nbOutputs_++;
     }
-    subproRouteTime_->stop();
+//    subproRouteTime_->stop();
 }
 
 std::string LabelingSubProblem::toString() const {
@@ -842,10 +842,11 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << nbGenerated_ << ",";
     repStr << nbEliminated_ << ",";
     repStr << nbDominated_ << ",";
-    repStr << nbOutputs_ << ",";
-    repStr << subproTime_->dSinceInit().count() << ",";
+//    repStr << nbOutputs_ << ",";
+    repStr << nbOutputs_ << "\n";
+    /*repStr << subproTime_->dSinceInit().count() << ",";
     repStr << subproRouteTime_->dSinceInit().count() << ",";
-    repStr << sortTime_->dSinceInit().count() << "\n";
+    repStr << sortTime_->dSinceInit().count() << "\n";*/
     return repStr.str();
 }
 
