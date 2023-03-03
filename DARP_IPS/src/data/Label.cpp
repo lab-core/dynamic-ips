@@ -97,12 +97,12 @@ void Label::copyLabel(const Label &label) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
 //    completedRequests_ = label.completedRequests_;
-    /*completeRequests_.reset();
+    completeRequests_.reset();
     extendCheck_.reset();
     completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
-    completeRequests_->copyValues(*label.completeRequests_);
-    extendCheck_->copyValues(*label.completeRequests_);
+    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
+    /*completeRequests_->copyValues(*label.completeRequests_);
+    extendCheck_->copyValues(*label.completeRequests_);*/
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 //    extendCheck_ = label.completedRequests_;
