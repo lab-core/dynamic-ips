@@ -280,9 +280,12 @@ void Route::resetRoute() {
 }
 
 void Route::createColumn(int size) {
-    column_ = std::make_shared<myTools::BitVector>(size);
+//    column_ = std::make_shared<myTools::BitVector>(size);
+    column_.reset();
+    /*for (auto & requestObj: routeRequests_)
+        column_->add(requestObj->taskIndex_);*/
     for (auto & requestObj: routeRequests_)
-        column_->add(requestObj->taskIndex_);
+        column_.set(requestObj->taskIndex_, true);
 }
 
 

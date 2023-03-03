@@ -25,8 +25,10 @@ Label::Label(Vehicle *vehicle, PNode &source, int numRequests) : labelID_(labelC
     openRequests_.clear();
  //   completedRequests_.clear();
  //   completedRequest_.clear();
-    completeRequests_ = std::make_shared<myTools::BitVector>(numRequests);
-    extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);
+    /*completeRequests_ = std::make_shared<myTools::BitVector>(numRequests);
+    extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);*/
+    completeRequests_.reset();
+    extendCheck_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
 //    currentNode_ = &source;
@@ -61,8 +63,11 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
 //    completedRequests_ = label.completedRequests_;
-    completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
+
+    /*completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
+    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
+    completeRequests_ = label.completeRequests_;
+    extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 //    extendCheck_ = completedRequests_;
@@ -97,12 +102,14 @@ void Label::copyLabel(const Label &label) {
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
 //    completedRequests_ = label.completedRequests_;
-    completeRequests_.reset();
+    /*completeRequests_.reset();
     extendCheck_.reset();
     completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
+    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
     /*completeRequests_->copyValues(*label.completeRequests_);
     extendCheck_->copyValues(*label.completeRequests_);*/
+    completeRequests_ = label.completeRequests_;
+    extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 //    extendCheck_ = label.completedRequests_;
@@ -149,9 +156,11 @@ void Label::extend(Node *outNode) {
     }
     else if (outNode->type_ == PICKUP){
         openNode_.push_back(outNode->pairNode_);
-        completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
+//        completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
+        completeRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
         numCompleted_++;
-        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
+//        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
         numExtendCheck_++;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         reducedCost_ -= (outNode->related_Request_)->dual_;
@@ -205,9 +214,11 @@ void Label::extend1(Node *outNode) {
     }
     else if (outNode->type_ == PICKUP){
         openNode_.push_back(outNode->pairNode_);
-        completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
+ //       completeRequests_->add(outNode->related_Request_->taskIndexLabel_);
+        completeRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
         numCompleted_++;
-        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+//        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         reducedCost_ -= (outNode->related_Request_)->dual_;
@@ -230,7 +241,8 @@ void Label::extend1(Node *outNode) {
 // this function check the feasibility of the label before extension
 bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int capacity) {
     if (outNode->type_ == PICKUP){
-        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+//        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
     }
     if ((load_ + outNode->nbPassengers_) > capacity)
@@ -245,7 +257,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
                 return false;
         }
 
-        if (completeRequests_->contains(outNode->related_Request_->taskIndexLabel_))
+        if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
     if (outNode->type_ == DROPOFF) {
@@ -308,7 +320,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
 
 bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int capacity) {
     if (outNode->type_ == PICKUP){
-        extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
+        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
     }
     if ((load_ + outNode->nbPassengers_) > capacity)
@@ -322,7 +334,7 @@ bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int ca
             if (nbPickMove_ >= maxPickUp && pathNode_.back()->locationID_ != outNode->locationID_)
                 return false;
         }
-        if (completeRequests_->contains(outNode->related_Request_->taskIndexLabel_))
+        if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
     if (outNode->type_ == DROPOFF) {
@@ -359,7 +371,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                         return true;
                     }
                     else {
-                        if (otherLabel->completeRequests_->isSubset(*this->completeRequests_))
+                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_)
                             return true;
                     }
                 }
@@ -376,7 +388,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                             if (this->numCompleted_ > otherLabel->numCompleted_)
                                 return true;
                         } else {
-                            if (otherLabel->completeRequests_->isSubset(*this->completeRequests_)){
+                            if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
                                 return true;
                                 /*if ((this->passedTime_ == otherLabel->passedTime_) &&
                                     (this->reducedCost_ == otherLabel->reducedCost_)) {

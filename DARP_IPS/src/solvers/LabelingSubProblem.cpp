@@ -300,7 +300,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                     }
                                 }
                                 // pull all labels to the current node
-                                else if ((!selectedLabel->extendCheck_->contains(currentNode->related_Request_->taskIndexLabel_)) &&
+                                else if ((!selectedLabel->extendCheck_.test(currentNode->related_Request_->taskIndexLabel_)) &&
                                          (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_, solverOptions_->usePick_, Vehicle_->capacity_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, &(*currentNode), true);
@@ -368,7 +368,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                                     }
                                 }
                                 // pull all labels to the current node
-                                else if ((!selectedLabel->extendCheck_->contains(currentNode->related_Request_->taskIndexLabel_)) &&
+                                else if ((!selectedLabel->extendCheck_.test(currentNode->related_Request_->taskIndexLabel_)) &&
                                          (selectedLabel->isExtendFeasible(&(*currentNode),maxPickup_, solverOptions_->usePick_, Vehicle_->capacity_))) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     labelExtend(selectedLabel, &(*currentNode), true);

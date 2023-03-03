@@ -364,21 +364,24 @@ void ISUDAlgorithm::updateIncDegrees(PInstance &pInst) {
     }*/
 }
 void ISUDAlgorithm::updateIncDegreesBit(PInstance &pInst) {
-    std::shared_ptr<myTools::BitVector>  zList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
-    std::shared_ptr<myTools::BitVector>  coveredList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
+    /*std::shared_ptr<myTools::BitVector>  zList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
+    std::shared_ptr<myTools::BitVector>  coveredList = std::make_shared<myTools::BitVector>(pInst->nbRequests_);*/
+    std::bitset<MAX_SIZE>  zList;
+    std::bitset<MAX_SIZE>  coveredList;
     for (auto & requestObj : zSolution_)
-        zList->add(requestObj->taskIndex_);
+        zList.set(requestObj->taskIndex_, true);
 
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
-            coveredList->copyValues(*zList);
-            std::shared_ptr<myTools::BitVector>  currentSolution = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
+            coveredList = zList;
+ //           std::shared_ptr<myTools::BitVector>  currentSolution = std::make_shared<myTools::BitVector>(pInst->nbRequests_);
+            std::bitset<MAX_SIZE> currentSolution;
             for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
-                coveredList->add(requestObj->taskIndex_);
-                currentSolution->add(requestObj->taskIndex_);
+                coveredList.set(requestObj->taskIndex_, true);
+                currentSolution.set(requestObj->taskIndex_, true);
             }
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                if (routeObj->column_->isSubset(*coveredList) && currentSolution->isSubset(*routeObj->column_))
+                if (((routeObj->column_ & coveredList)==routeObj->column_) && ((currentSolution & routeObj->column_) == currentSolution))
                     routeObj->isCompatible_ = true;
                 else
                     routeObj->isCompatible_ = false;

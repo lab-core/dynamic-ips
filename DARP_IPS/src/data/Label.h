@@ -24,7 +24,8 @@ public:
 //    Vehicle *vehicle_;                                     // the vehicle for which the route has created
     std::vector<float> travelResources_;
     std::vector<Node*> openNode_;
-     std::shared_ptr<myTools::BitVector> completeRequests_;
+//    std::shared_ptr<myTools::BitVector> completeRequests_;
+    std::bitset<MAX_SIZE> completeRequests_;
     int numCompleted_;
     std::vector<int> openRequests_;
 //    std::vector<std::string> pathNodes_;
@@ -36,7 +37,8 @@ public:
     LabelStatus status_;
     int nbPickUp_;                      // the number of time the vehicle visit pick up points
     int nbPickMove_;                    // this value if for the times that vehicle change location in pickups
-    std::shared_ptr<myTools::BitVector> extendCheck_;
+//    std::shared_ptr<myTools::BitVector> extendCheck_;
+    std::bitset<MAX_SIZE> extendCheck_;
     int numExtendCheck_;
     bool isDropped_;                    // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                 // used in pulling to check if a label is extended to onboards before

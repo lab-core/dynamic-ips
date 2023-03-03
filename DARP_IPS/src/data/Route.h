@@ -35,7 +35,8 @@ public:
     float totalLength_;
 //    Eigen::MatrixXd fullPattern_;
 //    myTools::BitVector * column_;
-    std::shared_ptr<myTools::BitVector> column_;
+ //   std::shared_ptr<myTools::BitVector> column_;
+    std::bitset<MAX_SIZE> column_;
     bool isCompatible_;
 
     // Constructor and Destructor
