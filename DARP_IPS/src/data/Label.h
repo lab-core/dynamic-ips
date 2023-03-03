@@ -21,17 +21,17 @@ public:
     int load_;                                              // consume capacity of the vehicle
     float passedTime_;                                      // accumulated time of the path
     float reachedTime_;
-    PVehicle *vehicle_;                                     // the vehicle for which the route has created
+//    Vehicle *vehicle_;                                     // the vehicle for which the route has created
     std::vector<float> travelResources_;
-    std::vector<PNode*> openNode_;
+    std::vector<Node*> openNode_;
      std::shared_ptr<myTools::BitVector> completeRequests_;
     int numCompleted_;
     std::vector<int> openRequests_;
 //    std::vector<std::string> pathNodes_;
-    std::vector<PNode*> pathNode_;
+    std::vector<Node*> pathNode_;
 
     double reducedCost_;
-    PNode* currentNode_;
+//    PNode* currentNode_;
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;                      // the number of time the vehicle visit pick up points
@@ -43,7 +43,7 @@ public:
     double createTime_;
 
     // Constructor and Destructor
-    Label(PVehicle *vehicle, PNode &source, int numRequests);
+    Label(Vehicle *vehicle, PNode &source, int numRequests);
     Label(const Label &label);
     void copyLabel(const Label &label);
 
@@ -53,11 +53,11 @@ public:
 
     bool operator() (const Label &rhs) const;
 
-    void extend(PNode &outNode);
-    void extend1(PNode &outNode);
+    void extend(Node *outNode);
+    void extend1(Node *outNode);
     // this function check the feasibility of the label before extension
-    bool isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick);
-    bool isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick);
+    bool isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int capacity);
+    bool isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int capacity);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
     bool isEliminated();

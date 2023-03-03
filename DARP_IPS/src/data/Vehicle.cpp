@@ -131,7 +131,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
                     // check travelTime violation
                     float travelTime = currentRoute_->routeNodes_[i]->related_Request_->dropTime_ -
-                            (*currentRoute_->routeNodes_[i]->pairNode_)->departTime_;
+                            currentRoute_->routeNodes_[i]->pairNode_->departTime_;
                     if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
                         std::cout << "Trip delay constraint is violated by request: " <<
                                   currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;

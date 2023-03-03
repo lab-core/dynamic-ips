@@ -6,16 +6,16 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(labelCount_++), vehicle_(vehicle) {
+Label::Label(Vehicle *vehicle, PNode &source, int numRequests) : labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
 
-    load_ = (*vehicle)->numPassengers_;
-    passedTime_ = (*vehicle)->departTime_;
-    reachedTime_ = (*vehicle)->departTime_;
+    load_ = vehicle->numPassengers_;
+    passedTime_ = vehicle->departTime_;
+    reachedTime_ = vehicle->departTime_;
 //    pathNodes_.push_back(source->nodeID_);
-    pathNode_.push_back(&source);
+    pathNode_.push_back(&(*source));
  //   path_.push_back(&source);
     reducedCost_ = 0;
     totalDelay_ = 0;
@@ -29,7 +29,7 @@ Label::Label(PVehicle *vehicle, PNode &source, int numRequests) : labelID_(label
     extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
-    currentNode_ = &source;
+//    currentNode_ = &source;
     nbPickUp_ = 0;
     nbPickMove_ = 0;
 //    extendCheck_.insert(source->nodeID_);
@@ -47,7 +47,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     load_ = label.load_;
     passedTime_ = label.passedTime_;
     reachedTime_ = label.reachedTime_;
-    vehicle_ = label.vehicle_;
+//    vehicle_ = label.vehicle_;
 //    openReachTime_ = label.openReachTime_;
 //    travelResource_ = label.travelResource_;
     travelResources_ = label.travelResources_;
@@ -55,7 +55,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
-    currentNode_ = label.currentNode_;
+//    currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
 //    openNodes_ = label.openNodes_;
     openNode_ = label.openNode_;
@@ -85,24 +85,24 @@ void Label::copyLabel(const Label &label) {
     load_ = label.load_;
     passedTime_ = label.passedTime_;
     reachedTime_ = label.reachedTime_;
-    vehicle_ = label.vehicle_;
+//    vehicle_ = label.vehicle_;
 //    parent_ = nullptr;
     travelResources_ = label.travelResources_;
 //    pathNodes_ = label.pathNodes_;
     pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
-    currentNode_ = label.currentNode_;
+//    currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
 //    completedRequests_ = label.completedRequests_;
-    completeRequests_.reset();
+    /*completeRequests_.reset();
     extendCheck_.reset();
     completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    /*completeRequests_->copyValues(*label.completeRequests_);
-    extendCheck_->copyValues(*label.completeRequests_);*/
+    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
+    completeRequests_->copyValues(*label.completeRequests_);
+    extendCheck_->copyValues(*label.completeRequests_);
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 //    extendCheck_ = label.completedRequests_;
@@ -127,17 +127,17 @@ bool Label::operator () (const Label &rhs) const {
     return reducedCost_ < rhs.reducedCost_;
 }
 
-void Label::extend(PNode &outNode) {
+void Label::extend(Node *outNode) {
     load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_];
+    float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     reachedTime_ = passedTime_+travelTime;
     for (auto &node: openNode_) {
-        travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ - passedTime_);
+        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ - passedTime_);
     }
     if (outNode->type_ == DROPOFF) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
         for (int i = 0; i < openNode_.size(); i++){
-            if ((*openNode_[i])->nodeID_ == outNode->nodeID_){
+            if ((openNode_[i])->nodeID_ == outNode->nodeID_){
                 openNode_.erase(openNode_.begin()+i);
                 break;
             }
@@ -171,19 +171,19 @@ void Label::extend(PNode &outNode) {
     passedTime_ = reachedTime_ + outNode->deltaTime_;
 
 //    pathNodes_.push_back(outNode->nodeID_);
-    pathNode_.push_back(&outNode);
+    pathNode_.push_back(outNode);
  //   path_.push_back(&outNode);
-    currentNode_ = &outNode;
+//    currentNode_ = &outNode;
 //    extendCheck_.insert(outNode->nodeID_);
 }
 
-void Label::extend1(PNode &outNode) {
+void Label::extend1(Node *outNode) {
     load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_];
-    if ((travelTime > 0)||((*pathNode_.back())->initialType_==SOURCE)){
+    float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+    if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE)){
         reachedTime_ = passedTime_ + travelTime;
         for (auto &node: openNode_) {
-            travelResources_[(*node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ -
+            travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ -
                                                                              passedTime_);
         }
     }
@@ -193,7 +193,7 @@ void Label::extend1(PNode &outNode) {
     if (outNode->type_ == DROPOFF) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
         for (int i = 0; i < openNode_.size(); i++){
-            if ((*openNode_[i])->nodeID_ == outNode->nodeID_){
+            if ((openNode_[i])->nodeID_ == outNode->nodeID_){
                 openNode_.erase(openNode_.begin()+i);
                 break;
             }
@@ -219,21 +219,21 @@ void Label::extend1(PNode &outNode) {
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
-    if ((travelTime > 0)||((*pathNode_.back())->initialType_==SOURCE))
+    if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE))
         passedTime_ = reachedTime_ + outNode->deltaTime_;
 
 //    pathNodes_.push_back(outNode->nodeID_);
-    pathNode_.push_back(&outNode);
-    currentNode_ = &outNode;
+    pathNode_.push_back(outNode);
+//    currentNode_ = &outNode;
 }
 
 // this function check the feasibility of the label before extension
-bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
+bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int capacity) {
     if (outNode->type_ == PICKUP){
         extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
         numExtendCheck_++;
     }
-    if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
+    if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
     if (outNode->type_ == PICKUP) {
         if (usePick){
@@ -241,7 +241,7 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
                 return false;
         }
         else{
-            if (nbPickMove_ >= maxPickUp && (*currentNode_)->locationID_ != outNode->locationID_)
+            if (nbPickMove_ >= maxPickUp && pathNode_.back()->locationID_ != outNode->locationID_)
                 return false;
         }
 
@@ -258,10 +258,10 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
     }
     for (auto &nodeObj: openNode_) {
         float travelToDrop =
-                durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
-                outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+                durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
+                outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
-        if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
+        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
             return false;
     }
     /*if ((*currentNode_)->locationID_ != outNode->locationID_) {
@@ -306,12 +306,12 @@ bool Label::isExtendFeasible(PNode &outNode, int maxPickUp, bool usePick) {
     return true;
 }
 
-bool Label::isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick) {
+bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int capacity) {
     if (outNode->type_ == PICKUP){
         extendCheck_->add(outNode->related_Request_->taskIndexLabel_);
         numExtendCheck_++;
     }
-    if ((load_ + outNode->nbPassengers_) > (*vehicle_)->capacity_)
+    if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
     if (outNode->type_ == PICKUP) {
         if (usePick){
@@ -319,7 +319,7 @@ bool Label::isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick) {
                 return false;
         }
         else{
-            if (nbPickMove_ >= maxPickUp && (*currentNode_)->locationID_ != outNode->locationID_)
+            if (nbPickMove_ >= maxPickUp && pathNode_.back()->locationID_ != outNode->locationID_)
                 return false;
         }
         if (completeRequests_->contains(outNode->related_Request_->taskIndexLabel_))
@@ -333,14 +333,14 @@ bool Label::isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick) {
         if (!openNode_.empty())
             return false;
     }
-    float travelTime = durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_];
+    float travelTime = durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (travelTime > 0){
         for (auto &nodeObj: openNode_) {
             float travelToDrop =
-                    durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
-                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+                    durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
+                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
-            if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
+            if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
                 return false;
         }
     }
@@ -348,10 +348,10 @@ bool Label::isExtendFeasible1(PNode &outNode, int maxPickUp, bool usePick) {
 }
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
-    if (currentNode_ != otherLabel->currentNode_)
+    if (pathNode_.back() != otherLabel->pathNode_.back())
         myTools::throwException("Label Domination error!!");
 
-    if ((*currentNode_)->type_ == SINK){
+    if (pathNode_.back()->type_ == SINK){
         if (this->passedTime_ >= otherLabel->passedTime_) {
             if (this->reducedCost_ >= otherLabel->reducedCost_) {
                 if (this->numCompleted_ >= otherLabel->numCompleted_) {
@@ -400,7 +400,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
 bool Label::isEliminated() {
 
     for (auto & nodeObj: openNode_) {
-        if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[(*currentNode_)->locationID_][(*nodeObj)->locationID_])
+        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_])
             return true;
     }
     return false;
@@ -444,10 +444,10 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
         newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]]);
     }*/
     for (int i = 1; i < pathNode_.size()-1; ++i) {
-        if ((*pathNode_[i])->type_ == PICKUP)
-            newRoute->addNode1(pInst->instGraph_->pickNodes_[(*pathNode_[i])->related_Request_->getRequestId()]);
+        if (pathNode_[i]->type_ == PICKUP)
+            newRoute->addNode1(pInst->instGraph_->pickNodes_[pathNode_[i]->related_Request_->getRequestId()]);
         else
-            newRoute->addNode1(pInst->instGraph_->dropNodes_[(*pathNode_[i])->related_Request_->getRequestId()]);
+            newRoute->addNode1(pInst->instGraph_->dropNodes_[pathNode_[i]->related_Request_->getRequestId()]);
     }
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
@@ -464,7 +464,7 @@ std::string Label::toString() const {
     repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
     repStr << "# \t" <<"_____________________" << std::endl;
     repStr << "#\t" << std::setw(24) << "- LABEL_NUMBER" << " : " << labelID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << (*currentNode_)->nodeID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << pathNode_.back()->nodeID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNode_.size() << std::endl;
     repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
@@ -472,7 +472,7 @@ std::string Label::toString() const {
     repStr << "#" << std::endl;
     repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : " ;
     for (auto & nodeObj : openNode_) {
-        repStr << (*nodeObj)->related_Request_->getRequestId() << "  ";
+        repStr << (nodeObj)->related_Request_->getRequestId() << "  ";
     }
     repStr << std::endl;
 

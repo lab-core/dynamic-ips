@@ -30,8 +30,8 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 
     /*int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
     int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];*/
-    int sourceIndex = (*Vehicle_)->departNode_->nodeIndex_;
-    int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
+    int sourceIndex = (Vehicle_)->departNode_->nodeIndex_;
+    int sinkIndex = subGraph_->nodes_[(Vehicle_)->sinkID_]->nodeIndex_;
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         X[i] = IloNumVarArray(env_, subGraph_->nbNodes_, 0.0, 1.0, ILOBOOL);
@@ -49,7 +49,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
     }
 
 //    objExpr += U[sinkIndex];
-    objExpr -= (*Vehicle_)->dual_;
+    objExpr -= (Vehicle_)->dual_;
     SubProModel_.add(IloMinimize(env_, objExpr));
 
     // -----------------------------------------
@@ -97,13 +97,13 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 
     // add this constraint for re-optimization when the vehicle is not idle
     // at the start and have some passengers onboard
-    SubProModel_.add(W[sourceIndex] >= (*Vehicle_)->numPassengers_);
+    SubProModel_.add(W[sourceIndex] >= (Vehicle_)->numPassengers_);
 
     // constraints 8c -------------------
-    SubProModel_.add(U[sourceIndex] >= (*Vehicle_)->departTime_);
+    SubProModel_.add(U[sourceIndex] >= (Vehicle_)->departTime_);
 
     // constraints 9c -------------------
-    SubProModel_.add(U[sinkIndex] <= (*Vehicle_)->endTime_);
+    SubProModel_.add(U[sinkIndex] <= (Vehicle_)->endTime_);
 
     for (auto & requestObj : subRequests_) {
         std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
@@ -183,10 +183,10 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
             SubProModel_.add(expr13 <= 0);
         }
         // constraints 14c -------------------
-        SubProModel_.add(W[i] <= (*Vehicle_)->capacity_);
+        SubProModel_.add(W[i] <= (Vehicle_)->capacity_);
 
     }
-    for (auto &onboardID : (*Vehicle_)->onboards_) {
+    for (auto &onboardID : (Vehicle_)->onboards_) {
 //        std::string onboardID = subGraph_->nodes_[(*Vehicle_)->onboards_[i]]->nodeID_;
 
         // constraints 6c -------------------
@@ -232,7 +232,7 @@ void CPLEXSubProblem::SolveCPLEX() {
 //        SubProbCplex_.solve();
         else {
             if (SubProbCplex_.getObjValue() <= -0.0001) {
-                bestReducedCost_ = SubProbCplex_.getObjValue();
+//                bestReducedCost_ = SubProbCplex_.getObjValue();
                 SubProbCplex_.setParam(IloCplex::Param::TimeLimit, 200);
                 SubProbCplex_.populate();
             }
@@ -315,14 +315,14 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                 std::cout << "new object final: " << newObj << std::endl;*/
 
                 // creating the route
-                int sourceIndex = (*Vehicle_)->departNode_->nodeIndex_;
-                int sinkIndex = subGraph_->nodes_[(*Vehicle_)->sinkID_]->nodeIndex_;
-                PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
+                int sourceIndex = (Vehicle_)->departNode_->nodeIndex_;
+                int sinkIndex = subGraph_->nodes_[(Vehicle_)->sinkID_]->nodeIndex_;
+                PRoute newRoute = std::make_shared<Route>((Vehicle_)->vehicleID_);
 
                 // adding the source node of the route
                 newRoute->reducedCost_ = SubProbCplex_.getObjValue(s);
-                newRoute->addSource((*Vehicle_)->departNode_,(*Vehicle_)->departTime_,
-                                    (*Vehicle_)->numPassengers_);
+                newRoute->addSource((Vehicle_)->departNode_,(Vehicle_)->departTime_,
+                                    (Vehicle_)->numPassengers_);
 
                 int currentNodeIndex = sourceIndex;
                 while (currentNodeIndex != sinkIndex) {
@@ -362,7 +362,7 @@ std::string CPLEXSubProblem::toString() const {
     std::stringstream repStr;
     repStr << "#" << std::endl;
     repStr << "# ------------------------------------------------------------" << std::endl;
-    repStr << "# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: " << (*Vehicle_)->vehicleID_ << std::endl;
+    repStr << "# SUB PROBLEM SOLUTION RESULT FOR VEHICLE: " << (Vehicle_)->vehicleID_ << std::endl;
     repStr << "#" << std::endl;
     repStr << "# Solution status = " << SubProbCplex_.getStatus() << std::endl;
     repStr << "# Incumbent objective value = " << SubProbCplex_.getObjValue() << std::endl;

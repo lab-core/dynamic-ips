@@ -139,15 +139,6 @@ template<class T> using vector2D = std::vector<std::vector<T>>;
 template<class T> using vector3D = std::vector<vector2D<T>>;
 
 
-class PCompare {
-public:
-    template<typename T>
-    bool operator () (std::shared_ptr<T> a, std::shared_ptr<T> b) {
-        return (*a) < (*b);
-    }
-};
-
-
 namespace myTools {
     // class for defining exception errors
 
@@ -210,17 +201,8 @@ namespace myTools {
     // function to compare two val_array
     bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs);
 
-    // return the object at position i (support negative index)
-    template<class T>
-    const T &get(const std::vector<T> &v, int i) {
-        if (i >= 0) return v[i];
-        return v[v.size() + i];
-    }
-
 
     // Appends the values of v2 vector to at the end of v1 vector
-    template <typename T>
-    std::vector<T> appendVectors(std::vector<T> & v1, std::vector<T> & V2);
 
     class Timer {
     private:
@@ -313,6 +295,36 @@ namespace myTools {
         // Display function
         std::string toString() const;
     };
+
+
+
+    //-----------------------------------------------------------------------------
+    //  SHARED VECTOR CLASS
+    //  a vector to be shared in multithreading
+    //-----------------------------------------------------------------------------
+    template<class T>
+    class SharedVector{
+    private:
+        std::vector<std::vector<T>> shared_vector;
+        mutable std::mutex mutex_;
+    public:
+        void push_data(std::vector<T> data) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            shared_vector.push_back(std::move(data));
+        }
+
+        std::vector<T> pop_data() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            std::vector<T> data = shared_vector.back();
+            shared_vector.pop_back();
+            return data;
+        }
+
+        void defineSize(int size) {
+            shared_vector.resize(size);
+        }
+    };
+
 
 } // myTools namespace
 

@@ -12,10 +12,10 @@
 
 class SubproModeler {
 public:
-    PVehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
+    Vehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
     std::vector<PRequest> subRequests_;     // List of requests
-    double bestReducedCost_;
+//    double bestReducedCost_;
     int nbNegativeColumns_;
     int nbTotalRequest_;
     float score_;

@@ -11,7 +11,7 @@
 
 
 using namespace std::chrono;
-float saveTime = 3600;
+float saveTime = 1800;
 bool middleSave = false;
 std::string instNum = "1";
 int numVehicles = 2000;
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles";
+    std::string vehicleFolder = "limited_manhattan-vehicles";
     int nbLocations = 1718;
     // build the path of input files
     // create output files for epoch results

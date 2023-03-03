@@ -253,7 +253,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP){
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                     instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+//                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
                 }
                 // adding onboard nodes to the graph
                 else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
@@ -571,7 +572,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
             myFile << std::setw(10) << requestObj->DropOffID_ ;
             myFile << std::setw(10) << requestObj->earlyPick_ ;
             myFile << std::setw(10) << requestObj->pickTime_;
-            myFile << std::setw(10) << (*instGraph_->nodes_[nodeID]->pairNode_)->departTime_;
+            myFile << std::setw(10) << (instGraph_->nodes_[nodeID]->pairNode_)->departTime_;
             myFile << std::setw(setwSize) << vehicleObj->vehicleID_;
             myFile << std::setw(setwSize) << requestObj->zoneID_ << "\n";
         }

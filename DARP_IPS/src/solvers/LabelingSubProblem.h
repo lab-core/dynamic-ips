@@ -17,8 +17,8 @@
 
 class LabelingSubProblem : public SubproModeler{
 public:
-    std::vector<PLabel> dominatedLabels_;           // list of active labels, ordered based on reduced cost
-    std::vector<PNode> activeNodes_;
+    std::vector<PLabel> labelPool_;           // list of active labels, ordered based on reduced cost
+    std::vector<Node*> activeNodes_;
     int nbDominated_;                               // number of labels removed via Domination Rules
     int nbEliminated_;                              // number of labels removed via Elimination Rules
     int nbGenerated_;
@@ -43,10 +43,10 @@ public:
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();
     // main function of the dynamic programming
-    void labelExtend(PLabel &parentLabel, PNode &outNode, bool Terminate);
-    void labelExtend2(PLabel &parentLabel, PNode &outNode);
+    void labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
+    void labelExtend2(PLabel &parentLabel, Node *outNode);
     void labelDrop(PLabel &parentLabel);
-    bool isLabelAdded(PLabel &newLabel, PNode &outNode, bool Terminate);
+    bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     void solveDynamic_pushingDrop();
@@ -65,6 +65,6 @@ public:
     void restProblem();
 };
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
-void truncateLabelList(PNode &node, int MaxLabel, std::vector<PLabel> & dominatedLabels);
-void truncateLabelList(PNode &node, int MaxLabel);
+void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
+void truncateLabelList(Node *node, int MaxLabel);
 #endif //LABELINGSUBPROBLEM_H

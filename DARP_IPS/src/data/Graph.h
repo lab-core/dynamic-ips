@@ -22,7 +22,7 @@ class Node {
 public:
     string nodeID_;                     // node ID
     PRequest related_Request_;          // pointer to its request
-    PNode *pairNode_;                   // pointer to the pair node
+    Node *pairNode_;                   // pointer to the pair node
     int locationID_;                    // node location ID
     NodeType type_;                     // node type: pick up, drop off, source, sink
     NodeType initialType_;              // initial type (the type maybe change to source)
@@ -34,8 +34,8 @@ public:
     float requestTime_;                 // earliest possible pick up time for the request (request time)
     double bestLabelReduceCost_;        // smallest reduced cost af active vehicles
     int nbActiveLabels_;                // Number of active labels in labeling approach
-    std::vector<PNode *> successors_;
-    std::vector<PNode *> closeSuccessors_;
+    std::vector<Node *> successors_;
+    std::vector<Node *> closeSuccessors_;
     float travelTimeFromNode_;          // is used in labeling for sorting successors_
     float travelTimeFromSource_;          // is used in labeling for sorting successors_
     int nodeIndex_;

@@ -171,16 +171,16 @@ void Graph::addRequestToGraph(PRequest &newRequest) {
 
     addNewNode(std::make_shared<Node>(pickID, newRequest, PICKUP));
     addNewNode(std::make_shared<Node>(dropID, newRequest, DROPOFF));
-    nodes_[pickID]->pairNode_ = &nodes_[dropID];
-    nodes_[dropID]->pairNode_ = &nodes_[pickID];
+    nodes_[pickID]->pairNode_ = &(*nodes_[dropID]);
+    nodes_[dropID]->pairNode_ = &(*nodes_[pickID]);
 }
 
 void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
     // create pickup node and drop off nodes
     addNewNode(pickNode);
     addNewNode(dropNode);
-    nodes_[pickNode->nodeID_]->pairNode_ = &nodes_[dropNode->nodeID_];
-    nodes_[dropNode->nodeID_]->pairNode_ = &nodes_[pickNode->nodeID_];
+    nodes_[pickNode->nodeID_]->pairNode_ = &(*nodes_[dropNode->nodeID_]);
+    nodes_[dropNode->nodeID_]->pairNode_ = &(*nodes_[pickNode->nodeID_]);
 }
 
 /*double calcTravelTime(PNode startNode, PNode endNode) {

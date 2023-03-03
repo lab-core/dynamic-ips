@@ -47,7 +47,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst) : Ve
         newDropLabel->parent_ = tail_;
         tail_->child_ = newDropLabel;
         newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
-                (*onboardNode->pairNode_)->departTime_;
+                onboardNode->pairNode_->departTime_;
 
         tail_ = newDropLabel;
     }
@@ -91,7 +91,7 @@ LinkedGreedyLabels::LinkedGreedyLabels(PVehicle &vehicle, PInstance &pInst, std:
         newDropLabel->parent_ = tail_;
         tail_->child_ = newDropLabel;
         newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
-                (*onboardNode->pairNode_)->departTime_;
+                onboardNode->pairNode_->departTime_;
 
         tail_ = newDropLabel;
     }
@@ -733,7 +733,7 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         else if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
             if (currentLabel->child_->pair_ == nullptr) {
                 currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
-                                                        childReachTime + (*currentLabel->child_->currentNode_->pairNode_)->departTime_;
+                                                        childReachTime + currentLabel->child_->currentNode_->pairNode_->departTime_;
             } else {
                 currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
                                                         (childReachTime - currentLabel->child_->pair_->departTime_);
@@ -777,7 +777,7 @@ void LinkedGreedyLabels::updateReachTimes1(PGreedyLabel &preLabel) {
         else if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
             if (currentLabel->child_->pair_ == nullptr) {
                 currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
-                                                        childReachTime + (*currentLabel->child_->currentNode_->pairNode_)->departTime_;
+                                                        childReachTime + currentLabel->child_->currentNode_->pairNode_->departTime_;
             } else {
                 currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
                         (childReachTime - currentLabel->child_->pair_->departTime_);

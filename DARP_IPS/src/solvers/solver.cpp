@@ -33,6 +33,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     minSubSize_ = 0;
     maxSubSize_ = 0;
     avgSubSize_ = 0;
+    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
 
     // this Stream define runtime outputs
@@ -157,8 +158,8 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         std::cout << "nb of sub problems: " << subProSolve.size()+subProConst.size() << std::endl;
 
         // initializing and solving subproblems
-        std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
-            return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});
+        /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
+            return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
                 subProblem->initSubGraph2(EpochInst);
@@ -190,26 +191,32 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         }
 
         for (auto &subProblem: subProSolve){
-            isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
-            subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst,
+            isudObj_->availableRoutes_[subProblem->Vehicle_->vehicleID_].clear();
+            subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                         isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_], mainInst,
                                          EpochInst->nbRequests_);
-            isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
+            isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
         for (auto &subProblem: subProConst){
-            isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
-            subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                         isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst,
+            isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].clear();
+            subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                         isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_], mainInst,
                                          EpochInst->nbRequests_);
-            isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
+            isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
 
         }
+        for (auto &subProblem: subProSolve){
+            Tools::Job job([&]() {
+                subProblem.reset();
+            });
+            pPool->run(job);
+        }
         /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
             GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);*/
-        std::stringstream repStr;
+        /*std::stringstream repStr;
         for (auto & subProblem : subProSolve) {
             if (maxSubSize_ < subProblem->subGraph_->nbNodes_)
                 maxSubSize_ = subProblem->subGraph_->nbNodes_;
@@ -220,13 +227,13 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         }
         for (auto & subProblem : subProConst) {
             repStr << subProblem->toStringOut(epoch_);
-        }
+        }*/
 //        (*pLogEpochSubRuntimeStream_) << repStr.str();
-        if (!subProSolve.empty())
-            avgSubSize_ = (int) avgSubSize_/subProSolve.size();
+        /*if (!subProSolve.empty())
+            avgSubSize_ = (int) avgSubSize_/subProSolve.size();*/
         preprocessTime_->start();
-        subProSolve.clear();
-        subProConst.clear();
+        /*subProSolve.clear();
+        subProConst.clear();*/
         preprocessTime_->stop();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
@@ -248,11 +255,171 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
         if (previousObj == isudObj_->objValue_) {
             break;
         }
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
+        subProSolve.clear();
+        subProConst.clear();
     }  // end of CG while
     for (auto & routeObj : isudObj_->routeSolution_) {
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
     }
  //   (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
+    isudObj_->setObjValue();
+}
+
+void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
+    // define required variables
+    double previousObj;
+    int nbNegativeFound;
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
+    if (EpochInst->parameters_->initialStart_ == GREEDY_START)
+        GreedyModel_->GreedySolver(EpochInst);
+    isudObj_->initialization(EpochInst);
+    // save initial solution
+//    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
+    isudObj_->isudIter_ ++;
+
+    SubproEpochTime_ = 0;
+
+    while (true) {
+        nbNegativeFound = 0;
+        previousObj = isudObj_->objValue_;
+
+
+        //***********************************************************************************//
+        //                    L A B E L  S E T T I N G    M E T H O D
+        //***********************************************************************************//
+        minSubSize_ = 999;
+        maxSubSize_ = 0;
+        avgSubSize_ = 0;
+        // start the subproblems timer
+        subProblemTime_->start();
+        // defining subproblems
+        isudObj_->nbRoutes_ = 0;
+        EpochInst->updateTaskIndexLabeling();
+        std::vector<PLabelingSubPro> subProSolve;
+
+        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
+            subProOptions_->usePick_ = true;
+
+        isudObj_->nbVehicles_ = 0;
+        if (EpochInst->parameters_->greedyPortion_){
+            GreedyModel_->GreedySolverFast(EpochInst);
+            for (auto &vehicleObj: EpochInst->vehicles_) {
+                vehicleObj->vehicleIndex_ = -1;
+                isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
+                if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+                    subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
+                    isudObj_->nbVehicles_++;
+                }
+                else {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                        if (EpochInst->parameters_->initialStart_ != GREEDY_START)
+                            subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                        vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
+                        isudObj_->nbVehicles_++;
+                    }
+                }
+            }
+        }
+
+        std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
+        std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
+        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
+
+        // initializing and solving subproblems
+        /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
+            return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
+        for (auto &subProblem: subProSolve){
+            Tools::Job job([&]() {
+                subProblem->initSubGraph2(EpochInst);
+                subProblem->labelPool_ = std::move(labelsPool_.pop_data());
+                if (!subProblem->subRequests_.empty()) {
+                    subProblem->solveDynamic();
+                    subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                                 isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
+                                                 mainInst,EpochInst->nbRequests_);
+                }
+                labelsPool_.push_data(std::move(subProblem->labelPool_));
+            });
+            pPool->run(job);
+        }
+        //      pPool->wait();
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
+
+        /*for (auto &subProblem: subProSolve){
+            subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                         isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_], mainInst,
+                                         EpochInst->nbRequests_);
+        }*/
+        for (auto &subProblem: subProSolve){
+            isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
+            nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
+
+        }
+
+        /*for (auto &subProblem: subProSolve){
+            Tools::Job job([&]() {
+                subProblem.reset();
+            });
+            pPool->run(job);
+        }*/
+        /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
+            GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_);*/
+        /*std::stringstream repStr;
+        for (auto & subProblem : subProSolve) {
+            if (maxSubSize_ < subProblem->subGraph_->nbNodes_)
+                maxSubSize_ = subProblem->subGraph_->nbNodes_;
+            if (minSubSize_ > subProblem->subGraph_->nbNodes_)
+                minSubSize_ = subProblem->subGraph_->nbNodes_;
+            avgSubSize_ += subProblem->subGraph_->nbNodes_;
+            repStr << subProblem->toStringOut(epoch_);
+        }
+        for (auto & subProblem : subProConst) {
+            repStr << subProblem->toStringOut(epoch_);
+        }*/
+//        (*pLogEpochSubRuntimeStream_) << repStr.str();
+        /*if (!subProSolve.empty())
+            avgSubSize_ = (int) avgSubSize_/subProSolve.size();*/
+        preprocessTime_->start();
+        subProSolve.clear();
+        preprocessTime_->stop();
+        subProblemTime_->stop();
+        SubproEpochTime_ += subProblemTime_->dSinceStart().count();
+        if (nbNegativeFound == 0) {
+            break;
+        }
+        else {
+            if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
+                isudObj_->solveISUDMIP(EpochInst, inputPaths);
+                break;
+            }
+            else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
+                isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
+                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
+                if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
+                    break;
+            }
+        }
+        if (previousObj == isudObj_->objValue_) {
+            break;
+        }
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
+        subProSolve.clear();
+    }  // end of CG while
+    for (auto & routeObj : isudObj_->routeSolution_) {
+        EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+    }
+    //   (*pLogEpochSubRouteStream_) << EpochInst->saveRoutesTimes( epoch_);
     isudObj_->setObjValue();
 }
 
@@ -320,7 +487,7 @@ void solver::solveCG_ISUD1(PInstance &EpochInst, PInstance & mainInst, InputPath
 
         // initializing and solving subproblems
         for (auto &subProblem: subProSolve_){
-            if ((*subProblem->Vehicle_)->selected_) {
+            if ((subProblem->Vehicle_)->selected_) {
                 Tools::Job job([&]() {
                     subProblem->restProblem();
                     subProblem->initSubGraph2(EpochInst);
@@ -339,19 +506,19 @@ void solver::solveCG_ISUD1(PInstance &EpochInst, PInstance & mainInst, InputPath
 
 
         for (auto &subProblem: subProSolve_){
-            isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].clear();
-            if ((*subProblem->Vehicle_)->selected_) {
-                subProblem->SolutionToRoutes((*subProblem->Vehicle_),
-                                             isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_], mainInst,
+            isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].clear();
+            if ((subProblem->Vehicle_)->selected_) {
+                subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                             isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_], mainInst,
                                              EpochInst->nbRequests_);
-                isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(*subProblem->Vehicle_)->vehicleID_].size();
+                isudObj_->nbRoutes_ += isudObj_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
                 nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             }
         }
 
         std::stringstream repStr;
         for (auto & subProblem : subProSolve_) {
-            if ((*subProblem->Vehicle_)->selected_) {
+            if ((subProblem->Vehicle_)->selected_) {
                 if (maxSubSize_ < subProblem->subGraph_->nbNodes_)
                     maxSubSize_ = subProblem->subGraph_->nbNodes_;
                 if (minSubSize_ > subProblem->subGraph_->nbNodes_)
@@ -643,7 +810,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
         // update vehicle status
-        if (epoch_ > 40)
+        if (epoch_ > 20)
             break;
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
@@ -680,7 +847,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
  //       preprocessTime_->stop();
 
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD1(EpochInst, mainInst, inputPaths);
+            solveCG_ISUD_final(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();

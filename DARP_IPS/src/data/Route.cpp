@@ -235,7 +235,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
         // checking trip delay constraint
         if (testRoute->routeNodes_.back()->initialType_ == DROPOFF){
             float travelTime = testRoute->routeNodes_.back()->related_Request_->dropTime_ -
-                    (*testRoute->routeNodes_.back()->pairNode_)->departTime_;
+                    testRoute->routeNodes_.back()->pairNode_->departTime_;
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
                 testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
