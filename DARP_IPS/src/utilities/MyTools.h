@@ -324,6 +324,10 @@ namespace myTools {
         void defineSize(int size) {
             shared_vector.resize(size);
         }
+
+        void getSize(){
+            std::cout << shared_vector[0].size() << std::endl;
+        }
     };
 
 
