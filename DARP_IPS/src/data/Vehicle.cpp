@@ -248,9 +248,9 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                     // determine committed nodes
                     /*if (i < breakIndex + 2)
                         currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
-                    if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
-                        currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;
                 }
+                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
+                    currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;
             }
 
             currentRoute_->removeNode(breakIndex);

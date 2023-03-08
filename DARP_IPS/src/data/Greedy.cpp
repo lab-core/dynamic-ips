@@ -490,20 +490,19 @@ void LinkedGreedyLabels::findInsertPlace2(PNode &pickNode, PNode &dropNode, floa
                     if (!isTimeViolated(prePick->child_)){
                         deltaDelay = totalDelay_ - curDelay;
                         DeltaT = tail_->departTime_ - endTime;
-
-                        if (deltaDelay < position->deltaDelay_) {
+                        if (deltaDelay <= position->deltaDelay_) {
                             if (preDrop == pickLabel)
                                 position->updatePosition(prePick, prePick, deltaDelay,DeltaT);
                             else
                                 position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
-                        } else if (deltaDelay == position->deltaDelay_) {
+                        } /*else if (deltaDelay == position->deltaDelay_) {
                             if (DeltaT < position->deltaLength_) {
                                 if (preDrop == pickLabel)
                                     position->updatePosition(prePick, prePick, deltaDelay,DeltaT);
                                 else
                                     position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
                             }
-                        }
+                        }*/
                     }
                     removeLabel(dropLabel, removedLabels);
                     preDrop = preDrop->child_;
@@ -1069,7 +1068,6 @@ void LinkedGreedyLabels::findAssignedPlace1(PNode &pickNode, PNode &dropNode, fl
                             else
                                 position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
                             notFound = false;
-                            break;
                         }
                     }
                     removeLabel(dropLabel, removedLabels);

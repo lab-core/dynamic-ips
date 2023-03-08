@@ -65,6 +65,20 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
     greedyTime_->stop();
 }
 
+void GreedyModeler::GreedySolver(PInstance &PInst, vector2D<PRoute> &availableRoutes, int size) {
+    greedyTime_->start();
+    initializationFast(PInst);
+    solveInsertionFast(PInst);
+    for (auto & greedySol : solutionList_) {
+        availableRoutes[(*greedySol->Vehicle_)->vehicleID_].emplace_back(greedySol->greedyLabelToRoute(false));
+        availableRoutes[(*greedySol->Vehicle_)->vehicleID_].back()->createColumn(size);
+        greedySol->resetLinkedGreedyLabels(removedLabels_);
+        greedySol.reset();
+    }
+    solutionList_.clear();
+    greedyTime_->stop();
+}
+
 void GreedyModeler::GreedySolverFast(PInstance &PInst) {
     greedyAssignTime_->start();
     initializationFast(PInst);
