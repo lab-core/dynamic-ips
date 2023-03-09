@@ -464,7 +464,11 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
-        myTools::throwException("Label convert problem");
+        std::cout << "label: " << std::endl;
+        std::cout << toString();
+        std::cout << "route: " << std::endl;
+        std::cout << newRoute->toString();
+//        myTools::throwException("Label convert problem");
     }
     return newRoute;
 }
@@ -482,9 +486,15 @@ std::string Label::toString() const {
     repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
     repStr << "#" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : " ;
-    for (auto & nodeObj : openNode_) {
-        repStr << (nodeObj)->related_Request_->getRequestId() << "  ";
+    if (!openNode_.empty()) {
+        repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : ";
+        for (auto &nodeObj: openNode_) {
+            repStr << (nodeObj)->related_Request_->getRequestId() << "  ";
+        }
+    }
+    repStr << "#\t" << std::setw(24) << "- PATH_NODES" << " : ";
+    for (auto &nodeObj: pathNode_) {
+        repStr << (nodeObj)->nodeID_ << "  ";
     }
     repStr << std::endl;
 
