@@ -40,7 +40,7 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
                     pickNodeObj->travelTimeFromNode_ = durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_];
                     if (pickNodeObj->nodeStatus_ != COMMITTED){
-                        if (nodeObj->locationID_ == pickNodeObj->locationID_){
+                        if (durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] == 0){
                             nodeObj->closeSuccessors_.push_back(&(*pickNodeObj));
                             nodeObj->successors_.push_back(&(*pickNodeObj));
                         }

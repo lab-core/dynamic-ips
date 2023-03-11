@@ -331,7 +331,7 @@ bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int ca
                 return false;
         }
         else{
-            if (nbPickMove_ >= maxPickUp && pathNode_.back()->locationID_ != outNode->locationID_)
+            if (nbPickMove_ >= maxPickUp && durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] != 0)
                 return false;
         }
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))

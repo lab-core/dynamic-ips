@@ -153,7 +153,7 @@ std::string Instance::solutionToString() {
 
 //            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
             float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
-            if (instGraph_->pickNodes_[i]->locationID_ == instGraph_->dropNodes_[i]->locationID_)
+            if (durationMatrix_[instGraph_->pickNodes_[i]->locationID_][instGraph_->dropNodes_[i]->locationID_] == 0)
                 travelTime = 0;
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ + 0.1){

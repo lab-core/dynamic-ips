@@ -568,7 +568,7 @@ void LinkedGreedyLabels::insertNode1(PGreedyLabel &preLabel, PNode &newNode, std
     }
     // calculating depart time
     float departTime;
-    if ((preLabel->currentNode_->locationID_ == newNode->locationID_)&&
+    if ((durationMatrix_[preLabel->currentNode_->locationID_][newNode->locationID_] == 0)&&
             (preLabel->currentNode_->initialType_ != SOURCE)){
         departTime = reachTime;
     }
@@ -683,7 +683,7 @@ float LinkedGreedyLabels::nodeToLabelReachTime(float nodeReachTime, PNode &preNo
 }
 
 float LinkedGreedyLabels::nodeToLabelReachTime1(float nodeReachTime, PNode &preNode, PGreedyLabel &nextLabel) {
-    if (preNode->locationID_ == nextLabel->currentNode_->locationID_){
+    if (durationMatrix_[preNode->locationID_][nextLabel->currentNode_->locationID_] == 0){
         if ((nextLabel->currentNode_->type_ == PICKUP) && (nodeReachTime < nextLabel->currentNode_->requestTime_))
             return nextLabel->currentNode_->requestTime_;
         else
@@ -784,7 +784,7 @@ void LinkedGreedyLabels::updateReachTimes1(PGreedyLabel &preLabel) {
         }
 
         currentLabel->child_->reachTime_ = childReachTime;
-        if ((currentLabel->currentNode_->locationID_ == currentLabel->child_->currentNode_->locationID_)&&
+        if ((durationMatrix_[currentLabel->currentNode_->locationID_][currentLabel->child_->currentNode_->locationID_] == 0)&&
             (currentLabel->currentNode_->initialType_ != SOURCE))
             currentLabel->child_->departTime_ = childReachTime;
         else
@@ -984,7 +984,7 @@ void LinkedGreedyLabels::updateTailDepart() {
 
 void LinkedGreedyLabels::updateTailDepart1() {
     if (tail_->currentNode_->type_!= SOURCE) {
-        if (tail_->parent_->currentNode_->locationID_ == tail_->currentNode_->locationID_)
+        if (durationMatrix_[tail_->parent_->currentNode_->locationID_][tail_->currentNode_->locationID_] == 0)
             tail_->departTime_ = tail_->reachTime_;
         else
             tail_->departTime_ = tail_->reachTime_ + tail_->currentNode_->deltaTime_;
