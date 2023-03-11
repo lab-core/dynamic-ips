@@ -326,6 +326,40 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
             }
         }
 
+        else {
+            if (EpochInst->parameters_->vehicle_portion_ < 1) {
+                std::vector<PVehicle> vehicleList = EpochInst->vehicles_;
+                std::stable_sort(vehicleList.begin(), vehicleList.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+                    return lhs->score_ < rhs->score_;});
+                int portion = (int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbVehicles_);
+                if (EpochInst->getNbUnselectedVehicles() < (0.75 * portion))
+                    EpochInst->resetVehicleSelection();
+                for (int v = 0; v < vehicleList.size(); v++) {
+                    EpochInst->vehicles_[vehicleList[v]->vehicleID_]->vehicleIndex_ = -1;
+                    isudObj_->availableRoutes_[vehicleList[v]->vehicleID_].clear();
+                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[vehicleList[v]->vehicleID_]->selected_)
+                        &&(EpochInst->nbRequests_ > 0)) {
+                        subProSolve.emplace_back(
+                                std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[vehicleList[v]->vehicleID_],
+                                                                     subProOptions_));
+                        EpochInst->vehicles_[v]->vehicleIndex_ = isudObj_->nbVehicles_;
+                        isudObj_->nbVehicles_++;
+                    }
+                }
+                vehicleList.clear();
+            }
+            else {
+                for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
+                    isudObj_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].clear();
+                    subProSolve.emplace_back(
+                            std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
+                    EpochInst->vehicles_[v]->vehicleIndex_ = isudObj_->nbVehicles_;
+                    isudObj_->nbVehicles_++;
+                }
+
+            }
+        }
+
         std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
         std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
