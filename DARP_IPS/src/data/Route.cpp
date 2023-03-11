@@ -73,7 +73,7 @@ void Route::addNode1(PNode &node) {
 
     float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     plannedReachTime_.push_back(reachTime);
-    if ((routeNodes_.back()->locationID_ == node->locationID_)&&(routeNodes_.back()->initialType_ != SOURCE))
+    if ((durationMatrix_[routeNodes_.back()->locationID_][node->locationID_] == 0)&&(routeNodes_.back()->initialType_ != SOURCE))
         plannedDepartTime_.push_back(reachTime);
     else
         plannedDepartTime_.push_back(reachTime + node->deltaTime_);
