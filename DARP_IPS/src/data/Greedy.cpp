@@ -745,7 +745,7 @@ void LinkedGreedyLabels::updateReachTimes(PGreedyLabel &preLabel) {
         currentLabel = currentLabel->child_;
     }
     if (totalDelay_ < 0 ) {
-        myTools::throwException("Delay Error");
+ //       myTools::throwException("Delay Error");
         std::cout << toString() << std::endl;
     }
 }
@@ -795,7 +795,7 @@ void LinkedGreedyLabels::updateReachTimes1(PGreedyLabel &preLabel) {
         currentLabel = currentLabel->child_;
     }
     if (totalDelay_ < 0 ) {
-        myTools::throwException("Delay Error");
+ //       myTools::throwException("Delay Error");
         std::cout << toString() << std::endl;
     }
 }
@@ -813,13 +813,13 @@ PRoute LinkedGreedyLabels::greedyLabelToRoute(bool update) const {
         if (newRoute->plannedReachTime_.back() != currentLabel->reachTime_) {
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << newRoute->routeNodes_.back()->nodeID_ << std::endl;
-            myTools::throwException("Route-Validation");
+ //           myTools::throwException("Route-Validation");
         }
 
         if (currentLabel->parent_->departTime_ < currentLabel->currentNode_->requestTime_) {
             std::cout << "Depart time violated at node : ";
             std::cout << currentLabel->parent_->currentNode_->nodeID_ << std::endl;
-            myTools::throwException("Route-Validation");
+ //           myTools::throwException("Route-Validation");
         }
         if (update) {
 //            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;

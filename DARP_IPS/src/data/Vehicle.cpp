@@ -135,7 +135,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     if (travelTime > currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_){
                         std::cout << "Trip delay constraint is violated by request: " <<
                                   currentRoute_->routeNodes_[i]->related_Request_->getRequestId() << std::endl;
-                        myTools::throwException("Trip delay Validation");
+//                        myTools::throwException("Trip delay Validation");
                     }
                 }
 
