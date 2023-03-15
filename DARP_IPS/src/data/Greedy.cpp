@@ -469,13 +469,16 @@ void LinkedGreedyLabels::findInsertPlace2(PNode &pickNode, PNode &dropNode, floa
         else {
             float endTime = tail_->departTime_;
             float curDelay = totalDelay_;
-
+            // insert pick up node
             insertNode1(prePick, pickNode, removedLabels);
             PGreedyLabel pickLabel = prePick->child_;
+
+            // check the feasibility
             if (!isTimeViolated(prePick->child_)){
                 preDrop = prePick->child_;
                 PGreedyLabel endLabel = nullptr;
                 PGreedyLabel currentIndex = pickLabel;
+                // find the position to insert drop node
                 while (currentIndex->child_ != nullptr) {
                     if (currentIndex->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
                         endLabel = currentIndex->child_;
@@ -484,25 +487,28 @@ void LinkedGreedyLabels::findInsertPlace2(PNode &pickNode, PNode &dropNode, floa
                         currentIndex = currentIndex->child_;
                 }
                 while (preDrop != endLabel) {
+                    // insert drop node
                     insertNode1(preDrop, dropNode, removedLabels);
                     PGreedyLabel dropLabel = preDrop->child_;
                     dropLabel->travelResource_ = maxDuration - (dropLabel->reachTime_ - pickLabel->departTime_);
+
+                    // check the feasibility
                     if (!isTimeViolated(prePick->child_)){
                         deltaDelay = totalDelay_ - curDelay;
                         DeltaT = tail_->departTime_ - endTime;
-                        if (deltaDelay <= position->deltaDelay_) {
+                        if (deltaDelay < position->deltaDelay_) {
                             if (preDrop == pickLabel)
                                 position->updatePosition(prePick, prePick, deltaDelay,DeltaT);
                             else
                                 position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
-                        } /*else if (deltaDelay == position->deltaDelay_) {
+                        } else if (deltaDelay == position->deltaDelay_) {
                             if (DeltaT < position->deltaLength_) {
                                 if (preDrop == pickLabel)
                                     position->updatePosition(prePick, prePick, deltaDelay,DeltaT);
                                 else
                                     position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
                             }
-                        }*/
+                        }
                     }
                     removeLabel(dropLabel, removedLabels);
                     preDrop = preDrop->child_;

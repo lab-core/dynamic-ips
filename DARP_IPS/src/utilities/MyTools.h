@@ -133,7 +133,7 @@ const int MAX_SIZE = 2000;
 static const int DECIMALS = 3;          // precision when printing floats
 static const float TimePerMile = 10;   // travel time per mile distance
 static const int sentenceSize = 47;
-static const int ServiceTime = 0;
+static const int ServiceTime = 30;
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;

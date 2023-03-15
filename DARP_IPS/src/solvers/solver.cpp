@@ -103,7 +103,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
 
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
-            GreedyModel_->GreedySolverFast(EpochInst);
+            GreedyModel_->GreedyAssignment(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 vehicleObj->vehicleIndex_ = -1;
                 if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
@@ -306,7 +306,7 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
 
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
-            GreedyModel_->GreedySolverFast(EpochInst);
+            GreedyModel_->GreedyAssignment(EpochInst);
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 vehicleObj->vehicleIndex_ = -1;
                 isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -466,6 +466,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
+        if (elapsedTime_ > 10)
+            break;
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
         if (commitTime > std::max(avg, 5)) {

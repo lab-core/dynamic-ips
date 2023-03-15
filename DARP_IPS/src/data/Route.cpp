@@ -133,9 +133,11 @@ std::string Route::toString() const {
     repStr << "# ------------------------------------------------------------------------------------------------------------------" << std::endl;
     repStr << std::left << std::setw(6) << "#      ";
     repStr << std::left << std::setw(22) << "ACTION_DESCRIPTION";
-    repStr << std::left << std::setw(9) << "NODE_ID" << std::right;
+    repStr << std::left << std::setw(9) << " NODE_ID" << std::right;
     repStr << std::right << std::setw(9) << " REACH_TIME"<< "(s)  ";
     repStr << std::right << std::setw(9) << " DEPART_TIME"<< "(s)  ";
+    /*repStr << std::right << std::setw(9) << " PREACH_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(9) << " PDEPART_TIME"<< "(s)  ";*/
     repStr << std::right << std::setw(9) << " TRAVEL_TIME"<< "(s)  ";
     repStr << std::right << std::setw(10) << " EARLy_PICK"<< "(s)  ";
     repStr << "#PASSENGERS" <<std::endl;
@@ -147,6 +149,8 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(9) << routeNodes_[0]->nodeID_;
     repStr << std::right << std::setw(9) << routeNodes_[0]->reachTime_ << " (s)  ";
     repStr << std::right << std::setw(9) << routeNodes_[0]->departTime_ << " (s)  ";
+    /*repStr << std::right << std::setw(9) << plannedReachTime_[0] << " (s)  ";
+    repStr << std::right << std::setw(9) << plannedDepartTime_[0] << " (s)  ";*/
     repStr << std::right << std::setw(11) << "0" << " (s)  ";
     repStr << std::right << std::setw(11) << "0" << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
@@ -163,6 +167,8 @@ std::string Route::toString() const {
         repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;
         repStr << std::right << std::setw(9) << routeNodes_[i]->reachTime_ << " (s)  ";
         repStr << std::right << std::setw(9) << routeNodes_[i]->departTime_ << " (s)  ";
+        /*repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
+        repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";*/
         if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i])||(routeNodes_[i]->reachTime_ != plannedReachTime_[i])){
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << routeNodes_[i]->nodeID_ << std::endl;

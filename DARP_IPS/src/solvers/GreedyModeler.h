@@ -23,13 +23,12 @@ public:
     GreedyModeler();
     virtual ~GreedyModeler();
 
-    void initializationFast(PInstance &PInst);
+    void initialization(PInstance &PInst);
     void solutionToRoute(PInstance &PInst);
+    // Greedy solver
     void GreedySolver(PInstance &PInst);
-    void GreedySolver(PInstance &PInst, vector2D<PRoute> &availableRoutes, int size);
-    void GreedySolverFast(PInstance &PInst);
-    // this function only solve greedy and does not change the current routes
-    void solveInsertionFast(PInstance &PInst);
+    void GreedyAssignment(PInstance &PInst);
+    void solveInsertion(PInstance &PInst);
     void solveAssignment(PInstance &PInst);
 };
 
