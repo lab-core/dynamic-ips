@@ -189,6 +189,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
     if (solutionRoute_ == nullptr) {
         solutionRoute_ = std::make_shared<Route>(vehicleID_);
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
+        solutionRoute_->plannedDepartTime_.back() = solutionRoute_->plannedReachTime_.back();
     }
     if (currentRoute_->routeSize_ > 1) {
         if (idle_){
@@ -271,6 +272,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
 
 // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
 void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
+    if (idle_)
+        solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
@@ -290,8 +293,6 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
             }
         }
     }
-    else
-        solutionRoute_->addNode1(pInst->instGraph_->sinkNodes_[vehicleID_]);
 }
 
 void Vehicle::updateDepartTime(float departTime) {
