@@ -12,11 +12,11 @@
 
 class GreedyModeler {
 public:
-    std::vector<PLinkedGreedyLabels> solutionList_;
+    std::vector<PGreedyRoute> solutionList_;
     myTools::Timer *greedyTime_;
     myTools::Timer *greedyAssignTime_;
     std::vector<int> selectedVehicles_;
-    std::vector<PGreedyLabel> removedLabels_;
+    std::vector<PStopLabel> greedyLabelPool_;
     std::vector<PInsertPosition> positionList_;
 
     //Constructor

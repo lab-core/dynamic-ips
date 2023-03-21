@@ -163,7 +163,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
                 // constraints 8a -------------------
                 IloExpr expr8(env);
-                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->deltaTime_
+                expr8 = U[v][i] + PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->serviceTime_
                         + durationMatrix_[PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]->locationID_]
                         [PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[j]]->locationID_]*X[v][i][j]
                         - U[v][j] - 27000 * (1 - X[v][i][j]);
@@ -193,7 +193,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             // constraints 13a -------------------
             IloExpr expr13(env);
             expr13 = U[v][PInst->instGraph_->nodes_[onboardID]->nodeIndex_] - PInst->instGraph_->nodes_[onboardID]->related_Request_->pickTime_
-                     - PInst->instGraph_->nodes_[onboardID]->deltaTime_;
+                     - PInst->instGraph_->nodes_[onboardID]->serviceTime_;
             MIPModel.add(expr13 <= PInst->instGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);
             MIPModel.add(expr13 >= PInst->instGraph_->nodes_[onboardID]->related_Request_->minTravelTime_);
         }

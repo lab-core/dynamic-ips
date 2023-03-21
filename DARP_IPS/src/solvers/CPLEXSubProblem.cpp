@@ -170,7 +170,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
             // constraints 7c -------------------
             IloExpr expr7(env_);
 
-            expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->deltaTime_
+            expr7 = U[i] + subGraph_->nodes_[subGraph_->intToNodeID_[i]]->serviceTime_
                     + durationMatrix_[subGraph_->nodes_[subGraph_->intToNodeID_[i]]->locationID_]
                     [subGraph_->nodes_[subGraph_->intToNodeID_[j]]->locationID_]- U[j] - 27000 * (1 - X[i][j]);
 
@@ -200,9 +200,9 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
         // constraints 12c -------------------
         IloExpr expr12(env_);
         /*expr12 = U[subGraph_->nodeIDToInt_[onboardID]] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
-                 - subGraph_->nodes_[onboardID]->related_Request_->deltaTime_;*/
+                 - subGraph_->nodes_[onboardID]->related_Request_->serviceTime_;*/
         expr12 = U[subGraph_->nodes_[onboardID]->nodeIndex_] - subGraph_->nodes_[onboardID]->related_Request_->pickTime_
-                 - subGraph_->nodes_[onboardID]->deltaTime_;
+                 - subGraph_->nodes_[onboardID]->serviceTime_;
 
 //        float t = (*subGraph_->nodes_[onboardID]->related_Request_)->minTravelTime_;
         SubProModel_.add(expr12 <= subGraph_->nodes_[onboardID]->related_Request_->maxTravelTime_);

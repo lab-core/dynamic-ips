@@ -466,7 +466,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-        if (elapsedTime_ > 10)
+        if (elapsedTime_ > 500)
             break;
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());

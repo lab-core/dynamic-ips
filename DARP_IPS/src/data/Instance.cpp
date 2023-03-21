@@ -151,7 +151,7 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
             repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
 
-//            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->deltaTime_;
+//            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->serviceTime_;
             float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
             if (durationMatrix_[instGraph_->pickNodes_[i]->locationID_][instGraph_->dropNodes_[i]->locationID_] == 0)
                 travelTime = 0;
@@ -246,24 +246,30 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
     }
 
-    // add unperformed requests
-    for (auto & vehicleObj : mainInst->vehicles_) {
-        if (vehicleObj->currentRoute_->routeSize_ > 1) {
-            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP){
-                    addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
-                    instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+    if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
+        // add unperformed requests
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ > 1) {
+                for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                    if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                        addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
+                        instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
 //                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
-                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
-                }
-                // adding onboard nodes to the graph
-                else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
-                    (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && vehicleObj->currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)){
-                    instGraph_->nodes_.emplace(std::pair<std::string, PNode> (vehicleObj->currentRoute_->routeNodes_[i]->nodeID_, vehicleObj->currentRoute_->routeNodes_[i]));
-                    instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                    vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
-                    instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
-                    instGraph_->nbNodes_++;
+                        instGraph_->addNewNode(
+                                mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
+                    }
+                        // adding onboard nodes to the graph
+                    else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED) ||
+                             (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED &&
+                              vehicleObj->currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)) {
+                        instGraph_->nodes_.emplace(
+                                std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
+                                                              vehicleObj->currentRoute_->routeNodes_[i]));
+                        instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+                        vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
+                        instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
+                        instGraph_->nbNodes_++;
+                    }
                 }
             }
         }

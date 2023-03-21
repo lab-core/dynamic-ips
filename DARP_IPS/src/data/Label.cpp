@@ -139,7 +139,7 @@ void Label::extend(Node *outNode) {
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     reachedTime_ = passedTime_+travelTime;
     for (auto &node: openNode_) {
-        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ - passedTime_);
+        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ - passedTime_);
     }
     if (outNode->type_ == DROPOFF) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
@@ -177,7 +177,7 @@ void Label::extend(Node *outNode) {
     }*/
 
 
-    passedTime_ = reachedTime_ + outNode->deltaTime_;
+    passedTime_ = reachedTime_ + outNode->serviceTime_;
 
 //    pathNodes_.push_back(outNode->nodeID_);
     pathNode_.push_back(outNode);
@@ -192,8 +192,8 @@ void Label::extend1(Node *outNode) {
     if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE)){
         reachedTime_ = passedTime_ + travelTime;
         for (auto &node: openNode_) {
-            travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->deltaTime_ -
-                                                                             passedTime_);
+            travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
+                                                                            passedTime_);
         }
     }
     else
@@ -231,7 +231,7 @@ void Label::extend1(Node *outNode) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
     if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE))
-        passedTime_ = reachedTime_ + outNode->deltaTime_;
+        passedTime_ = reachedTime_ + outNode->serviceTime_;
 
 //    pathNodes_.push_back(outNode->nodeID_);
     pathNode_.push_back(outNode);
@@ -271,7 +271,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     for (auto &nodeObj: openNode_) {
         float travelToDrop =
                 durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
-                outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
+                outNode->serviceTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
             return false;
@@ -279,8 +279,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     /*if ((*currentNode_)->locationID_ != outNode->locationID_) {
         for (auto &nodeObj: openNode_) {
             float travelToDrop =
-                    (*currentNode_)->deltaTime_ + durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
-                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
+                    (*currentNode_)->serviceTime_ + durationMatrix_[(*currentNode_)->locationID_][outNode->locationID_] +
+                    outNode->serviceTime_ + durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
 
             if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
                 return false;
@@ -288,7 +288,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     }
     else{
         for (auto &nodeObj: openNode_) {
-            float travelToDrop = outNode->deltaTime_ +
+            float travelToDrop = outNode->serviceTime_ +
                     durationMatrix_[outNode->locationID_][(*nodeObj)->locationID_];
             if (travelResources_[(*nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
                 return false;
@@ -296,8 +296,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     }*/
 
     /*for (auto & nodeObj: openNodes_) {
-        float travelToDrop = currentNode_->deltaTime_ + durationMatrix_[currentNode_->locationID_][outNode->locationID_] +
-                outNode->deltaTime_ + durationMatrix_[outNode->locationID_][nodeObj->locationID_];
+        float travelToDrop = currentNode_->serviceTime_ + durationMatrix_[currentNode_->locationID_][outNode->locationID_] +
+                outNode->serviceTime_ + durationMatrix_[outNode->locationID_][nodeObj->locationID_];
         *//*if (travelResource_[nodeObj->nodeID_] <  travelToDrop)
             return false;*//*
         if (travelResources_[nodeObj->related_Request_->taskIndexLabel_] <  travelToDrop)
@@ -308,7 +308,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
 
 
     /*for (auto & nodeObj : openNodes_) {
-        float travelDuration = reachTime - openReachTime_[nodeObj->nodeID_] + outNode->deltaTime_ +
+        float travelDuration = reachTime - openReachTime_[nodeObj->nodeID_] + outNode->serviceTime_ +
                 travelMat->queryTravelTime(outNode, *nodeObj->pairNode_);
         if (travelDuration > (*nodeObj->related_Request_)->maxTravelTime_){
             return false;
@@ -350,7 +350,7 @@ bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int ca
         for (auto &nodeObj: openNode_) {
             float travelToDrop =
                     durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
-                    outNode->deltaTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
+                    outNode->serviceTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
             if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
                 return false;

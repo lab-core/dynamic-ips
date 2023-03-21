@@ -29,7 +29,7 @@ public:
     float reachTime_;                   // the time that vehicle reach to the node
     float departTime_;                   // the time that vehicle reach to the node
     int nbPassengers_;                  // number of passengers to pick up or drop off
-    float deltaTime_;                   // time to perform pick up or drop off
+    float serviceTime_;                 // time to perform pick up or drop off
     NodeStatus nodeStatus_;             // status of the node: no action, planned, completed
     float requestTime_;                 // earliest possible pick up time for the request (request time)
     double bestLabelReduceCost_;        // smallest reduced cost af active vehicles

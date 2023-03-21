@@ -149,7 +149,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                     if (i == currentRoute_->routeSize_-1 && departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
                         idleTime_ += (startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_);
                         departTime_ = startTime_ + static_cast<float>((epoch + 1) * epochLength);
-              //          currentRoute_->routeNodes_[i]->departTime_ = departTime_;
+              //          currentRoute_->routeNodes_[i]->leaveTime_ = leaveTime_;
                         currentRoute_->plannedDepartTime_[i] = departTime_;
                         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
                         solutionRoute_->plannedDepartTime_.back() = departTime_;
@@ -178,7 +178,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         idleTime_ += (startTime_ + static_cast<float>((epoch+1) * epochLength) - departTime_);
         departTime_ = startTime_ + static_cast<float>((epoch+1) * epochLength);
         currentRoute_->plannedDepartTime_[0] = departTime_;
-//        currentRoute_->routeNodes_.back()->departTime_ = departTime_;
+//        currentRoute_->routeNodes_.back()->leaveTime_ = leaveTime_;
 //        solutionRoute_->routeNodes_.back()->reachTime_ = departureTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
         solutionRoute_->plannedDepartTime_.back() = departTime_;
@@ -230,10 +230,10 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                     if (i == currentRoute_->routeSize_-1 && departTime_ < startTime_ + elapsedTime + epochLength) {
                         idleTime_ += (startTime_ + elapsedTime + epochLength - departTime_);
                         departTime_ = startTime_ + elapsedTime + epochLength;
-               //         currentRoute_->routeNodes_[i]->departTime_ = departTime_;
+               //         currentRoute_->routeNodes_[i]->leaveTime_ = leaveTime_;
                         currentRoute_->plannedDepartTime_[i] = departTime_;
                         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
-               //         solutionRoute_->plannedDepartTime_.back() = departTime_;
+               //         solutionRoute_->plannedDepartTime_.back() = leaveTime_;
                         idle_ = true;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
@@ -265,7 +265,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         departTime_ = startTime_ + elapsedTime + epochLength;
         currentRoute_->plannedDepartTime_[0] = departTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
-//        solutionRoute_->plannedDepartTime_.back() = departTime_;
+//        solutionRoute_->plannedDepartTime_.back() = leaveTime_;
         idle_ = true;
     }
 }

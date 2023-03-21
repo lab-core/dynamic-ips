@@ -307,6 +307,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
+    bool greedyReOptimize = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1;
 
@@ -350,6 +351,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "OneIter "))
             file >> oneIter;
+
+        else if (strEndWith(title, "GreedyReOptimize "))
+            file >> greedyReOptimize;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -415,7 +419,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
-                                                          static_cast<warmStart>(initialStart),
+                                                          greedyReOptimize,static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased, isPickDropPossible,
