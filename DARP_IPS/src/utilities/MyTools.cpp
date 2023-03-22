@@ -209,7 +209,13 @@ namespace myTools {
 
         }
         return cpuSinceStart_;
-    } //end dSinceStart
+    }
+
+    void Timer::addTime(double sec) {
+        auto timeToAdd = std::chrono::duration<double>(sec);
+        cpuSinceInit_ = cpuSinceInit_ + timeToAdd;
+    }
+    //end dSinceStart
 
     //************************************************************************
     //                     FUNCTIONS FOR BitVector CLASS

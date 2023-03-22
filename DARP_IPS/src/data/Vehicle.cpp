@@ -192,11 +192,11 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         solutionRoute_->plannedDepartTime_.back() = solutionRoute_->plannedReachTime_.back();
     }
     if (currentRoute_->routeSize_ > 1) {
-        if (idle_){
+        /*if (idle_){
             float departure = std::max(startTime_ + elapsedTime, solutionRoute_->plannedDepartTime_.back());
             idleTime_ -= (departTime_ - (departure));
             updateDepartTime(departure);
-        }
+        }*/
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + elapsedTime) {
             onboards_.clear();
@@ -310,6 +310,16 @@ void Vehicle::updateDepartTime(float departTime) {
     currentRoute_->plannedDepartTime_ = newRoute->plannedDepartTime_;
     currentRoute_->plannedReachTime_ = newRoute->plannedReachTime_;
     currentRoute_->totalDelay_ = newRoute->totalDelay_;
+}
+
+void Vehicle::updateCurrentRoute(float elapsedTime) {
+    if (currentRoute_->routeSize_ > 1 && idle_) {
+        if (idle_) {
+            float departure = std::max(startTime_ + elapsedTime, solutionRoute_->plannedDepartTime_.back());
+            idleTime_ -= (departTime_ - (departure));
+            updateDepartTime(departure);
+        }
+    }
 }
 
 

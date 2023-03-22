@@ -59,6 +59,7 @@ public:
     // update the situation of nodes and ride requests
     void updateState(int epoch, int &epochLength);
     void updateStateTime(float elapsedTime, float &epochLength);
+    void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
     void finalizeSolutionRoutes(PInstance & pInst) const;

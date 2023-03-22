@@ -112,8 +112,12 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
             newLabel->parent_ = PLastStop_;
             PLastStop_->child_ = newLabel;
             PLastStop_ = newLabel;
+            if (newLabel->currentNode_->nodeStatus_ == COMMITTED) {
+                PCurrentStop_ = newLabel;
+                departureTime_ = newLabel->leaveTime_;
+            }
             if (newLabel->currentNode_->type_ == DROPOFF) {
-                if (newLabel->currentNode_->nodeStatus_ == DEFINED) {
+                if (newLabel->currentNode_->related_Request_->requestStatus_ == NO_ACTION) {
                     PStopLabel currentLabel = PLastStop_;
                     while (currentLabel->parent_ != nullptr) {
                         if (currentLabel->parent_->currentNode_->type_ == PICKUP &&

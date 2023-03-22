@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "limited_manhattan-vehicles";
+    std::string vehicleFolder = "manhattan-vehicles-original";
     int nbLocations = 1718;
     // build the path of input files
     // create output files for epoch results
@@ -68,7 +68,10 @@ int main(int argc, char** argv) {
         }
         else if (mainInst->parameters_->solutionMode_ == ANYTIME){
             try {
-                instanceSolver->anyTimeSolver(mainInst, inputPaths);
+                /*if (mainInst->parameters_->mainAlgorithm_ == GREEDY)
+                    instanceSolver->anyTimeSolverEvent(mainInst, inputPaths);
+                else*/
+                    instanceSolver->anyTimeSolver(mainInst, inputPaths);
             } catch (const std::exception &e) {
                 std::cout << "ANY_TIME solving caught an exception=: "
                           << e.what() << std::endl;

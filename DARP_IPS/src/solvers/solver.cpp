@@ -444,7 +444,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
     int nbReceivedRequest;
     epoch_ = 0;
     std::vector<float> EpochTime = {1,1,1};
-    int commitTime = 5;
+    int commitTime = mainInst->parameters_->committedTime_;
 
     // start simulation timer
     mainInst->setInitialTimes();
@@ -466,12 +466,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-        if (elapsedTime_ > 500)
-            break;
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
-        if (commitTime > std::max(avg, 5)) {
-            commitTime = std::max(avg, 5);
+        if (commitTime > std::max(avg, (int)mainInst->parameters_->committedTime_)) {
+            commitTime = std::max(avg, (int)mainInst->parameters_->committedTime_);
             std::cout << "dec commit time: " << commitTime << std::endl;
         }
         if (commitTime < epochRuntime_) {
@@ -485,6 +483,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
+            vehicleObj->updateCurrentRoute(elapsedTime_);
             vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
@@ -501,18 +500,80 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
 
         /*if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
             break;*/
-        if (EpochInst->nbRequests_ == 0) {
+        if (EpochInst->nbNewRequests_ == 0) {
+            std::cout << "next event" << std::endl;
             simulationTime_->stop();
+            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
  //           preprocessTime_->stop();
  //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
             goto nextEpoch;
         }
 //        preprocessTime_->stop();
+        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
+            solveCG_ISUD_final(EpochInst, mainInst, inputPaths);
+        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+            GreedyModel_->GreedySolver(EpochInst);
+
+        simulationTime_->stop();
+        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+        epoch_++;
+    }
+
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        vehicleObj->finalizeSolutionRoutes(mainInst);
+    }
+
+}
+
+void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
+    // define required variables
+    int nbReceivedRequest;
+    epoch_ = 0;
+
+    // start simulation timer
+    mainInst->setInitialTimes();
+    for (int v = 0; v < mainInst->nbVehicles_; ++v) {
+        mainInst->vehicles_[v]->setEmptyRoute(mainInst);
+        mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
+    }
+
+    nbReceivedRequest = mainInst->nbOnboards_;
+    PInstance EpochInst = std::make_shared<Instance>(*mainInst);
+
+    while (nbReceivedRequest < mainInst->nbRequests_) {
+        nextEpoch:
+        simulationTime_->start();
+
+        elapsedTime_ = mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_;
+        std::cout << "---------------------"<< std::endl;
+        std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
+        std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
+        std::cout << " EPOCH: " << epoch_ << std::endl;
+        std::cout << "---------------------"<< std::endl;
+
+        // update vehicle status
+        mainInst->nbOnboards_ = 0;
+        isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
+            mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
+        }
+        isudObj_->nbRoutes_ = 0;
+
+        // resetting a subInstance
+        EpochInst->resetInstance();
+        // reading the data received in previous epoch
+        EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        EpochInst->updatePenalties(elapsedTime_);
+        nbReceivedRequest += EpochInst->nbNewRequests_;
+
         if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
-        else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
-            solveCG_ISUD_final(EpochInst, mainInst, inputPaths);
+
+        // update routes
+        for (auto &vehicleObj: mainInst->vehicles_)
+            vehicleObj->updateCurrentRoute(elapsedTime_);
 
         simulationTime_->stop();
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);

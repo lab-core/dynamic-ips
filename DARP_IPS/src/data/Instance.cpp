@@ -160,7 +160,7 @@ std::string Instance::solutionToString() {
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
  //               myTools::throwException("Trip delay Validation");
             }
-            if (travelTime - requests_[i]->minTravelTime_ < 0){
+            if (travelTime - requests_[i]->minTravelTime_ < -0.1){
                 std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
 //                myTools::throwException("Trip delay Validation");
             }

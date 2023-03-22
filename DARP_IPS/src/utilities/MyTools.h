@@ -226,6 +226,7 @@ namespace myTools {
         bool isInit() const;      // function to check initialization status
         void start();       // function to start the timer
         void stop();        // function to stop the timer
+        void addTime(double sec);
 
         // get the time spent since the initialization of the timer and since the last
         // time it was started
