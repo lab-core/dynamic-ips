@@ -5,13 +5,14 @@ betaParam = 240
 deltaPram = 420
 epochLength = 30
 penaltyL = 30
-committedTime = 10
-nbThreads = 12
-InitialDual = 1
+committedTime = 30
+nbThreads = 8
+InitialDual = 0
 mainAlgorithm = 3
 addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
+GreedyReOptimize = 0
 
 # ISUD PARAMETERS
 #
@@ -28,10 +29,10 @@ isTruncated = 1
 MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 0
-subproblemAlgorithm = 1
+subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
 usePick = 1
