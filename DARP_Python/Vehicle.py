@@ -6,6 +6,7 @@ import math
 import os
 import visualize as vf
 import utilities as uf
+import random
 
 
 class Vehicle(object):
@@ -68,8 +69,10 @@ class Vehicle(object):
             for cell in item.cells:
                 source_ids.append(int(cell[0]))
             source_ids = sorted(source_ids)
+            select_source_ids = random.choices(source_ids, k=self.nb_vehicle_per_district[count])
             for i in range(self.nb_vehicle_per_district[count]):
-                source_id = source_ids[i % len(source_ids)]
+                source_id = select_source_ids[i];
+  #              source_id = source_ids[i % len(source_ids)]
                 zone_id = network.cell_to_district[int(source_id)]
                 vehicle_data.append([vehicle_id, self.capacity, 0, 90000, source_id, source_id, zone_id])
                 vehicle_id = vehicle_id + 1

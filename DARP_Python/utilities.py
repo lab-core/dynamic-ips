@@ -164,7 +164,7 @@ def calculate_time_from_origin_sec(time_origin, start_hr, end_hr, start_min, end
 def create_vehicles_from_files(network, selected_districts=None,replace=False):
     for file in glob.glob(c.VEHICLES_DIR + "*.json"):
         vehicle_obj = Vehicle(len(network.districts), file_name=Path(file).stem)
-        vehicle_obj.create_vehicle_data_from_file(network=network, selected_districts=selected_districts,replace=replace)
+        vehicle_obj.create_vehicle_data_from_file(network=network, selected_districts=selected_districts, replace=replace)
         if selected_districts is not None:
             vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="limited_vehicles_plots")
             vehicle_obj.save_vehicle(folder_name="limited_manhattan-vehicles")

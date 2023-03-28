@@ -182,12 +182,26 @@ class Dataset(object):
     def restrict_to_district(self, districts):
         temp_df = []
         for item in districts:
-            selected_records = self.dataset[self.dataset.pickup_district == item.cartodb_id]
-            # selected_records = selected_records[selected_records.dropoff_district == item.cartodb_id]
+ #           selected_records = self.dataset[self.dataset.pickup_district == item.cartodb_id]
+            selected_records = self.dataset[self.dataset.pickup_district == item]
             temp_df.append(selected_records)
         temp_df = pd.concat(temp_df)
         self.dataset = pd.DataFrame(temp_df)
+
+        temp_df = []
+        for item in districts:
+            selected_records = self.dataset[self.dataset.dropoff_district == item]
+            temp_df.append(selected_records)
+        temp_df = pd.concat(temp_df)
+        self.dataset = pd.DataFrame(temp_df)
+
         self.dataset = self.dataset.sort_values(by=['tpep_pickup_datetime'])
+        self.update_state()
+
+    def remove_same_pick_drop(self):
+        for index, row in self.dataset.iterrows():
+            if row['pickup_ID'] == row['dropoff_ID']:
+                self.dataset = self.dataset.drop(index)
         self.update_state()
 
     def calculate_trip_per_district(self, network):
