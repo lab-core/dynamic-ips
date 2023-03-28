@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles-original";
+    std::string vehicleFolder = "manhattan-vehicles";
     int nbLocations = 1718;
     // build the path of input files
     // create output files for epoch results
