@@ -40,7 +40,8 @@ public:
     double maxReducedCost_;      // max threshold for the reduced costs selection in CP
     double minReducedCost_;
 
-    int isudIter_;
+    int isudIter_;              // number of isud iteration in each epoch
+    int TisudIter_;             // total isud iteration
     double objValue_;
     double GreedyObjValue_;
     double RPEpochSolveTime_;

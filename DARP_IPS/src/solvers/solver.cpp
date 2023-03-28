@@ -572,8 +572,8 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
             GreedyModel_->GreedySolver(EpochInst);
 
         // update routes
-        for (auto &vehicleObj: mainInst->vehicles_)
-            vehicleObj->updateCurrentRoute(elapsedTime_);
+        /*for (auto &vehicleObj: mainInst->vehicles_)
+            vehicleObj->updateCurrentRoute(elapsedTime_);*/
 
         simulationTime_->stop();
         (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
@@ -891,11 +891,24 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
-    mainInst->instRepStr_ << epoch_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << epoch_-1 << "," << isudObj_->TisudIter_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->RPTime_->dSinceInit().count() << "," << isudObj_->CPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->isudMIPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << subProblemTime_->dSinceInit().count() << "," << GreedyModel_->greedyTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << GreedyModel_->greedyAssignTime_->dSinceInit().count() << ",";
+    float TotalTime = isudObj_->isudTime_->dSinceInit().count() + subProblemTime_->dSinceInit().count() +
+            GreedyModel_->greedyTime_->dSinceInit().count();
+    mainInst->instRepStr_ << TotalTime << ",";
+    if (isudObj_->isudTime_->dSinceInit().count() > 0 ){
+        mainInst->instRepStr_ << isudObj_->RPTime_->dSinceInit().count()/isudObj_->isudTime_->dSinceInit().count()<< ",";
+        mainInst->instRepStr_ << isudObj_->CPTime_->dSinceInit().count()/isudObj_->isudTime_->dSinceInit().count()<< ",";
+    }
+    else{
+        mainInst->instRepStr_ << 0 << "," << 0 << ",";
+    }
+    mainInst->instRepStr_ << isudObj_->isudTime_->dSinceInit().count()/TotalTime << ",";
+    mainInst->instRepStr_ << subProblemTime_->dSinceInit().count()/TotalTime << ",";
+    mainInst->instRepStr_ << GreedyModel_->greedyTime_->dSinceInit().count()/TotalTime << ",";
     return repStr.str();
 }
 

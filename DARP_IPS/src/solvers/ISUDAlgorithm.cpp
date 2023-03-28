@@ -23,6 +23,7 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
 
     isudMIPTime_ = new myTools::Timer(); isudMIPTime_->init();
     isudIter_ = 0;
+    TisudIter_ = 0;
     nbRoutes_ = 0;
     nbCoveredTasks_ = 0;
     cpIncDegree_ = 2;
@@ -479,6 +480,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         // solve RP with MIP solver
         CompPro_->fractionalZ_.clear();
         solveRP_MIP(pInst, 0, inputPaths);
+        TisudIter_++;
         std::cout << "RP improve: " << objValue_ << std::endl;
         RPTime_->stop();
         // if objective improves, the CP is build
@@ -528,6 +530,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
    //             std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
      //           CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, generatedRoutes_);
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "CP improve: " << objValue_ << std::endl;
@@ -537,6 +540,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
                     if (pInst->parameters_->useZoom_){
                         isudMIPTime_->start();
                         solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
+                        TisudIter_++;
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
  //                           (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
@@ -709,6 +713,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                 break;
             }
             solveRP_MIP_Dual(pInst, 0, inputPaths);
+            TisudIter_++;
             std::cout << "RP improve: " << objValue_ << std::endl;
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
             isudIter_++;
@@ -755,6 +760,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "CP improve: " << objValue_ << std::endl;
@@ -764,6 +770,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                     if (pInst->parameters_->useZoom_){
                         isudMIPTime_->start();
                         solveRP_MIP_Dual(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
+                        TisudIter_++;
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
                             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", (int)MIPReducedPro_->compRoutes_.size());
@@ -917,6 +924,7 @@ void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &
                 break;
             }
             solveRP_MIP_Dual(pInst, 0, inputPaths);
+            TisudIter_++;
             std::cout << "RP improve: " << objValue_ << std::endl;
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
             isudIter_++;
@@ -963,6 +971,7 @@ void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "CP improve: " << objValue_ << std::endl;
@@ -972,6 +981,7 @@ void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &
                     if (pInst->parameters_->useZoom_){
                         isudMIPTime_->start();
                         solveRP_MIP(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
+                        TisudIter_++;
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
                             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", (int)MIPReducedPro_->compRoutes_.size());
@@ -1123,6 +1133,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
                 break;
             }
             solveRP_MIP_Partial(pInst, 0, inputPaths);
+            TisudIter_++;
             std::cout << "RP improve: " << objValue_ << std::endl;
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
             isudIter_++;
@@ -1173,6 +1184,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
                 CompPro_->solveModelPartial(pInst, zSolution_, routeSolution_);
+                TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
                 std::cout << "CP improve: " << objValue_ << std::endl;
@@ -1182,6 +1194,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
                     if (pInst->parameters_->useZoom_){
                         isudMIPTime_->start();
                         solveRP_MIP_Partial(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
+                        TisudIter_++;
                         if (previousObj > objValue_) {
                             previousObj = objValue_;
                             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", (int)MIPReducedPro_->compRoutes_.size());
@@ -1323,6 +1336,7 @@ void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
     }*/
     if (previousObj != objValue_){
         isudIter_++;
+        TisudIter_++;
         std::cout << "RP improve: " << objValue_ << std::endl;
         /*CPTime_->start();
         CompPro_->routesToAdd_.clear();

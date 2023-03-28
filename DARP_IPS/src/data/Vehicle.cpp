@@ -192,13 +192,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         solutionRoute_->plannedDepartTime_.back() = solutionRoute_->plannedReachTime_.back();
     }
     if (currentRoute_->routeSize_ > 1) {
-        /*if (idle_){
-            float departure = std::max(startTime_ + elapsedTime, solutionRoute_->plannedDepartTime_.back());
-            idleTime_ -= (departTime_ - (departure));
-            updateDepartTime(departure);
-        }*/
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < startTime_ + elapsedTime) {
+        if (departTime_ < startTime_ + elapsedTime + epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -221,7 +216,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
-                    ((currentRoute_->plannedDepartTime_[i] >= startTime_ + elapsedTime)&&
+                    ((currentRoute_->plannedDepartTime_[i] >= startTime_ + elapsedTime + epochLength)&&
                      (currentRoute_->plannedDepartTime_[i] != currentRoute_->plannedDepartTime_[i+1]))){
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedDepartTime_[i];
@@ -230,10 +225,9 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                     if (i == currentRoute_->routeSize_-1 && departTime_ < startTime_ + elapsedTime + epochLength) {
                         idleTime_ += (startTime_ + elapsedTime + epochLength - departTime_);
                         departTime_ = startTime_ + elapsedTime + epochLength;
-               //         currentRoute_->routeNodes_[i]->leaveTime_ = leaveTime_;
                         currentRoute_->plannedDepartTime_[i] = departTime_;
                         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
-               //         solutionRoute_->plannedDepartTime_.back() = leaveTime_;
+                        solutionRoute_->plannedDepartTime_.back() = departTime_;
                         idle_ = true;
                     }
                     numPassengers_ = currentRoute_->plannedPassengers_[i];
@@ -247,17 +241,14 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
                     currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
                     onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
-                    // determine committed nodes
-                    /*if (i < breakIndex + 2)
-                        currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
                 }
-                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
-                    currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;
+/*                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
+                    currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
             }
 
             currentRoute_->removeNode(breakIndex);
         }
-        if (currentRoute_->routeNodes_.size()-2 == onboards_.size())
+        if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
     else if (departTime_ < startTime_ + elapsedTime + epochLength){
@@ -265,7 +256,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         departTime_ = startTime_ + elapsedTime + epochLength;
         currentRoute_->plannedDepartTime_[0] = departTime_;
         solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
-//        solutionRoute_->plannedDepartTime_.back() = leaveTime_;
+        solutionRoute_->plannedDepartTime_.back() = departTime_;
         idle_ = true;
     }
 }
