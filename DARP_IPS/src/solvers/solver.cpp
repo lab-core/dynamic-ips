@@ -483,7 +483,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateCurrentRoute(elapsedTime_);
+//            vehicleObj->updateCurrentRoute(elapsedTime_);
             vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }

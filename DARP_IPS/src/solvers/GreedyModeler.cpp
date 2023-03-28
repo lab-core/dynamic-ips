@@ -105,10 +105,10 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
                                          PInst->requests_[i]->maxTravelTime_, greedyLabelPool_, positionList_[(*GRoute->Vehicle_)->vehicleID_]);
 
                 possibleDelay.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaDelay_);
-                if (GRoute->idle_) {
+                /*if (GRoute->idle_) {
                     GRoute->departureTime_ = GRoute->preDepartTime_;
                     GRoute->PLastStop_->leaveTime_ = GRoute->preDepartTime_;
-                }
+                }*/
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             if (solutionList_[vehicle_ID]->departureTime_ < PInst->requests_[i]->earlyPick_){
