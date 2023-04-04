@@ -13,6 +13,8 @@ def main(name):
                                           make_plot=True)
     vehicle_obj = Vehicle(len(manhattan_districts.districts))
 #    vf.plot_unused_vehicle(manhattan_districts, result_file="STATIC_GREEDY_20230217-0912", instance_name="20160225_07-120m", instance_folder="Instances-120", nb_vehicles=2000)
+
+    uf.create_vehicles_files_random_remove(network=manhattan_districts, file_name='vehicles_2000_4.csv')
     """CREATE DATASETS"""
 
     """SELECT DISTRICTS"""

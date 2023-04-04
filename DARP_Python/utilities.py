@@ -161,10 +161,11 @@ def calculate_time_from_origin_sec(time_origin, start_hr, end_hr, start_min, end
     return start_seconds, end_seconds
 
 
-def create_vehicles_from_files(network, selected_districts=None,replace=False):
+def create_vehicles_from_files(network, selected_districts=None, replace=False):
     for file in glob.glob(c.VEHICLES_DIR + "*.json"):
         vehicle_obj = Vehicle(len(network.districts), file_name=Path(file).stem)
-        vehicle_obj.create_vehicle_data_from_file(network=network, selected_districts=selected_districts, replace=replace)
+        vehicle_obj.create_vehicle_data_from_file(network=network, selected_districts=selected_districts,
+                                                  replace=replace)
         if selected_districts is not None:
             vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="limited_vehicles_plots")
             vehicle_obj.save_vehicle(folder_name="limited_manhattan-vehicles")
@@ -183,3 +184,49 @@ def create_vehicles_files(network, initial_vehicle):
             vehicle_obj.create_vehicle_data_from_districts(network=network)
             vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
             vehicle_obj.save_vehicle(folder_name="sufficient_manhattan-vehicles")
+
+
+def create_vehicles_files_random_remove(network, file_name):
+    df = pd.read_csv(c.VEHICLES_DIR + file_name)
+    # count the number of vehicles in zones
+    nb_vehicles = [500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900]
+    initial_total = 2000
+    while nb_vehicles:
+        num = nb_vehicles.pop()
+        counts = df['zone_ID'].value_counts().to_dict()
+        file = "vehicles_" + str(num) + "_" + str(4)
+        vehicle_obj = Vehicle(len(network.districts), file_name=file, nb_vehicles=num, capacity=4)
+
+        total = 0
+        new_counts = {}
+        n_to_remove = {}
+        for key, value in counts.items():
+            new_counts[key] = round((num * value) / initial_total)
+            total = total + new_counts[key]
+        if total != num:
+            new_counts[189] = new_counts[189] + num - total
+
+        for key, value in new_counts.items():
+            n_to_remove[key] = counts[key] - new_counts[key]
+
+        # Iterate over each group in the DataFrame
+        to_drop = []
+        for key, value in n_to_remove.items():
+            # Select n rows randomly from the current group
+            selected = df.loc[df['zone_ID'] == key].sample(value)
+            # Append the index of the selected rows to the list of rows to drop
+            to_drop.extend(selected.index)
+
+        # Drop the selected rows from the DataFrame
+        df = df.drop(to_drop)
+
+        # correct ids
+        v_id = 0
+        for index, row in df.iterrows():
+            row['vehicle_ID'] = v_id
+            v_id = v_id + 1
+
+        vehicle_obj.vehicle_data = df
+        vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_new_vehicles_plots")
+        vehicle_obj.save_vehicle(folder_name="sufficient_new_manhattan-vehicles")
+        initial_total = num
