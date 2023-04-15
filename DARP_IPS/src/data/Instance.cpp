@@ -277,7 +277,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
 
     // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (mainInst->requests_[i]->earlyPick_ <= simulationStartTime_ + elapsedTime ) {
+        if (mainInst->requests_[i]->earlyPick_ < simulationStartTime_ + elapsedTime ) {
             nbNewRequests_++;
             addRequest(mainInst->requests_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);

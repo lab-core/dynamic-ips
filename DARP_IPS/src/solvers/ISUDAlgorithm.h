@@ -94,6 +94,7 @@ public:
     void updateReducedCosts(PInstance &pInst);
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths);
 

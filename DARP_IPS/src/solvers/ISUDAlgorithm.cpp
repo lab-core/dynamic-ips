@@ -881,6 +881,42 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
         std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
     isudTime_->stop();
 }
+void ISUDAlgorithm::solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths) {
+    isudTime_->start();
+
+    double previousObj = objValue_;
+
+    // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
+    if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
+        for(auto & requestObj: pInst->requests_)
+            requestObj->dual_ = requestObj->CPDual_;
+        for(auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = vehicleObj->CPDual_;
+    }
+
+    /************************************************************************************************/
+    //                                     REDUCED PROBLEM
+    /************************************************************************************************/
+    RPTime_->start();
+    // solve RP with MIP solver
+    CompPro_->fractionalZ_.clear();
+    updateReducedCosts(pInst);
+    solveRP_MIP_Dual(pInst, 990, inputPaths);
+    TisudIter_++;
+    std::cout << "RP improve: " << objValue_ << std::endl;
+    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int)MIPReducedPro_->compRoutes_.size());
+    isudIter_++;
+    previousObj = objValue_;
+    RPTime_->stop();
+
+    std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    for (auto & requestObj : zSolution_)
+        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
+    MIPReducedPro_.reset();
+    MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
+    isudTime_->stop();
+}
 void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths) {
     isudTime_->start();
     if (pInst->parameters_->initialStart_ == GREEDY_START){
