@@ -411,6 +411,8 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
         else {
             if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
                 isudObj_->solveISUD_DualMIP(EpochInst, epoch_, inputPaths);
+                if (mainInst->parameters_->oneIter_)
+                    break;
             }
             else if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD){
                 if (EpochInst->parameters_->solutionMode_ == ANYTIME)
