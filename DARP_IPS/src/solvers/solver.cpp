@@ -737,6 +737,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
     // define required variables
+    bool MIP_Stop = true;
     int nbReceivedRequest;
     epoch_ = 0;
 
@@ -789,12 +790,24 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
 
         if (EpochInst->nbRequests_ == 0) {
- //           preprocessTime_->stop();
             simulationTime_->stop();
             epoch_++;
             goto nextEpoch;
         }
  //       preprocessTime_->stop();
+        if (MIP_Stop) {
+            if (epoch_ == 121) {
+                EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
+                for (auto &requestObj: EpochInst->requests_)
+                    requestObj->dual_ = requestObj->penalty_;
+                for (auto &vehicleObj: EpochInst->vehicles_)
+                    vehicleObj->dual_ = 0;
+            }
+            if (epoch_ == 124)
+                EpochInst->parameters_->oneIter_ = false;
+            if (epoch_ == 125)
+                break;
+        }
 
         if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
             solveCG_ISUD_final(EpochInst, mainInst, inputPaths);
