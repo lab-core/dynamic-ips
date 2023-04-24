@@ -410,7 +410,8 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
         }
         else {
             if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
-                isudObj_->solveISUD_DualMIP(EpochInst, epoch_, inputPaths);
+     //           isudObj_->solveISUD_DualMIP(EpochInst, epoch_, inputPaths);
+                isudObj_->solveCG(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -798,16 +799,18 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
  //       preprocessTime_->stop();
         if (MIP_Stop) {
-            if (epoch_ == 121) {
+            if (epoch_ == 199) {
                 EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
-            if (epoch_ == 124)
+            if (epoch_ == 121) {
+                EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
                 EpochInst->parameters_->oneIter_ = false;
-            if (epoch_ == 125)
+            }
+            if (epoch_ == 122)
                 break;
         }
 

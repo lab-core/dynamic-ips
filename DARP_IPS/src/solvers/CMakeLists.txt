@@ -11,7 +11,7 @@ set(SOURCE_FILES
         SubproModeler.cpp
         ZoomReducedProblem.cpp
         GreedyModeler.cpp
-        solver.cpp)
+        solver.cpp MasterPro.cpp MasterPro.h)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})

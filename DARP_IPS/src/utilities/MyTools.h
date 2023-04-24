@@ -70,6 +70,8 @@ class GreedyModeler;
 typedef std::shared_ptr<GreedyModeler> PGreedyModeler;
 struct insertPosition;
 typedef std::shared_ptr<insertPosition> PInsertPosition;
+class MasterPro;
+typedef std::shared_ptr<MasterPro> PMasterPro;
 // extern PTravelTime travelMat;
 
 // SubProblem solution status

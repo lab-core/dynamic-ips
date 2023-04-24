@@ -60,7 +60,7 @@ void ReducedProblem::ResetRPModel() {
 // this function adds routeVar to the model
 void ReducedProblem::addRouteVar(PRoute &newRoute) {
     MasterModeler::addRouteVarInt(routeVar_, newRoute, POSITIVE);
-        compRoutes_.push_back(newRoute);
+    compRoutes_.push_back(newRoute);
 }
 
 void ReducedProblem::addRouteVarPartial(PRoute &newRoute, PInstance &pInst) {
