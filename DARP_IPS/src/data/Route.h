@@ -38,6 +38,7 @@ public:
  //   std::shared_ptr<myTools::BitVector> column_;
     std::bitset<MAX_SIZE> column_;
     bool isCompatible_;
+    bool isAdded_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);

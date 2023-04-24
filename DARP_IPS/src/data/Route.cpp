@@ -22,6 +22,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
     isCompatible_ = false;
+    isAdded_ = false;
 }
 Route::~Route(){
     delete[] name_;
