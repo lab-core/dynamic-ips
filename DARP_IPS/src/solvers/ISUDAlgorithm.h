@@ -10,6 +10,7 @@
 #include "solvers/ComplementPro.h"
 #include "solvers/ZoomReducedProblem.h"
 #include "solvers/GreedyModeler.h"
+#include "solvers/MasterPro.h"
 
 //---------------------------------------------------------------------------------------------
 //  ISUD algorithm to solve the master problem
@@ -20,6 +21,7 @@ public:
 //    PReducedProblem ReducedPro_;
     PComplementPro CompPro_;
     PZoomReducedProblem MIPReducedPro_;
+    PMasterPro MasterPro_;
 //    std::unordered_map<std::string , PRoute> generatedRoutes_;        // list of all generated routes
 //    std::unordered_map<int, std::vector<PRoute>> availableRoutes_;    // list of available routes for each vehicle
     vector2D<PRoute> availableRoutes_;
@@ -97,11 +99,13 @@ public:
     void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
     void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRP_MIP_Partial(PInstance &pInst, int compDegree, InputPaths &inputPaths);
+    void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
     // Display function
     std::string toString() const;
     std::string toStringTimersTotal() const;
