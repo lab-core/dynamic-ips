@@ -44,6 +44,8 @@ public:
 
     int isudIter_;              // number of isud iteration in each epoch
     int TisudIter_;             // total isud iteration
+    int CPSuccess_;             // number of time CP succeed in finding integer
+    int CPFails_;             // number of time CP fails in finding integer
     double objValue_;
     double GreedyObjValue_;
     double RPEpochSolveTime_;
@@ -119,7 +121,7 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns) const;
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();

@@ -799,18 +799,18 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
  //       preprocessTime_->stop();
         if (MIP_Stop) {
-            if (epoch_ == 199) {
+            if (epoch_ == 180) {
                 EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
-            if (epoch_ == 121) {
+            if (epoch_ == 181) {
                 EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
                 EpochInst->parameters_->oneIter_ = false;
             }
-            if (epoch_ == 122)
+            if (epoch_ == 182)
                 break;
         }
 
@@ -926,6 +926,8 @@ std::string solver::toString(PInstance & mainInst) const {
     mainInst->instRepStr_ << isudObj_->isudTime_->dSinceInit().count()/TotalTime << ",";
     mainInst->instRepStr_ << subProblemTime_->dSinceInit().count()/TotalTime << ",";
     mainInst->instRepStr_ << GreedyModel_->greedyTime_->dSinceInit().count()/TotalTime << ",";
+    mainInst->instRepStr_ << isudObj_->CPSuccess_ << ",";
+    mainInst->instRepStr_ << isudObj_->CPFails_ << ",";
     return repStr.str();
 }
 

@@ -11,7 +11,7 @@ MasterPro::MasterPro() {
     compRoutes_.clear();
 }
 
-void MasterPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+void MasterPro::buildModelMP(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     // model initialization (defining empty set of constraints and adding objective)
     int rhs = 1;
     MasterModeler::initializeModel(pInst, rhs);
@@ -66,9 +66,25 @@ void MasterPro::solveModelLP(PInstance &pInst) {
         Cplex_.solve();
         solveTime_->stop();
 
+        /*IloNumArray zVal(env_);
+        IloNumArray routeVal(env_);
+
+        Cplex_.getValues(zVal, zVar_);
+        Cplex_.getValues(routeVal, routeVar_);
+        for (int r = (int)routeVal.getSize()-1; r >= 0; --r) {
+            if (routeVal[r] > 0.1 && routeVal[r] < 1)
+                std::cout << routeVal[r] << "  ";
+        }
+        std::cout << std::endl;
+
+        for (int r = (int)zVal.getSize()-1; r >= 0; --r) {
+            if (zVal[r] > 0.1 && zVal[r] < 1)
+                std::cout << zVal[r] << "  ";
+        }
+        std::cout << std::endl;*/
+
 
         objValue_ = Cplex_.getObjValue();
-//        std::cout << "Linear RP Objective value: " << objValue_ << std::endl;
         // getting dual values
         requestDuals_.clear();
         vehicleDuals_.clear();
@@ -119,9 +135,6 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         solveTime_->start();
         Cplex_.solve();
         solveTime_->stop();
-
-        //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;
-
         // saving the result and remove out of base variables
         zSolution.clear();
         routeSolution.clear();
@@ -131,6 +144,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
 
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
+
 
         for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {

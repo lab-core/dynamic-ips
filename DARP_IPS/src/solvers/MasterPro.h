@@ -14,7 +14,7 @@ public:
     MasterPro();
 
     // this function build the model at the start of each epoch
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void buildModelMP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function update the model and add column with negative reduce costs
     void updateModel();
