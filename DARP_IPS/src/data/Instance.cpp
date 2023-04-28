@@ -285,6 +285,8 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
 
             }
+            else
+                break;
         }
         else {
             if (mainInst->requests_[i]->earlyPick_ < simulationStartTime_ + elapsedTime) {
@@ -294,9 +296,9 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
 
             }
+            else
+                break;
         }
-        else
-            break;
     }
 
     nbOnboards_ = instGraph_->onboards_.size();
