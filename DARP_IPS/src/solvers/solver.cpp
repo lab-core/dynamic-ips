@@ -754,7 +754,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
 
-    while (nbReceivedRequest < mainInst->nbRequests_) {
+    while (nbReceivedRequest < mainInst->nbRequests_ || !isudObj_->zSolution_.empty()) {
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
