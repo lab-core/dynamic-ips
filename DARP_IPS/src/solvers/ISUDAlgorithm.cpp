@@ -1372,6 +1372,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
 }
 void ISUDAlgorithm::solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths) {
     isudTime_->start();
+    RPTime_->start();
 
     double previousObj = objValue_;
 
@@ -1389,7 +1390,7 @@ void ISUDAlgorithm::solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths)
     /************************************************************************************************/
     //                                     MASTER PROBLEM
     /************************************************************************************************/
-    RPTime_->start();
+
     // solve RP with MIP solver
     while (true){
         updateReducedCosts(pInst);
@@ -1420,18 +1421,19 @@ void ISUDAlgorithm::solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths)
     TisudIter_++;
     (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RMP", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count());
     isudIter_++;
-    RPTime_->stop();
-
-    std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
-    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
-    for (auto & requestObj : zSolution_)
-        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
 
     for (auto & routeObj : MasterPro_->compRoutes_)
         routeObj->isAdded_ = false;
     MasterPro_.reset();
     MasterPro_ = std::make_shared<MasterPro>();
     (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count());
+
+    std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
+    for (auto & requestObj : zSolution_)
+        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
+
+    RPTime_->stop();
     isudTime_->stop();
 }
 void ISUDAlgorithm::solveISUDMIP(PInstance &pInst, InputPaths &inputPaths) {
