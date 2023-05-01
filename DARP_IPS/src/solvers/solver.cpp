@@ -420,6 +420,7 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
                     isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
                 else
                     isudObj_->availableTime_ = EpochInst->parameters_->epochLength_ - SubproEpochTime_;
+ //               isudObj_->solveCG(EpochInst, epoch_, inputPaths);
                 isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
@@ -458,7 +459,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
     nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
 
-    while (nbReceivedRequest < mainInst->nbRequests_) {
+    while (nbReceivedRequest < mainInst->nbRequests_ || !isudObj_->zSolution_.empty()) {
         nextEpoch:
         simulationTime_->start();
  //       preprocessTime_->start();

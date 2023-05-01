@@ -155,8 +155,8 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         IloInt incomID = Cplex_.getIncumbentNode();
         // fixed the values on integer solution
 
-        Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
-        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));
+        /*Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
+        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));*/
         Cplex_.solveFixed(incomID);
 //        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
 
@@ -249,8 +249,8 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
         IloInt incomID = Cplex_.getIncumbentNode();
         // fixed the values on integer solution
 
-        Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
-        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));
+        /*Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
+        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));*/
         Cplex_.solveFixed(incomID);
 //        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
 

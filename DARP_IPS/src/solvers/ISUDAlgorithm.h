@@ -108,6 +108,7 @@ public:
     void solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRP_MIP_Partial(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
+    void solveMP_INT(PInstance &pInst, InputPaths &inputPaths);
     // Display function
     std::string toString() const;
     std::string toStringTimersTotal() const;

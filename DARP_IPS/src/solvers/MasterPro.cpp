@@ -169,14 +169,14 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         IloInt incomID = Cplex_.getIncumbentNode();
         // fixed the values on integer solution
 
-        convR.end();
+        /*convR.end();
         convZ.end();
 
         convZ = IloConversion(env_, zVar_, ILOFLOAT);
         convR = IloConversion(env_, routeVar_, ILOFLOAT);
 
         Model_.add(convZ);
-        Model_.add(convR);
+        Model_.add(convR);*/
         Cplex_.solveFixed(incomID);
 //        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
         objValue_ = Cplex_.getObjValue();
