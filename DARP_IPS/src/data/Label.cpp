@@ -168,7 +168,7 @@ void Label::extend(Node *outNode) {
             nbPickMove_++;
         }
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_);
+        totalDelay_ += (reachedTime_ - outNode->requestTime_) * outNode->nbPassengers_;
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
@@ -226,7 +226,7 @@ void Label::extend1(Node *outNode) {
             nbPickMove_++;
         }
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_);
+        totalDelay_ += (reachedTime_ - outNode->requestTime_) * outNode->nbPassengers_;
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
@@ -461,6 +461,8 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
         else
             newRoute->addNode1(pInst->instGraph_->dropNodes_[pathNode_[i]->related_Request_->getRequestId()]);
     }
+    if (newRoute->routeRequests_.empty() && !pInst->vehicles_[newRoute->vehicleID_]->onboards_.empty())
+        pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;

@@ -792,14 +792,14 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "ZOOM", (int)MIPReducedPro_->compRoutes_.size(), isudTime_->dSinceStart().count());
                             isudIter_++;
                             isCPImproved = true;
-                            CompPro_->routesToAdd_.clear();
+                            updateReducedCosts(pInst);
+                            /*CompPro_->routesToAdd_.clear();
                             updateIncDegrees(pInst);
-                            updateRoutesToAdd(maxIncDegree_, pInst);
-                            std::cout << "CP problem size: " << CompPro_->routesToAdd_.size() << std::endl;
-                            CPBuildTime_->start();
-                            CompPro_->buildModel(pInst, zSolution_, routeSolution_);
-                            CPBuildTime_->stop();
+                            updateRoutesToAdd(maxIncDegree_, pInst);*/
+                            std::cout << "ZOOM improve: " << objValue_ << std::endl;
+
                             isudMIPTime_->stop();
+                            break;
                         }
                         else {
                             isudMIPTime_->stop();
@@ -809,7 +809,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                             }
                         }
                     }
-                    if (pInst->parameters_->useMultiStage_){
+                    else if (pInst->parameters_->useMultiStage_){
                         if (cpIncDegree_ < maxIncDegree_)
                             cpIncDegree_++;
                         else{
@@ -1383,13 +1383,13 @@ void ISUDAlgorithm::solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths)
         for(auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = vehicleObj->CPDual_;
     }
-    RPBuildTime_->start();
+    /*RPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
 
-    /************************************************************************************************/
+    *//************************************************************************************************//*
     //                                     MASTER PROBLEM
-    /************************************************************************************************/
+    *//************************************************************************************************//*
 
     // solve RP with MIP solver
     while (true){
@@ -1406,7 +1406,7 @@ void ISUDAlgorithm::solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths)
         }
         else
             break;
-    }
+    }*/
 
 
     // solve the model in Integer mode
@@ -1536,20 +1536,20 @@ void ISUDAlgorithm::solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPath
     MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();*/
     if (compDegree == 0) {
-        if ((isudIter_ ==1)&&(pInst->parameters_->initialStart_ != GREEDY_START)){
+        /*if ((isudIter_ ==1)&&(pInst->parameters_->initialStart_ != GREEDY_START)){
             updateIncDegreesBit(pInst);
             updateRoutesToAdd(true, pInst);
         }
-        else{
+        else{*/
             updateIncDegrees(pInst);
             updateRoutesToAdd(compDegree, pInst);
-        }
+ //       }
     }
     else
     {
         for (auto & vehicleObj : pInst->vehicles_) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-                if (routeObj->incompatibilityDegree_ <= pInst->parameters_->MIP_maxIncDegree_)
+                if (routeObj->incompatibilityDegree_ <= pInst->parameters_->MIP_maxIncDegree_ && !routeObj->isAdded_)
                     MIPReducedPro_->routesToAdd_.push_back(routeObj);
             }
         }
@@ -1561,7 +1561,7 @@ void ISUDAlgorithm::solveRP_MIP_Dual(PInstance &pInst, int compDegree, InputPath
                 MIPReducedPro_->routesToAdd_.push_back(routeObj);
         }*/
         for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            if (!pInst->vehicles_[v]->currentRoute_->isAdded_ && !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty())
+            if (!pInst->vehicles_[v]->emptyRoute_->isAdded_ && !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty())
                 MIPReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
         }
         RPBuildTime_->start();
@@ -1653,9 +1653,15 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     MasterPro_.reset();
     MasterPro_ = std::make_shared<MasterPro>();
 
-    for (auto & routeObj : compRoutes){
+    /*for (auto & routeObj : compRoutes){
         if (routeObj->getRouteId() != pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->getRouteId())
             MasterPro_->routesToAdd_.push_back(routeObj);
+    }*/
+
+    for (auto & vehicleObj : pInst->vehicles_) {
+        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+            MasterPro_->routesToAdd_.push_back(routeObj);
+        }
     }
 
     RPBuildTime_->start();
@@ -1728,7 +1734,7 @@ void ISUDAlgorithm::updateRoutesToAdd(int compDegree, PInstance &pInst) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 if (routeObj->incompatibilityDegree_ > 0)
                     break;
-                if ((routeObj->incompatibilityDegree_ == 0) && (routeObj->reducedCost_ < -0.001)&& !routeObj->isAdded_) {
+                if ((routeObj->incompatibilityDegree_ == 0) && (routeObj->reducedCost_ <= 0)&& !routeObj->isAdded_) {
  //                   if (!routeObj->equal(*vehicleObj->currentRoute_)&&(!routeObj->routeRequests_.empty()))
                     if (!routeObj->equal(*vehicleObj->currentRoute_)&&(!routeObj->routeRequests_.empty()))
                         MIPReducedPro_->routesToAdd_.push_back(routeObj);
@@ -1772,7 +1778,7 @@ void ISUDAlgorithm::updateRoutesToAdd(bool compatible, PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (compatible) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-                if ((routeObj->isCompatible_) && (routeObj->reducedCost_ < -0.001) && !routeObj->isAdded_) {
+                if ((routeObj->isCompatible_) && (routeObj->reducedCost_ <= 0) && !routeObj->isAdded_) {
                     if (!routeObj->equal(*vehicleObj->currentRoute_)&& !routeObj->routeRequests_.empty())
                         MIPReducedPro_->routesToAdd_.push_back(routeObj);
                 }

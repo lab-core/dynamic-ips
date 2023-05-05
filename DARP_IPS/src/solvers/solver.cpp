@@ -801,15 +801,16 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
  //       preprocessTime_->stop();
         if (MIP_Stop) {
             if (epoch_ == 180) {
-                EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
+                EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
             if (epoch_ == 181) {
-                EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
+//                EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
                 EpochInst->parameters_->oneIter_ = false;
+//                EpochInst->parameters_->useZoom_ = true;
             }
             if (epoch_ == 182)
                 break;
