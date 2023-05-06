@@ -168,7 +168,7 @@ void Label::extend(Node *outNode) {
             nbPickMove_++;
         }
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_) * outNode->nbPassengers_;
+        totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
@@ -226,7 +226,7 @@ void Label::extend1(Node *outNode) {
             nbPickMove_++;
         }
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_) * outNode->nbPassengers_;
+        totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
     }
