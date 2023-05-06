@@ -503,7 +503,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
 
         /*if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
             break;*/
-        if (EpochInst->nbNewRequests_ == 0) {
+        if (EpochInst->nbNewRequests_ == 0 && isudObj_->zSolution_.empty()) {
             std::cout << "next event" << std::endl;
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
