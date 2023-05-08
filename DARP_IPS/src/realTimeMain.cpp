@@ -22,26 +22,35 @@ int main(int argc, char** argv) {
     std::string vehicleFile = "vehicles_1600_4";
     std::string vehicleFolder = "sufficient_manhattan-vehicles";
     int nbLocations = 1718;
-    // build the path of input files
-    // create output files for epoch results
-    InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
+
     std::vector<std::string> instNames;         // vector of instance file names
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
-    if (argc == 2){
+    if (argc == 3){
         std::string instanceNames = "datasets/InstanceNames-120.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
+        std::string word = argv[2];
+        vehicleFile = "vehicles_" + word + "_4";
+        numVehicles = std::stoi(argv[2]);
     }
-    else if (argc == 3){
+    else if (argc == 4){
         instFolder = argv[1];
         instNames.push_back(argv[2]);
         std::cout << "Instance : " << argv[1] << "/" << argv[2]  << std::endl;
+        std::string word = argv[3];
+        vehicleFile = "vehicles_" + word + "_4";
+        numVehicles = std::stoi(argv[3]);
     }
     else
         myTools::throwError("There should be at least 2 arguments!");
+
+    // build the path of input files
+    // create output files for epoch results
+    InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
+
     Tools::LogOutput finalInstanceStream("datasets/results.csv", true);
     for (auto & instanceName : instNames){
         // create output files for epoch results
