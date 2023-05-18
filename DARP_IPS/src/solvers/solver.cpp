@@ -72,7 +72,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
-    isudObj_->initialization(EpochInst);
+    isudObj_->initialization(EpochInst, inputPaths);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
@@ -247,7 +247,7 @@ void solver::solveCG_ISUD(PInstance &EpochInst, PInstance & mainInst, InputPaths
                     isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
                 else
                     isudObj_->availableTime_ = EpochInst->parameters_->epochLength_ - SubproEpochTime_;
-                isudObj_->solveISUD(EpochInst, epoch_, inputPaths);
+                isudObj_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -273,10 +273,11 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
     // define required variables
     double previousObj;
     int nbNegativeFound;
+    bool isSolved = false;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
-    isudObj_->initialization(EpochInst);
+    isudObj_->initialization(EpochInst, inputPaths);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
@@ -306,7 +307,10 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
 
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
-            GreedyModel_->GreedyAssignment(EpochInst);
+            if (!isSolved) {
+                GreedyModel_->GreedyAssignment(EpochInst);
+                isSolved = true;
+            }
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 vehicleObj->vehicleIndex_ = -1;
                 isudObj_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -404,14 +408,21 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
         subProSolve.clear();
         preprocessTime_->stop();
         subProblemTime_->stop();
+        std::cout << "time to solve the subproblems: " << subProblemTime_->dSinceStart().count() << std::endl;
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
             break;
         }
         else {
-            if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
+            if (EpochInst->parameters_->mainAlgorithm_ == CG_MIP) {
+                //           isudObj_->solveISUD_DualMIP(EpochInst, epoch_, inputPaths);
+                isudObj_->solveMIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
+                    break;
+            }
+            else if (EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX) {
      //           isudObj_->solveISUD_DualMIP(EpochInst, epoch_, inputPaths);
-                isudObj_->solveCG(EpochInst, epoch_, inputPaths);
+                isudObj_->solveCG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -421,7 +432,7 @@ void solver::solveCG_ISUD_final(PInstance &EpochInst, PInstance & mainInst, Inpu
                 else
                     isudObj_->availableTime_ = EpochInst->parameters_->epochLength_ - SubproEpochTime_;
  //               isudObj_->solveCG(EpochInst, epoch_, inputPaths);
-                isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
+                isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                     break;
             }
@@ -469,6 +480,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "---------------------------------------------------"<< std::endl;
+        logFile << " EPOCH: " << epoch_ << std::endl;
+        logFile.close();
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
         if (commitTime > std::max(avg, (int)mainInst->parameters_->committedTime_)) {
@@ -651,7 +666,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
                 double previousObj;
                 int nbNegativeFound;
 
-                isudObj_->initialization(StaticInst);
+                isudObj_->initialization(StaticInst, inputPaths);
                 // save initial solution
    //             (*isudObj_->pLogIterSolutionStream_) << StaticInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
                 isudObj_->isudIter_++;
@@ -705,7 +720,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == CG_ISUD) {
-                            isudObj_->solveISUD_Dual(StaticInst, epoch_, inputPaths);
+                            isudObj_->solveISUD_Dual(StaticInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
@@ -766,6 +781,12 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
+
+
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "---------------------------------------------------"<< std::endl;
+        logFile << " EPOCH: " << epoch_ << std::endl;
+        logFile.close();
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
@@ -801,22 +822,23 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
  //       preprocessTime_->stop();
         if (MIP_Stop) {
             if (epoch_ == 180) {
-                EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
+                EpochInst->parameters_->mainAlgorithm_ = CG_MIP;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
             if (epoch_ == 181) {
-//                EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
+                EpochInst->parameters_->mainAlgorithm_ = CG_CPLEX;
                 EpochInst->parameters_->oneIter_ = false;
+                EpochInst->parameters_->greedyReOptimize_ = true;
 //                EpochInst->parameters_->useZoom_ = true;
             }
             if (epoch_ == 182)
                 break;
         }
 
-        if (EpochInst->parameters_->mainAlgorithm_ == CG_ISUD || EpochInst->parameters_->mainAlgorithm_ == CG_CPLEX)
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             solveCG_ISUD_final(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);

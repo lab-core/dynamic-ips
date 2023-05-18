@@ -163,14 +163,19 @@ void ReducedProblem::buildModelPartial(PInstance &pInst, std::vector<PRequest> &
 //    env_.out() << Model_;
 }
 // this function solve the model and remove all columns except than the current base
-void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution,
-                                std::vector<PRoute> &routeSolution, std::map<std::string ,PRoute> &generatedRoutes) {
+void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                                std::map<std::string ,PRoute> &generatedRoutes, InputPaths &inputPaths) {
     try {
 
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- RP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
 
         // getting dual values
         requestDuals_.clear();

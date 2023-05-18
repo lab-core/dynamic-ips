@@ -44,7 +44,8 @@ void ZoomReducedProblem::updateModelPartial(PInstance &pInst, vector<PRequest> &
         addZVar(zRequest);
 }
 
-void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                    InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -60,9 +61,14 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
 
 //        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.3);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- RP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
         solveTime_->start();
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         solveTime_->stop();
 
         // printing solution status
@@ -106,7 +112,8 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
     }
 }
 
-void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                        InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -115,9 +122,14 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- RP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
         solveTime_->start();
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         solveTime_->stop();
 
  //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;
@@ -191,7 +203,8 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
     }
 }
 
-void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                           InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -200,9 +213,14 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- RP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
         solveTime_->start();
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         solveTime_->stop();
 
         //       std::cout << "RP Objective value: " << Cplex_.getObjValue() << std::endl;

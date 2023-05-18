@@ -78,7 +78,7 @@ typedef std::shared_ptr<MasterPro> PMasterPro;
 enum SubProSolveMode {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
 enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
-enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3};
+enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, CG_CPLEX = 2, CG_ISUD = 3, CG_MIP = 4};
 enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2};
 enum InitialDual {LAST_CP = 0, PENALTIES = 1};
@@ -94,7 +94,8 @@ static const std::vector<std::string> mainAlgorithmName = {
         "GREEDY",
         "MIP_CPLEX",
         "CG_CPLEX",
-        "CG_ISUD"};
+        "CG_ISUD",
+        "CG_MIP"};
 
 static const std::vector<std::string> warmStartName = {
         "GREEDY_START     ",

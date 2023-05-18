@@ -194,7 +194,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
                          vehicle->solutionRoute_->plannedPassengers_[0]);
 
     for (int i = 1; i < routeSize_; ++i) {
-        testRoute->addNode1(routeNodes_[i]);
+        testRoute->addNode(routeNodes_[i]);
         if (testRoute->routeNodes_.back()->reachTime_ != testRoute->plannedReachTime_.back()){
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;

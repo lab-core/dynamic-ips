@@ -14,9 +14,9 @@ public:
     void updateModelPartial(PInstance &pInst, std::vector<PRequest> &fractionalZ);
     /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
-    void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
-    void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
+    void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
+    void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
 
     // Display function
     std::string toString() const override;
