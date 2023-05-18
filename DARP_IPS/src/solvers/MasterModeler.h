@@ -42,6 +42,7 @@ public:
 
     std::vector<PRoute> routesToAdd_;
     myTools::Timer *solveTime_;
+
     // Constructor and Destructor
     MasterModeler();
 

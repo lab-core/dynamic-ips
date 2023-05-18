@@ -18,7 +18,6 @@ public:
     std::vector<int> selectedVehicles_;
     std::vector<PStopLabel> greedyLabelPool_;
     std::vector<PInsertPosition> positionList_;
-    double objValue_;
 
     //Constructor
     GreedyModeler();
@@ -31,7 +30,6 @@ public:
     void GreedyAssignment(PInstance &PInst);
     void solveInsertion(PInstance &PInst);
     void solveAssignment(PInstance &PInst);
-    void setObjValue();
 };
 
 // this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing

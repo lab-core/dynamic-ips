@@ -138,7 +138,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
             // constraints 12a -------------------
             IloExpr expr12(env);
-            expr12 = U[v][dropIndex] - U[v][pickIndex] - requestObj->serviceTime_;
+            expr12 = U[v][dropIndex] - U[v][pickIndex] - requestObj->deltaTime_;
             MIPModel.add(expr12 <= requestObj->maxTravelTime_);
             MIPModel.add(expr12 >= requestObj->minTravelTime_);
 

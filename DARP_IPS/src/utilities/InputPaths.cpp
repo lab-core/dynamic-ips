@@ -74,8 +74,8 @@ const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
 const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
 const std::string &InputPaths::getOutputSubproSize() const {return output_subproSize_;}
 const std::string &InputPaths::getOutputSubproRouteTime() const {return output_subproRouteTime_;}
-const std::string &InputPaths::getOutputCplexLog() const {return output_cplexLog_;}
 const std::string &InputPaths::getOutputDir() const {return outputDir_;}
+
 
 double InputPaths::getTimeOut() const {return timeOut_; }
 
@@ -120,16 +120,11 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_epochResults_ = outputDir_ + "epochResults_" + instanceName_ + ".csv";
     output_subproSize_ = outputDir_ + "epochSubRunTimes_" + instanceName_ + ".csv";
     output_subproRouteTime_ = outputDir_ + "epochSubRouteTimes_" + instanceName_ + ".csv";
-    output_cplexLog_ = outputDir_ + "LogCplex_" + instanceName_ + ".txt";
 
     // create output files for epoch results
     std::ofstream myFile;
     myFile.open(output_incDegree_RDCost_);
     myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, CreateTime, RouteID" << std::endl;
-    myFile.close();
-
-    myFile.open(output_cplexLog_);
-    myFile << instanceName_ << " solved in " << solutionMode << " mode by " << algorithm << std::endl;
     myFile.close();
 }
 
@@ -145,4 +140,3 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
-

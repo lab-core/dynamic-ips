@@ -19,9 +19,8 @@ public:
     // this function update the model and add column with negative reduce costs
     void updateModel();
 
-    void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
-    void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths);
+    void solveModelLP(PInstance &pInst);
+    void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 };
 
 

@@ -42,7 +42,6 @@ void GreedyModeler::initialization(PInstance &PInst) {
 
 
 void GreedyModeler::solutionToRoute(PInstance &PInst) {
-    setObjValue();
     for (auto & greedySol : solutionList_) {
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_.reset();
         if (PInst->parameters_->solutionMode_ == STATIC) {
@@ -55,7 +54,6 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
         greedySol.reset();
     }
     solutionList_.clear();
-    std::cout << "Greedy improve: " << objValue_ << std::endl;
  //   greedyLabelPool_.clear();
 }
 
@@ -83,8 +81,6 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            if (PInst->requests_[i]->getRequestId() == 26855)
-                std::cout << "stop";
             possibleDelay.clear();
             for (auto & GRoute : solutionList_){
                 GRoute->idle_ = false;
@@ -129,7 +125,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
         }
     }
     for (auto & GreedyObj : solutionList_)
-        GreedyObj->updateTailDepart();
+        GreedyObj->updateTailDepart1();
 }
 
 
@@ -155,12 +151,6 @@ void GreedyModeler::solveAssignment(PInstance &PInst) {
             selectedVehicles_[vehicle_ID]++;
         }
     }
-}
-
-void GreedyModeler::setObjValue() {
-    objValue_ = 0.0;
-    for (auto & GreedyObj : solutionList_)
-        objValue_ += GreedyObj->totalDelay_;
 }
 
 

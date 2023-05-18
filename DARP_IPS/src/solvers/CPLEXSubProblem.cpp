@@ -130,7 +130,7 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
 
         // constraints 11c -------------------
         IloExpr expr11(env_);
-        expr11 = U[dropIndex] - U[pickIndex] - requestObj->serviceTime_;
+        expr11 = U[dropIndex] - U[pickIndex] - requestObj->deltaTime_;
 
         SubProModel_.add(expr11 <= requestObj->maxTravelTime_);
         SubProModel_.add(expr11 >= requestObj->minTravelTime_);

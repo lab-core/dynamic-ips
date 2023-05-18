@@ -197,21 +197,17 @@ void ComplementPro::updateModel(PInstance &pInst, vector<PRequest> &zSolution, v
 
 
 // this function solve the model
-void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution, InputPaths &inputPaths) {
+void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     Cplex_ = IloCplex(Model_);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-    std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-    logFile << "----------------------- CP ------------------------"<< std::endl;
-    std::streambuf* coutBuffer = std::cout.rdbuf();
-    std::cout.rdbuf(logFile.rdbuf());
+    Cplex_.setOut(env_.getNullStream());
     if ( !Cplex_.solve() ) {
         status_ = INFEASIBLE;
         std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
     }
+
     else {
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
 
         // printing solution status
   //      std::cout << MasterModeler::toString();
@@ -332,15 +328,11 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
     Cplex_.clearModel();
 }
 
-void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                    InputPaths &inputPaths) {
+void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     try {
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        logFile << "----------------------- CP ------------------------"<< std::endl;
-        std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        Cplex_.setOut(env_.getNullStream());
 //        env_.out() << Model_ << std::endl;
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -350,8 +342,6 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
         } else {
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
             solveTime_->stop();
 
             // printing solution status
@@ -507,15 +497,11 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
     }
 //    Cplex_.clearModel();
 }
-void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                      InputPaths &inputPaths) {
+void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
     try {
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        logFile << "----------------------- CP ------------------------"<< std::endl;
-        std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        Cplex_.setOut(env_.getNullStream());
  //       env_.out() << Model_ << std::endl;
 
         solveTime_->start();
@@ -526,8 +512,6 @@ void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolut
             std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
         } else {
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
             solveTime_->stop();
             // printing solution status
  //           std::cout << Cplex_.getObjValue() << std::endl;

@@ -19,7 +19,7 @@ Node::Node(string nodeId, PRequest &relatedRequest, NodeType type) : nodeID_(std
                                                                                         type_(type) {
     reachTime_ = 0;
     departTime_ = 0;
-    serviceTime_ = relatedRequest->serviceTime_;
+    serviceTime_ = relatedRequest->deltaTime_;
     nodeStatus_ = DEFINED;
     requestTime_ = relatedRequest->earlyPick_;
     pairNode_ = nullptr;

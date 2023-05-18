@@ -15,7 +15,7 @@ unsigned int Request::requestCount_ = 0;
 // Constructor and Destructor
 Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
         requestID_(requestCount_++), PickUpID_(pickUpID),
-        DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime){
+        DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), deltaTime_(deltaTime){
     vehicleID_ = 0;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;
@@ -33,9 +33,9 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     taskIndexLabel_ = -1;
 }
 Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int zoneID) :
-        requestID_(requestCount_++), PickUpID_(pickUpID),
-        DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
-        zoneID_(zoneID){
+                 requestID_(requestCount_++), PickUpID_(pickUpID),
+                 DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), deltaTime_(deltaTime),
+                 zoneID_(zoneID){
     vehicleID_ = 0;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;

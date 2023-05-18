@@ -73,7 +73,7 @@ public:
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
-    void initialization(PInstance &pInst, InputPaths &inputPaths);
+    void initialization(PInstance &pInst);
 
     // function to create M2 matrix for each column in the current solution
     static Eigen::MatrixXd calcM2Matrix(PRoute &solColumn);
@@ -96,13 +96,12 @@ public:
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
-    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveMIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveCG(PInstance &pInst, int epoch, InputPaths &inputPaths);
 
     void solveISUDMIP(PInstance &pInst, InputPaths &inputPaths);
     void solveRP_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
@@ -123,7 +122,7 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime) const;
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();
