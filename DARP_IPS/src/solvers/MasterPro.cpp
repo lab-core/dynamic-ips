@@ -135,6 +135,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         solveTime_->start();
         Cplex_.solve();
         solveTime_->stop();
+        objValue_ = Cplex_.getObjValue();
         // saving the result and remove out of base variables
         zSolution.clear();
         routeSolution.clear();
@@ -160,49 +161,38 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
             }
         }
 
-        /*std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
-                  << " are selected to served." << std::endl;*/
-
         if (routeSolution.size() != pInst->nbVehicles_)
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
 
-        IloInt incomID = Cplex_.getIncumbentNode();
-        // fixed the values on integer solution
+        // fixed the values on integer solution to get duals for MIP
+        if (pInst->parameters_->mainAlgorithm_ == MP_MIP) {
+            IloInt incomID = Cplex_.getIncumbentNode();
+            Cplex_.solveFixed(incomID);
 
-        /*convR.end();
-        convZ.end();
+            // getting dual values
+            requestDuals_.clear();
+            vehicleDuals_.clear();
 
-        convZ = IloConversion(env_, zVar_, ILOFLOAT);
-        convR = IloConversion(env_, routeVar_, ILOFLOAT);
+            // define dual container size
+            requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+            vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
-        Model_.add(convZ);
-        Model_.add(convR);*/
-        Cplex_.solveFixed(incomID);
-//        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
-        objValue_ = Cplex_.getObjValue();
-        // getting dual values
-        requestDuals_.clear();
-        vehicleDuals_.clear();
-
-        // define dual container size
-        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
-
-        for (auto &requestObj: pInst->requests_) {
-            int rowIndex = requestObj->taskIndex_;
-            requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+            for (auto &requestObj: pInst->requests_) {
+                int rowIndex = requestObj->taskIndex_;
+                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
 //            std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->dual_;
-            requestObj->dual_ = requestDuals_[rowIndex];
-            requestObj->CPDual_ = requestDuals_[rowIndex];
+                requestObj->dual_ = requestDuals_[rowIndex];
+                requestObj->CPDual_ = requestDuals_[rowIndex];
 //            std::cout << " --> " << requestObj->dual_ << std:: endl;
-        }
 
-        for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+                for (auto &vehicleObj: pInst->vehicles_) {
+                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
 //            std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->dual_;
-            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
 //            std::cout << " --> " << vehicleObj->dual_ << std:: endl;
+                }
+            }
         }
         convR.end();
         convZ.end();
