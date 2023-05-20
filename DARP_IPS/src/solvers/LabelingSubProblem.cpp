@@ -751,7 +751,7 @@ void LabelingSubProblem::reconstructLabels(std::vector<PRoute> &availableRoutes)
         initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
         initialLabel->numCompleted_++;
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (Vehicle_)->departTime_ +
-                             nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->deltaTime_;
+                             nodeObj->related_Request_->pickTime_ + nodeObj->related_Request_->serviceTime_;
 
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
