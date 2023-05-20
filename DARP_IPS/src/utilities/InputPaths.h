@@ -58,6 +58,7 @@ protected:
     std::string output_trip_;
     std::string output_subproSize_;
     std::string output_subproRouteTime_;
+    std::string output_cplexLog_;
 
 
     double timeOut_ = 3600;
@@ -101,6 +102,8 @@ public:
     const std::string &getOutputTrip() const;
     const std::string &getOutputSubproSize() const;
     const std::string &getOutputSubproRouteTime() const;
+
+    const std::string &getOutputCplexLog() const;
 
     const std::string &getOutputDir() const;
 
