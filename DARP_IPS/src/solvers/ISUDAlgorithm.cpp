@@ -70,7 +70,7 @@ void ISUDAlgorithm::setObjValue() {
 
 // this function create initial routes serving only one request and fill zSolution_ with available requests
 // Reduced problem is also solved to initialized dual costs
-void ISUDAlgorithm::initialization(PInstance &pInst) {
+void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
     RPEpochSolveTime_ = 0;
     CPEpochSolveTime_ = 0;
     cpIncDegree_ = 2;
@@ -166,7 +166,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst) {
         RPBuildTime_->start();
         MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_);
+        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_, inputPaths);
         setObjValue();
     }
 
@@ -532,7 +532,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             if (!CompPro_->routesToAdd_.empty()) {
    //             std::cout << "# IMPROVE THE SOLUTION BY SOLVING THE COMPLEMENTARY PROBLEM" << std::endl;
      //           CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, generatedRoutes_);
-                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
                 TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
@@ -774,7 +774,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
         while (isCPImproved){
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
-                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
                 TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
@@ -1031,7 +1031,7 @@ void ISUDAlgorithm::solveISUD_Original(PInstance &pInst, int epoch, InputPaths &
         while (isCPImproved){
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
-                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_);
+                CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
                 TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
@@ -1246,7 +1246,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
         while (isCPImproved){
             isCPImproved = false;
             if (!CompPro_->routesToAdd_.empty()) {
-                CompPro_->solveModelPartial(pInst, zSolution_, routeSolution_);
+                CompPro_->solveModelPartial(pInst, zSolution_, routeSolution_, inputPaths);
                 TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                 setObjValue();
@@ -1450,7 +1450,7 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
 
 
     // solve the model in Integer mode
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_);
+    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths);
     RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
     setObjValue();
 
@@ -1509,7 +1509,7 @@ void ISUDAlgorithm::solveRPro_MIP(PInstance &pInst, int compDegree, InputPaths &
         RPBuildTime_->start();
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_);
+        MIPReducedPro_->solveModel(pInst, zSolution_, routeSolution_, inputPaths);
         RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
     }
@@ -1554,7 +1554,7 @@ void ISUDAlgorithm::solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPa
         RPBuildTime_->start();
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_);
+        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_,inputPaths);
         RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
     }
@@ -1595,7 +1595,7 @@ void ISUDAlgorithm::solveRPro_MIP_Partial(PInstance &pInst, int compDegree, Inpu
         RPBuildTime_->start();
         MIPReducedPro_->updateModelPartial(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelPartial(pInst, zSolution_, routeSolution_);
+        MIPReducedPro_->solveModelPartial(pInst, zSolution_, routeSolution_, inputPaths);
         RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
     }
@@ -1628,7 +1628,7 @@ void ISUDAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
         RPBuildTime_->start();
         MasterPro_->updateModel();
         RPBuildTime_->stop();
-        MasterPro_->solveModelLP(pInst);
+        MasterPro_->solveModelLP(pInst, inputPaths);
         RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         objValue_ = MasterPro_->objValue_;
     }
@@ -1655,7 +1655,7 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
 
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_);
+    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths);
     RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
     setObjValue();
 

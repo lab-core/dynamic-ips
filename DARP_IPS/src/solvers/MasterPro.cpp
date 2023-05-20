@@ -49,7 +49,7 @@ void MasterPro::updateModel() {
     }
 }
 
-void MasterPro::solveModelLP(PInstance &pInst) {
+void MasterPro::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -61,9 +61,14 @@ void MasterPro::solveModelLP(PInstance &pInst) {
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- LMP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
         solveTime_->start();
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         solveTime_->stop();
 
         /*IloNumArray zVal(env_);
@@ -116,7 +121,8 @@ void MasterPro::solveModelLP(PInstance &pInst) {
     }
 }
 
-void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
+void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                              InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -131,11 +137,16 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setOut(env_.getNullStream());
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- MP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
+
         solveTime_->start();
         Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         solveTime_->stop();
-        objValue_ = Cplex_.getObjValue();
         // saving the result and remove out of base variables
         zSolution.clear();
         routeSolution.clear();
@@ -160,6 +171,9 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
                 zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
             }
         }
+
+        /*std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+                  << " are selected to served." << std::endl;*/
 
         if (routeSolution.size() != pInst->nbVehicles_)
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");

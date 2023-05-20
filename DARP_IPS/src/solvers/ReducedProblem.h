@@ -47,7 +47,7 @@ public:
 
      // this function solve the model and remove all columns except than the current base
      virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::map<std::string , PRoute> &generatedRoutes);
+                    std::map<std::string , PRoute> &generatedRoutes, InputPaths &inputPaths);
 
     // function to check whether two routes are column disjoint or not
     static bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);

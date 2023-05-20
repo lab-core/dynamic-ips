@@ -73,7 +73,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
-    isudObj_->initialization(EpochInst);
+    isudObj_->initialization(EpochInst, inputPaths);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->isudIter_ ++;
@@ -456,7 +456,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
                 double previousObj;
                 int nbNegativeFound;
 
-                isudObj_->initialization(StaticInst);
+                isudObj_->initialization(StaticInst, inputPaths);
                 // save initial solution
    //             (*isudObj_->pLogIterSolutionStream_) << StaticInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
                 isudObj_->isudIter_++;
