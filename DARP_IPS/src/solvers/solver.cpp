@@ -216,20 +216,20 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
              //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
                 case MP_CG:
-                    isudObj_->solveMP_CG(EpochInst, epoch_, inputPaths);
+                    isudObj_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
                 case MP_MIP:
-                    isudObj_->solveMP_MIP(EpochInst, epoch_, inputPaths);
+                    isudObj_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
                 default: // MP_ISUD:
-                    isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths);
+                    isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
             }
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                 break;
-            else if (subProblemTime_->dSinceStart().count() + isudObj_->isudTime_->dSinceStart().count() >
+            /*else if (subProblemTime_->dSinceStart().count() + isudObj_->isudTime_->dSinceStart().count() >
             EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count())
-                break;
+                break;*/
         }
         if (previousObj == isudObj_->objValue_) {
             break;
@@ -274,6 +274,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "---------------------------------------------------"<< std::endl;
+        logFile << " EPOCH: " << epoch_ << std::endl;
+        logFile.close();
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
         if (commitTime > std::max(avg, (int)mainInst->parameters_->committedTime_)) {
@@ -506,11 +510,11 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
                         break;
                     } else {
                         if (StaticInst->parameters_->mainAlgorithm_ == MP_CG) {
-                            isudObj_->solveMP_CG(StaticInst, epoch_, inputPaths);
+                            isudObj_->solveMP_CG(StaticInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
 
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == MP_ISUD) {
-                            isudObj_->solveISUD_Dual(StaticInst, epoch_, inputPaths);
+                            isudObj_->solveISUD_Dual(StaticInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
@@ -571,6 +575,12 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
+
+
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "---------------------------------------------------"<< std::endl;
+        logFile << " EPOCH: " << epoch_ << std::endl;
+        logFile.close();
         // update vehicle status
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
@@ -606,15 +616,16 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
  //       preprocessTime_->stop();
         if (MIP_Stop) {
             if (epoch_ == 180) {
-                EpochInst->parameters_->mainAlgorithm_ = MP_CG;
+                EpochInst->parameters_->mainAlgorithm_ = MP_MIP;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
             if (epoch_ == 181) {
-//                EpochInst->parameters_->mainAlgorithm_ = CG_ISUD;
+                EpochInst->parameters_->mainAlgorithm_ = MP_ISUD;
                 EpochInst->parameters_->oneIter_ = false;
+                EpochInst->parameters_->greedyReOptimize_ = true;
 //                EpochInst->parameters_->useZoom_ = true;
             }
             if (epoch_ == 182)

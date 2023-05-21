@@ -96,13 +96,13 @@ public:
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
-    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths);
-    void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths);
+    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
 
     void solveRPro_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
@@ -124,7 +124,7 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime) const;
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();
