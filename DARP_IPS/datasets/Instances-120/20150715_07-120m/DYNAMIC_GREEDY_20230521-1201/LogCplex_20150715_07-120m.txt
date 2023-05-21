@@ -1,0 +1,361 @@
+20150715_07-120m solved in DYNAMIC mode by GREEDY
+---------------------------------------------------
+ EPOCH: 0
+---------------------------------------------------
+ EPOCH: 1
+---------------------------------------------------
+ EPOCH: 2
+---------------------------------------------------
+ EPOCH: 3
+---------------------------------------------------
+ EPOCH: 4
+---------------------------------------------------
+ EPOCH: 5
+---------------------------------------------------
+ EPOCH: 6
+---------------------------------------------------
+ EPOCH: 7
+---------------------------------------------------
+ EPOCH: 8
+---------------------------------------------------
+ EPOCH: 9
+---------------------------------------------------
+ EPOCH: 10
+---------------------------------------------------
+ EPOCH: 11
+---------------------------------------------------
+ EPOCH: 12
+---------------------------------------------------
+ EPOCH: 13
+---------------------------------------------------
+ EPOCH: 14
+---------------------------------------------------
+ EPOCH: 15
+---------------------------------------------------
+ EPOCH: 16
+---------------------------------------------------
+ EPOCH: 17
+---------------------------------------------------
+ EPOCH: 18
+---------------------------------------------------
+ EPOCH: 19
+---------------------------------------------------
+ EPOCH: 20
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Found incumbent of value 61932.849396 after 0.05 sec. (35.06 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.06 sec. (44.65 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        61932.8494        0.0000           100.00%
+*     0+    0                        42513.9715        0.0000           100.00%
+*     0     0      integral     0    10772.0000    10772.0000      221    0.00%
+Elapsed time = 0.18 sec. (122.59 ticks, tree = 0.00 MB, solutions = 3)
+
+Root node processing (before b&c):
+  Real time             =    0.19 sec. (125.63 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.19 sec. (125.63 ticks)
+---------------------------------------------------
+ EPOCH: 21
+----------------------- RP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Found incumbent of value 26695.000000 after 1.11 sec. (172.75 ticks)
+Clique table members: 2116.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.04 sec. (25.97 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        26695.0000        0.0000           100.00%
+*     0+    0                        26601.0000        0.0000           100.00%
+*     0     0      integral     0     9487.0000     9487.0000      167    0.00%
+Elapsed time = 1.20 sec. (248.14 ticks, tree = 0.00 MB, solutions = 3)
+
+Root node processing (before b&c):
+  Real time             =    1.20 sec. (250.19 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    1.20 sec. (250.19 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1895 rows and 5223 columns.
+Aggregator did 119 substitutions.
+Reduced LP has 111 rows, 14592 columns, and 58879 nonzeros.
+Presolve time = 0.02 sec. (25.90 ticks)
+
+Iteration log . . .
+Sifting iteration    1 [ 1095]:   Scaled infeas =             0.000000
+Sifting iteration    2 [ 1447]:   Objective     =             7.750000
+Sifting iteration    3 [ 1492]:   Objective     =             7.750000
+Sifting iteration    4 [ 1499]:   Objective     =             7.750000
+
+Dual simplex solved model.
+
+----------------------- RP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Found incumbent of value 11097.000000 after 0.04 sec. (11.35 ticks)
+Clique table members: 153.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.00 sec. (1.89 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        11097.0000        0.0000           100.00%
+*     0     0      integral     0     9266.0000     9266.0000       72    0.00%
+Elapsed time = 0.04 sec. (15.54 ticks, tree = 0.00 MB, solutions = 2)
+
+Root node processing (before b&c):
+  Real time             =    0.04 sec. (15.65 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.04 sec. (15.65 ticks)
+----------------------- RP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Found incumbent of value 11094.000000 after 0.03 sec. (11.44 ticks)
+Clique table members: 153.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.00 sec. (2.16 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        11094.0000        0.0000           100.00%
+*     0     0      integral     0     9266.0000     9266.0000      147    0.00%
+Elapsed time = 0.04 sec. (15.91 ticks, tree = 0.00 MB, solutions = 2)
+
+Root node processing (before b&c):
+  Real time             =    0.04 sec. (16.01 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.04 sec. (16.01 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1943 rows and 2954 columns.
+Aggregator did 166 substitutions.
+Reduced LP has 16 rows, 95 columns, and 259 nonzeros.
+Presolve time = 0.00 sec. (2.00 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =           403.999998
+Iteration:     6   Dual objective     =           -91.000000
+
+Dual simplex solved model.
+
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1942 rows and 2947 columns.
+Aggregator did 168 substitutions.
+Reduced LP has 15 rows, 98 columns, and 267 nonzeros.
+Presolve time = 0.00 sec. (2.17 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =           250.999998
+Iteration:     4   Dual objective     =           -75.000000
+
+Dual simplex solved model.
+
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1941 rows and 2939 columns.
+Aggregator did 170 substitutions.
+Reduced LP has 14 rows, 102 columns, and 278 nonzeros.
+Presolve time = 0.00 sec. (2.03 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =           125.999997
+Iteration:     3   Dual objective     =           -75.000000
+
+Dual simplex solved model.
+
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1940 rows and 2912 columns.
+Aggregator did 169 substitutions.
+Reduced LP has 16 rows, 128 columns, and 352 nonzeros.
+Presolve time = 0.00 sec. (2.03 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =           125.999997
+Iteration:     3   Dual objective     =           -75.000000
+
+Dual simplex solved model.
+
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1939 rows and 2905 columns.
+Aggregator did 171 substitutions.
+Reduced LP has 15 rows, 131 columns, and 358 nonzeros.
+Presolve time = 0.00 sec. (2.04 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =             0.000000
+Iteration:     2   Dual objective     =           -24.000000
+
+Dual simplex solved model.
+
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Parallel mode: deterministic, using up to 8 threads for concurrent optimization:
+ * Starting dual Simplex on 1 thread...
+ * Starting Barrier on 6 threads...
+ * Starting primal Simplex on 1 thread...
+Tried aggregator 1 time.
+LP Presolve eliminated 1938 rows and 2865 columns.
+Aggregator did 170 substitutions.
+Reduced LP has 17 rows, 170 columns, and 470 nonzeros.
+Presolve time = 0.00 sec. (2.22 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =             0.000000
+Iteration:     2   Dual objective     =           -28.000000
+
+Dual simplex solved model.
+
+----------------------- RP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Found incumbent of value 10709.000000 after 0.05 sec. (16.98 ticks)
+Clique table members: 189.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.00 sec. (1.70 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        10709.0000        0.0000           100.00%
+*     0     0      integral     0     9162.0000     9162.0000       97    0.00%
+Elapsed time = 0.05 sec. (20.71 ticks, tree = 0.00 MB, solutions = 2)
+
+Root node processing (before b&c):
+  Real time             =    0.05 sec. (20.80 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.05 sec. (20.80 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Tried aggregator 1 time.
+LP Presolve eliminated 1958 rows and 2256 columns.
+Aggregator did 163 substitutions.
+Reduced LP has 4 rows, 11 columns, and 24 nonzeros.
+Presolve time = 0.00 sec. (1.15 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =             0.000000
+Iteration:     2   Dual objective     =             0.000000
+----------------------- RP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_Threads                                 8
+Clique table members: 195.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.01 sec. (9.33 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0     0      integral     0     9162.0000     9162.0000      113    0.00%
+Elapsed time = 0.80 sec. (197.47 ticks, tree = 0.00 MB, solutions = 1)
+
+Root node processing (before b&c):
+  Real time             =    0.80 sec. (197.91 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.80 sec. (197.91 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Threads                                 8
+Tried aggregator 1 time.
+LP Presolve eliminated 1955 rows and 2192 columns.
+Aggregator did 137 substitutions.
+Reduced LP has 33 rows, 171 columns, and 523 nonzeros.
+Presolve time = 0.00 sec. (1.46 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual infeasibility =             0.000000
+Iteration:     2   Dual objective     =             7.500000
+---------------------------------------------------
+ EPOCH: 22
