@@ -65,7 +65,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 //        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
 
         solveTime_->start();
         Cplex_.solve();
@@ -132,7 +132,7 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
 //        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
 
         solveTime_->start();
         Cplex_.solve();
@@ -229,8 +229,8 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
 //        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
-        
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+
         solveTime_->start();
         Cplex_.solve();
         std::cout.rdbuf(coutBuffer);

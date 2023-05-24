@@ -129,7 +129,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
 
         solveTime_->start();
         Cplex_.solve();
@@ -262,7 +262,7 @@ void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, v
         logFile << "----------------------- MP ------------------------"<< std::endl;
         std::cout.rdbuf(logFile.rdbuf());
         if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         solveTime_->start();
         Cplex_.solve();
         objValue_ = Cplex_.getObjValue();
