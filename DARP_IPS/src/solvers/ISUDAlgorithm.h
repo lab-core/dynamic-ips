@@ -47,6 +47,7 @@ public:
     int CPSuccess_;             // number of time CP succeed in finding integer
     int CPFails_;             // number of time CP fails in finding integer
     double objValue_;
+    double totalWaitTime_;
     double GreedyObjValue_;
     double RPEpochSolveTime_;
     double CPEpochSolveTime_;

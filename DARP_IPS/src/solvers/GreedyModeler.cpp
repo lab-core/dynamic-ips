@@ -83,8 +83,6 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            if (PInst->requests_[i]->getRequestId() == 26855)
-                std::cout << "stop";
             possibleDelay.clear();
             for (auto & GRoute : solutionList_){
                 GRoute->idle_ = false;

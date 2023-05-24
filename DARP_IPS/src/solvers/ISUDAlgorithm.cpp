@@ -15,6 +15,7 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
     MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
     MasterPro_ = std::make_shared<MasterPro>();
     objValue_ = 0;
+    totalWaitTime_ = 0;
     isudTime_ = new myTools::Timer(); isudTime_->init();
     RPTime_ = new myTools::Timer(); RPTime_->init();
     CPTime_ = new myTools::Timer(); CPTime_->init();
@@ -36,7 +37,7 @@ ISUDAlgorithm::ISUDAlgorithm(InputPaths &inputPaths) {
     maxReducedCost_ = INFINITY;
 
     pLogIsudResultsStream_ = new Tools::LogOutput(inputPaths.getOutputEpochResults());
-    (*pLogIsudResultsStream_) << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue, Time" << std::endl;
+    (*pLogIsudResultsStream_) << "Epoch, ISUDIter, TotalGenColumns, nbColumns, Model, ObjectiveValue, MPTime, SubProTime" << std::endl;
 
     pLogIterSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochIsud());
     (*pLogIterSolutionStream_) << "Epoch, ISUDIter,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID,RouteID" << std::endl;
@@ -60,8 +61,10 @@ ISUDAlgorithm::~ISUDAlgorithm() {
 
 void ISUDAlgorithm::setObjValue() {
     objValue_ = 0.0;
+    totalWaitTime_ = 0.0;
     for (auto & routeObj : routeSolution_) {
         objValue_ += routeObj->totalDelay_;
+        totalWaitTime_ += routeObj->totalDelay_;
     }
     for (auto & zRequest : zSolution_) {
         objValue_+= zRequest->penalty_;
@@ -1674,6 +1677,7 @@ std::string ISUDAlgorithm::toString() const {
     repStr << "#" << std::endl;
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "# TOTAL OBJECTIVE (WAITING TIMES + PENALTIES) = " << objValue_ << std::endl;
+    repStr << "# TOTAL WAITING TIMES                         = " << totalWaitTime_ << std::endl;
     repStr << "# NUMBER OF UNSERVED REQUESTS                 = " << zSolution_.size() << std::endl;
     repStr << "#" << std::endl;
 

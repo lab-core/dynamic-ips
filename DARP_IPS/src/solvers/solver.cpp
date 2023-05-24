@@ -35,10 +35,10 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
 
     // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-    (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, ISUD_Runtime, "
+    (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, MP_Runtime, "
                               "RP_Runtime, RP_BuildRuntime, RP_SolveRuntime, CP_Runtime, CP_BuildRuntime, "
-                              "CP_SolveRuntime, MIPISUD_Runtime, SubProblemRuntime, destructorTime, SubAssignTime, "
-                              "GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, ISUD_Obj" << std::endl;
+                              "CP_SolveRuntime, ZoomISUD_Runtime, SubProbRuntime, destructTime, SubAssignTime, "
+                              "GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, Objective, waitTime" << std::endl;
 
     pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
     (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
@@ -227,9 +227,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                 break;
-            /*else if (subProblemTime_->dSinceStart().count() + isudObj_->isudTime_->dSinceStart().count() >
+            else if (subProblemTime_->dSinceStart().count() + isudObj_->isudTime_->dSinceStart().count() >
             EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count())
-                break;*/
+                break;
         }
         if (previousObj == isudObj_->objValue_) {
             break;
@@ -623,7 +623,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
                     vehicleObj->dual_ = 0;
             }
             if (epoch_ == 181) {
-                EpochInst->parameters_->mainAlgorithm_ = MP_ISUD;
+                EpochInst->parameters_->mainAlgorithm_ = MP_CG;
                 EpochInst->parameters_->oneIter_ = false;
                 EpochInst->parameters_->greedyReOptimize_ = true;
 //                EpochInst->parameters_->useZoom_ = true;
@@ -688,7 +688,8 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << maxSubSize_ << ",";
     repStr << avgSubSize_<< ",";
     repStr << isudObj_->GreedyObjValue_ << ",";
-    repStr << isudObj_->objValue_ << "\n";
+    repStr << isudObj_->objValue_ << ",";
+    repStr << isudObj_->totalWaitTime_ << "\n";
     return repStr.str();
 }
 
