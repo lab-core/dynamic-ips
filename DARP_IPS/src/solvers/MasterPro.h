@@ -22,6 +22,8 @@ public:
     void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
     void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                        InputPaths &inputPaths);
+    void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                       InputPaths &inputPaths);
 };
 
 
