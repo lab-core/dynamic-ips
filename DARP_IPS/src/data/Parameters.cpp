@@ -16,7 +16,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
-                       int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode):
+                       int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode,
+                       float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize),
@@ -27,7 +28,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
         vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), bigM_(bigM),
         solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
-        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode) {
+        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode), MIPGap_(MIPGap) {
 }
 
 Parameters::~Parameters() = default;
@@ -52,6 +53,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# add columns with one request" << " = " << addOneRequestColumn_ << std::endl;
     repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
+    repStr << std::setw(setwLength) << "# One iter per epoch " << " = " << oneIter_ << std::endl;
+    repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -85,6 +88,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# BigM value " << " = " << bigM_ << std::endl;
     repStr << std::setw(setwLength) << "# solve Time Limit " << " = " << solveTimeLimit_ << std::endl;
     repStr << std::setw(setwLength) << "# populate Time Limit " << " = " << populateTimeLimit_ << std::endl;
+    repStr << std::setw(setwLength) << "# MIP Gap " << " = " << MIPGap_ << std::endl;
 
     return repStr.str();
 

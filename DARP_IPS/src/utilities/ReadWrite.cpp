@@ -312,6 +312,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int solutionMode = -1;
 
     bool addOneRequestColumn = false;
+    float mipGap = -1;
 
     while (file.good()) {
         readUntilOneOfTwoChar(file, '=','\n', title);
@@ -414,6 +415,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "populateTimeLimit "))
             file >> populateTimeLimit;
+
+        else if (strEndWith(title, "MIPGap "))
+            file >> mipGap;
     }
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
                                                           penaltyL, committedTime, nbThreads,
@@ -428,7 +432,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
                                                           vehicle_portion, greedyPortion, usePick, bigM, solveTimeLimit,
                                                           populateTimeLimit, addOneRequestColumn,
-                                                          static_cast<SolutionMode>(solutionMode));
+                                                          static_cast<SolutionMode>(solutionMode), mipGap);
 }
 
 // function that open all input files and create the main instance

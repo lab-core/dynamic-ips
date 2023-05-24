@@ -55,16 +55,18 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 
   //      std::cout << routeVar_[0].getType() << std::endl;
         Cplex_ = IloCplex(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
-//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
-        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-
-//        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.3);
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
+//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        if (pInst->parameters_->MIPGap_ > 0.0001)
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+
         solveTime_->start();
         Cplex_.solve();
         std::cout.rdbuf(coutBuffer);
@@ -120,12 +122,18 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Model_.add(objFunction_);
 
         Cplex_ = IloCplex(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
+//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        if (pInst->parameters_->MIPGap_ > 0.0001)
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+
         solveTime_->start();
         Cplex_.solve();
         std::cout.rdbuf(coutBuffer);
@@ -211,12 +219,18 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
         Model_.add(objFunction_);
 
         Cplex_ = IloCplex(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
+//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        if (pInst->parameters_->MIPGap_ > 0.0001)
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.1);
+        
         solveTime_->start();
         Cplex_.solve();
         std::cout.rdbuf(coutBuffer);

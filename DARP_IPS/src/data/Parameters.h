@@ -53,6 +53,7 @@ public:
     int bigM_{};
     int solveTimeLimit_{};
     int populateTimeLimit_{};
+    float MIPGap_{};
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
@@ -62,7 +63,7 @@ public:
                bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
-               int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode);
+               int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();
 
