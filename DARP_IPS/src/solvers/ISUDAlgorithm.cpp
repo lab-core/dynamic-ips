@@ -1454,8 +1454,9 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
     }
 
 
+    availableTime_ -= isudTime_->dSinceStart().count();
     // solve the model in Integer mode
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths);
+    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
     RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
     setObjValue();
 
@@ -1661,7 +1662,7 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
 
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths);
+    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
     RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
     setObjValue();
 

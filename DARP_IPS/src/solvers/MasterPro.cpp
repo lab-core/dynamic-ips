@@ -107,7 +107,7 @@ void MasterPro::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
 }
 
 void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                              InputPaths &inputPaths) {
+                              InputPaths &inputPaths, float availableTime) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -130,6 +130,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
         Cplex_.solve();
@@ -201,7 +202,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
 }
 
 void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                              InputPaths &inputPaths) {
+                              InputPaths &inputPaths, float availableTime) {
     try {
 
         // Solve the Linear Relaxation
