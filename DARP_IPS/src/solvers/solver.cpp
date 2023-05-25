@@ -213,6 +213,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - SubproEpochTime_);
             else
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - SubproEpochTime_);
+            if (isudObj_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
+                std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
+                break;
+            }
+
              //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
                 case MP_CG:
