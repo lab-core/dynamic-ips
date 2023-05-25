@@ -847,7 +847,6 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     newRoute->addSource(PInitialStop_->currentNode_, PInitialStop_->leaveTime_, (*Vehicle_)->numPassengers_);
     PStopLabel currentLabel = PInitialStop_->child_;
     while (currentLabel != nullptr) {
-//        newRoute->addNode(currentLabel->currentNode_, currentLabel->reachTime_);
         newRoute->addNode(currentLabel->currentNode_);
         if (newRoute->plannedReachTime_.back() != currentLabel->reachTime_) {
             std::cout << "Connectivity constraint violated at node : ";
@@ -861,7 +860,6 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
  //           myTools::throwException("Route-Validation");
         }
         if (update) {
-//            newRoute->routeNodes_.back()->reachTime_ = currentLabel->reachTime_;
             newRoute->routeNodes_.back()->related_Request_->vehicleID_ = newRoute->vehicleID_;
             newRoute->routeNodes_.back()->nodeStatus_ = DONE;
             newRoute->routeNodes_.back()->reachTime_ = newRoute->plannedReachTime_.back();
@@ -878,6 +876,12 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
             }
         }
         currentLabel = currentLabel->child_;
+    }
+
+    if (newRoute->totalDelay_ != totalDelay_){
+        std::cout << "Total delay of the greedy solution is not the same as the route delay!";
+        std::cout << "Vehicle ID: " << newRoute->vehicleID_ << std::endl;
+        //           myTools::throwException("Route-Validation");
     }
     /*std::cout << "Created route from the GreedyLinkList" << std::endl;
     std::cout << newRoute->toString() << std::endl;*/

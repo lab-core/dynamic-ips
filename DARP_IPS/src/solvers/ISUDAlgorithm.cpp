@@ -117,7 +117,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
             }
         }
     }
-    /*else if (pInst->parameters_->initialStart_ == GREEDY_START){
+    else if (pInst->parameters_->initialStart_ == GREEDY_START){
         routeSolution_.clear();
         zSolution_.clear();
         // it has been solved before in solver
@@ -128,7 +128,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         setObjValue();
         GreedyObjValue_ = objValue_;
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
-    }*/
+    }
 
     if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
         // adding new arrival requests to zSolutions

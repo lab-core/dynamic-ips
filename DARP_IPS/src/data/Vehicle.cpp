@@ -113,8 +113,6 @@ void Vehicle::updateState(int epoch, int &epochLength) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                if (currentRoute_->routeNodes_[i]->related_Request_->getRequestId() == 26855)
-                    std::cout << "stop";
                 currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                 currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
