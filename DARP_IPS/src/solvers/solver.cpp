@@ -115,14 +115,14 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
                     isudObj_->nbVehicles_++;
                 }
-                else {
+                /*else {
                     if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                         if (EpochInst->parameters_->initialStart_ != GREEDY_START)
                             subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                         vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
                         isudObj_->nbVehicles_++;
                     }
-                }
+                }*/
             }
         }
 
@@ -210,9 +210,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         else {
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                isudObj_->availableTime_ = EpochInst->parameters_->committedTime_ - SubproEpochTime_;
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - SubproEpochTime_);
             else
-                isudObj_->availableTime_ = EpochInst->parameters_->epochLength_ - SubproEpochTime_;
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - SubproEpochTime_);
              //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
                 case MP_CG:
@@ -550,7 +550,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
     // define required variables
-    bool MIP_Stop = true;
+    bool MIP_Stop = false;
     int nbReceivedRequest;
     epoch_ = 0;
 
