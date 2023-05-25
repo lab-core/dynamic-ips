@@ -140,7 +140,7 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
-                ((currentRoute_->plannedDepartTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))&&
+                ((currentRoute_->plannedReachTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))&&
                 (currentRoute_->plannedDepartTime_[i] != currentRoute_->plannedDepartTime_[i+1]))){
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedDepartTime_[i];
@@ -216,7 +216,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
-                    ((currentRoute_->plannedDepartTime_[i] >= startTime_ + elapsedTime + epochLength)&&
+                    ((currentRoute_->plannedReachTime_[i] >= startTime_ + elapsedTime + epochLength)&&
                      (currentRoute_->plannedDepartTime_[i] != currentRoute_->plannedDepartTime_[i+1]))){
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedDepartTime_[i];
