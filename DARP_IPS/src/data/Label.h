@@ -43,6 +43,7 @@ public:
     bool isDropped_;                    // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                 // used in pulling to check if a label is extended to onboards before
     double createTime_;
+    double score_;
 
     // Constructor and Destructor
     Label(Vehicle *vehicle, PNode &source, int numRequests);

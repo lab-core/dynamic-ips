@@ -18,6 +18,7 @@ Label::Label(Vehicle *vehicle, PNode &source, int numRequests) : labelID_(labelC
     pathNode_.push_back(&(*source));
  //   path_.push_back(&source);
     reducedCost_ = 0;
+    score_ = 0;
     totalDelay_ = 0;
     status_ = ACTIVE;
 //    openNodes_.clear();
@@ -57,6 +58,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
+    score_ = label.score_;
 //    currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
 //    openNodes_ = label.openNodes_;
@@ -97,6 +99,7 @@ void Label::copyLabel(const Label &label) {
     pathNode_ = label.pathNode_;
  //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
+    score_ = label.score_;
 //    currentNode_ = label.currentNode_;
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
@@ -161,6 +164,7 @@ void Label::extend(Node *outNode) {
         numExtendCheck_++;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         reducedCost_ -= (outNode->related_Request_)->dual_;
+
         if (travelTime > 0){
             nbPickMove_++;
         }
@@ -168,6 +172,7 @@ void Label::extend(Node *outNode) {
         totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
+        score_ = reducedCost_/nbPickUp_;
     }
 
     passedTime_ = reachedTime_ + outNode->serviceTime_;
@@ -215,6 +220,7 @@ void Label::extend1(Node *outNode) {
         totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
+        score_ = reducedCost_/nbPickUp_;
     }
     if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE))
         passedTime_ = reachedTime_ + outNode->serviceTime_;

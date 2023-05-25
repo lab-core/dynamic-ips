@@ -662,9 +662,9 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
             activeNodes_.pop_back();
 
             // decrease the number of active labels if truncated strategy is used
-            /*if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
-            }*/
+            if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
+                truncateLabelList(currentNode, 50, labelPool_);
+            }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
@@ -883,8 +883,12 @@ void LabelingSubProblem::restProblem() {
 
 
 void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool) {
+    /*std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
+        return lhs->reducedCost_ < rhs->reducedCost_;});*/
+
     std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
-        return lhs->reducedCost_ < rhs->reducedCost_;});
+        return lhs->score_ < rhs->score_;});
+
     for (int i = node->activeLabels_.size()-1; i >=0; i--){
         if (node->nbActiveLabels_ <= MaxLabel)
             break;
