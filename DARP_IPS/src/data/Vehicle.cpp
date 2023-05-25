@@ -109,7 +109,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength)) {
+        if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength) ||
+        currentRoute_->plannedReachTime_[1] == departTime_) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -140,8 +141,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
-                ((currentRoute_->plannedReachTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))&&
-                (currentRoute_->plannedDepartTime_[i] != currentRoute_->plannedDepartTime_[i+1]))){
+                ((currentRoute_->plannedDepartTime_[i] >= startTime_ + static_cast<float>((epoch+1) * epochLength))&&
+                (currentRoute_->routeNodes_[i]->locationID_ != currentRoute_->routeNodes_[i+1]->locationID_))){
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedDepartTime_[i];
 
@@ -193,7 +194,7 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
     }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < startTime_ + elapsedTime + epochLength) {
+        if (departTime_ < startTime_ + elapsedTime + epochLength || currentRoute_->plannedReachTime_[1] == departTime_) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -216,8 +217,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 }
 
                 if (i == currentRoute_->routeSize_-1 ||
-                    ((currentRoute_->plannedReachTime_[i] >= startTime_ + elapsedTime + epochLength)&&
-                     (currentRoute_->plannedDepartTime_[i] != currentRoute_->plannedDepartTime_[i+1]))){
+                    ((currentRoute_->plannedDepartTime_[i] >= startTime_ + elapsedTime + epochLength)&&
+                     (currentRoute_->routeNodes_[i]->locationID_ != currentRoute_->routeNodes_[i+1]->locationID_))){
                     // at depart point the vehicle is ready to leave the stop location and delta time has passed
                     departTime_ = currentRoute_->plannedDepartTime_[i];
 

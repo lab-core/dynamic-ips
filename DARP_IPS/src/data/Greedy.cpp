@@ -138,6 +138,9 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
                             (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_;
                 }
             }
+            else
+                totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->requestTime_);
+
         }
     }
 }
