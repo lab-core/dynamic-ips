@@ -373,8 +373,9 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
+                    /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
                     requestObj->CPDual_ = requestDuals_[rowIndex];
-                    //               std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_<< std::endl;
                 }
 
             }

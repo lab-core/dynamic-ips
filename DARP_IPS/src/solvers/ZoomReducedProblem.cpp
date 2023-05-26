@@ -155,7 +155,6 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
 
         for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
-//                std::cout << compRoutes_[r]->getRouteId() << " : " << compRoutes_[r]->vehicleID_ << std::endl;
                 routeSolution.push_back(compRoutes_[r]);
                 pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
             }
@@ -173,14 +172,10 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         if (routeSolution.size() != pInst->nbVehicles_)
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
 
-        /*IloInt incomID = Cplex_.getIncumbentNode();
+        IloInt incomID = Cplex_.getIncumbentNode();
         // fixed the values on integer solution
 
-        *//*Model_.add(IloConversion(env_, zVar_, ILOFLOAT));
-        Model_.add(IloConversion(env_, routeVar_, ILOFLOAT));*//*
         Cplex_.solveFixed(incomID);
-//        std::cout << "Linear RP Objective value: " << Cplex_.getObjValue() << std::endl;
-
         // getting dual values
         requestDuals_.clear();
         vehicleDuals_.clear();
@@ -193,18 +188,18 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
             requestObj->dual_ = requestDuals_[rowIndex];
-            if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;;
+            /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
             requestObj->CPDual_ = requestDuals_[rowIndex];
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
             vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
             vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            if (vehicleObj->CPDual_ != vehicleObj->dual_ && vehicleObj->dual_ > 0)
-                std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->CPDual_ << " --> " <<  vehicleObj->dual_ << std::endl;
+            /*if (vehicleObj->CPDual_ != vehicleObj->dual_ && vehicleObj->dual_ > 0)
+                std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->CPDual_ << " --> " <<  vehicleObj->dual_ << std::endl;*/
             vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-        }*/
+        }
         Cplex_.clearModel();
     }
     catch (IloException& e) {
