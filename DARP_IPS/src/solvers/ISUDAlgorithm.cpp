@@ -756,7 +756,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
         updateReducedCosts(pInst);
         // if objective improves, the CP is build
         CPTime_->start();
-        if (minReducedCost_ <= 0){
+        if (minReducedCost_ <= 0 && isudTime_->dSinceStart().count() < availableTime_){
 
             previousObj = objValue_;
             updateIncDegrees(pInst);
@@ -878,7 +878,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                     isudIter_++;
                     isCPImproved = true;
                     CPCounter++;
-                    if (pInst->parameters_->solutionMode_ == ANYTIME && isudTime_->dSinceStart().count() > availableTime_) {
+                    if (isudTime_->dSinceStart().count() > availableTime_) {
                         restartAlgorithm = false;
                         break;
                     }
@@ -888,7 +888,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                 restartAlgorithm = false;
         }
 
-        if ((minReducedCost_ > 0)||(pInst->parameters_->solutionMode_ == ANYTIME && isudTime_->dSinceStart().count() > availableTime_))
+        if ((minReducedCost_ > 0)||(isudTime_->dSinceStart().count() > availableTime_))
             restartAlgorithm = false;
 
         CompPro_.reset();
