@@ -212,9 +212,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         else {
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - SubproEpochTime_);
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
             else
-                isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - SubproEpochTime_);
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
             if (isudObj_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
                 std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
                 break;
