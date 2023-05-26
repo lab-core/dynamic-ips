@@ -679,7 +679,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
 }
 void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
     isudTime_->start();
-
+    float tiLim = availableTime_;
     if (pInst->parameters_->initialStart_ == GREEDY_START){
         routeSolution_.clear();
         zSolution_.clear();
@@ -731,7 +731,9 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
             if (minReducedCost_ >= 0){
                 break;
             }
-            availableTime_ = availableTime_ - isudTime_->dSinceStart().count();
+            availableTime_ = tiLim - isudTime_->dSinceStart().count();
+            if (availableTime_ < 0)
+                break;
             solveRPro_MIP_Dual(pInst, 0, inputPaths);
             TisudIter_++;
             std::cout << "RP improve: " << objValue_ << std::endl;
@@ -757,7 +759,8 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
         updateReducedCosts(pInst);
         // if objective improves, the CP is build
         CPTime_->start();
-        if (minReducedCost_ <= 0 && isudTime_->dSinceStart().count() < availableTime_){
+        availableTime_ = tiLim - isudTime_->dSinceStart().count();
+        if (minReducedCost_ <= 0 && availableTime_ > 0){
 
             previousObj = objValue_;
             updateIncDegrees(pInst);
@@ -779,7 +782,8 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
 
         while (isCPImproved){
             isCPImproved = false;
-            if (!CompPro_->routesToAdd_.empty()) {
+            availableTime_ = tiLim - isudTime_->dSinceStart().count();
+            if (!CompPro_->routesToAdd_.empty() && availableTime_ > 0) {
                 CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
                 TisudIter_++;
                 CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
@@ -791,7 +795,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                     std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
                     if (pInst->parameters_->useZoom_){
                         isudMIPTime_->start();
-                        availableTime_ = availableTime_ - isudTime_->dSinceStart().count();
+                        availableTime_ = tiLim - isudTime_->dSinceStart().count();
                         solveRPro_MIP_Dual(pInst, pInst->parameters_->MIP_maxIncDegree_, inputPaths);
                         TisudIter_++;
                         if (previousObj > objValue_) {
@@ -880,7 +884,8 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                     isudIter_++;
                     isCPImproved = true;
                     CPCounter++;
-                    if (isudTime_->dSinceStart().count() > availableTime_) {
+                    availableTime_ = tiLim - isudTime_->dSinceStart().count();
+                    if (availableTime_ <= 0) {
                         restartAlgorithm = false;
                         break;
                     }
@@ -889,8 +894,8 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
             else
                 restartAlgorithm = false;
         }
-
-        if ((minReducedCost_ > 0)||(isudTime_->dSinceStart().count() > availableTime_))
+        availableTime_ = tiLim - isudTime_->dSinceStart().count();
+        if ((minReducedCost_ > 0)||(availableTime_ <= 0))
             restartAlgorithm = false;
 
         CompPro_.reset();
