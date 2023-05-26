@@ -73,6 +73,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
+    isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_);
+    isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
     isudObj_->initialization(EpochInst, inputPaths);
     // save initial solution
 //    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);

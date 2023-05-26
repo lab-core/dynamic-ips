@@ -115,7 +115,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
 }
 
 void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                        InputPaths &inputPaths) {
+                                        InputPaths &inputPaths, int availableTime) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -133,6 +133,7 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
         Cplex_.solve();

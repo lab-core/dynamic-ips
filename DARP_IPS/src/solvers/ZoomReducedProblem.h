@@ -15,7 +15,8 @@ public:
     /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
-    void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
+    void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                        InputPaths &inputPaths, int availableTime);
     void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
 
     // Display function
