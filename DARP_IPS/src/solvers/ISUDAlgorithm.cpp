@@ -1675,11 +1675,11 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     RPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
     RPBuildTime_->stop();
-
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
+    availableTime_ -= isudTime_->dSinceStart().count();
+    if (availableTime_ >0)
+        MasterPro_->solveModelLPInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
     RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
     setObjValue();
-
 
     MasterPro_->routesToAdd_.clear();
 }
