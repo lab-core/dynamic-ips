@@ -103,6 +103,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;
 
+        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 600)
+            subProOptions_->MaxLabel_ = 10;
+
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
             if (!isSolved) {
@@ -234,8 +237,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                 break;
-            else if (subProblemTime_->dSinceStart().count() + isudObj_->isudTime_->dSinceStart().count() >
-            EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count())
+            else if (subProblemTime_->dSinceStart().count() > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
                 break;
         }
         if (previousObj == isudObj_->objValue_) {
