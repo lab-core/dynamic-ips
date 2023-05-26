@@ -133,62 +133,70 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
-        Cplex_.solve();
-        objValue_ = Cplex_.getObjValue();
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
-        solveTime_->stop();
-        // saving the result and remove out of base variables
-        zSolution.clear();
-        routeSolution.clear();
-
-        IloNumArray zVal(env_);
-        IloNumArray routeVal(env_);
-
-        Cplex_.getValues(zVal, zVar_);
-        Cplex_.getValues(routeVal, routeVar_);
-
-
-        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
-            if (routeVal[r] > 0.9) {
-                routeSolution.push_back(compRoutes_[r]);
-                pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
-            }
+        if (!Cplex_.solve()) {
+            solveTime_->stop();
+            std::cout << "Failed to optimize the MP" << std::endl;
+            std::cout.rdbuf(coutBuffer);
+            logFile.close();
         }
+        else {
+            std::cout.rdbuf(coutBuffer);
+            logFile.close();
+            solveTime_->stop();
+            objValue_ = Cplex_.getObjValue();
 
-        for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-            if (zVal[i] > 0.9) {
-                zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+            // saving the result and remove out of base variables
+            zSolution.clear();
+            routeSolution.clear();
+
+            IloNumArray zVal(env_);
+            IloNumArray routeVal(env_);
+
+            Cplex_.getValues(zVal, zVar_);
+            Cplex_.getValues(routeVal, routeVar_);
+
+
+            for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                if (routeVal[r] > 0.9) {
+                    routeSolution.push_back(compRoutes_[r]);
+                    pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                }
             }
-        }
+
+            for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                if (zVal[i] > 0.9) {
+                    zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                }
+            }
 
 
-        if (routeSolution.size() != pInst->nbVehicles_)
-            myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+            if (routeSolution.size() != pInst->nbVehicles_)
+                myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
 
-        // fixed the values on integer solution to get duals for MIP
-        if (pInst->parameters_->mainAlgorithm_ == MP_MIP) {
-            IloInt incomID = Cplex_.getIncumbentNode();
-            Cplex_.solveFixed(incomID);
+            // fixed the values on integer solution to get duals for MIP
+            if (pInst->parameters_->mainAlgorithm_ == MP_MIP) {
+                IloInt incomID = Cplex_.getIncumbentNode();
+                Cplex_.solveFixed(incomID);
 
-            // getting dual values
-            requestDuals_.clear();
-            vehicleDuals_.clear();
+                // getting dual values
+                requestDuals_.clear();
+                vehicleDuals_.clear();
 
-            // define dual container size
-            requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-            vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+                // define dual container size
+                requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+                vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
-            for (auto &requestObj: pInst->requests_) {
-                int rowIndex = requestObj->taskIndex_;
-                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-                requestObj->dual_ = requestDuals_[rowIndex];
-                requestObj->CPDual_ = requestDuals_[rowIndex];
+                for (auto &requestObj: pInst->requests_) {
+                    int rowIndex = requestObj->taskIndex_;
+                    requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                    requestObj->dual_ = requestDuals_[rowIndex];
+                    requestObj->CPDual_ = requestDuals_[rowIndex];
 
-                for (auto &vehicleObj: pInst->vehicles_) {
-                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    for (auto &vehicleObj: pInst->vehicles_) {
+                        vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+                        vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                        vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    }
                 }
             }
         }

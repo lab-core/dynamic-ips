@@ -1424,7 +1424,7 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
 void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
     isudTime_->start();
     RPTime_->start();
-
+    int tilim = availableTime_;
     double previousObj = objValue_;
 
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
@@ -1441,49 +1441,56 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
     /************************************************************************************************/
     //                                     MASTER PROBLEM
     /************************************************************************************************/
+    availableTime_ = (int) (tilim - isudTime_->dSinceStart().count());
+    if (availableTime_ > 1) {
 
-    // solve RP with MIP solver
-    while (true){
-        updateReducedCosts(pInst);
-        if (minReducedCost_ >= 0){
-            break;
+        // solve RP with MIP solver
+        while (true) {
+            updateReducedCosts(pInst);
+            if (minReducedCost_ >= 0) {
+                break;
+            }
+            solveMP_LP(pInst, inputPaths);
+            std::cout << "LMP improve: " << objValue_ << std::endl;
+            TisudIter_++;
+            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", (int) MIPReducedPro_->compRoutes_.size(),
+                                                          isudTime_->dSinceStart().count(), subProTime);
+            isudIter_++;
+            if (previousObj > objValue_) {
+                previousObj = objValue_;
+            } else
+                break;
         }
-        solveMP_LP(pInst, inputPaths);
-        std::cout << "LMP improve: " << objValue_ << std::endl;
+
+
+        availableTime_ = tilim - isudTime_->dSinceStart().count();
+        if (availableTime_ < 1)
+            availableTime_ = 1;
+        // solve the model in Integer mode
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
+        RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        setObjValue();
+
+        std::cout << "MP improve: " << objValue_ << std::endl;
+
         TisudIter_++;
-        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", (int)MIPReducedPro_->compRoutes_.size(), isudTime_->dSinceStart().count(), subProTime);
-        isudIter_++;
-        if (previousObj > objValue_){
-            previousObj = objValue_;
-        }
-        else
-            break;
-    }
-
-
-    availableTime_ -= isudTime_->dSinceStart().count();
-    // solve the model in Integer mode
-    MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_);
-    RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
-    setObjValue();
-
-    std::cout << "MP improve: " << objValue_ << std::endl;
-
-    TisudIter_++;
 //    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "MP", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count());
 //    isudIter_++;
 
-    for (auto & routeObj : MasterPro_->compRoutes_)
-        routeObj->isAdded_ = false;
+        for (auto &routeObj: MasterPro_->compRoutes_)
+            routeObj->isAdded_ = false;
+        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size(),
+                                                      isudTime_->dSinceStart().count(), subProTime);
+
+        std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+        std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
+                  << std::endl;
+        for (auto &requestObj: zSolution_)
+            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
+    }
+
     MasterPro_.reset();
     MasterPro_ = std::make_shared<MasterPro>();
-    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int)MasterPro_->compRoutes_.size(),
-                                                  isudTime_->dSinceStart().count(), subProTime);
-
-    std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
-    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
-    for (auto & requestObj : zSolution_)
-        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
 
     RPTime_->stop();
     isudTime_->stop();
