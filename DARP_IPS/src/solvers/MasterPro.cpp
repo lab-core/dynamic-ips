@@ -274,7 +274,6 @@ void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, v
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
         solveTime_->start();
-        solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
             std::cout << "Failed to optimize the MP" << std::endl;
