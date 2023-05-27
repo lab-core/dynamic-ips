@@ -17,6 +17,9 @@ public:
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
     void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                         InputPaths &inputPaths, int availableTime, double preObj);
+
+    void solveModelDualLP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                        InputPaths &inputPaths, int availableTime, double preObj);
     void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
 
     // Display function

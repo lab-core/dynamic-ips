@@ -171,7 +171,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         RPBuildTime_->start();
         MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_, inputPaths, (int)availableTime_, objValue_);
+        MIPReducedPro_->solveModelDualLP(pInst, zSolution_, routeSolution_, inputPaths, (int)availableTime_, objValue_);
         setObjValue();
     }
 
@@ -1410,8 +1410,8 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
 
     for (auto & routeObj : MasterPro_->compRoutes_)
         routeObj->isAdded_ = false;
-    MasterPro_.reset();
-    MasterPro_ = std::make_shared<MasterPro>();
+    /*MasterPro_.reset();
+    MasterPro_ = std::make_shared<MasterPro>();*/
     (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "MIP", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count(), subProTime);
 
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
@@ -1576,7 +1576,7 @@ void ISUDAlgorithm::solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPa
         RPBuildTime_->start();
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_,inputPaths,
+        MIPReducedPro_->solveModelDualLP(pInst, zSolution_, routeSolution_,inputPaths,
                                        availableTime_, objValue_);
         RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
@@ -1658,10 +1658,9 @@ void ISUDAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
 }
 
 void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
-    /*vector<std::shared_ptr<Route>> compRoutes = MasterPro_->compRoutes_;
-
+    /*vector<std::shared_ptr<Route>> compRoutes = MasterPro_->compRoutes_;*/
     MasterPro_.reset();
-    MasterPro_ = std::make_shared<MasterPro>();*/
+    MasterPro_ = std::make_shared<MasterPro>();
 
     /*for (auto & routeObj : compRoutes){
         if (routeObj->getRouteId() != pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->getRouteId())

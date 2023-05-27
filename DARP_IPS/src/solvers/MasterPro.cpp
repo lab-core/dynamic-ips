@@ -89,6 +89,8 @@ void MasterPro::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
             requestObj->dual_ = requestDuals_[rowIndex];
+            /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
             requestObj->CPDual_ = requestDuals_[rowIndex];
         }
 
@@ -143,7 +145,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
             std::cout.rdbuf(coutBuffer);
             logFile.close();
             solveTime_->stop();
-            if (Cplex_.getObjValue() < preObj) {
+            if (Cplex_.getObjValue() <= preObj) {
                 objValue_ = Cplex_.getObjValue();
 
 
@@ -287,7 +289,7 @@ void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, v
         else {
             std::cout.rdbuf(coutBuffer);
             logFile.close();
-            if (Cplex_.getObjValue() < preObj) {
+            if (Cplex_.getObjValue() <= preObj) {
                 objValue_ = Cplex_.getObjValue();
                 solveTime_->stop();
                 // saving the result and remove out of base variables
