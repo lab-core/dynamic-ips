@@ -738,6 +738,7 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                 availableTime_ = tiLim - isudTime_->dSinceStart().count();
                 if (availableTime_ < 0)
                     break;
+                setObjValue();
                 solveRPro_MIP_Dual(pInst, 0, inputPaths);
                 TisudIter_++;
                 std::cout << "RP improve: " << objValue_ << std::endl;
