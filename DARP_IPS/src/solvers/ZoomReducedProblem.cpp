@@ -144,8 +144,6 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         }
 
         else {
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
             solveTime_->stop();
             // saving the result and remove out of base variables
 
@@ -180,8 +178,12 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
 
                 IloInt incomID = Cplex_.getIncumbentNode();
                 // fixed the values on integer solution
-
+                solveTime_->start();
+                logFile << "----------------------- Fixed RP ------------------------"<< std::endl;
                 Cplex_.solveFixed(incomID);
+                solveTime_->stop();
+                std::cout.rdbuf(coutBuffer);
+                logFile.close();
                 // getting dual values
                 requestDuals_.clear();
                 vehicleDuals_.clear();

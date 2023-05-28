@@ -171,7 +171,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         RPBuildTime_->start();
         MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDualLP(pInst, zSolution_, routeSolution_, inputPaths, (int)availableTime_, objValue_);
+        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_, inputPaths, (int)availableTime_, objValue_);
         setObjValue();
     }
 
@@ -1576,7 +1576,7 @@ void ISUDAlgorithm::solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPa
         RPBuildTime_->start();
         MIPReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         RPBuildTime_->stop();
-        MIPReducedPro_->solveModelDualLP(pInst, zSolution_, routeSolution_,inputPaths,
+        MIPReducedPro_->solveModelDual(pInst, zSolution_, routeSolution_,inputPaths,
                                        availableTime_, objValue_);
         RPEpochSolveTime_ += MIPReducedPro_->solveTime_->dSinceStart().count();
         setObjValue();
