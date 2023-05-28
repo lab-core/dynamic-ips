@@ -82,6 +82,7 @@ void MasterModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign 
         zVar[zVar.getSize()-1].setName(request->name_);
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -98,6 +99,7 @@ void MasterModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSig
         zVar[zVar.getSize()-1].setName(request->name_);
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -117,6 +119,7 @@ void MasterModeler::addZVars(IloNumVarArray &zVar, std::vector<PRequest> &reques
         }
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }

@@ -104,6 +104,7 @@ void MasterPro::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -211,6 +212,7 @@ void MasterPro::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vec
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -328,6 +330,7 @@ void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, v
 
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }

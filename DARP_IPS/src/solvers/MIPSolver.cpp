@@ -396,6 +396,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 //        PInst->saveSolutionRoutes(filePaths.getOutputOfflineRoutes());
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
     env.end();

@@ -506,6 +506,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
         }
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 //    Cplex_.clearModel();
@@ -685,6 +686,7 @@ void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolut
         }
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 //    Cplex_.clearModel();
@@ -791,6 +793,7 @@ void ComplementPro::ResetCPModel() {
 
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }

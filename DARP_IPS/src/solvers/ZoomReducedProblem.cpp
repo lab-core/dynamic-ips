@@ -110,6 +110,7 @@ void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolutio
             myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -140,7 +141,6 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
             solveTime_->stop();
             std::cout << "Failed to optimize the RP" << std::endl;
             std::cout.rdbuf(coutBuffer);
-            logFile.close();
         }
 
         else {
@@ -183,7 +183,7 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                 Cplex_.solveFixed(incomID);
                 solveTime_->stop();
                 std::cout.rdbuf(coutBuffer);
-                logFile.close();
+
                 // getting dual values
                 requestDuals_.clear();
                 vehicleDuals_.clear();
@@ -210,9 +210,11 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                 }
             }
         }
+        logFile.close();
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -328,6 +330,7 @@ void ZoomReducedProblem::solveModelDualLP(PInstance &pInst, vector<PRequest> &zS
 
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -437,6 +440,7 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }

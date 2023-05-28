@@ -53,6 +53,7 @@ void ReducedProblem::ResetRPModel() {
         }
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -254,6 +255,7 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         Cplex_.clearModel();
     }
     catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 
