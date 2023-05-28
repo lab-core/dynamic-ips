@@ -348,12 +348,8 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             status_ = INFEASIBLE;
 //            env_.out() << Model_ << std::endl;
             std::cout << "Failed to optimize the problem" << std::endl;
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
         } else {
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
             solveTime_->stop();
 
             // printing solution status
@@ -504,6 +500,8 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             } else
                 status_ = POSITIVE_VALUE;
         }
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;

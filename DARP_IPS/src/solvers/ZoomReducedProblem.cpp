@@ -121,13 +121,11 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
         Model_.add(objFunction_);
-
         Cplex_ = IloCplex(Model_);
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
-
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
 //        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
 //        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
@@ -140,9 +138,7 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         if (!Cplex_.solve()) {
             solveTime_->stop();
             std::cout << "Failed to optimize the RP" << std::endl;
-            std::cout.rdbuf(coutBuffer);
         }
-
         else {
             solveTime_->stop();
             // saving the result and remove out of base variables
@@ -182,8 +178,6 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                 logFile << "----------------------- Fixed RP ------------------------"<< std::endl;
                 Cplex_.solveFixed(incomID);
                 solveTime_->stop();
-                std::cout.rdbuf(coutBuffer);
-
                 // getting dual values
                 requestDuals_.clear();
                 vehicleDuals_.clear();
@@ -210,6 +204,7 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                 }
             }
         }
+        std::cout.rdbuf(coutBuffer);
         logFile.close();
         Cplex_.clearModel();
     }
