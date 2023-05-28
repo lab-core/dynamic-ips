@@ -438,7 +438,7 @@ void ISUDAlgorithm::updateReducedCosts(PInstance &pInst) {
         }
     }
     if (minReducedCost_ < 0)
-        maxReducedCost_ = ((-1)*minReducedCost_);
+        maxReducedCost_ = ((-0.5)*minReducedCost_);
 }
 
 void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
