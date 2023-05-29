@@ -121,14 +121,20 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
         Model_.add(objFunction_);
+
+        IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
+        IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+
         Cplex_ = IloCplex(Model_);
+
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
-//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
@@ -138,12 +144,15 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
         if (!Cplex_.solve()) {
             solveTime_->stop();
             std::cout << "Failed to optimize the RP" << std::endl;
+            std::cout.rdbuf(coutBuffer);
+            logFile.close();
         }
         else {
+            std::cout.rdbuf(coutBuffer);
+            logFile.close();
             solveTime_->stop();
-            // saving the result and remove out of base variables
-
             if (Cplex_.getObjValue() <= preObj) {
+                // saving the result and remove out of base variables
                 zSolution.clear();
                 routeSolution.clear();
 
@@ -166,18 +175,13 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                     }
                 }
 
-                /*std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
-                          << " are selected to served." << std::endl;*/
 
                 if (routeSolution.size() != pInst->nbVehicles_)
                     myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
 
+                // fixed the values on integer solution to get duals for MIP
                 IloInt incomID = Cplex_.getIncumbentNode();
-                // fixed the values on integer solution
-                solveTime_->start();
-                logFile << "----------------------- Fixed RP ------------------------"<< std::endl;
                 Cplex_.solveFixed(incomID);
-                solveTime_->stop();
                 // getting dual values
                 requestDuals_.clear();
                 vehicleDuals_.clear();
@@ -190,22 +194,19 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
-                    /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
                     requestObj->CPDual_ = requestDuals_[rowIndex];
-                }
 
-                for (auto &vehicleObj: pInst->vehicles_) {
-                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    /*if (vehicleObj->CPDual_ != vehicleObj->dual_ && vehicleObj->dual_ > 0)
-                        std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->CPDual_ << " --> " <<  vehicleObj->dual_ << std::endl;*/
-                    vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    for (auto &vehicleObj: pInst->vehicles_) {
+                        vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(
+                                vehicleConst_[vehicleObj->vehicleID_]);
+                        vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                        vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    }
                 }
             }
         }
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
+        convR.end();
+        convZ.end();
         Cplex_.clearModel();
     }
     catch (IloException& e) {
