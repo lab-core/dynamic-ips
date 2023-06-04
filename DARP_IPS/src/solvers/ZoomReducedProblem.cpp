@@ -196,12 +196,12 @@ void ZoomReducedProblem::solveModelDual(PInstance &pInst, vector<PRequest> &zSol
                     requestObj->dual_ = requestDuals_[rowIndex];
                     requestObj->CPDual_ = requestDuals_[rowIndex];
 
-                    for (auto &vehicleObj: pInst->vehicles_) {
-                        vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(
-                                vehicleConst_[vehicleObj->vehicleID_]);
-                        vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                        vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    }
+                }
+                for (auto &vehicleObj: pInst->vehicles_) {
+                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(
+                            vehicleConst_[vehicleObj->vehicleID_]);
+                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
                 }
             }
         }
