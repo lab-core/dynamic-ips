@@ -45,69 +45,74 @@ void ZoomReducedProblem::updateModelPartial(PInstance &pInst, vector<PRequest> &
 }
 
 void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                    InputPaths &inputPaths) {
+                                    InputPaths &inputPaths, int availableTime, double preObj) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
         Model_.add(objFunction_);
-        /*Model_.add(IloConversion(env_, zVar_, ILOINT));
-        Model_.add(IloConversion(env_, routeVar_, ILOINT));*/
 
-  //      std::cout << routeVar_[0].getType() << std::endl;
+        IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
+        IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+
         Cplex_ = IloCplex(Model_);
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "----------------------- RP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
-
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-//        Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 1);
-//        Cplex_.setParam(IloCplex::Param::TimeLimit, 5);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
-        Cplex_.solve();
+        if (!Cplex_.solve()) {
+            solveTime_->stop();
+            std::cout << "Failed to optimize the RP" << std::endl;
+        }
+
+        else {
+            solveTime_->stop();
+
+            if (Cplex_.getObjValue() <= preObj) {
+
+                // saving the result and remove out of base variables
+                zSolution.clear();
+                routeSolution.clear();
+
+                IloNumArray zVal(env_);
+                IloNumArray routeVal(env_);
+
+
+                Cplex_.getValues(zVal, zVar_);
+                Cplex_.getValues(routeVal, routeVar_);
+
+
+                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    if (routeVal[r] > 0.9) {
+                        routeSolution.push_back(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                    }
+                }
+
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    if (zVal[i] > 0.9) {
+                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                    }
+                }
+                std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
+                          << " are selected to served." << std::endl;
+
+                if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+            }
+        }
+        Cplex_.clearModel();
         std::cout.rdbuf(coutBuffer);
         logFile.close();
-        solveTime_->stop();
-
-        // printing solution status
- //       std::cout << toString();
-
-        // saving the result and remove out of base variables
-        zSolution.clear();
-        routeSolution.clear();
-
-        IloNumArray zVal(env_);
-        IloNumArray routeVal(env_);
-
-
-        Cplex_.getValues(zVal, zVar_);
-        Cplex_.getValues(routeVal, routeVar_);
-
-
-        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
-            if (routeVal[r] > 0.9) {
-                routeSolution.push_back(compRoutes_[r]);
-                pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
-                /*routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
-                pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(
-                        generatedRoutes[routeVar_[r].getName()]);*/
-            }
-        }
-
-        for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-            if (zVal[i] > 0.9) {
-                zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
-            }
-        }
-        std::cout << "# from " << pInst->nbRequests_ << " request, " << pInst->nbRequests_ - zSolution.size()
-                  << " are selected to served." << std::endl;
-        Cplex_.clearModel();
-        if (routeSolution.size() != pInst->nbVehicles_)
-            myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;

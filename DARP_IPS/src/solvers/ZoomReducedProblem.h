@@ -14,7 +14,8 @@ public:
     void updateModelPartial(PInstance &pInst, std::vector<PRequest> &fractionalZ);
     /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
+    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    InputPaths &inputPaths, int availableTime, double preObj);
     void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                         InputPaths &inputPaths, int availableTime, double preObj);
 
