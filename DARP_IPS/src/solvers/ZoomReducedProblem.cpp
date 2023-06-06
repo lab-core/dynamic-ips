@@ -245,85 +245,87 @@ void ZoomReducedProblem::solveModelDualLP(PInstance &pInst, vector<PRequest> &zS
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
 
         solveTime_->start();
-        Cplex_.solve();
-        std::cout.rdbuf(coutBuffer);
-        solveTime_->stop();
-
-        // getting dual values
-        requestDuals_.clear();
-        vehicleDuals_.clear();
-
-        // define dual container size
-        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
-
-        for (auto &requestObj: pInst->requests_) {
-            int rowIndex = requestObj->taskIndex_;
-            requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-            requestObj->dual_ = requestDuals_[rowIndex];
-            requestObj->CPDual_ = requestDuals_[rowIndex];
-        }
-
-        for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-        }
-        convR.end();
-        convZ.end();
-
-        // Convert to integer
-        convZ = IloConversion(env_, zVar_, ILOINT);
-        convR = IloConversion(env_, routeVar_, ILOINT);
-
-        Model_.add(convZ);
-        Model_.add(convR);
-        logFile << "----------------------- RP ------------------------"<< std::endl;
-        std::cout.rdbuf(logFile.rdbuf());
-        if (pInst->parameters_->MIPGap_ > 0.0001)
-            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
-        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
-        solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
             std::cout << "Failed to optimize the RP" << std::endl;
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
         }
         else {
-            std::cout.rdbuf(coutBuffer);
-            logFile.close();
-            if (Cplex_.getObjValue() <= preObj) {
+            solveTime_->stop();
+
+            // getting dual values
+            requestDuals_.clear();
+            vehicleDuals_.clear();
+
+            // define dual container size
+            requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+            vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+            for (auto &requestObj: pInst->requests_) {
+                int rowIndex = requestObj->taskIndex_;
+                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+                requestObj->dual_ = requestDuals_[rowIndex];
+                requestObj->CPDual_ = requestDuals_[rowIndex];
+            }
+
+            for (auto &vehicleObj: pInst->vehicles_) {
+                vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+                vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            }
+            convR.end();
+            convZ.end();
+
+            // Convert to integer
+            convZ = IloConversion(env_, zVar_, ILOINT);
+            convR = IloConversion(env_, routeVar_, ILOINT);
+
+            Model_.add(convZ);
+            Model_.add(convR);
+            logFile << "----------------------- RP ------------------------" << std::endl;
+            if (pInst->parameters_->MIPGap_ > 0.0001)
+                Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+            Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+            solveTime_->start();
+            if (!Cplex_.solve()) {
                 solveTime_->stop();
-                // saving the result and remove out of base variables
-                zSolution.clear();
-                routeSolution.clear();
+                std::cout << "Failed to optimize the RP" << std::endl;
+            }
+            else{
+                solveTime_->stop();
+                if (Cplex_.getObjValue() <= preObj) {
 
-                IloNumArray zVal(env_);
-                IloNumArray routeVal(env_);
+                    // saving the result and remove out of base variables
+                    zSolution.clear();
+                    routeSolution.clear();
 
-                Cplex_.getValues(zVal, zVar_);
-                Cplex_.getValues(routeVal, routeVar_);
+                    IloNumArray zVal(env_);
+                    IloNumArray routeVal(env_);
+
+                    Cplex_.getValues(zVal, zVar_);
+                    Cplex_.getValues(routeVal, routeVar_);
 
 
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
-                    if (routeVal[r] > 0.9) {
-                        routeSolution.push_back(compRoutes_[r]);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                    for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                        if (routeVal[r] > 0.9) {
+                            routeSolution.push_back(compRoutes_[r]);
+                            pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                        }
                     }
-                }
 
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-                    if (zVal[i] > 0.9) {
-                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                        if (zVal[i] > 0.9) {
+                            zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                        }
                     }
+
+
+                    if (routeSolution.size() != pInst->nbVehicles_)
+                        myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
                 }
-
-
-                if (routeSolution.size() != pInst->nbVehicles_)
-                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
             }
         }
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
 
         convR.end();
         convZ.end();
