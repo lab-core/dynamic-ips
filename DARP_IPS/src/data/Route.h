@@ -39,6 +39,7 @@ public:
     std::bitset<MAX_SIZE> column_;
     bool isCompatible_;
     bool isAdded_;
+    double score_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);

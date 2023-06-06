@@ -23,6 +23,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     name_ = name2;
     isCompatible_ = false;
     isAdded_ = false;
+    score_ = 0;
 }
 Route::~Route(){
     delete[] name_;

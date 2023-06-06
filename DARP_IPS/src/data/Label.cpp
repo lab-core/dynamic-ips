@@ -412,6 +412,10 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     }
     if (newRoute->routeRequests_.empty() && !pInst->vehicles_[newRoute->vehicleID_]->onboards_.empty())
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
+    if (!newRoute->routeRequests_.empty())
+        newRoute->score_ = reducedCost_/newRoute->routeRequests_.size();
+    else
+        newRoute->score_ = 0;
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
