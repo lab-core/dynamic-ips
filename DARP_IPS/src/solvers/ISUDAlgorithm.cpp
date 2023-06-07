@@ -1669,7 +1669,7 @@ void ISUDAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
         std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),availableRoutes_[vehicleObj->vehicleID_].end(),[](const PRoute &lhs, const PRoute &rhs){
             return lhs->reducedCost_ < rhs->reducedCost_;});
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->reducedCost_ < 0 && !routeObj->isAdded_) {
+            if (routeObj->reducedCost_ <= 0 && !routeObj->isAdded_) {
                 MasterPro_->routesToAdd_.push_back(routeObj);
                 nbAdded++;
             }
