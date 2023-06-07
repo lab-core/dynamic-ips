@@ -6,18 +6,18 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 8
+nbThreads = 16
 InitialDual = 0
-mainAlgorithm = 3
+mainAlgorithm = 2
 addOneRequestColumn = 0
-solutionMode = 2
+solutionMode = 1
 OneIter = 1
-GreedyReOptimize = 0
+GreedyReOptimize = 1
 
 # ISUD PARAMETERS
 #
 warmStart = 1
-MIP_maxIncDegree = 10
+MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
 minImp = 0.0025
@@ -29,16 +29,17 @@ isTruncated = 1
 MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
-usePick = 1
+usePick = 0
 
 # CPLEX PARAMETERS
 #
 BigM = 27000
 solveTimeLimit = 300
 populateTimeLimit = 200
+MIPGap = 0.01
