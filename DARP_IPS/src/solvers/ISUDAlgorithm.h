@@ -108,6 +108,7 @@ public:
     void solveRPro_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRPro_MIP_Partial(PInstance &pInst, int compDegree, InputPaths &inputPaths);
+    void solveRPro_MIP_LP(PInstance &pInst, InputPaths &inputPaths);
 
     void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
     void solveMP_INT(PInstance &pInst, InputPaths &inputPaths);

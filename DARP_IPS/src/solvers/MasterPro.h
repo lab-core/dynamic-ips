@@ -9,7 +9,7 @@
 
 class MasterPro : public ReducedProblem {
 public:
-    double objValue_;
+
     // Constructor and Destructor
     MasterPro();
 

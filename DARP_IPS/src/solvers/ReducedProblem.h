@@ -18,6 +18,7 @@ public:
     // Variables
     IloNumVarArray routeVar_;
     IloNumVarArray zVar_;
+    double objValue_;
 
     std::vector<PRoute> compRoutes_;
 
