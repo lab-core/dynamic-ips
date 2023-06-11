@@ -17,8 +17,6 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
     for (auto routeObj : routesToAdd_) {
         addRouteVar(routeObj);
     }
-//    ReducedProblem::addRouteVars(routesToAdd_);
-
 
  //   addZVars(fractionalZ);
     for (auto & zRequest : fractionalZ)

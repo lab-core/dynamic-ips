@@ -614,16 +614,18 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
                     // push to pickup points
-
-                    for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
-                        if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->usePick_, Vehicle_->capacity_)) {
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            labelExtend(selectedLabel, (neighbourNode), true);
-                            if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                activeNodes_.push_back(neighbourNode);
+                    if (selectedLabel->load_ < Vehicle_->capacity_) {
+                        for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
+                            if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->usePick_,
+                                                                Vehicle_->capacity_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                labelExtend(selectedLabel, (neighbourNode), true);
+                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(neighbourNode);
+                                }
+                                /*if ((*(*neighbourNode)->pairNode_)->nbActiveLabels_ == 1)
+                                    activeNodes_.push_back(*(*neighbourNode)->pairNode_);*/
                             }
-                            /*if ((*(*neighbourNode)->pairNode_)->nbActiveLabels_ == 1)
-                                activeNodes_.push_back(*(*neighbourNode)->pairNode_);*/
                         }
                     }
                 }
@@ -670,7 +672,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
-                    if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1){
+                    if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1 && selectedLabel->load_ < Vehicle_->capacity_){
                         // the drop has been done in one of the pick points
                         for (auto &neighbourNode: (selectedLabel->pathNode_.back())->closeSuccessors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, true, Vehicle_->capacity_)) {
