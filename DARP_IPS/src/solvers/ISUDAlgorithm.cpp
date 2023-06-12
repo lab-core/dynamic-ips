@@ -1397,6 +1397,7 @@ void ISUDAlgorithm::solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &i
 void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
     isudTime_->start();
     RPTime_->start();
+    int tilim = availableTime_;
     double previousObj = objValue_;
 
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
@@ -1406,28 +1407,49 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
         for(auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = vehicleObj->CPDual_;
     }
+    RPBuildTime_->start();
+    MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
+    RPBuildTime_->stop();
 
     /************************************************************************************************/
     //                                     MASTER PROBLEM
     /************************************************************************************************/
 
+    // solve RP with MIP solver
+    while (true) {
+        updateReducedCosts(pInst);
+        if (minReducedCost_ >= 0) {
+            break;
+        }
+        availableTime_ = (int) (tilim - isudTime_->dSinceStart().count());
+        if (availableTime_ < 1)
+            break;
+        solveMP_INT(pInst, inputPaths);
+        std::cout << "MP improve: " << objValue_ << std::endl;
+        TisudIter_++;
+        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", (int) MIPReducedPro_->compRoutes_.size(),
+                                                      isudTime_->dSinceStart().count(), subProTime);
+        isudIter_++;
+        setObjValue();
+        if (previousObj > objValue_) {
+            previousObj = objValue_;
+        } else
+            break;
+    }
 
-    solveMP_INT(pInst, inputPaths);
-    std::cout << "MIP improve: " << objValue_ << std::endl;
-    TisudIter_++;
- //   (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RMP", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count());
- //   isudIter_++;
+    setObjValue();
 
-    for (auto & routeObj : MasterPro_->compRoutes_)
+    for (auto &routeObj: MasterPro_->compRoutes_)
         routeObj->isAdded_ = false;
-    /*MasterPro_.reset();
-    MasterPro_ = std::make_shared<MasterPro>();*/
-    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "MIP", (int)MasterPro_->compRoutes_.size(), isudTime_->dSinceStart().count(), subProTime);
 
     std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
-    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)" << std::endl;
-    for (auto & requestObj : zSolution_)
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
+              << std::endl;
+    for (auto &requestObj: zSolution_)
         std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
+
+    MasterPro_.reset();
+    MasterPro_ = std::make_shared<MasterPro>();
 
     RPTime_->stop();
     isudTime_->stop();
@@ -1476,7 +1498,7 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
 
         availableTime_ = tilim - isudTime_->dSinceStart().count();
         if (availableTime_ < 1)
-            availableTime_ = 1;
+            availableTime_ = 2;
         // solve the model in Integer mode
         MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
         RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
@@ -1693,32 +1715,37 @@ void ISUDAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
 }
 
 void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
-    /*vector<std::shared_ptr<Route>> compRoutes = MasterPro_->compRoutes_;*/
-    MasterPro_.reset();
-    MasterPro_ = std::make_shared<MasterPro>();
+    MasterPro_->routesToAdd_.clear();
 
-    /*for (auto & routeObj : compRoutes){
-        if (routeObj->getRouteId() != pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->getRouteId())
-            MasterPro_->routesToAdd_.push_back(routeObj);
-    }*/
-
+    // select routes with negative reduced costs
     for (auto & vehicleObj : pInst->vehicles_) {
+        int nbAdded = 0;
+        std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),availableRoutes_[vehicleObj->vehicleID_].end(),[](const PRoute &lhs, const PRoute &rhs){
+            return lhs->reducedCost_ < rhs->reducedCost_;});
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            MasterPro_->routesToAdd_.push_back(routeObj);
+            if (routeObj->reducedCost_ <= 0 && !routeObj->isAdded_) {
+                MasterPro_->routesToAdd_.push_back(routeObj);
+                nbAdded++;
+            }
+            if (nbAdded > 80)
+                break;
         }
     }
 
-    RPBuildTime_->start();
-    MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_);
-    RPBuildTime_->stop();
-    availableTime_ -= isudTime_->dSinceStart().count();
-    if (availableTime_ >0)
-        MasterPro_->solveModelLPInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                    availableTime_, objValue_);
-    RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
-    setObjValue();
-
-    MasterPro_->routesToAdd_.clear();
+    if (!MasterPro_->routesToAdd_.empty()){
+        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            if (!pInst->vehicles_[v]->emptyRoute_->isAdded_)
+                MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+        }
+        RPBuildTime_->start();
+        MasterPro_->updateModel();
+        RPBuildTime_->stop();
+//        MasterPro_->solveModelLP(pInst, inputPaths);
+        MasterPro_->solveModelIntD(pInst, zSolution_, routeSolution_, inputPaths,
+                                   availableTime_, objValue_);
+        RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        objValue_ = MasterPro_->objValue_;
+    }
 }
 
 

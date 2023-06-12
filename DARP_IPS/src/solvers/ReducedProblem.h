@@ -18,6 +18,9 @@ public:
     // Variables
     IloNumVarArray routeVar_;
     IloNumVarArray zVar_;
+
+    IloNumArray zLb_;
+    IloNumArray rLb_;
     double objValue_;
 
     std::vector<PRoute> compRoutes_;
@@ -46,6 +49,14 @@ public:
     void buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                            int nbVehicles);
 
+    // solve functions
+    void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
+
+    void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                       InputPaths &inputPaths, float availableTime, double preObj);
+    void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                         InputPaths &inputPaths, float availableTime, double preObj);
+
      // this function solve the model and remove all columns except than the current base
      virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     std::map<std::string , PRoute> &generatedRoutes, InputPaths &inputPaths);
@@ -59,6 +70,7 @@ public:
     // Display function
     std::string toString() const override;
     void restartRP();
+
 };
 
 

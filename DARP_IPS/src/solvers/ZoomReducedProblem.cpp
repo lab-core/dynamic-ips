@@ -422,20 +422,16 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
         for (auto &requestObj: pInst->requests_) {
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-//            std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->dual_;
             requestObj->dual_ = requestDuals_[rowIndex];
             requestObj->CPDual_ = requestDuals_[rowIndex];
-//            std::cout << " --> " << requestObj->dual_ << std:: endl;
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
             if (vehicleObj->vehicleIndex_ > -1) {
                 vehicleDuals_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_] = Cplex_.getDual(
                         vehicleConst_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_]);
-//                std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->dual_;
                 vehicleObj->dual_ = vehicleDuals_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_];
                 vehicleObj->CPDual_ = vehicleDuals_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_];
-//                std::cout << " --> " << vehicleObj->dual_ << std:: endl;
             }
         }
         Cplex_.clearModel();
@@ -454,7 +450,7 @@ std::string ZoomReducedProblem::toString() const {
     return repStr.str();
 }
 
-void ZoomReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
+/*void ZoomReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -494,8 +490,8 @@ void ZoomReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) 
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
             requestObj->dual_ = requestDuals_[rowIndex];
-            /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+            *//*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*//*
             requestObj->CPDual_ = requestDuals_[rowIndex];
         }
 
@@ -515,7 +511,7 @@ void ZoomReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) 
 
 }
 
-void ZoomReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+void ZoomReducedProblem::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                        InputPaths &inputPaths, float availableTime, double preObj) {
     try {
         Model_.add(requestConst_);
@@ -622,6 +618,6 @@ void ZoomReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolu
         std::cout << e << std::endl;
     }
 
-}
+}*/
 
 

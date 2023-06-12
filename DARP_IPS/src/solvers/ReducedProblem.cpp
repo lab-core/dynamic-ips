@@ -16,6 +16,8 @@ ReducedProblem::ReducedProblem() : MasterModeler() {
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
     routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
     compRoutes_.clear();
+    zLb_ = IloNumArray(env_);
+    rLb_ = IloNumArray(env_);
 }
 
 
@@ -61,12 +63,14 @@ void ReducedProblem::ResetRPModel() {
 // this function adds routeVar to the model
 void ReducedProblem::addRouteVar(PRoute &newRoute) {
     MasterModeler::addRouteVarInt(routeVar_, newRoute, POSITIVE);
+    rLb_.add(0.0);
     compRoutes_.push_back(newRoute);
     newRoute->isAdded_ = true;
 }
 
 void ReducedProblem::addRouteVarPartial(PRoute &newRoute, PInstance &pInst) {
     MasterModeler::addRouteVarIntPartial(routeVar_, newRoute, POSITIVE, pInst);
+    rLb_.add(0.0);
     compRoutes_.push_back(newRoute);
 }
 
@@ -83,6 +87,7 @@ void ReducedProblem:: addZVars(std::vector<PRequest> &requests) {
 
 void ReducedProblem:: addZVar(PRequest &request) {
     MasterModeler::addZVarInt(zVar_, request, POSITIVE);
+    zLb_.add(0.0);
 }
 
 // this function add one route at each iteration of the algorithm during one epoch
@@ -163,6 +168,262 @@ void ReducedProblem::buildModelPartial(PInstance &pInst, std::vector<PRequest> &
     }
 //    env_.out() << Model_;
 }
+
+void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
+    try {
+        Model_.add(requestConst_);
+        Model_.add(vehicleConst_);
+        Model_.add(objFunction_);
+
+        IloConversion convZ = IloConversion(env_, zVar_, ILOFLOAT);
+        IloConversion convR = IloConversion(env_, routeVar_, ILOFLOAT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- LMP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_ = IloCplex(Model_);
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+
+        solveTime_->start();
+        Cplex_.solve();
+        solveTime_->stop();
+
+        objValue_ = Cplex_.getObjValue();
+        // getting dual values
+        requestDuals_.clear();
+        vehicleDuals_.clear();
+
+        // define dual container size
+        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+        for (auto &requestObj: pInst->requests_) {
+            int rowIndex = requestObj->taskIndex_;
+            requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+            requestObj->dual_ = requestDuals_[rowIndex];
+            /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+            requestObj->CPDual_ = requestDuals_[rowIndex];
+        }
+
+        for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+        }
+        convR.end();
+        convZ.end();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
+        Cplex_.clearModel();
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                   InputPaths &inputPaths, float availableTime, double preObj) {
+    try {
+        Model_.add(requestConst_);
+        Model_.add(vehicleConst_);
+        Model_.add(objFunction_);
+
+        IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
+        IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+
+        Cplex_ = IloCplex(Model_);
+
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- MP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        if (pInst->parameters_->MIPGap_ > 0.0001)
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+
+        solveTime_->start();
+        if (!Cplex_.solve()) {
+            solveTime_->stop();
+            std::cout << "Failed to optimize the MP" << std::endl;
+        }
+        else {
+            solveTime_->stop();
+            if (Cplex_.getObjValue() <= preObj) {
+                objValue_ = Cplex_.getObjValue();
+
+                // saving the result and remove out of base variables
+                zSolution.clear();
+                routeSolution.clear();
+
+                IloNumArray zVal(env_);
+                IloNumArray routeVal(env_);
+
+                Cplex_.getValues(zVal, zVar_);
+                Cplex_.getValues(routeVal, routeVar_);
+
+
+                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    if (routeVal[r] > 0.9) {
+                        routeSolution.push_back(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                    }
+                }
+
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    if (zVal[i] > 0.9) {
+                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                    }
+                }
+
+
+                if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+
+            }
+        }
+        convR.end();
+        convZ.end();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
+        Cplex_.clearModel();
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                     InputPaths &inputPaths, float availableTime, double preObj) {
+    try {
+
+        // Solve the Linear Relaxation
+        Model_.add(requestConst_);
+        Model_.add(vehicleConst_);
+        Model_.add(objFunction_);
+
+        IloConversion convZ = IloConversion(env_, zVar_, ILOFLOAT);
+        IloConversion convR = IloConversion(env_, routeVar_, ILOFLOAT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+
+        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        logFile << "----------------------- LMP ------------------------"<< std::endl;
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(logFile.rdbuf());
+
+        Cplex_ = IloCplex(Model_);
+        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+
+        solveTime_->start();
+        Cplex_.solve();
+        std::cout.rdbuf(coutBuffer);
+        solveTime_->stop();
+
+        objValue_ = Cplex_.getObjValue();
+        // getting dual values
+        requestDuals_.clear();
+        vehicleDuals_.clear();
+
+        // define dual container size
+        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
+        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
+
+        for (auto &requestObj: pInst->requests_) {
+            int rowIndex = requestObj->taskIndex_;
+            requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
+            requestObj->dual_ = requestDuals_[rowIndex];
+            requestObj->CPDual_ = requestDuals_[rowIndex];
+        }
+
+        for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
+            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+        }
+        convR.end();
+        convZ.end();
+
+        // Convert to integer
+        convZ = IloConversion(env_, zVar_, ILOINT);
+        convR = IloConversion(env_, routeVar_, ILOINT);
+
+        Model_.add(convZ);
+        Model_.add(convR);
+        logFile << "----------------------- MP ------------------------"<< std::endl;
+        std::cout.rdbuf(logFile.rdbuf());
+        if (pInst->parameters_->MIPGap_ > 0.0001)
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+        solveTime_->start();
+        if (!Cplex_.solve()) {
+            solveTime_->stop();
+            std::cout << "Failed to optimize the MP" << std::endl;
+        }
+        else {
+            if (Cplex_.getObjValue() <= preObj) {
+                objValue_ = Cplex_.getObjValue();
+                solveTime_->stop();
+                // saving the result and remove out of base variables
+                zSolution.clear();
+                routeSolution.clear();
+
+                IloNumArray zVal(env_);
+                IloNumArray routeVal(env_);
+
+                Cplex_.getValues(zVal, zVar_);
+                Cplex_.getValues(routeVal, routeVar_);
+
+
+                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    if (routeVal[r] > 0.9) {
+                        routeSolution.push_back(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                    }
+                }
+
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    if (zVal[i] > 0.9) {
+                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                    }
+                }
+
+
+                if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+            }
+        }
+
+        convR.end();
+        convZ.end();
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
+
+        Cplex_.clearModel();
+
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
 // this function solve the model and remove all columns except than the current base
 void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                                 std::map<std::string ,PRoute> &generatedRoutes, InputPaths &inputPaths) {
@@ -175,8 +436,6 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
         Cplex_.solve();
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
 
         // getting dual values
         requestDuals_.clear();
@@ -189,8 +448,6 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         std::cout << "REDUCED DUALS:" << std::endl;
         for (auto &requestObj: pInst->requests_) {
             if (requestObj->requestStatus_ == NO_ACTION) {
-//                int rowIndex = requestToOrder_[requestObj->getRequestId()];
-//                int rowIndex = pInst->requestToOrder_[requestObj->getRequestId()];
                 int rowIndex = requestObj->taskIndex_;
                 requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                 requestObj->dual_ = requestDuals_[rowIndex];
@@ -208,9 +465,6 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
             std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
         }
 
-        // printing solution status
-  //      std::cout << toString();
-
         // saving the result and remove out of base variables
         zSolution.clear();
         routeSolution.clear();
@@ -221,8 +475,6 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
 
         Cplex_.getValues(zVal, zVar_);
         Cplex_.getValues(routeVal, routeVar_);
-//        env_.out() << routeVal << std::endl;
-//        env_.out() << zVal << std::endl;
 
         for (int r = (int)routeVal.getSize()-1; r >= 0; --r) {
             if (routeVal[r] > 0.1) {
@@ -252,6 +504,8 @@ void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         }
         std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
         << " are selected to served." << std::endl;
+        std::cout.rdbuf(coutBuffer);
+        logFile.close();
         Cplex_.clearModel();
     }
     catch (IloException& e) {
@@ -316,6 +570,10 @@ void ReducedProblem::restartRP() {
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
     routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
 }
+
+
+
+
 
 
 
