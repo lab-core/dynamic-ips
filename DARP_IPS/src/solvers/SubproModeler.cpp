@@ -57,6 +57,7 @@ SubproModeler::~SubproModeler() {
 
 void SubproModeler::initSubGraph2(PInstance &pInst) {
     // adding source and sink
+    Vehicle_->graphRequests_.reset();
     nbTotalRequest_ = pInst->nbRequests_;
     subGraph_->addNewNode(std::make_shared<Node>((Vehicle_)->departNode_));
     subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(Vehicle_)->vehicleID_]));
@@ -86,6 +87,7 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
                 subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]));
                 subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
                 subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
+                Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
             }
         }
     }

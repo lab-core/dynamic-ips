@@ -23,7 +23,7 @@ public:
                         InputPaths &inputPaths, int availableTime, double preObj);
 
     /*void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
-    void solveModelIntD(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+    void solveModelIntAux(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                        InputPaths &inputPaths, float availableTime, double preObj);*/
     void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
 

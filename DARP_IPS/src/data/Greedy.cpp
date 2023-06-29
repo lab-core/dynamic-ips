@@ -863,7 +863,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
  //           myTools::throwException("Route-Validation");
         }
         if (update) {
-            newRoute->routeNodes_.back()->related_Request_->vehicleID_ = newRoute->vehicleID_;
+            newRoute->routeNodes_.back()->related_Request_->allocVehicleID_ = newRoute->vehicleID_;
             newRoute->routeNodes_.back()->nodeStatus_ = DONE;
             newRoute->routeNodes_.back()->reachTime_ = newRoute->plannedReachTime_.back();
             /*if (currentLabel->child_ == nullptr)

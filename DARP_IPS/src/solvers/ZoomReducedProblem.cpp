@@ -385,7 +385,6 @@ void ZoomReducedProblem::solveModelPartial(PInstance &pInst, vector<PRequest> &z
 
         for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
             if (routeVal[r] > 0.9) {
- //               std::cout << compRoutes_[r]->getRouteId() << " : " << compRoutes_[r]->vehicleID_ << std::endl;
                 routeSolution.push_back(compRoutes_[r]);
                 pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
             }
@@ -511,7 +510,7 @@ std::string ZoomReducedProblem::toString() const {
 
 }
 
-void ZoomReducedProblem::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+void ZoomReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                        InputPaths &inputPaths, float availableTime, double preObj) {
     try {
         Model_.add(requestConst_);

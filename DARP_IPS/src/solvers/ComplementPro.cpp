@@ -98,12 +98,17 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
     initializeCPModel(pInst);
 
     // adding solution route columns
-    for (auto & routeSol: routeSolution)
+    for (auto & routeSol: routeSolution) {
         addRouteVar(routeSolVar_, routeSol, NEGATIVE);
+        routeSol->cpAdded_ = true;
+    }
+
 
     // adding incompatible route columns
-    for (auto & routeAdd: routesToAdd_)
+    for (auto & routeAdd: routesToAdd_) {
         addRouteVar(routeIncVar_, routeAdd, POSITIVE);
+        routeAdd->cpAdded_ = true;
+    }
 
     // adding z columns
     for (auto & zSol: zSolution) {
@@ -171,15 +176,17 @@ void ComplementPro::buildModelPartial(PInstance &pInst, vector<PRequest> &zSolut
 void ComplementPro::updateModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
 
     // adding solution route columns
-    for (auto & routeSol: routeSolution)
-        addRouteVar(routeSolVar_, routeSol, NEGATIVE);
+    /*for (auto & routeSol: routeSolution)
+        addRouteVar(routeSolVar_, routeSol, NEGATIVE);*/
 
     // adding incompatible route columns
-    for (auto & routeAdd: routesToAdd_)
+    for (auto & routeAdd: routesToAdd_) {
         addRouteVar(routeIncVar_, routeAdd, POSITIVE);
+        routeAdd->cpAdded_ = true;
+    }
 
     // adding z columns
-    for (auto & zSol: zSolution) {
+    /*for (auto & zSol: zSolution) {
         addZVar(zSolVar_, zSol, NEGATIVE);
     }
     for (int i = 0; i < pInst->nbRequests_; ++i) {
@@ -192,7 +199,7 @@ void ComplementPro::updateModel(PInstance &pInst, vector<PRequest> &zSolution, v
         }
         if (flagAdd == 0)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
-    }
+    }*/
 }
 
 
@@ -241,7 +248,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
             vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
             vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
             vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-//            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
+//            std::cout << "vehicleDuals[" << vehicleObj->VehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
         }
 
 
@@ -286,7 +293,7 @@ void ComplementPro::solveModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         //                routeSolution.push_back(generatedRoutes[routeIncVar_[r].getName()]);
                         routeSolution.push_back(routesToAdd_[r]);
                         pInst->vehicles_[routesToAdd_[r]->vehicleID_]->setCurrentRoute(routesToAdd_[r]);
-                        /*pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->vehicleID_]->setCurrentRoute(
+                        /*pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->VehicleID_]->setCurrentRoute(
                                 generatedRoutes[routeIncVar_[r].getName()]);*/
                     }
                 }
@@ -344,12 +351,14 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
 //        env_.out() << Model_ << std::endl;
         solveTime_->start();
         if (!Cplex_.solve()) {
+            Cplex_.clearModel();
             solveTime_->stop();
             status_ = INFEASIBLE;
-//            env_.out() << Model_ << std::endl;
+            env_.out() << Model_ << std::endl;
             std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
-        } else {
+        }
+        else {
             solveTime_->stop();
 
             // printing solution status
@@ -364,25 +373,25 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
             vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
 
 //        std::cout << "COMPLEMENTARY DUALS:" << std::endl;
-            for (auto &requestObj: pInst->requests_) {
+            /*for (auto &requestObj: pInst->requests_) {
                 if (requestObj->requestStatus_ == NO_ACTION) {
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
-                    /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+                    *//*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*//*
                     requestObj->CPDual_ = requestDuals_[rowIndex];
                 }
 
-            }
+            }*/
 
 //        std::cout << "VEHICLE DUALS:" << std::endl;
-            for (auto &vehicleObj: pInst->vehicles_) {
-                vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-//            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
-            }
+            /*for (auto &vehicleObj: pInst->vehicles_) {
+                vehicleDuals_[vehicleObj->VehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->VehicleID_]);
+                vehicleObj->dual_ = vehicleDuals_[vehicleObj->VehicleID_];
+                vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->VehicleID_];
+//            std::cout << "vehicleDuals[" << vehicleObj->VehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
+            }*/
 
 
             // saving the result and remove out of base variables
@@ -425,14 +434,12 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                         OutRequestVar.push_back(i);
                     }
                 }
-
+                Cplex_.clearModel();
                 if (isColumnDisjoint(zResult, routeResult, pInst->nbVehicles_)) {
                     //           if (isColumnDisjointBit(zResult, routeResult,pInst->nbVehicles_, pInst->requests_.size())) {
-                    Cplex_.clearModel();
                     // remove outgoing variable
                     for (auto &r: OutRouteVar) {
             //            addRouteVar(routeIncVar_, routeSolution[r], POSITIVE);
-  //                      std::cout<< routeSolution[r]->getRouteId() << " : " << routeSolution[r]->vehicleID_ << std::endl;
                         routeSolution.erase(routeSolution.begin() + r);
                         routeSolVar_[r].end();
                         routeSolVar_.remove(r, 1);
@@ -448,14 +455,9 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
 
                     // add incoming variables
                     for (auto &r: InRouteVar) {
-                        /*routeSolution.push_back(generatedRoutes[routeIncVar_[r].getName()]);
-                        addRouteVarInt(routeSolVar_, routeSolution.back(), NEGATIVE);
-                        pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->vehicleID_]->setCurrentRoute(
-                                generatedRoutes[routeIncVar_[r].getName()]);*/
                         routeSolution.push_back(IncRoute_[r]);
- //                       std::cout<< routeSolution.back()->getRouteId() << " : " << routeSolution.back()->vehicleID_ << std::endl;
                         addRouteVar(routeSolVar_, routeSolution.back(), NEGATIVE);
-                        pInst->vehicles_[routesToAdd_[r]->vehicleID_]->setCurrentRoute(IncRoute_[r]);
+                        pInst->vehicles_[IncRoute_[r]->vehicleID_]->setCurrentRoute(IncRoute_[r]);
                         routeIncVar_[r].end();
                         routeIncVar_.remove(r, 1);
                         IncRoute_.erase(IncRoute_.begin() + r);
@@ -475,7 +477,7 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                 } else {
                     status_ = FRACTIONAL;
                     //             std::cout << "The solution is not column disjoint!!!!!!!" << std::endl;
-                    if (pInst->parameters_->useZoom_ || pInst->parameters_->useMultiStage_) {
+                    /*if (pInst->parameters_->useZoom_ || pInst->parameters_->useMultiStage_) {
                         fractionalRoutes_.clear();
                         fractionalZ_.clear();
                         // add incoming variables
@@ -490,15 +492,16 @@ void ComplementPro::solveModelIndex(PInstance &pInst, vector<PRequest> &zSolutio
                                 fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);
                             }
                         }
-                    }
-                    Cplex_.clearModel();
+                    }*/
                     if (routeSolution.size() != pInst->nbVehicles_)
                         myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
                 }
                 routeResult.clear();
                 zResult.clear();
-            } else
+            } else{
+                Cplex_.clearModel();
                 status_ = POSITIVE_VALUE;
+            }
         }
         std::cout.rdbuf(coutBuffer);
         logFile.close();
@@ -563,7 +566,7 @@ void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolut
                     vehicleObj->dual_ = vehicleDuals_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_];
                     vehicleObj->CPDual_ = vehicleDuals_[pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_];
                 }
-//            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
+//            std::cout << "vehicleDuals[" << vehicleObj->VehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
             }
 
 
@@ -613,7 +616,6 @@ void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolut
                     Cplex_.clearModel();
                     // remove outgoing variable
                     for (auto &r: OutRouteVar) {
-//                        std::cout<< routeSolution[solIndexes_[r]]->getRouteId() << " : " << routeSolution[solIndexes_[r]]->vehicleID_ << std::endl;
                         routeSolution.erase(routeSolution.begin() + solIndexes_[r]);
                         routeSolVar_[r].end();
                         routeSolVar_.remove(r, 1);
@@ -628,13 +630,7 @@ void ComplementPro::solveModelPartial(PInstance &pInst, vector<PRequest> &zSolut
 
                     // add incoming variables
                     for (auto &r: InRouteVar) {
-                        /*routeSolution.push_back(generatedRoutes[routeIncVar_[r].getName()]);
-                        addRouteVarInt(routeSolVar_, routeSolution.back(), NEGATIVE);
-                        pInst->vehicles_[generatedRoutes[routeIncVar_[r].getName()]->vehicleID_]->setCurrentRoute(
-                                generatedRoutes[routeIncVar_[r].getName()]);*/
                         routeSolution.push_back(IncRoute_[r]);
-  //                      std::cout<< routeSolution.back()->getRouteId() << " : " << routeSolution.back()->vehicleID_;
- //                       std::cout<< " - " << routeSolution.back()->reducedCost_ << std::endl;
                         addRouteVarPartial(routeSolVar_, routeSolution.back(), NEGATIVE, pInst);
                         solIndexes_.push_back(routeSolution.size()-1);
                         pInst->vehicles_[routesToAdd_[r]->vehicleID_]->setCurrentRoute(IncRoute_[r]);
@@ -712,6 +708,26 @@ bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> 
         return true;
     else
         return false;
+}
+bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRoute> &routeResults, int nbVehicle) {
+    std::vector<std::bitset<MAX_SIZE>> Columns;
+    for (auto & routeObj : routeResults) {
+        Columns.push_back(routeObj->column_);
+    }
+    for (auto & requestObj : zResults) {
+        std::bitset<MAX_SIZE>  zCol;
+        zCol.set(requestObj->taskIndex_, true);
+        Columns.push_back(zCol);
+    }
+
+    for (size_t i = 0; i < Columns.size(); ++i) {
+        for (size_t j = i + 1; j < Columns.size(); ++j) {
+            if ((Columns[i] & Columns[j]) != 0) {
+                return false;  // Sets are not disjoint
+            }
+        }
+    }
+    return true;  // Sets are disjoint
 }
 
 /*bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRoute> &routeResults, int nbVehicle, int size) {

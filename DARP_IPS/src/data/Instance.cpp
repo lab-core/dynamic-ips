@@ -486,7 +486,7 @@ std::string Instance::saveSolutionRoutes() {
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
     repStr << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
-              "DropTime, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
+              "DropTime, InVehicleID, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
 
     for (auto & requestObj : requests_) {
         repStr << requestObj->getRequestId() << ",";
@@ -496,7 +496,8 @@ std::string Instance::saveRequestsResults() {
         repStr << requestObj->earlyPick_ << ",";
         repStr << requestObj->pickTime_ << ",";
         repStr << requestObj->dropTime_ << ",";
-        repStr << requestObj->vehicleID_ << ",";
+        repStr << requestObj->initialVehicleID_ << ",";
+        repStr << requestObj->allocVehicleID_ << ",";
         repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
         repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
         repStr << requestObj->maxTravelTime_ << ",";
@@ -534,7 +535,8 @@ std::string Instance::saveISUDRoutes(int epoch, int isudIter) {
             repStr << nodeObj->reachTime_ << ",";
             repStr << nodeObj->type_ << ",";
             repStr << nodeObj->locationID_ << ",";
-            repStr << vehicleObj->currentRoute_->getRouteId() << "\n";
+            repStr << vehicleObj->currentRoute_->getRouteId() << ",";
+            repStr << vehicleObj->currentRoute_->incompatibilityDegree_ << "\n";
         }
     }
     return repStr.str();
@@ -685,6 +687,49 @@ int Instance::getNbUnselectedVehicles() {
     }
     return nbUnselected;
 }
+
+double Instance::calculateL1NormReq() {
+    double norm = 0.0;
+    for (const auto& requestObj : requests_) {
+        norm += std::abs(requestObj->CPDual_);
+    }
+    return norm;
+}
+
+double Instance::calculateL1NormVeh() {
+    double norm = 0.0;
+    for (const auto& vehicleObj : vehicles_) {
+        norm += std::abs(vehicleObj->CPDual_);
+    }
+    return norm;
+}
+
+std::string Instance::saveReqDuals(int epoch, int isudIter, string model) {
+    std::stringstream repStr;
+    for (auto & requestObj : requests_) {
+        repStr << epoch << ",";
+        repStr << isudIter << ",";
+        repStr << requestObj->getRequestId() << ",";
+        repStr << requestObj->dual_ << ",";
+        repStr << model << ",";
+        repStr << requestObj->penalty_ << "\n";
+    }
+    return repStr.str();
+}
+
+std::string Instance::saveVehDuals(int epoch, int isudIter, string model) {
+    std::stringstream repStr;
+    for (auto & vehicleObj : vehicles_) {
+        repStr << epoch << ",";
+        repStr << isudIter << ",";
+        repStr << vehicleObj->vehicleID_ << ",";
+        repStr << vehicleObj->dual_ << ",";
+        repStr << model << "\n";
+    }
+    return repStr.str();
+}
+
+
 
 
 

@@ -104,6 +104,13 @@ public:
 
     // this function determined the number of unselected vehicles
     int getNbUnselectedVehicles();
+
+    // Function to calculate the L1 norm of duals
+    double calculateL1NormReq();
+    double calculateL1NormVeh();
+
+    std::string saveReqDuals(int epoch, int isudIter, string model);
+    std::string saveVehDuals(int epoch, int isudIter, string model);
 };
 
 

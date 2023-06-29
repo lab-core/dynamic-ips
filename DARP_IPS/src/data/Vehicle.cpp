@@ -73,6 +73,8 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
 
 void Vehicle::setCurrentRoute(PRoute &currentRoute) {
     currentRoute_ = currentRoute;
+    for (auto & requestObj : currentRoute_->routeRequests_)
+        requestObj->solVehicleID_  = vehicleID_;
 }
 
 void Vehicle::resetBestReducedCost() {
@@ -124,7 +126,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
                     currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
-                    currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
+                    currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
+                    currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
                 }
 
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
@@ -208,7 +211,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
                     currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
-                    currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
+                    currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
+                    currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
                 }
 
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
@@ -276,7 +280,8 @@ void Vehicle::finalizeSolutionRoutes(PInstance & pInst) const {
 
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->vehicleID_ = vehicleID_;
+                currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
+                currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
                 currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
             }
             else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF) {

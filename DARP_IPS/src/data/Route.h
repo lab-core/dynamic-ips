@@ -38,7 +38,8 @@ public:
  //   std::shared_ptr<myTools::BitVector> column_;
     std::bitset<MAX_SIZE> column_;
     bool isCompatible_;
-    bool isAdded_;
+    bool mpAdded_;
+    bool cpAdded_;
     double score_;
 
     // Constructor and Destructor
@@ -78,7 +79,7 @@ public:
     // this function is for creating the column pattern from the route for CPLEX or IncDegree
     /*void createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
                            std::unordered_map<int, int> &incVehicleToOrder);*/
-    void createColumn(int size);
+    void createColumn();
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {

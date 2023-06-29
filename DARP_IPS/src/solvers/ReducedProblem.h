@@ -22,6 +22,7 @@ public:
     IloNumArray zLb_;
     IloNumArray rLb_;
     double objValue_;
+    double auxObjValue_;
 
     std::vector<PRoute> compRoutes_;
 
@@ -66,6 +67,9 @@ public:
 
     // function to check whether the route is repeated before
     static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);
+
+    void solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          InputPaths &inputPaths, float availableTime, double preObj);
 
     // Display function
     std::string toString() const override;

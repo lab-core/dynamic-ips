@@ -166,7 +166,9 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                                                                              nbPassengers, deltaTime, zoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
-                pInstance->requests_.back()->vehicleID_ = vehicleID;
+                pInstance->requests_.back()->allocVehicleID_ = vehicleID;
+                pInstance->requests_.back()->initialVehicleID_ = vehicleID;
+                pInstance->requests_.back()->solVehicleID_ = vehicleID;
 
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);

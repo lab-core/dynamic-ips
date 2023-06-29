@@ -32,6 +32,10 @@ public:
     // Solution containers
     std::vector<PRoute> routeSolution_;
     std::vector<PRequest> zSolution_;
+
+    std::vector<PRoute> InrouteSolution_;
+    std::vector<PRequest> InzSolution_;
+
     int maxIncDegree_;
     int cpIncDegree_;
 
@@ -44,6 +48,7 @@ public:
 
     int isudIter_;              // number of isud iteration in each epoch
     int TisudIter_;             // total isud iteration
+    int SPIter_;                 // sub problem iteration
     int CPSuccess_;             // number of time CP succeed in finding integer
     int CPFails_;             // number of time CP fails in finding integer
     double objValue_;
@@ -63,6 +68,8 @@ public:
 
     Tools::LogOutput* pLogIsudResultsStream_;
     Tools::LogOutput* pLogIterSolutionStream_;
+    Tools::LogOutput* pLogIterReqDualStream_;
+    Tools::LogOutput* pLogIterVehDualStream_;
 
     // Constructor and Destructor
     explicit ISUDAlgorithm(InputPaths &inputPaths);
@@ -87,11 +94,13 @@ public:
     // function to calculate incompatibility degree of a route
     void calcIncompatibility(PRoute &route);
     void calcIncompatibilityFull(PRoute &route);
+    void calcIncompatibilityBit(PRoute &route, PInstance &pInst);
     void calcIncompatibilityMatrix();
 
     // this function update the incompatibility degree of availableRoutes and
     // order them based on the incompatibility degree and reduced cost
     void updateIncDegrees(PInstance &pInst);
+    void updateIncompatState(PInstance &pInst);
     void updateIncDegreesBit(PInstance &pInst);
     void updateRoutesIncDegree(int &vehicleID);
 
@@ -104,6 +113,7 @@ public:
     void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
 
     void solveRPro_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
@@ -126,7 +136,8 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime) const;
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime,
+                                 double dualNormReq, double dualNormVeh, double auxObj) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();

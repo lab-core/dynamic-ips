@@ -43,7 +43,6 @@ protected:
     std::string output_epochRunTime_;
     std::string output_epochResults_;
 
-    std::string output_solutionLog_;
     std::string output_finalLog_;
     std::string output_finalRoutes_;
     std::string output_finalRequests_;
@@ -59,6 +58,9 @@ protected:
     std::string output_subproSize_;
     std::string output_subproRouteTime_;
     std::string output_cplexLog_;
+    std::string output_reqDuals_;
+    std::string output_vehDuals_;
+    std::string output_solutionChange_;
 
 
     double timeOut_ = 3600;
@@ -85,7 +87,6 @@ public:
     const std::string &getOutputEpochFinal() const;
     const std::string &getOutputEpochResults() const;
     const std::string &getOutputFinalLog() const;
-    const std::string &getOutputSolutionLog() const;
     const std::string &getOutputFinalRoutes() const;
     const std::string &getOutputFinalRequests() const;
     const std::string &getOutputMipStart() const;
@@ -104,6 +105,10 @@ public:
     const std::string &getOutputSubproRouteTime() const;
 
     const std::string &getOutputCplexLog() const;
+    const std::string &getOutputReqDuals() const;
+    const std::string &getOutputVehDuals() const;
+
+    const std::string &getOutputSolutionChange() const;
 
     const std::string &getOutputDir() const;
 

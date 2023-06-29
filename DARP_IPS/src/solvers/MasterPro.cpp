@@ -26,14 +26,14 @@ void MasterPro::buildModelMP(PInstance &pInst, vector<PRequest> &zSolution, vect
     for (auto & routeSol : routeSolution){
         MasterModeler::addRouteVarFloat(routeVar_, routeSol, POSITIVE);
         compRoutes_.push_back(routeSol);
-        routeSol->isAdded_ = true;
+        routeSol->mpAdded_ = true;
     }
 
     //adding new route variables
     for (auto & routeObj : routesToAdd_) {
         MasterModeler::addRouteVarFloat(routeVar_, routeObj, POSITIVE);
         compRoutes_.push_back(routeObj);
-        routeObj->isAdded_ = true;
+        routeObj->mpAdded_ = true;
     }
 }
 
@@ -47,7 +47,7 @@ void MasterPro::updateModel() {
     for (auto routeObj : routesToAdd_) {
         MasterModeler::addRouteVarFloat(routeVar_, routeObj, POSITIVE);
         compRoutes_.push_back(routeObj);
-        routeObj->isAdded_ = true;
+        routeObj->mpAdded_ = true;
     }
 }
 
@@ -107,9 +107,9 @@ void MasterPro::updateModel() {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
-}*/
+}
 
-/*void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+void MasterPro::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                               InputPaths &inputPaths, float availableTime, double preObj) {
     try {
         Model_.add(requestConst_);
@@ -215,9 +215,9 @@ void MasterPro::updateModel() {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
-}*/
+}
 
-/*void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+void MasterPro::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                               InputPaths &inputPaths, float availableTime, double preObj) {
     try {
 
@@ -308,7 +308,7 @@ void MasterPro::updateModel() {
                 for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.9) {
                         routeSolution.push_back(compRoutes_[r]);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->VehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }
 
@@ -335,8 +335,9 @@ void MasterPro::updateModel() {
     }
 }*/
 
-void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                               InputPaths &inputPaths, float availableTime, double preObj) {
+/*
+void MasterPro::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                 InputPaths &inputPaths, float availableTime, double preObj) {
     try {
         Model_.add(requestConst_);
         Model_.add(vehicleConst_);
@@ -344,7 +345,6 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
-
         Model_.add(convZ);
         Model_.add(convR);
 
@@ -370,9 +370,6 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
             solveTime_->stop();
             if (Cplex_.getObjValue() <= preObj) {
                 objValue_ = Cplex_.getObjValue();
-                std:: cout << "Objective 2: " << Cplex_.getObjValue() << std::endl;
-
-
 
                 // saving the result and remove out of base variables
                 zSolution.clear();
@@ -384,49 +381,35 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
                 Cplex_.getValues(zVal, zVar_);
                 Cplex_.getValues(routeVal, routeVar_);
 
-
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
-                    if (routeVal[r] > 0.9) {
-                        routeSolution.push_back(compRoutes_[r]);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
-                    }
-                }
-
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-                    if (zVal[i] > 0.9) {
-                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
-                    }
-                }
-
                 // change objective to maximize
                 objFunction_.setSense(IloObjective::Maximize);
                 convR.end();
                 convZ.end();
-
                 // Convert to integer
                 convZ = IloConversion(env_, zVar_, ILOFLOAT);
                 convR = IloConversion(env_, routeVar_, ILOFLOAT);
-
                 Model_.add(convZ);
                 Model_.add(convR);
 
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-                    zVar_[i].setBounds(-IloInfinity, IloInfinity);
-                    if (zVal[i] > 0.9)
-                        zVar_[i].setBounds(-IloInfinity, IloInfinity);
-                    else
-                        zVar_[i].setBounds(-IloInfinity, 0.0);
-                }
+
 
                 for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.9) {
+                        routeSolution.push_back(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->VehicleID_]->setCurrentRoute(compRoutes_[r]);
                         routeVar_[r].setBounds(-IloInfinity, 1.0);
                     }
                     else
                         routeVar_[r].setBounds(-IloInfinity, 0.0);
                 }
-
-                // change the right hand sides
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    if (zVal[i] > 0.9) {
+                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                        zVar_[i].setBounds(-IloInfinity, IloInfinity);
+                    }
+                    else
+                        zVar_[i].setBounds(-IloInfinity, 0.0);
+                }
 
                 IloNumArray requestRHS(env_);
                 IloNumArray vehicleRHS(env_);
@@ -440,7 +423,7 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
                 Cplex_.solve();
                 solveTime_->stop();
 
-                std:: cout << "Objective 3: " << Cplex_.getObjValue() << std::endl;
+                auxObjValue_ = Cplex_.getObjValue();
                 // getting dual values
                 requestDuals_.clear();
                 vehicleDuals_.clear();
@@ -453,8 +436,10 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
-                    /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+                    */
+/*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
+                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*//*
+
                     requestObj->CPDual_ = requestDuals_[rowIndex];
                 }
 
@@ -463,8 +448,10 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
                 for (auto &vehicleObj: pInst->vehicles_) {
                     vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
                     vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    /*if (vehicleObj->CPDual_ > 0 && vehicleObj->dual_!= vehicleObj->CPDual_)
-                        std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->CPDual_ << " --> " <<  vehicleObj->dual_ << std::endl;*/
+                    */
+/*if (vehicleObj->CPDual_ > 0 && vehicleObj->dual_!= vehicleObj->CPDual_)
+                        std::cout << "vehicle " << vehicleObj->vehicleID_ << " dual == " << vehicleObj->CPDual_ << " --> " <<  vehicleObj->dual_ << std::endl;*//*
+
                     vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
                 }
 //                std::cout << " ===================" << std::endl;
@@ -492,4 +479,4 @@ void MasterPro::solveModelIntD(PInstance &pInst, vector<PRequest> &zSolution, ve
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
-}
+}*/

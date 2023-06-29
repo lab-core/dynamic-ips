@@ -22,7 +22,8 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
     isCompatible_ = false;
-    isAdded_ = false;
+    mpAdded_ = false;
+    cpAdded_ = false;
     score_ = 0;
 }
 Route::~Route(){
@@ -287,7 +288,7 @@ void Route::resetRoute() {
     }
 }
 
-void Route::createColumn(int size) {
+void Route::createColumn() {
 //    column_ = std::make_shared<myTools::BitVector>(size);
     column_.reset();
     /*for (auto & requestObj: routeRequests_)
@@ -304,8 +305,8 @@ void Route::createColumn(int size) {
         if (incRequestToOrder.count(requestObj) > 0)
             fullPattern_(incRequestToOrder[requestObj], 0) = 1;
     }
-    if (incVehicleToOrder.count(vehicleID_)>0)
-        fullPattern_(incVehicleToOrder[vehicleID_],0) = 1;
+    if (incVehicleToOrder.count(VehicleID_)>0)
+        fullPattern_(incVehicleToOrder[VehicleID_],0) = 1;
 }*/
 
 

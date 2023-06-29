@@ -47,7 +47,8 @@ public:
     Tools::LogOutput* pLogRunTimesStream_;
     Tools::LogOutput* pLogEpochSolutionStream_;
     Tools::LogOutput* pLogEpochSubRuntimeStream_;
-    Tools::LogOutput* pLogEpochSubRouteStream_;
+//    Tools::LogOutput* pLogEpochSubRouteStream_;
+    Tools::LogOutput* pLogSolutionChange_;
 
 
     solver(PInstance & mainInst, InputPaths &inputPaths);

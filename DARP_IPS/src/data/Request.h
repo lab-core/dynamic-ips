@@ -39,7 +39,9 @@ public:
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     double dual_;
     double CPDual_;
-    int vehicleID_;                     // the vehicle that serve the request
+    int allocVehicleID_;                     // the vehicle that serve the request
+    int initialVehicleID_;
+    int solVehicleID_;
     int taskIndex_;
     int taskIndexLabel_;
     int taskIncIndex_;
