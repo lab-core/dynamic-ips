@@ -120,7 +120,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
             if (!isSolved) {
+                bool state = EpochInst->parameters_->greedyReOptimize_;
+                EpochInst->parameters_->greedyReOptimize_ = true;
                 GreedyModel_->GreedyAssignment(EpochInst);
+                EpochInst->parameters_->greedyReOptimize_ = state;
                 isSolved = true;
                 // add vehicles in previous solution
                 if (EpochInst->parameters_->initialStart_ != GREEDY_START) {

@@ -83,47 +83,58 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            possibleDelay.clear();
-            for (auto & GRoute : solutionList_){
-                GRoute->idle_ = false;
-                GRoute->preDepartTime_ = GRoute->departureTime_;
-                // if a vehicle is idle before arrival of a request, its departure time should be after the request time
-                // after arrival of each request, the vehicle positions should be updated
-                if (GRoute->departureTime_ < PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_) {
-                    while ((GRoute->PCurrentStop_->child_ != nullptr) && (GRoute->departureTime_ < PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_)) {
-                        GRoute->PCurrentStop_ = GRoute->PCurrentStop_->child_;
-                        GRoute->departureTime_ = GRoute->PCurrentStop_->leaveTime_;
-                        GRoute->preDepartTime_ = GRoute->departureTime_;
-                    }
-                    // if we are at the end of the route
+            if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->solVehicleID_ == 999999) {
+                possibleDelay.clear();
+                for (auto &GRoute: solutionList_) {
+                    GRoute->idle_ = false;
+                    GRoute->preDepartTime_ = GRoute->departureTime_;
+                    // if a vehicle is idle before arrival of a request, its departure time should be after the request time
+                    // after arrival of each request, the vehicle positions should be updated
                     if (GRoute->departureTime_ < PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_) {
- //                       GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ - GRoute->departureTime_;
-                        GRoute->departureTime_ = PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
-                        GRoute->PLastStop_->leaveTime_ = PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
-                        GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ - GRoute->departureTime_;
-                        GRoute->idle_ = true;
+                        while ((GRoute->PCurrentStop_->child_ != nullptr) && (GRoute->departureTime_ <
+                                                                              PInst->requests_[i]->earlyPick_ +
+                                                                              PInst->parameters_->committedTime_)) {
+                            GRoute->PCurrentStop_ = GRoute->PCurrentStop_->child_;
+                            GRoute->departureTime_ = GRoute->PCurrentStop_->leaveTime_;
+                            GRoute->preDepartTime_ = GRoute->departureTime_;
+                        }
+                        // if we are at the end of the route
+                        if (GRoute->departureTime_ <
+                            PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_) {
+                            //                       GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ - GRoute->departureTime_;
+                            GRoute->departureTime_ =
+                                    PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
+                            GRoute->PLastStop_->leaveTime_ =
+                                    PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
+                            GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ -
+                                                 GRoute->departureTime_;
+                            GRoute->idle_ = true;
+                        }
                     }
-                }
-                GRoute->findInsertPlace2(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
-                                         PInst->requests_[i]->maxTravelTime_, greedyLabelPool_, positionList_[(*GRoute->Vehicle_)->vehicleID_]);
+                    GRoute->findInsertPlace2(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
+                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
+                                             positionList_[(*GRoute->Vehicle_)->vehicleID_]);
 
-                possibleDelay.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaDelay_);
-                /*if (GRoute->idle_) {
-                    GRoute->departureTime_ = GRoute->preDepartTime_;
-                    GRoute->PLastStop_->leaveTime_ = GRoute->preDepartTime_;
+                    possibleDelay.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaDelay_);
+                    /*if (GRoute->idle_) {
+                        GRoute->departureTime_ = GRoute->preDepartTime_;
+                        GRoute->PLastStop_->leaveTime_ = GRoute->preDepartTime_;
+                    }*/
+                }
+                unsigned int vehicle_ID =
+                        std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
+                /*if (solutionList_[vehicle_ID]->departureTime_ < PInst->requests_[i]->earlyPick_){
+                    // reset departure time
+                    solutionList_[vehicle_ID]->departureTime_ = PInst->requests_[i]->earlyPick_;
+                    solutionList_[vehicle_ID]->PLastStop_->leaveTime_ = PInst->requests_[i]->earlyPick_;
+                    solutionList_[vehicle_ID]->idleTime_ += PInst->requests_[i]->earlyPick_ - solutionList_[vehicle_ID]->departureTime_;
                 }*/
+                solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
+                                                         PInst->instGraph_->dropNodes_[i],
+                                                         PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);
+                solutionList_[vehicle_ID]->idle_ = false;
+                selectedVehicles_[vehicle_ID]++;
             }
-            unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            /*if (solutionList_[vehicle_ID]->departureTime_ < PInst->requests_[i]->earlyPick_){
-                // reset departure time
-                solutionList_[vehicle_ID]->departureTime_ = PInst->requests_[i]->earlyPick_;
-                solutionList_[vehicle_ID]->PLastStop_->leaveTime_ = PInst->requests_[i]->earlyPick_;
-                solutionList_[vehicle_ID]->idleTime_ += PInst->requests_[i]->earlyPick_ - solutionList_[vehicle_ID]->departureTime_;
-            }*/
-            solutionList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
-                                                     PInst->instGraph_->dropNodes_[i], PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);
-            solutionList_[vehicle_ID]->idle_ = false;
-            selectedVehicles_[vehicle_ID]++;
         }
     }
     for (auto & GreedyObj : solutionList_)
