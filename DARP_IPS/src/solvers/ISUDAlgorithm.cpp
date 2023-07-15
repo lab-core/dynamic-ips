@@ -1666,7 +1666,7 @@ void ISUDAlgorithm::solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inpu
     while (isCPImproved) {
         isCPImproved = false;
         previousObj = objValue_;
-        //               updateIncompatState(pInst);
+        updateIncDegreesBit(pInst);
         CompPro_->routesToAdd_.clear();
         updateRoutesToAdd(false, pInst);
         availableTime_ = tilim - isudTime_->dSinceStart().count();

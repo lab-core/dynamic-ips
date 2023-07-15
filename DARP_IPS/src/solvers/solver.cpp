@@ -624,7 +624,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
     // define required variables
-    bool MIP_Stop = true;
+    bool MIP_Stop = false;
     int nbReceivedRequest;
     epoch_ = 0;
 
@@ -649,9 +649,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-
-        if (epoch_ > 20)
-            break;
 
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
