@@ -771,9 +771,10 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
         RPBuildTime_->start();
         MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_);
         RPBuildTime_->stop();
-
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+        if (pInst->parameters_->solutionMode_ != ANYTIME) {
+            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+        }
 
 //        updateIncompatState(pInst);
         while (restartAlgorithm) {
@@ -801,9 +802,10 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                 for (auto & routeObj : routeSolution_) {
                     pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
                 }
-
-                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LRP");
-                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LRP");
+                if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LRP");
+                    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LRP");
+                }
 
                 TisudIter_++;
                 std::cout << "RP improve: " << objValue_ << std::endl;
@@ -858,8 +860,10 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                     CPBuildTime_->stop();
                     CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
                     updateReducedCosts(pInst);
-                    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
-                    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+                    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
+                        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+                    }
                     TisudIter_++;
                     CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                     setObjValue();
@@ -877,8 +881,10 @@ void ISUDAlgorithm::solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inpu
                             solveRPro_MIP_Dual(pInst, 1, inputPaths);
                             TisudIter_++;
                             isudMIPTime_->stop();
-                            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "zoom");
-                            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "zoom");
+                            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "zoom");
+                                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "zoom");
+                            }
                             if (previousObj > objValue_) {
                                 previousObj = objValue_;
                                 (*pLogIsudResultsStream_)
@@ -1502,8 +1508,10 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
     RPBuildTime_->stop();
 
     // save initial duals
-    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    }
 
     /************************************************************************************************/
     //                                     MASTER PROBLEM
@@ -1528,8 +1536,10 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
                                                       MasterPro_->auxObjValue_);
         // save initial duals
         isudIter_++;
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "RMP");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "RMP");
+        if (pInst->parameters_->solutionMode_ != ANYTIME) {
+            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "RMP");
+            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "RMP");
+        }
         setObjValue();
         if (previousObj > objValue_) {
             previousObj = objValue_;
@@ -1601,8 +1611,10 @@ void ISUDAlgorithm::solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inpu
     RPBuildTime_->stop();
 
     // save initial duals
-    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    }
 
     /************************************************************************************************/
     //                                     MASTER PROBLEM
@@ -1630,8 +1642,10 @@ void ISUDAlgorithm::solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inpu
                                                       MasterPro_->auxObjValue_);
         // save initial duals
         isudIter_++;
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "RMP");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "RMP");
+        if (pInst->parameters_->solutionMode_ != ANYTIME) {
+            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "RMP");
+            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "RMP");
+        }
         setObjValue();
         if (previousObj > objValue_) {
             previousObj = objValue_;
@@ -1676,8 +1690,10 @@ void ISUDAlgorithm::solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inpu
             CPBuildTime_->stop();
             CompPro_->solveModelIndex(pInst, zSolution_, routeSolution_, inputPaths);
             updateReducedCosts(pInst);
-            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
-            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
+                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+            }
             TisudIter_++;
             CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
             setObjValue();
@@ -1705,8 +1721,10 @@ void ISUDAlgorithm::solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inpu
 
                     TisudIter_++;
                     isudMIPTime_->stop();
-                    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "zoom");
-                    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "zoom");
+                    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "zoom");
+                        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "zoom");
+                    }
                     if (previousObj > objValue_) {
                         previousObj = objValue_;
                         (*pLogIsudResultsStream_)
@@ -1838,8 +1856,10 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
     RPBuildTime_->stop();
 
     // save initial duals
-    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    }
     /************************************************************************************************/
     //                                     MASTER PROBLEM
     /************************************************************************************************/
@@ -1860,8 +1880,10 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
                                                           pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
                                                           0.0);
             isudIter_++;
-            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LMP");
-            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LMP");
+            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LMP");
+                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LMP");
+            }
             if (lpObj > objValue_) {
                 lpObj = objValue_;
             } else
