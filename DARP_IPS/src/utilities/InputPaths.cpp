@@ -84,6 +84,7 @@ double InputPaths::getTimeOut() const {return timeOut_; }
 void InputPaths::setTimeOUt(double timeOUt) {InputPaths::timeOut_ = timeOUt;}
 
 void InputPaths::initializeInputs(const std::string &instFolder, const std::string &instanceName) {
+    instanceFolder_ = instFolder;
     instanceName_ = instanceName;
     instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
 
@@ -96,16 +97,40 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
 
-void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode) {
+void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch) {
     // create directory for results
-    time_t now = time(nullptr);
-    tm * curr_tm = localtime(&now);
-    char resultFolder[100];
-    strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
-    std::string folder_name = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder;
-    char *path = const_cast<char *>(folder_name.c_str());
-    int check = mkdir(path, 0777);
-    outputDir_ = instanceDir_ + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
+    if (saveScratch){
+        std::string instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
+        struct stat buffer;
+        if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))){
+            char *folderPath = const_cast<char *>(instFolder.c_str());
+            int check = mkdir(folderPath, 0777);
+        }
+        std::string outputFolder = instFolder + "/" + instanceName_;
+        if (!(stat(outputFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))){
+            char *folderPath = const_cast<char *>(outputFolder.c_str());
+            int check = mkdir(folderPath, 0777);
+        }
+
+        time_t now = time(nullptr);
+        tm * curr_tm = localtime(&now);
+        char resultFolder[100];
+        strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
+        std::string folder_name = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder;
+        char *path = const_cast<char *>(folder_name.c_str());
+        int check = mkdir(path, 0777);
+        outputDir_ = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
+    }
+    else {
+        time_t now = time(nullptr);
+        tm *curr_tm = localtime(&now);
+        char resultFolder[100];
+        strftime(resultFolder, 50, "%Y%m%d-%I%M", curr_tm);
+        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder;
+        char *path = const_cast<char *>(folder_name.c_str());
+        int check = mkdir(path, 0777);
+        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder + "/";
+    }
 
     //initialize the file names for saving outputs
     output_epochISUD_ = outputDir_ + "epochSolution_" + instanceName_ + ".csv";

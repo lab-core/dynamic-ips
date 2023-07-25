@@ -26,6 +26,7 @@ protected:
     std::string instanceDir_;
     std::string outputDir_;
     std::string instanceNameOut_;
+    std::string instanceFolder_;
 
     std::string input_TripData_;
     std::string input_InstanceData_;
@@ -119,7 +120,7 @@ public:
     void initializeInputs(const std::string& instFolder, const std::string& instanceName);
 
     // this function defines the path to outputs
-    void initializeOutputs(const std::string &algorithm, const std::string &solutionMode);
+    void initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch);
 
     // this function create a directory to build a new instance
     void makeInstanceOutput(const std::string& instNum);

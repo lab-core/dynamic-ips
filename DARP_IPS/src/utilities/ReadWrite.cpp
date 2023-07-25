@@ -456,7 +456,7 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     mainInst->nbNewRequests_ += mainInst->nbWaiting_;
 
     inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_],
-                                 solutionModeName[mainInst->parameters_->solutionMode_]);
+                                 solutionModeName[mainInst->parameters_->solutionMode_], false);
 
     // write the parameters in file
     Tools::LogOutput parameterStream(inputPaths.getOutputParamFile());
@@ -486,7 +486,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance) {
     pInstance->nbNewRequests_ += pInstance->nbWaiting_;
 
     inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
-                                 solutionModeName[pInstance->parameters_->solutionMode_]);
+                                 solutionModeName[pInstance->parameters_->solutionMode_], false);
 
     // write the parameters in file
     std::ofstream myFile;
