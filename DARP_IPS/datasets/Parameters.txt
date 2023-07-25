@@ -6,13 +6,13 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 16
+nbThreads = 24
 InitialDual = 0
-mainAlgorithm = 2
+mainAlgorithm = 4
 addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
-GreedyReOptimize = 1
+GreedyReOptimize = 0
 
 # ISUD PARAMETERS
 #
@@ -33,7 +33,7 @@ isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 0
 subproblemAlgorithm = 3
-Vehicle_portion = 1
+Vehicle_portion = 0.1
 Greedy_portion = 1
 usePick = 0
 
