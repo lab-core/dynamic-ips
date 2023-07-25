@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --time=02:15:00
+#SBATCH --time=04:15:00
 #SBATCH --account=def-legraina
-#SBATCH --mem=64G
-#SBATCH --cpus-per-task=16
+#SBATCH --mem=100G
+#SBATCH --cpus-per-task=24
 
 module load eigen
 module load gcc
@@ -11,5 +11,5 @@ module load gcc
 #20160225_07-120m
 
 #bin/realtime_DARP Instances-120 20160225_07-120m
-bin/realtime_DARP $1 $2 1600
+bin/realtime_DARP $1 $2 2500
  
