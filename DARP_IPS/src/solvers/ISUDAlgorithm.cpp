@@ -1247,7 +1247,7 @@ void ISUDAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
             return lhs->score_ < rhs->score_;});
         std::bitset<MAX_SIZE> coveredList;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->reducedCost_ < 0 && !routeObj->mpAdded_) {
+            if (routeObj->reducedCost_ <= 0 && !routeObj->mpAdded_) {
                 MasterPro_->routesToAdd_.push_back(routeObj);
                 nbAdded++;
             }
@@ -1291,7 +1291,7 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
             return lhs->score_ < rhs->score_;});
         std::bitset<MAX_SIZE> coveredList;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->reducedCost_ < 0 && !routeObj->mpAdded_) {
+            if (routeObj->reducedCost_ <= 0 && !routeObj->mpAdded_) {
                 MasterPro_->routesToAdd_.push_back(routeObj);
                 nbAdded++;
             }
