@@ -41,7 +41,7 @@ public:
     static PInstance createMainInstance(InputPaths &inputPaths);
 
     // function that open all input files and update main instance data
-    static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance);
+    static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch);
 
     // Parsing functions
     // Read a file stream until meeting the separating character

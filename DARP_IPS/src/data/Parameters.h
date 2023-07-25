@@ -26,6 +26,7 @@ public:
     SolutionMode solutionMode_;
     bool oneIter_;
     bool greedyReOptimize_;
+    bool saveScratch_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -58,7 +59,7 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
-               bool greedyReOptimize,
+               bool greedyReOptimize, bool saveScratch,
                warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
                bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,

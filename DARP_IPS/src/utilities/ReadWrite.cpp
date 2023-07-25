@@ -309,7 +309,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false;
+    bool greedyReOptimize = false, saveScratch = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1;
 
@@ -357,6 +357,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "GreedyReOptimize "))
             file >> greedyReOptimize;
+
+        else if (strEndWith(title, "saveScratch "))
+            file >> saveScratch;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -425,7 +428,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
-                                                          greedyReOptimize,static_cast<warmStart>(initialStart),
+                                                          greedyReOptimize, saveScratch,
+                                                          static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased, isPickDropPossible,
@@ -472,7 +476,7 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
 }
 
 // function that open all input files and update main instance data
-void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance) {
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch) {
     if (pInstance->nbOnboards_ > 0){
         ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), pInstance);
         ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance);
@@ -486,7 +490,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance) {
     pInstance->nbNewRequests_ += pInstance->nbWaiting_;
 
     inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
-                                 solutionModeName[pInstance->parameters_->solutionMode_], false);
+                                 solutionModeName[pInstance->parameters_->solutionMode_], saveScratch);
 
     // write the parameters in file
     std::ofstream myFile;

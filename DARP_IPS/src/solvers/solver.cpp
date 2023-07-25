@@ -168,9 +168,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         changeStr << EpochInst->nbNewRequests_ << "," << EpochInst->nbRequests_-EpochInst->nbNewRequests_ << ",";
 
 
-        std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
+        /*std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
-        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
+        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;*/
 
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
@@ -221,8 +221,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
             else
-                isudObj_->availableTime_ = 1000;
-            std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
+ //           std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
             if (isudObj_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
                 break;
             }
@@ -325,11 +325,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         simulationTime_->start();
  //       preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        std::cout << "---------------------"<< std::endl;
+        /*std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
-        std::cout << "---------------------"<< std::endl;
+        std::cout << "---------------------"<< std::endl;*/
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
         logFile << " EPOCH: " << epoch_ << std::endl;
@@ -369,7 +369,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         /*if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
             break;*/
         if (EpochInst->nbNewRequests_ == 0 && isudObj_->zSolution_.empty()) {
-            std::cout << "next event" << std::endl;
+ //           std::cout << "next event" << std::endl;
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
  //           preprocessTime_->stop();

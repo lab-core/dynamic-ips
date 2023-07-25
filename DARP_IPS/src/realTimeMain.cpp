@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
         mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-        ReadWrite::readDatafiles(inputPaths, mainInst);
+        ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
         std::cout << mainInst->toString();
 
         // create solver

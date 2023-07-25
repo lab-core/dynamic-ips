@@ -55,7 +55,7 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
         greedySol.reset();
     }
     solutionList_.clear();
-    std::cout << "Greedy improve: " << objValue_ << std::endl;
+ //   std::cout << "Greedy improve: " << objValue_ << std::endl;
  //   greedyLabelPool_.clear();
 }
 
