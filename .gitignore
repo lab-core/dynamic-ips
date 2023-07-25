@@ -1,5 +1,3 @@
-OSRM/*
-DARP_Python/NYC/*
 DARP_IPS/bin/*
 DARP_IPS/cmake-build-debug/*
 DARP_IPS/lib/*
@@ -8,3 +6,6 @@ DARP_IPS/cmake-build-release/*
 **/.DS_Store
 *.csv
 
+DARP_IPS/datasets/Instances-120/*
+DARP_Python/NYC/*
+DARP_IPS/datasets/manhattan-vehicles/*
