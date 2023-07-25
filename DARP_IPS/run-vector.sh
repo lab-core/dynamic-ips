@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=90G
+#SBATCH --mem=64G
 #SBATCH --time=04:15:00
 #SBATCH --array=1-24
 #SBATCH --output=/dev/null
@@ -19,11 +19,11 @@ do
     do
       if [ $SLURM_ARRAY_TASK_ID -eq $i ]
       then
-        echo "bin/realtime_DARP $directory $instance $num_vehicles"
+        bin/realtime_DARP $directory $instance $num_vehicles
       fi
       (( i = $i + 1 ))
     done
   done
 done
 
-#sleep 60
+sleep 60
