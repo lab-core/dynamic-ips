@@ -20,14 +20,14 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles";
+    std::string vehicleFolder = "sufficient_manhattan-vehicles";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     if (argc == 3){
-        std::string instanceNames = "datasets/InstanceNames-120.txt";
+        std::string instanceNames = "datasets/InstanceNames-120_1.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];

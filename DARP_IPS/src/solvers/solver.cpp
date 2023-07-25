@@ -35,21 +35,21 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
 
     // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-    (*pLogRunTimesStream_) << "Epoch, nbRequests, nbNodes, EpochRuntime, AvgEpochRuntime, ElapsedTime, MP_Runtime, "
-                              "RP_Runtime, RP_BuildRuntime, RP_SolveRuntime, CP_Runtime, CP_BuildRuntime, "
-                              "CP_SolveRuntime, ZoomISUD_Runtime, SubProbRuntime, destructTime, SubAssignTime, "
-                              "GreedyTime, minSubSize, maxSubSize, avgSubSize, GreedyObj, Objective, waitTime" << std::endl;
+    (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNodes,EpochRuntime,AvgEpochRuntime,ElapsedTime, MP_Runtime, "
+                              "RP_Runtime,RP_BuildRuntime,RP_SolveRuntime,CP_Runtime,CP_BuildRuntime, "
+                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime, "
+                              "GreedyTime,minSubSize,maxSubSize,avgSubSize,GreedyObj,Objective,waitTime" << std::endl;
 
     pLogEpochSolutionStream_ = new Tools::LogOutput(inputPaths.getOutputEpochFinal());
-    (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID" << std::endl;
+    (*pLogEpochSolutionStream_) << "Epoch,VehicleID,NodeID,RequestTime,ReachTime,NodeType,LocationID" << std::endl;
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
-    (*pLogEpochSubRuntimeStream_) << "Epoch, vehicleID, nbRequests, nbNodes, maxPick, nbGenerated, nbEliminated, "
-                                 "nbDominated, nbRoutes, solveTime, ConvertRouteTime" << std::endl;
+    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,maxPick,nbGenerated,nbEliminated, "
+                                 "nbDominated,nbRoutes,solveTime,ConvertRouteTime" << std::endl;
 
     pLogSolutionChange_ = new Tools::LogOutput(inputPaths.getOutputSolutionChange());
-    (*pLogSolutionChange_) << "Epoch, NoSubProblems, NoRequests, NoNewRequests, NoOldRequests, NoReplacements, "
-                              "NoIncompatible(1), NoIncompatible(2), NoIncompatible(3)" << std::endl;
+    (*pLogSolutionChange_) << "Epoch,#SubProblems,#Requests,#NewArrival,#PreScheduled, #ReScheduled, "
+                              "#Inc(1 deg.),#Inc(2 deg.),#Inc(3 deg.),#Inc(total)" << std::endl;
 }
 
 solver::~solver() {
@@ -142,50 +142,28 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
                     isudObj_->nbVehicles_++;
                 }
-                /*else {
-                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
-                        if (EpochInst->parameters_->initialStart_ != GREEDY_START)
-                            subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                        vehicleObj->vehicleIndex_ = isudObj_->nbVehicles_;
-                        isudObj_->nbVehicles_++;
-                    }
-                }*/
             }
         }
 
         else {
-            if (EpochInst->parameters_->vehicle_portion_ < 1) {
-                std::vector<PVehicle> vehicleList = EpochInst->vehicles_;
-                std::stable_sort(vehicleList.begin(), vehicleList.end(),[](const PVehicle &lhs, const PVehicle &rhs){
-                    return lhs->score_ < rhs->score_;});
-                int portion = (int)(EpochInst->parameters_->vehicle_portion_*EpochInst->nbVehicles_);
-                if (EpochInst->getNbUnselectedVehicles() < (0.75 * portion))
-                    EpochInst->resetVehicleSelection();
-                for (int v = 0; v < vehicleList.size(); v++) {
-                    EpochInst->vehicles_[vehicleList[v]->vehicleID_]->vehicleIndex_ = -1;
-                    isudObj_->availableRoutes_[vehicleList[v]->vehicleID_].clear();
-                    if ((subProSolve.size() < portion) && (!EpochInst->vehicles_[vehicleList[v]->vehicleID_]->selected_)
-                        &&(EpochInst->nbRequests_ > 0)) {
-                        subProSolve.emplace_back(
-                                std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[vehicleList[v]->vehicleID_],
-                                                                     subProOptions_));
-                        EpochInst->vehicles_[v]->vehicleIndex_ = isudObj_->nbVehicles_;
-                        isudObj_->nbVehicles_++;
-                    }
-                }
-                vehicleList.clear();
-            }
-            else {
-                for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
-                    isudObj_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].clear();
-                    subProSolve.emplace_back(
-                            std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
-                    EpochInst->vehicles_[v]->vehicleIndex_ = isudObj_->nbVehicles_;
-                    isudObj_->nbVehicles_++;
-                }
-
+            for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
+                isudObj_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].clear();
+                subProSolve.emplace_back(
+                        std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
+                EpochInst->vehicles_[v]->vehicleIndex_ = isudObj_->nbVehicles_;
+                isudObj_->nbVehicles_++;
             }
         }
+
+        if (EpochInst->parameters_->vehicle_portion_ == 1){
+            // the problem is solved in complete mode and not partially, rest the orders
+            for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
+                EpochInst->vehicles_[v]->vehicleIndex_ = v;
+            }
+            isudObj_->nbVehicles_ = EpochInst->nbVehicles_;
+        }
+
+
         changeStr << epoch_ << "," << subProSolve.size() << "," << EpochInst->nbRequests_ << ",";
         changeStr << EpochInst->nbNewRequests_ << "," << EpochInst->nbRequests_-EpochInst->nbNewRequests_ << ",";
 
@@ -257,8 +235,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 case MP_MIP:
                     isudObj_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
+                case MP_CP:
+                    isudObj_->solveMP_MIPCP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                    break;
                 default: // MP_ISUD:
-                    isudObj_->solveISUD_Dual(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                    isudObj_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
             }
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
@@ -309,7 +290,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 break;
         }
     }
-    changeStr << numReplace << "," << numInc1 << "," << numInc2 << "," << numInc3 << "\n";
+    changeStr << numReplace << "," << numInc1 << "," << numInc2 << "," << numInc3 << ",";
+    changeStr << numInc1 + numInc2 + numInc3 << "\n";
     (*pLogSolutionChange_) << changeStr.str();
 
     // revert solution
@@ -317,7 +299,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
     }
 
-    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
+//    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
     isudObj_->setObjValue();
 }
 
@@ -588,7 +570,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
 
                             break;
                         } else if (StaticInst->parameters_->mainAlgorithm_ == MP_ISUD) {
-                            isudObj_->solveISUD_Dual(StaticInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                            isudObj_->solveISUD(StaticInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                         }
                     }
                     if (previousObj == isudObj_->objValue_) {
@@ -650,6 +632,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
 
+
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
         logFile << " EPOCH: " << epoch_ << std::endl;
@@ -698,13 +681,13 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
                 for (auto &vehicleObj: EpochInst->vehicles_)
                     vehicleObj->dual_ = 0;
             }
-            if (epoch_ == 182) {
-                EpochInst->parameters_->mainAlgorithm_ = MP_MIP;
-//                EpochInst->parameters_->oneIter_ = false;
+            if (epoch_ == 4) {
+                EpochInst->parameters_->mainAlgorithm_ = MP_ISUD;
+                EpochInst->parameters_->oneIter_ = false;
  //               EpochInst->parameters_->greedyReOptimize_ = true;
 //                EpochInst->parameters_->useZoom_ = true;
             }
-            if (epoch_ == 183)
+            if (epoch_ == 5)
                 break;
         }
 
@@ -803,7 +786,8 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
-    mainInst->instRepStr_ << epoch_-1 << "," << isudObj_->TisudIter_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << epoch_-1 << "," << isudObj_->LPIter_ << "," << isudObj_->MPIter_ << ",";
+    mainInst->instRepStr_ << isudObj_->RPIter_ << "," << isudObj_->CPIter_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->RPTime_->dSinceInit().count() << "," << isudObj_->CPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->isudMIPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << subProblemTime_->dSinceInit().count() << "," << GreedyModel_->greedyTime_->dSinceInit().count() << ",";

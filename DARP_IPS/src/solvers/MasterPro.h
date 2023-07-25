@@ -14,19 +14,11 @@ public:
     MasterPro();
 
     // this function build the model at the start of each epoch
-    void buildModelMP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    void buildModelMP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                      int nbVehicles);
 
     // this function update the model and add column with negative reduce costs
-    void updateModel();
-
-    /*void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
-    void solveModelIntAux(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, double preObj);
-    void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, double preObj);*/
-
-    /*void solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, double preObj);*/
+    void updateModel(PInstance &pInst);
 };
 
 

@@ -34,8 +34,7 @@ public:
     void ResetRPModel();
 
     // this function adds routeVar to the model
-    void addRouteVar(PRoute &newRoute);
-    void addRouteVarPartial(PRoute &newRoute, PInstance &pInst);
+    void addRouteVar(PRoute &newRoute, PInstance &pInst);
     void addRouteVars(std::vector<PRoute> &newRoutes);
 
     // this function adds zVar to the model used for the routes that served only one request
@@ -46,9 +45,8 @@ public:
     void updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution);
 
     // this function build the model at the start of each epoch
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
-    void buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                           int nbVehicles);
+    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    int nbVehicles);
 
     // solve functions
     void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
@@ -57,13 +55,6 @@ public:
                        InputPaths &inputPaths, float availableTime, double preObj);
     void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                          InputPaths &inputPaths, float availableTime, double preObj);
-
-     // this function solve the model and remove all columns except than the current base
-     virtual void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::map<std::string , PRoute> &generatedRoutes, InputPaths &inputPaths);
-
-    // function to check whether two routes are column disjoint or not
-    static bool isColumnDisjoint(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);
 
     // function to check whether the route is repeated before
     static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);

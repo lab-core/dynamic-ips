@@ -25,22 +25,6 @@ ReducedProblem::ReducedProblem() : MasterModeler() {
 void ReducedProblem::ResetRPModel() {
 
     try {
-        /*int modelExist = 0;
-        for (int r = (int)routeVar_.getSize()-1; r >= 0; --r) {
-            routeVar_[r].end();
-            routeVar_.remove(r,1);
-            modelExist = 1;
-        }
-        for (int i = (int)zVar_.getSize()-1; i >= 0; --i) {
-            zVar_[i].end();
-            zVar_.remove(i,1);
-            modelExist = 1;
-        }
-        if (modelExist == 1) {
-            Model_.remove(requestConst_);
-            Model_.remove(vehicleConst_);
-        }*/
-
         bool isModelExist = false;
         if (routeVar_.getSize() > 0)
             isModelExist = true;
@@ -61,17 +45,11 @@ void ReducedProblem::ResetRPModel() {
 }
 
 // this function adds routeVar to the model
-void ReducedProblem::addRouteVar(PRoute &newRoute) {
-    MasterModeler::addRouteVarInt(routeVar_, newRoute, POSITIVE);
+void ReducedProblem::addRouteVar(PRoute &newRoute, PInstance &pInst) {
+    MasterModeler::addRouteVarInt(routeVar_, newRoute, POSITIVE, pInst);
     rLb_.add(0.0);
     compRoutes_.push_back(newRoute);
     newRoute->mpAdded_ = true;
-}
-
-void ReducedProblem::addRouteVarPartial(PRoute &newRoute, PInstance &pInst) {
-    MasterModeler::addRouteVarIntPartial(routeVar_, newRoute, POSITIVE, pInst);
-    rLb_.add(0.0);
-    compRoutes_.push_back(newRoute);
 }
 
 void ReducedProblem::addRouteVars(std::vector<PRoute> &newRoutes) {
@@ -99,7 +77,7 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
 
     // add the new compatible column to the model
     for (auto & routeObj : routesToAdd_) {
-        addRouteVar(routeObj);
+        addRouteVar(routeObj, pInst);
     }
 
     // add compatible z variables
@@ -113,12 +91,13 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSol
 
 
 // this function build the model at the start of each epoch
-void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution) {
+void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                                int nbVehicles) {
 
     // model initialization (defining empty set of constraints and adding objective)
 //    ResetRPModel();
     int rhs = 1;
-    MasterModeler::initializeModel(pInst, rhs);
+    MasterModeler::initializeModel(pInst, rhs, nbVehicles);
 
     // adding request columns (z variables)
 //    addZVars(zSolution);
@@ -128,35 +107,8 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
     // adding route solution columns
  //   addRouteVars(routeSolution);
     for (auto & routeSol : routeSolution){
-        addRouteVar(routeSol);
-    }
-
-
-
-    //adding new route variables
-    for (auto & routeObj : routesToAdd_) {
-        addRouteVar(routeObj);
-    }
-//    env_.out() << Model_;
-}
-void ReducedProblem::buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution,
-                                       std::vector<PRoute> &routeSolution, int nbVehicles) {
-
-    // model initialization (defining empty set of constraints and adding objective)
-//    ResetRPModel();
-    int rhs = 1;
-    MasterModeler::initializeModelPartial(pInst, rhs, nbVehicles);
-
-    // adding request columns (z variables)
-//    addZVars(zSolution);
-    for (auto & zSol : zSolution)
-        addZVar(zSol);
-
-    // adding route solution columns
-    //   addRouteVars(routeSolution);
-    for (auto & routeSol : routeSolution){
         if (pInst->vehicles_[routeSol->vehicleID_]->vehicleIndex_ > -1)
-            addRouteVarPartial(routeSol, pInst);
+            addRouteVar(routeSol, pInst);
     }
 
 
@@ -164,7 +116,7 @@ void ReducedProblem::buildModelPartial(PInstance &pInst, std::vector<PRequest> &
     //adding new route variables
     for (auto & routeObj : routesToAdd_) {
         if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
-            addRouteVarPartial(routeObj, pInst);
+            addRouteVar(routeObj, pInst);
     }
 //    env_.out() << Model_;
 }
@@ -213,9 +165,16 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            if (vehicleObj->vehicleIndex_ > -1) {
+                int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
+                vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
+                vehicleObj->dual_ = vehicleDuals_[index];
+                vehicleObj->CPDual_ = vehicleDuals_[index];
+            }
+            else {
+                vehicleObj->dual_ = 0;
+                vehicleObj->CPDual_ = 0;
+            }
         }
         convR.end();
         convZ.end();
@@ -290,8 +249,8 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
                 }
 
 
-                if (routeSolution.size() != pInst->nbVehicles_)
-                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+                /*if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");*/
 
             }
         }
@@ -353,9 +312,16 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+            if (vehicleObj->vehicleIndex_ > -1) {
+                int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
+                vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
+                vehicleObj->dual_ = vehicleDuals_[index];
+                vehicleObj->CPDual_ = vehicleDuals_[index];
+            }
+            else {
+                vehicleObj->dual_ = 0;
+                vehicleObj->CPDual_ = 0;
+            }
         }
         convR.end();
         convZ.end();
@@ -406,8 +372,8 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                 }
 
 
-                if (routeSolution.size() != pInst->nbVehicles_)
-                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");
+                /*if (routeSolution.size() != pInst->nbVehicles_)
+                    myTools::throwError("Number of routes in the solution does not match with the vehicles!!!");*/
             }
         }
 
@@ -423,118 +389,6 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
-}
-
-// this function solve the model and remove all columns except than the current base
-void ReducedProblem::solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                                std::map<std::string ,PRoute> &generatedRoutes, InputPaths &inputPaths) {
-    try {
-
-        Cplex_ = IloCplex(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        logFile << "----------------------- RP ------------------------"<< std::endl;
-        std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
-        Cplex_.solve();
-
-        // getting dual values
-        requestDuals_.clear();
-        vehicleDuals_.clear();
-
-        // define dual container size
-        requestDuals_ = IloNumArray(env_, pInst->nbRequests_);
-        vehicleDuals_ = IloNumArray(env_, pInst->nbVehicles_);
-
-        std::cout << "REDUCED DUALS:" << std::endl;
-        for (auto &requestObj: pInst->requests_) {
-            if (requestObj->requestStatus_ == NO_ACTION) {
-                int rowIndex = requestObj->taskIndex_;
-                requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
-                requestObj->dual_ = requestDuals_[rowIndex];
-                requestObj->CPDual_ = requestDuals_[rowIndex];
-                std::cout << "requestDuals[" << requestObj->getRequestId() << "]: " << requestObj->dual_
-                          << std::endl;
-            }
-        }
-
-        std::cout << "VEHICLE DUALS:" << std::endl;
-        for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-            vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
-            std::cout << "vehicleDuals[" << vehicleObj->vehicleID_ << "]: " << vehicleObj->dual_ << std::endl;
-        }
-
-        // saving the result and remove out of base variables
-        zSolution.clear();
-        routeSolution.clear();
-
-        IloNumArray zVal(env_);
-        IloNumArray routeVal(env_);
-
-
-        Cplex_.getValues(zVal, zVar_);
-        Cplex_.getValues(routeVal, routeVar_);
-
-        for (int r = (int)routeVal.getSize()-1; r >= 0; --r) {
-            if (routeVal[r] > 0.1) {
-                routeSolution.push_back(generatedRoutes[routeVar_[r].getName()]);
-                pInst->vehicles_[generatedRoutes[routeVar_[r].getName()]->vehicleID_]->setCurrentRoute(generatedRoutes[routeVar_[r].getName()]);
-            }
-            else {
-                routeVar_[r].end();
-                routeVar_.remove(r,1);
-            }
-        }
-//        std::cout << "------------" << std::endl;
-        for (int i = (int)zVal.getSize()-1; i >= 0; --i) {
-            if (zVal[i] > 0.9) {
-//                std::cout << zVar_[i].getName() << std::endl;
-                zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
-            }
-            else {
-                zVar_[i].end();
-                zVar_.remove(i,1);
-            }
-        }
-        int nbRequests = 0;
-        for (auto & requestObj: pInst->requests_) {
-            if (requestObj->requestStatus_ == NO_ACTION)
-                nbRequests++;
-        }
-        std::cout << "# from " << nbRequests << " request, " << nbRequests - zSolution.size()
-        << " are selected to served." << std::endl;
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
-        Cplex_.clearModel();
-    }
-    catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
-        std::cout << e << std::endl;
-    }
-
-}
-
-
-// function to check whether two routes are column disjoint or not
-bool ReducedProblem::isColumnDisjoint(vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int> &requestToOrder){
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed) requestToOrder.size(), (signed) routeSet.size()+1);
-    vector<PRoute> selectedRoutes = routeSet;
-    selectedRoutes.push_back(newRoute);
-    for (int r = 0; r < selectedRoutes.size(); ++r) {
-        for (int i = 0; i < selectedRoutes[r]->routeRequests_.size(); ++i)
-            A(selectedRoutes[r]->routeRequests_[i]->taskIndex_, r) = 1;
-    }
-    Eigen::MatrixXd ATA = A.transpose()*A;
-    // setting diagonal elements to zero
-    for (int i = 0; i < ATA.rows(); ++i) {
-        ATA(i,i) = 0;
-    }
-    if (ATA == Eigen::MatrixXd::Zero(ATA.rows(), ATA.cols()))
-        return true;
-    else
-        return false;
 }
 
 //************************************************************************
@@ -681,9 +535,16 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
                 //               std::cout << " ----------------" << std::endl;
 
                 for (auto &vehicleObj: pInst->vehicles_) {
-                    vehicleDuals_[vehicleObj->vehicleID_] = Cplex_.getDual(vehicleConst_[vehicleObj->vehicleID_]);
-                    vehicleObj->dual_ = vehicleDuals_[vehicleObj->vehicleID_];
-                    vehicleObj->CPDual_ = vehicleDuals_[vehicleObj->vehicleID_];
+                    if (vehicleObj->vehicleIndex_ > -1) {
+                        int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
+                        vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
+                        vehicleObj->dual_ = vehicleDuals_[index];
+                        vehicleObj->CPDual_ = vehicleDuals_[index];
+                    }
+                    else {
+                        vehicleObj->dual_ = 0;
+                        vehicleObj->CPDual_ = 0;
+                    }
                 }
                 // reset changes
                 objFunction_.setSense(IloObjective::Minimize);

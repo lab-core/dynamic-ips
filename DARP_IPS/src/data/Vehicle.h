@@ -21,6 +21,8 @@ public:
     int capacity_;                          // vehicle capacity
     int numPassengers_;                     // number of passengers in the vehicle
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
+    float departTimeActual_;                      // time the vehicle arrives at its departing stop for the epoch
+    PNode departNodeActual_;
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
     PNode departNode_;
     std::string sinkID_;

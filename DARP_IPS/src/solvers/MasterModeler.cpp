@@ -125,24 +125,7 @@ void MasterModeler::addZVars(IloNumVarArray &zVar, std::vector<PRequest> &reques
 }
 
 // this function adds routeVar to the model
-void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
-    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
-    createPattern(columnVar, newRoute, sign);
-    IloNumColumn numVar;
-    if (sign == POSITIVE) {
-        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[newRoute->vehicleID_](1);
-    }
-    else {
-        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[newRoute->vehicleID_](-1);
-    }
-    routeVar.add(IloNumVar(numVar,0,1,ILOINT));
- //   numVar.setName(newRoute->name_);
-    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
-}
-
-void MasterModeler::addRouteVarIntPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
+void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
     IloNumArray columnVar(env_, (signed) orderToRequest_.size());
     createPattern(columnVar, newRoute, sign);
     IloNumColumn numVar;
@@ -155,29 +138,12 @@ void MasterModeler::addRouteVarIntPartial(IloNumVarArray &routeVar, PRoute &newR
                  + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](-1);
     }
     routeVar.add(IloNumVar(numVar,0,1,ILOINT));
-    //   numVar.setName(newRoute->name_);
+ //   numVar.setName(newRoute->name_);
     routeVar[routeVar.getSize()-1].setName(newRoute->name_);
 }
 
 // this function adds routeVar to the model
-void MasterModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign) {
-    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
-    createPattern(columnVar, newRoute, sign);
-    IloNumColumn numVar;
-    if (sign == POSITIVE) {
-        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[newRoute->vehicleID_](1);
-    }
-    else {
-        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[newRoute->vehicleID_](-1);
-
-    }
-    routeVar.add(IloNumVar(numVar));
-    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
-}
-
-void MasterModeler::addRouteVarFloatPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign , PInstance &pInst) {
+void MasterModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
     IloNumArray columnVar(env_, (signed) orderToRequest_.size());
     createPattern(columnVar, newRoute, sign);
     IloNumColumn numVar;
@@ -195,25 +161,8 @@ void MasterModeler::addRouteVarFloatPartial(IloNumVarArray &routeVar, PRoute &ne
 }
 
 // this function initialized the model
-void MasterModeler::initializeModel(PInstance &pInst, int rhs) {
+void MasterModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests
-//    updateRequestOrder(pInst);
-    orderToRequest_ = pInst->orderToRequest_;
-
-    // define and add objective
-
-    createIloNumArray (requestRHS_, orderToRequest_.size(), rhs);
-    createIloNumArray (vehicleRHS_, pInst->nbVehicles_, rhs);
-
-    requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
-    vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
-
-//    Model_.add(requestConst_);
-//    Model_.add(vehicleConst_);
-}
-void MasterModeler::initializeModelPartial(PInstance &pInst, int rhs, int nbVehicles) {
-// update order of requests
-//    updateRequestOrder(pInst);
     orderToRequest_ = pInst->orderToRequest_;
 
     // define and add objective
@@ -224,8 +173,6 @@ void MasterModeler::initializeModelPartial(PInstance &pInst, int rhs, int nbVehi
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
     vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
 
-//    Model_.add(requestConst_);
-//    Model_.add(vehicleConst_);
 }
 
 void MasterModeler::addRouteVars(IloNumVarArray &routeVar, vector<PRoute> &newRoutes, VarSign sign) {
@@ -245,12 +192,6 @@ void MasterModeler::addRouteVars(IloNumVarArray &routeVar, vector<PRoute> &newRo
                       + vehicleConst_[newRoutes[r]->vehicleID_](-1);*/
         columnVar.end();
     }
-    /*try {
-        routeVar.add(IloNumVarArray(env_, cols));
-    }
-    catch (IloException& e) {
-        std::cout << e << std::endl;
-    }*/
 //    cols.end();
 }
 

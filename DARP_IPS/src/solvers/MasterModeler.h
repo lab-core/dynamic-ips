@@ -61,8 +61,7 @@ public:
     static void createPattern (IloNumArray& pattern, PRoute &route, VarSign sign);
 
     // this function initialized the model
-    void initializeModel(PInstance &pInst, int rhs);
-    void initializeModelPartial(PInstance &pInst, int rhs, int nbVehicles);
+    void initializeModel(PInstance &pInst, int rhs, int nbVehicles);
 
     // this function adds zVar to the model
     void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
@@ -70,10 +69,8 @@ public:
     void addZVars(IloNumVarArray &zVar, std::vector<PRequest> &requests, VarSign sign);
 
     // this function adds routeVar to the model
-    void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
-    void addRouteVarIntPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign);
-    void addRouteVarFloatPartial(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
+    void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
+    void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
     void addRouteVars(IloNumVarArray &routeVar, std::vector<PRoute> &newRoutes, VarSign sign);
 
 };

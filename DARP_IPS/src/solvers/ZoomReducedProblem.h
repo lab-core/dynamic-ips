@@ -11,21 +11,12 @@ class ZoomReducedProblem : public ReducedProblem {
 public:
 
     void updateModel(PInstance &pInst, std::vector<PRequest> &fractionalZ);
-    void updateModelPartial(PInstance &pInst, std::vector<PRequest> &fractionalZ);
-    /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                   std::unordered_map<std::string , PRoute> &generatedRoutes);*/
+
     void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     InputPaths &inputPaths, int availableTime, double preObj);
-    void solveModelDual(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                        InputPaths &inputPaths, int availableTime, double preObj);
 
-    void solveModelDualLP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                        InputPaths &inputPaths, int availableTime, double preObj);
-
-    /*void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
-    void solveModelIntAux(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, double preObj);*/
-    void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution, InputPaths &inputPaths);
+    /*void solveModelDualLP(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                        InputPaths &inputPaths, int availableTime, double preObj);*/
 
     // Display function
     std::string toString() const override;

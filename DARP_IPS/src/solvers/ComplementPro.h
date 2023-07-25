@@ -19,7 +19,6 @@ public:
     // Variables
     IloNumVarArray routeIncVar_;
     vector<PRoute> IncRoute_;
-    std::vector<int> solIndexes_;
     IloNumVarArray zIncVar_;
     IloNumVarArray routeSolVar_;
     IloNumVarArray zSolVar_;
@@ -36,41 +35,28 @@ public:
 
 
     // this function initialized the model and define empty set of constraints
-    void initializeCPModel(PInstance &pInst);
-    void initializeCPModelPartial(PInstance &pInst, int nbVehicles);
+    void initializeCPModel(PInstance &pInst, int nbVehicles);
 
     // this function adds zVar to the model
     void addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign);
 
     // this function adds routeVar to the model
-    void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign);
-    void addRouteVarPartial(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
+    void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
 
     // this function build the model at each iteration
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
-    void buildModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                           int nbVehicles);
+    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    int nbVehicles);
 
     // this function update the model and variables
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function solve the model
-    /*void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
-    void solveModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    InputPaths &inputPaths);
-
-    /*void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    std::unordered_map<std::string , PRoute> &generatedRoutes);*/
-    void solveModelIndex(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                         InputPaths &inputPaths);
-    void solveModelPartial(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                           InputPaths &inputPaths);
+    void solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                      InputPaths &inputPaths);
 
     // this function check the situation of the CP solution to be column disjoint
     bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
     bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
-//    bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle, int size);
 
     // Display function
     std::string toString() const override;

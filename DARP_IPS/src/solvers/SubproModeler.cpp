@@ -78,8 +78,8 @@ void SubproModeler::initSubGraph2(PInstance &pInst) {
     // adding available nodes based on the penalty
     for (int i = 0; i < pInst->requests_.size(); i++) {
         if (pInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            float minWait = (Vehicle_)->departTime_ +
-                            durationMatrix_[(Vehicle_)->departNode_->locationID_]
+            float minWait = (Vehicle_)->departTimeActual_ +
+                            durationMatrix_[(Vehicle_)->departNodeActual_->locationID_]
                             [pInst->instGraph_->pickNodes_[i]->locationID_]- pInst->requests_[i]->earlyPick_;
             if (minWait <= pInst->requests_[i]->penalty_) {
                 subRequests_.push_back(pInst->requests_[i]);

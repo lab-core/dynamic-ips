@@ -49,6 +49,10 @@ public:
     int isudIter_;              // number of isud iteration in each epoch
     int TisudIter_;             // total isud iteration
     int SPIter_;                 // sub problem iteration
+    int RPIter_;
+    int CPIter_;
+    int LPIter_;
+    int MPIter_;
     int CPSuccess_;             // number of time CP succeed in finding integer
     int CPFails_;             // number of time CP fails in finding integer
     double objValue_;
@@ -106,20 +110,15 @@ public:
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
+
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Dual(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_DualMIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Original(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_Partial(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveMP_MIP_CP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
 
-    void solveRPro_MIP(PInstance &pInst, int compDegree, InputPaths &inputPaths);
-    void solveRPro_MIP_Dual(PInstance &pInst, int compDegree, InputPaths &inputPaths);
-    void solveRPro_MIP_Partial(PInstance &pInst, int compDegree, InputPaths &inputPaths);
-    void solveRPro_MIP_LP(PInstance &pInst, InputPaths &inputPaths);
 
+    // These functions are used to solve master problems (CG, MP and RP)
+    void solveRP_LPINT(PInstance &pInst, int compDegree, InputPaths &inputPaths);
     void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
     void solveMP_INT(PInstance &pInst, InputPaths &inputPaths);
 
@@ -129,10 +128,8 @@ public:
     std::string toStringTimersAvg(int epoch) const;
 
     // function to evaluate available routes and find proper ones to be added to the models
-    void updateRoutesToAdd(int compDegree, PInstance &pInst);
     void updateRoutesToAdd(bool compatible, PInstance &pInst);
     void updateRoutesToAddZoom(PInstance &pInst);
-    static bool isCompatible(PRoute &solutionRoute, PRoute &comingRoute, std::map<unsigned int, int> &requestToOrder);
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
