@@ -105,11 +105,15 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))){
             char *folderPath = const_cast<char *>(instFolder.c_str());
             int check = mkdir(folderPath, 0777);
+            if (check == -1)
+                myTools::throwException("Unable to create output folder!");
         }
         std::string outputFolder = instFolder + "/" + instanceName_;
         if (!(stat(outputFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))){
             char *folderPath = const_cast<char *>(outputFolder.c_str());
             int check = mkdir(folderPath, 0777);
+            if (check == -1)
+                myTools::throwException("Unable to create output folder!");
         }
 
         time_t now = time(nullptr);
@@ -119,6 +123,8 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         std::string folder_name = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder;
         char *path = const_cast<char *>(folder_name.c_str());
         int check = mkdir(path, 0777);
+        if (check == -1)
+            myTools::throwException("Unable to create output folder!");
         outputDir_ = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
     }
     else {

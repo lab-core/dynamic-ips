@@ -26,22 +26,25 @@ int main(int argc, char** argv) {
     std::vector<std::string> instNames;         // vector of instance file names
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
-    if (argc == 3){
-        std::string instanceNames = "datasets/Instances-120.txt";
+    int mainAlgo = -1;
+    if (argc == 4){
+        std::string instanceNames = "datasets/Instances-240.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24);
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
         std::string word = argv[2];
+        mainAlgo = std::stoi(argv[3]);
         vehicleFile = "vehicles_" + word + "_4";
         numVehicles = std::stoi(argv[2]);
     }
-    else if (argc == 4){
+    else if (argc == 5){
         instFolder = argv[1];
         instNames.push_back(argv[2]);
         std::cout << "Instance : " << argv[1] << "/" << argv[2]  << std::endl;
         std::string word = argv[3];
         vehicleFile = "vehicles_" + word + "_4";
         numVehicles = std::stoi(argv[3]);
+        mainAlgo = std::stoi(argv[4]);
     }
     else
         myTools::throwError("There should be at least 2 arguments!");
@@ -62,6 +65,7 @@ int main(int argc, char** argv) {
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
         mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+        mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
         ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
         std::cout << mainInst->toString();
 
