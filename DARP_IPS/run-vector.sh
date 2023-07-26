@@ -21,7 +21,7 @@ do
       do
         if [ $SLURM_ARRAY_TASK_ID -eq $i ]
         then
-          bin/realtime_DARP $directory $instance $num_vehicles $algorithm
+          bin/realtime_DARP $directory $instance $num_vehicles $algorithm > "/scratch/amirelah/dynamic-ips/${directory}_${instance}_${num_vehicles}_${algorithm}.txt" 2>&1
         fi
         (( i = $i + 1 ))
       done
