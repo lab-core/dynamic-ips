@@ -134,7 +134,7 @@ public:
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
     std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime,
-                                 double dualNormReq, double dualNormVeh, double auxObj) const;
+                                 double auxObj) const;
 
 //    void updatePatterns(PInstance &pInst);
 //    void updateFullPattern();

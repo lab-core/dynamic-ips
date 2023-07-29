@@ -30,7 +30,7 @@ public:
     PRoute solutionRoute_;
     PRoute emptyRoute_;
     double dual_;
-    double CPDual_;
+    double InitialDual_;
     double bestReducedCost_;
     float idleTime_;
     float score_;

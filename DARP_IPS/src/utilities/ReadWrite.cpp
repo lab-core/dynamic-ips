@@ -121,10 +121,68 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     }
 }
 
+void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
+    file.open(strTripsFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strTripsFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+    std::vector<PVehicle> vehicles;
+    int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1, zoneID = -1, routeSize = -1;
+    float departTime = -1, endTime = -1, lDual = -1, iDual = -1;;
+
+    // add this only when I want to use less vehicles
+//    pInstance->nbVehicles_ = 150;
+
+    while (file.good()) {
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
+        if (strEndWith(title, "VEHICLES_INFO")) {
+            for (int v = 0; v < pInstance->nbVehicles_; ++v) {
+                file >> vehicleID;
+                file >> capacity;
+                file >> departTime;
+                file >> endTime;
+                file >> departID;
+                file >> sinkID;
+                file >> zoneID;
+                file >> routeSize;
+                file >> lDual;
+                file >> iDual;
+                if (departTime < pInstance->simulationStartTime_)
+                    departTime = pInstance->simulationStartTime_;
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID));
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID));
+                pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
+                                                                            endTime, pInstance->instGraph_->sourceNodes_.back(),
+                                                                            myTools::createSourceID(vehicleID, SINK),zoneID));
+                pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
+                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
+                    pInstance->vehicles_.back()->dual_ = lDual;
+                    pInstance->vehicles_.back()->InitialDual_ = lDual;
+                }
+                else {
+                    pInstance->vehicles_.back()->dual_ = iDual;
+                    pInstance->vehicles_.back()->InitialDual_ = iDual;
+                }
+                routeNodes[v].resize(routeSize);
+            }
+        }
+    }
+}
+
 //************************************************************************
 // Read the onboard file
 //************************************************************************
-void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance) {
+void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -146,7 +204,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
 
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
                 // attributes for reading trip requests file
-                int nbPassengers = -1, vehicleID = -1, zoneID = -1;
+                int nbPassengers = -1, vehicleID = -1, zoneID = -1, position = -1;
  //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
                 float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1, deltaTime = -1;
 
@@ -158,6 +216,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> pickup_depart;
                 file >> vehicleID;
                 file >> zoneID;
+                file >> position;
 
                 // the starting time of the instance is 16pm
  //               deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
@@ -183,6 +242,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->instGraph_->pickNodes_.back()->nodeStatus_ = DONE;
                 pInstance->instGraph_->pickNodes_.back()->reachTime_ = pickTime;
                 pInstance->instGraph_->pickNodes_.back()->departTime_ = pickup_depart;
+                routeNodes[vehicleID][position] = pInstance->instGraph_->dropNodes_.back();
             }
         }
     }
@@ -237,6 +297,72 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
         //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
                 pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
+            }
+        }
+    }
+//    pInstance->instGraph_->addRequestsToGraph(pInstance);
+}
+
+void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes) {
+    // open the file
+    std::fstream file;
+    std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
+    file.open(strTripsFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strTripsFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+
+    while (file.good()) {
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
+        if (strEndWith(title, "REQUESTS_INFO")) {
+            for (int r = 0; r < nbRequest; ++r) {
+                // attributes for reading trip requests file
+                int nbPassengers = -1;
+//                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
+                int pickUpID = -1, dropOffID = -1, zoneID, vehicleID = -1, pickPosition = -1, dropPosition = -1;
+                float earlyPick = -1, deltaTime = -1, lDual = -1, iDual = -1;
+
+                file >> nbPassengers;
+                file >> pickUpID;
+                file >> dropOffID;
+                file >> earlyPick;
+                file >> zoneID;
+                file >> lDual;
+                file >> iDual;
+                file >> vehicleID;
+                file >> pickPosition;
+                file >> dropPosition;
+
+                // the starting time of the instance is 16pm
+                //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                deltaTime = static_cast<float>(ServiceTime);
+                pInstance->requests_.emplace_back(std::make_shared<Request>( pickUpID, dropOffID, earlyPick,
+                                                                             nbPassengers, deltaTime, zoneID));
+                pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
+                std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+                std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
+                PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
+                pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
+                //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
+                pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
+                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
+                    pInstance->requests_.back()->dual_ = lDual;
+                    pInstance->requests_.back()->InitialDual_ = lDual;
+                }
+                else{
+                    pInstance->requests_.back()->dual_ = iDual;
+                    pInstance->requests_.back()->InitialDual_ = iDual;
+                }
+                routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
+                routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
             }
         }
     }
@@ -442,7 +568,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 }
 
 // function that open all input files and create the main instance
-PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
+/*PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
     ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 //    mainInst->nbOnboards_ = 0;
@@ -467,24 +593,38 @@ PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
     parameterStream << mainInst->saveSolutionRoutes();
     parameterStream.close();
 
-    /*std::ofstream myFile;
+    *//*std::ofstream myFile;
     myFile.open (inputPaths.getOutputParamFile());
     myFile << mainInst->parameters_->toString();
-    myFile.close();*/
+    myFile.close();*//*
 
     return mainInst;
-}
+}*/
 
 // function that open all input files and update main instance data
 void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch) {
+    vector2D<PNode> routeNodes;
+    routeNodes.resize(pInstance->nbVehicles_);
     if (pInstance->nbOnboards_ > 0){
-        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), pInstance);
-        ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance);
+        ReadWrite::readVehiclesDataF(inputPaths.getInputVehicleFile(), pInstance, routeNodes);
+        ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance, routeNodes);
     }
     else
         ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
-    if (pInstance->nbWaiting_ > 0)
-        ReadWrite::readTripRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_);
+    if (pInstance->nbWaiting_ > 0) {
+        ReadWrite::readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
+        for (int v = 0; v < pInstance->nbVehicles_; ++v) {
+            if (routeNodes[v].size()>1){
+                PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);
+                newRoute->addSource(pInstance->vehicles_[v]->departNode_, pInstance->vehicles_[v]->departTime_,
+                                                                  pInstance->vehicles_[v]->numPassengers_);
+                for (int i = 1; i < routeNodes[v].size(); ++i) {
+                    newRoute->addNode(routeNodes[v][i]);
+                }
+                pInstance->vehicles_[v]->setCurrentRoute(newRoute);
+            }
+        }
+    }
     ReadWrite::readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
     pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
     pInstance->nbNewRequests_ += pInstance->nbWaiting_;

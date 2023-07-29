@@ -126,13 +126,14 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         setObjValue();
     }
     else if (pInst->parameters_->initialStart_ == PRE_SOLUTION){
-        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i)
-            zSolution_.push_back(pInst->requests_[i]);
-        if (objValue_ == 0){
-            routeSolution_.clear();
+        if (routeSolution_.empty()){
             for (auto &vehicleObj: pInst->vehicles_) {
-                routeSolution_.push_back(vehicleObj->emptyRoute_);
+                routeSolution_.push_back(vehicleObj->currentRoute_);
             }
+        }
+        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i){
+            if (pInst->requests_[i]->solVehicleID_ == 999999)
+                zSolution_.push_back(pInst->requests_[i]);
         }
         setObjValue();
     }
@@ -179,7 +180,7 @@ void ISUDAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
             requestObj->dual_ = requestObj->penalty_;
     }
     for (auto &requestObj: zSolution_)
-        requestObj->CPDual_ = requestObj->penalty_;
+        requestObj->InitialDual_ = requestObj->penalty_;
 
  //   std::cout << "# -----SOLVING THE REDUCED PROBLEM AT THE START OF EPOCH-------" << std::endl;
     RPTime_->start();
@@ -513,9 +514,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         if ((pInst->parameters_->initialStart_ == PRE_SOLUTION) && (pInst->parameters_->initialDual_ == PENALTIES) &&
             (isudIter_ == 1)) {
             for (auto &requestObj: pInst->requests_)
-                requestObj->dual_ = requestObj->CPDual_;
+                requestObj->dual_ = requestObj->InitialDual_;
             for (auto &vehicleObj: pInst->vehicles_)
-                vehicleObj->dual_ = vehicleObj->CPDual_;
+                vehicleObj->dual_ = vehicleObj->InitialDual_;
         }
 
         RPBuildTime_->start();
@@ -558,7 +559,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
 //                if (epoch == 4)
                 (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int) MIPReducedPro_->compRoutes_.size()-nbVehicles_,
                                                               isudTime_->dSinceStart().count(), subProTime,
-                                                              pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),MIPReducedPro_->auxObjValue_);
+                                                              MIPReducedPro_->auxObjValue_);
                 isudIter_++;
                 if (previousObj > objValue_) {
                     previousObj = objValue_;
@@ -611,8 +612,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
  //                   std::cout << "CP improve: " << objValue_ << std::endl;
 //                    if (epoch == 4)
                     (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
-                                                                  isudTime_->dSinceStart().count(), subProTime,
-                                                                  pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),0.0);
+                                                                  isudTime_->dSinceStart().count(), subProTime, 0.0);
 
                     if (CompPro_->status_ == FRACTIONAL) {
                         CPFails_++;
@@ -633,7 +633,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
                                 (*pLogIsudResultsStream_)
                                         << save_ISUDResults(epoch, "ZOOM", (int) MIPReducedPro_->compRoutes_.size()-nbVehicles_,
                                                             isudTime_->dSinceStart().count(), subProTime,
-                                                            pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(), MIPReducedPro_->auxObjValue_);
+                                                            MIPReducedPro_->auxObjValue_);
                                 isudIter_++;
                                 isCPImproved = true;
                                 updateReducedCosts(pInst);
@@ -739,8 +739,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
  //       if (epoch == 4)
         (*pLogIsudResultsStream_)
-                << save_ISUDResults(epoch, "ISUD", nbRoutes_, isudTime_->dSinceStart().count(), subProTime,
-                                    pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(), 0.0);
+                << save_ISUDResults(epoch, "ISUD", nbRoutes_, isudTime_->dSinceStart().count(), subProTime, 0.0);
         isudTime_->stop();
     }
     catch (const std::exception& e){
@@ -758,9 +757,9 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
     if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
         for(auto & requestObj: pInst->requests_)
-            requestObj->dual_ = requestObj->CPDual_;
+            requestObj->dual_ = requestObj->InitialDual_;
         for(auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = vehicleObj->CPDual_;
+            vehicleObj->dual_ = vehicleObj->InitialDual_;
     }
     RPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_, nbVehicles_);
@@ -792,7 +791,6 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
 //        if (epoch == 4)
         (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RMP", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
                                                       isudTime_->dSinceStart().count(), subProTime,
-                                                      pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
                                                       MasterPro_->auxObjValue_);
         // save initial duals
         isudIter_++;
@@ -814,10 +812,7 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
                                                   isudTime_->dSinceStart().count(), subProTime,
                                                   pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
                                                   MasterPro_->auxObjValue_);*/
-    /*if (epoch == 3) {
-        MasterPro_->solveModelLPInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                    availableTime_, objValue_);
-    }*/
+
     for (auto &routeObj: MasterPro_->compRoutes_)
         routeObj->mpAdded_ = false;
 
@@ -860,9 +855,9 @@ void ISUDAlgorithm::solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &input
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
     if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
         for(auto & requestObj: pInst->requests_)
-            requestObj->dual_ = requestObj->CPDual_;
+            requestObj->dual_ = requestObj->InitialDual_;
         for(auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = vehicleObj->CPDual_;
+            vehicleObj->dual_ = vehicleObj->InitialDual_;
     }
     RPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_, nbVehicles_);
@@ -897,7 +892,6 @@ void ISUDAlgorithm::solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &input
 //        if (epoch == 4)
         (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RMP", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
                                                       isudTime_->dSinceStart().count(), subProTime,
-                                                      pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
                                                       MasterPro_->auxObjValue_);
         // save initial duals
         isudIter_++;
@@ -990,7 +984,7 @@ void ISUDAlgorithm::solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &input
                         (*pLogIsudResultsStream_)
                                 << save_ISUDResults(epoch, "ZOOM", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
                                                     isudTime_->dSinceStart().count(), subProTime,
-                                                    pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(), MasterPro_->auxObjValue_);
+                                                    MasterPro_->auxObjValue_);
                         isudIter_++;
                         isCPImproved = true;
                         updateReducedCosts(pInst);
@@ -1067,8 +1061,7 @@ void ISUDAlgorithm::solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &input
                 }
  //               if (epoch == 4)
                 (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
-                                                              isudTime_->dSinceStart().count(), subProTime,
-                                                              pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),0.0);
+                                                              isudTime_->dSinceStart().count(), subProTime, 0.0);
                 previousObj = objValue_;
                 isudIter_++;
                 isCPImproved = true;
@@ -1108,9 +1101,9 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
     if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
         for(auto & requestObj: pInst->requests_)
-            requestObj->dual_ = requestObj->CPDual_;
+            requestObj->dual_ = requestObj->InitialDual_;
         for(auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = vehicleObj->CPDual_;
+            vehicleObj->dual_ = vehicleObj->InitialDual_;
     }
     RPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_, nbVehicles_);
@@ -1138,9 +1131,7 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
             LPIter_++;
   //          if (epoch == 4)
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                          isudTime_->dSinceStart().count(), subProTime,
-                                                          pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
-                                                          0.0);
+                                                          isudTime_->dSinceStart().count(), subProTime,0.0);
             isudIter_++;
             if (pInst->parameters_->solutionMode_ != ANYTIME) {
                 (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LMP");
@@ -1166,9 +1157,7 @@ void ISUDAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPat
         MPIter_++;
 //        if (epoch == 4)
         (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                      isudTime_->dSinceStart().count(), subProTime,
-                                                      pInst->calculateL1NormReq(), pInst->calculateL1NormVeh(),
-                                                      0.0);
+                                                      isudTime_->dSinceStart().count(), subProTime,0.0);
         isudIter_++;
 
         for (auto &routeObj: MasterPro_->compRoutes_)
@@ -1315,12 +1304,15 @@ void ISUDAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
 
     if (!MasterPro_->routesToAdd_.empty()){
         for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->mpAdded_)
+            if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->mpAdded_ &&
+                    pInst->vehicles_[v]->emptyRoute_->routeSize_ != pInst->vehicles_[v]->currentRoute_->routeSize_) {
                 MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+            }
         }
         RPBuildTime_->start();
         MasterPro_->updateModel(pInst);
         RPBuildTime_->stop();
+//        MasterPro_->solveModelLP(pInst, inputPaths);
 //        MasterPro_->solveModelLP(pInst, inputPaths);
         MasterPro_->solveModelIntAux(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, objValue_);
@@ -1509,13 +1501,12 @@ void ISUDAlgorithm::save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int
 
 
 std::string ISUDAlgorithm::save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime,
-                                            double subProTime, double dualNormReq, double dualNormVeh, double auxObj) const {
+                                            double subProTime, double auxObj) const {
     std::stringstream repStr;
 
     repStr << epoch << ",";
     repStr << isudIter_ << ",";
     repStr << SPIter_ << ",";
-//    repStr << dualNormVeh << ",";
     repStr << nbRoutes_ << ",";
     repStr << nbColumns << ",";
     repStr << model << ",";

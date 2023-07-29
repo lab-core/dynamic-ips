@@ -159,9 +159,9 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
             requestObj->dual_ = requestDuals_[rowIndex];
-            /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
-            requestObj->CPDual_ = requestDuals_[rowIndex];
+            /*if (requestObj->InitialDual_ > 0 && requestObj->dual_!= requestObj->InitialDual_)
+                std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->InitialDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+            requestObj->InitialDual_ = requestDuals_[rowIndex];
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
@@ -169,11 +169,11 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
                 int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
                 vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
                 vehicleObj->dual_ = vehicleDuals_[index];
-                vehicleObj->CPDual_ = vehicleDuals_[index];
+                vehicleObj->InitialDual_ = vehicleDuals_[index];
             }
             else {
                 vehicleObj->dual_ = 0;
-                vehicleObj->CPDual_ = 0;
+                vehicleObj->InitialDual_ = 0;
             }
         }
         convR.end();
@@ -308,7 +308,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
             int rowIndex = requestObj->taskIndex_;
             requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
             requestObj->dual_ = requestDuals_[rowIndex];
-            requestObj->CPDual_ = requestDuals_[rowIndex];
+            requestObj->InitialDual_ = requestDuals_[rowIndex];
         }
 
         for (auto &vehicleObj: pInst->vehicles_) {
@@ -316,11 +316,11 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                 int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
                 vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
                 vehicleObj->dual_ = vehicleDuals_[index];
-                vehicleObj->CPDual_ = vehicleDuals_[index];
+                vehicleObj->InitialDual_ = vehicleDuals_[index];
             }
             else {
                 vehicleObj->dual_ = 0;
-                vehicleObj->CPDual_ = 0;
+                vehicleObj->InitialDual_ = 0;
             }
         }
         convR.end();
@@ -527,9 +527,9 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
-                    /*if (requestObj->CPDual_ > 0 && requestObj->dual_!= requestObj->CPDual_)
-                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->CPDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
-                    requestObj->CPDual_ = requestDuals_[rowIndex];
+                    /*if (requestObj->InitialDual_ > 0 && requestObj->dual_!= requestObj->InitialDual_)
+                        std::cout << "request " << requestObj->getRequestId() << " dual == " << requestObj->InitialDual_ << " --> " <<  requestObj->dual_ << std::endl;*/
+  //                  requestObj->InitialDual_ = requestDuals_[rowIndex];
                 }
 
                 //               std::cout << " ----------------" << std::endl;
@@ -539,11 +539,11 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
                         int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
                         vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
                         vehicleObj->dual_ = vehicleDuals_[index];
-                        vehicleObj->CPDual_ = vehicleDuals_[index];
+ //                       vehicleObj->InitialDual_ = vehicleDuals_[index];
                     }
                     else {
                         vehicleObj->dual_ = 0;
-                        vehicleObj->CPDual_ = 0;
+ //                       vehicleObj->InitialDual_ = 0;
                     }
                 }
                 // reset changes

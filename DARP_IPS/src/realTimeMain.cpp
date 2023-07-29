@@ -11,7 +11,7 @@
 
 
 using namespace std::chrono;
-float saveTime = 5400;
+float saveTime = 3600;
 bool middleSave = false;
 std::string instNum = "1";
 int numVehicles = 2000;

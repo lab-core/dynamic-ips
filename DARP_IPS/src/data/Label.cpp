@@ -140,9 +140,15 @@ bool Label::operator () (const Label &rhs) const {
 void Label::extend(Node *outNode) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    reachedTime_ = passedTime_+travelTime;
+    if (outNode->requestTime_ > passedTime_){
+        reachedTime_ = outNode->requestTime_ + travelTime;
+    }
+    else {
+        reachedTime_ = passedTime_ + travelTime;
+    }
     for (auto &node: openNode_) {
-        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ - passedTime_);
+        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
+                                                                        passedTime_);
     }
     if (outNode->type_ == DROPOFF) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;

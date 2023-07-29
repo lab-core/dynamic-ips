@@ -24,12 +24,14 @@ public:
 
     // Read the vehicle file
     static void readVehiclesData(const std::string& strTripsFile, PInstance &pInstance);
+    static void readVehiclesDataF(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes);
 
     // Read the onboard file
-    static void readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance);
+    static void readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes);
 
     // Read the trip requests file
     static void readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest);
+    static void readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes);
 
     // Read duration data file
     static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
@@ -38,7 +40,7 @@ public:
     static void readParameters(const std::string& strParamFile, PInstance &pInstance);
 
     // function that open all input files and create the main instance
-    static PInstance createMainInstance(InputPaths &inputPaths);
+//    static PInstance createMainInstance(InputPaths &inputPaths);
 
     // function that open all input files and update main instance data
     static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch);

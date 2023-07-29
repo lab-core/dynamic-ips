@@ -175,7 +175,7 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                     int rowIndex = requestObj->taskIndex_;
                     requestDuals_[rowIndex] = Cplex_.getDual(requestConst_[rowIndex]);
                     requestObj->dual_ = requestDuals_[rowIndex];
-                    requestObj->CPDual_ = requestDuals_[rowIndex];
+                    requestObj->InitialDual_ = requestDuals_[rowIndex];
                 }
 
             }
@@ -186,11 +186,11 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                     int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
                     vehicleDuals_[index] = Cplex_.getDual(vehicleConst_[index]);
                     vehicleObj->dual_ = vehicleDuals_[index];
-                    vehicleObj->CPDual_ = vehicleDuals_[index];
+                    vehicleObj->InitialDual_ = vehicleDuals_[index];
                 }
                 else {
                     vehicleObj->dual_ = 0;
-                    vehicleObj->CPDual_ = 0;
+                    vehicleObj->InitialDual_ = 0;
                 }
             }
 

@@ -17,7 +17,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
                                                    endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)){
     numPassengers_ = 0;
     dual_=0;
-    CPDual_ = 0;
+    InitialDual_ = 0;
     bestReducedCost_ = INFINITY;
     score_ = INFINITY;
     idleTime_ = 0;
@@ -26,13 +26,14 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     vehicleIndex_ = -1;
     departNodeActual_ = departNode_;
     departTimeActual_ = departTime_;
+    vehicleIndex_ = -1;
 }
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  std::string sinkID, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
                  endTime_(endTime), departNode_(std::move(departNode)), sinkID_(std::move(sinkID)) , zoneID_(zoneID){
     numPassengers_ = 0;
     dual_=0;
-    CPDual_ = 0;
+    InitialDual_ = 0;
     bestReducedCost_ = INFINITY;
     score_ = INFINITY;
     idleTime_ = 0;

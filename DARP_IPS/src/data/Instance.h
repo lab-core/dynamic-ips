@@ -60,7 +60,7 @@ public:
     // functions to build the set of requests to be served including:
     // update the set of available requests, removed completed requests and update onboards
     void buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
-    void buildStaticData(const PInstance &mainInst);
+    void buildStaticData(const PInstance &mainInst, int lastRecRequests);
     void buildDataZone(const PInstance &mainInst, int zoneID);
 
     // function to add requests from previous epochs to the current partial instance
@@ -104,10 +104,6 @@ public:
 
     // this function determined the number of unselected vehicles
     int getNbUnselectedVehicles();
-
-    // Function to calculate the L1 norm of duals
-    double calculateL1NormReq();
-    double calculateL1NormVeh();
 
     std::string saveReqDuals(int epoch, int isudIter, string model);
     std::string saveVehDuals(int epoch, int isudIter, string model);

@@ -38,7 +38,7 @@ public:
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     double dual_;
-    double CPDual_;
+    double InitialDual_;
     int allocVehicleID_;                     // the vehicle that serve the request
     int initialVehicleID_;
     int solVehicleID_;
