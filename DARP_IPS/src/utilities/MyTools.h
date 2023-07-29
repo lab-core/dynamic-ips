@@ -132,7 +132,7 @@ static const char *NodeTypeStr[] = {
 };
 
 #define MAXReachTime 9999999
-const int MAX_SIZE = 2000;
+const int MAX_SIZE = 2500;
 
 static const int DECIMALS = 3;          // precision when printing floats
 static const float TimePerMile = 10;   // travel time per mile distance
