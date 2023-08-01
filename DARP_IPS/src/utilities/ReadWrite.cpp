@@ -165,14 +165,14 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             myTools::createSourceID(vehicleID, SINK),zoneID));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
-                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
+/*                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
                     pInstance->vehicles_.back()->dual_ = lDual;
                     pInstance->vehicles_.back()->InitialDual_ = lDual;
                 }
-                else {
+                else {*/
                     pInstance->vehicles_.back()->dual_ = iDual;
                     pInstance->vehicles_.back()->InitialDual_ = iDual;
-                }
+//                }
                 routeNodes[v].resize(routeSize);
             }
         }
@@ -353,14 +353,14 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                 pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
                 //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
                 pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
-                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
+                /*if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
                     pInstance->requests_.back()->dual_ = lDual;
                     pInstance->requests_.back()->InitialDual_ = lDual;
                 }
-                else{
+                else{*/
                     pInstance->requests_.back()->dual_ = iDual;
                     pInstance->requests_.back()->InitialDual_ = iDual;
-                }
+ //               }
                 routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
                 routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
             }

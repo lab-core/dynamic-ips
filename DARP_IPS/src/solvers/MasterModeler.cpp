@@ -78,7 +78,7 @@ void MasterModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign 
             numVar = objFunction_(request->penalty_) + requestConst_[request->taskIndex_](1);
         else
             numVar = objFunction_(-request->penalty_) + requestConst_[request->taskIndex_](-1);
-        zVar.add(IloNumVar(numVar,0,1,ILOINT));
+        zVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
         zVar[zVar.getSize()-1].setName(request->name_);
     }
     catch (IloException& e) {
@@ -137,7 +137,7 @@ void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, V
         numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
                  + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](-1);
     }
-    routeVar.add(IloNumVar(numVar,0,1,ILOINT));
+    routeVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
  //   numVar.setName(newRoute->name_);
     routeVar[routeVar.getSize()-1].setName(newRoute->name_);
 }

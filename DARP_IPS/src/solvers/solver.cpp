@@ -291,7 +291,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
     }
 
-//    (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);
+
     isudObj_->setObjValue();
 }
 
