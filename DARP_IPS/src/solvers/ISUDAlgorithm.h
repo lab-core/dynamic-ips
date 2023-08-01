@@ -112,9 +112,12 @@ public:
     void updateReducedCosts(PInstance &pInst);
 
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+
+    void solveMP_CGCP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
 
 
     // These functions are used to solve master problems (CG, MP and RP)

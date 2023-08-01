@@ -518,6 +518,8 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             for (auto &vehicleObj: pInst->vehicles_)
                 vehicleObj->dual_ = vehicleObj->InitialDual_;
         }
+        MIPReducedPro_.reset();
+        MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
 
         RPBuildTime_->start();
         MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
@@ -540,6 +542,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             while (true) {
                 CompPro_->fractionalZ_.clear();
                 updateReducedCosts(pInst);
+                updateIncDegreesBit(pInst);
                 availableTime_ = tiLim - isudTime_->dSinceStart().count();
                 if (minReducedCost_ >= 0 || availableTime_ < 0) {
                     break;
@@ -747,6 +750,205 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         std::cout << e.what() << std::endl;
     }
 }
+void ISUDAlgorithm::solveISUD2(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
+    try {
+        isudTime_->start();
+        float tiLim = availableTime_;
+        if (pInst->parameters_->initialStart_ == GREEDY_START) {
+            routeSolution_.clear();
+            zSolution_.clear();
+            // it has been solved before in solver
+            for (auto &vehicleObj: pInst->vehicles_) {
+                routeSolution_.push_back(vehicleObj->currentRoute_);
+            }
+            setObjValue();
+            GreedyObjValue_ = objValue_;
+            std::cout << "Greedy Warm start: " << GreedyObjValue_ << std::endl;
+        }
+        setObjValue();
+        double previousObj = objValue_;
+        bool restartAlgorithm = true;
+        bool isCPImproved;
+        int CPCounter;
+
+        // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
+        if ((pInst->parameters_->initialStart_ == PRE_SOLUTION) && (pInst->parameters_->initialDual_ == PENALTIES) &&
+            (isudIter_ == 1)) {
+            for (auto &requestObj: pInst->requests_)
+                requestObj->dual_ = requestObj->InitialDual_;
+            for (auto &vehicleObj: pInst->vehicles_)
+                vehicleObj->dual_ = vehicleObj->InitialDual_;
+        }
+
+        RPBuildTime_->start();
+        MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
+        RPBuildTime_->stop();
+
+        if (pInst->parameters_->solutionMode_ != ANYTIME) {
+            (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+            (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+        }
+        while (restartAlgorithm) {
+
+            isCPImproved = true;
+            restartAlgorithm = false;
+            /************************************************************************************************/
+            //                                     REDUCED PROBLEM
+            /************************************************************************************************/
+            RPTime_->start();
+
+            // solve RP with MIP solver
+            while (true) {
+                CompPro_->fractionalZ_.clear();
+                updateReducedCosts(pInst);
+                availableTime_ = tiLim - isudTime_->dSinceStart().count();
+                if (minReducedCost_ >= 0 || availableTime_ < 0) {
+                    break;
+                }
+                setObjValue();
+                solveRP_LPINT(pInst, 0, inputPaths);
+                for (auto & routeObj : routeSolution_) {
+                    pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+                }
+                if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LRP");
+                    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LRP");
+                }
+
+                RPIter_++;
+                //               std::cout << "RP improve: " << objValue_ << std::endl;
+//                if (epoch == 4)
+                (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int) MIPReducedPro_->compRoutes_.size()-nbVehicles_,
+                                                              isudTime_->dSinceStart().count(), subProTime,
+                                                              MIPReducedPro_->auxObjValue_);
+                isudIter_++;
+                if (previousObj > objValue_) {
+                    previousObj = objValue_;
+                } else
+                    break;
+            }
+            RPTime_->stop();
+
+            // update reduced costs
+            /************************************************************************************************/
+            //                                     COMPLEMENTARY PROBLEM
+            /************************************************************************************************/
+            CPCounter = 0;
+            updateReducedCosts(pInst);
+            // if objective improves, the CP is build
+            CPTime_->start();
+            availableTime_ = tiLim - isudTime_->dSinceStart().count();
+
+            if (minReducedCost_ <= 0 && availableTime_ > 0) {
+                CPBuildTime_->start();
+                updateIncDegreesBit(pInst);
+                CompPro_->routesToAdd_.clear();
+                for (auto &vehicleObj: pInst->vehicles_){
+                    if (vehicleObj->vehicleIndex_ > -1){
+                        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                            CompPro_->routesToAdd_.push_back(routeObj);
+                        }
+                    }
+                }
+ //               updateRoutesToAdd(false, pInst);
+
+                CompPro_->buildModelCP2(pInst, zSolution_, routeSolution_, nbVehicles_, objValue_);
+                CPBuildTime_->stop();
+            }
+            else {
+                restartAlgorithm = false;
+                isCPImproved = false;
+            }
+
+            while (isCPImproved) {
+                isCPImproved = false;
+                previousObj = objValue_;
+
+                availableTime_ = tiLim - isudTime_->dSinceStart().count();
+                if (availableTime_ > 0) {
+                    CompPro_->solveCP2Model(pInst, zSolution_, routeSolution_, inputPaths);
+                    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
+                        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+                    }
+                    CPIter_++;
+                    CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
+                    setObjValue();
+                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
+                                                                  isudTime_->dSinceStart().count(), subProTime, 0.0);
+
+                    if (CompPro_->status_ == FRACTIONAL) {
+                        CPFails_++;
+                        std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
+                        restartAlgorithm = false;
+                        break;
+                    }
+                    else if (CompPro_->status_ == POSITIVE_VALUE) {
+                        isCPImproved = false;
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                    else if (CompPro_->status_ == INFEASIBLE) {
+                        isCPImproved = false;
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                    else {
+                        for (auto & routeObj : routeSolution_) {
+                            pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+                        }
+                        CPSuccess_++;
+                        previousObj = objValue_;
+                        isudIter_++;
+                        isCPImproved = true;
+                        CPCounter++;
+                        updateIncDegreesBit(pInst);
+                        CompPro_->objFunction_.setLinearCoef(CompPro_->auxVar_ , -objValue_);
+                        for (int r = (int) CompPro_->routeIncVar_.getSize() - 1; r >= 0; --r) {
+                            CompPro_->normalConst_[0].setLinearCoef(CompPro_->routeIncVar_[r], CompPro_->IncRoute_[r]->incompatibilityDegree_);
+                        }
+                        availableTime_ = tiLim - isudTime_->dSinceStart().count();
+                        if (availableTime_ <= 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                } else
+                    restartAlgorithm = false;
+            }
+            availableTime_ = tiLim - isudTime_->dSinceStart().count();
+            if ((minReducedCost_ > 0) || (availableTime_ <= 0))
+                restartAlgorithm = false;
+            for (auto &routeObj: CompPro_->IncRoute_)
+                routeObj->cpAdded_ = false;
+            CompPro_.reset();
+            CompPro_ = std::make_shared<ComplementPro>();
+
+            CPTime_->stop();
+        }
+        /*for (auto & routeObj: MIPReducedPro_->compRoutes_)
+            routeObj->mpAdded_ = false;*/
+        MIPReducedPro_.reset();
+        MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
+        /*std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+        std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
+                  << std::endl;
+        for (auto &requestObj: zSolution_)
+            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
+        //       if (epoch == 4)
+        (*pLogIsudResultsStream_)
+                << save_ISUDResults(epoch, "ISUD", nbRoutes_, isudTime_->dSinceStart().count(), subProTime, 0.0);
+        isudTime_->stop();
+    }
+    catch (const std::exception& e){
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e.what() << std::endl;
+    }
+}
 
 void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
     isudTime_->start();
@@ -802,8 +1004,8 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
         if (previousObj > objValue_) {
             previousObj = objValue_;
         }
-        else
-//        else if (proSize == MasterPro_->compRoutes_.size())
+//        else
+        else if (proSize == MasterPro_->compRoutes_.size())
             break;
     }
 
@@ -1075,7 +1277,292 @@ void ISUDAlgorithm::solveMP_MIPCP(PInstance &pInst, int epoch, InputPaths &input
         } else
             restartAlgorithm = false;
     }
+    MasterPro_->routesToAdd_.clear();
+    for (auto & routeObj : routeSolution_){
+        if (!routeObj->mpAdded_)
+            MasterPro_->routesToAdd_.push_back(routeObj);
+    }
+    MasterPro_->updateModel(pInst);
+    MasterPro_->solveModelLP(pInst, inputPaths);
 
+    CompPro_.reset();
+    CompPro_ = std::make_shared<ComplementPro>();
+
+    CPTime_->stop();
+    /*std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+    std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
+              << std::endl;
+    for (auto &requestObj: zSolution_)
+        std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
+
+    MasterPro_.reset();
+    MasterPro_ = std::make_shared<MasterPro>();
+
+
+    isudTime_->stop();
+}
+void ISUDAlgorithm::solveMP_CGCP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
+    isudTime_->start();
+    RPTime_->start();
+    int tilim = availableTime_;
+    if (pInst->parameters_->initialStart_ == GREEDY_START) {
+        routeSolution_.clear();
+        zSolution_.clear();
+        // it has been solved before in solver
+        for (auto &vehicleObj: pInst->vehicles_) {
+            routeSolution_.push_back(vehicleObj->currentRoute_);
+        }
+        setObjValue();
+        GreedyObjValue_ = objValue_;
+        std::cout << "Greedy Warm start: " << GreedyObjValue_ << std::endl;
+    }
+    setObjValue();
+    double previousObj = objValue_;
+    bool restartAlgorithm = true;
+    bool isCPImproved;
+    int CPCounter;
+
+    // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
+    if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (isudIter_ == 1)){
+        for(auto & requestObj: pInst->requests_)
+            requestObj->dual_ = requestObj->InitialDual_;
+        for(auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = vehicleObj->InitialDual_;
+    }
+    RPBuildTime_->start();
+    MasterPro_->buildModelMP(pInst, zSolution_, routeSolution_, nbVehicles_);
+    RPBuildTime_->stop();
+
+    // save initial duals
+    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "initial");
+    }
+
+    /************************************************************************************************/
+    //                                     MASTER PROBLEM
+    /************************************************************************************************/
+
+    // solve RP with MIP solver
+    if (availableTime_ > 1) {
+        double lpObj = previousObj;
+        // solve RP with MIP solver
+        while (true) {
+            updateReducedCosts(pInst);
+            if (minReducedCost_ >= 0) {
+                break;
+            }
+            solveMP_LP(pInst, inputPaths);
+            //           std::cout << "LMP improve: " << objValue_ << std::endl;
+            LPIter_++;
+            //          if (epoch == 4)
+            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
+                                                          isudTime_->dSinceStart().count(), subProTime,0.0);
+            isudIter_++;
+            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "LMP");
+                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "LMP");
+            }
+            if (lpObj > objValue_) {
+                lpObj = objValue_;
+            } else
+                break;
+        }
+
+
+        availableTime_ = tilim - isudTime_->dSinceStart().count();
+        if (availableTime_ < 1)
+            availableTime_ = 2;
+        // solve the model in Integer mode
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
+        RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        setObjValue();
+
+        //       std::cout << "MP improve: " << objValue_ << std::endl;
+
+        MPIter_++;
+//        if (epoch == 4)
+        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
+                                                      isudTime_->dSinceStart().count(), subProTime,0.0);
+        isudIter_++;
+        (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
+
+
+        /*std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+        std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
+                  << std::endl;
+        for (auto &requestObj: zSolution_)
+            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
+    }
+    RPTime_->stop();
+
+    // update reduced costs
+    /************************************************************************************************/
+    //                                     COMPLEMENTARY PROBLEM
+    /************************************************************************************************/
+    CPCounter = 0;
+    updateReducedCosts(pInst);
+    // if objective improves, the CP is build
+    CPTime_->start();
+    availableTime_ = tilim - isudTime_->dSinceStart().count();
+    isCPImproved = true;
+    if (minReducedCost_ <= 0 && availableTime_ > 0) {
+        CPBuildTime_->start();
+        CompPro_->routesToAdd_.clear();
+        CompPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
+        CPBuildTime_->stop();
+    }
+    else {
+        restartAlgorithm = false;
+        isCPImproved = false;
+    }
+
+    while (isCPImproved) {
+        isCPImproved = false;
+        previousObj = objValue_;
+        updateIncDegreesBit(pInst);
+        CompPro_->routesToAdd_.clear();
+        updateRoutesToAdd(false, pInst);
+        availableTime_ = tilim - isudTime_->dSinceStart().count();
+        if (!CompPro_->routesToAdd_.empty() && availableTime_ > 0) {
+            CPBuildTime_->start();
+            CompPro_->updateModel(pInst, zSolution_, routeSolution_);
+            CPBuildTime_->stop();
+            CompPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
+            updateReducedCosts(pInst);
+            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "CP");
+                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "CP");
+            }
+            CPIter_++;
+            CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
+            setObjValue();
+            //           std::cout << "CP improve: " << objValue_ << std::endl;
+
+            if (CompPro_->status_ == FRACTIONAL) {
+                CPFails_++;
+                std::cout << "# The Algorithm needs modification to find integer direction" << std::endl;
+                if (pInst->parameters_->useZoom_) {
+                    isudMIPTime_->start();
+
+                    for (auto & routeObj : CompPro_->IncRoute_) {
+                        if (!routeObj->mpAdded_)
+                            MasterPro_->routesToAdd_.push_back(routeObj);
+                    }
+
+                    availableTime_ = tilim - isudTime_->dSinceStart().count();
+                    RPBuildTime_->start();
+                    MasterPro_->updateModel(pInst);
+                    RPBuildTime_->stop();
+                    MasterPro_->solveModelIntAux(pInst, zSolution_, routeSolution_, inputPaths,
+                                                 availableTime_, objValue_);
+                    RPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+                    objValue_ = MasterPro_->objValue_;
+
+                    MPIter_++;
+                    isudMIPTime_->stop();
+                    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "zoom");
+                        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, isudIter_, "zoom");
+                    }
+                    if (previousObj > objValue_) {
+                        previousObj = objValue_;
+                        //                       if (epoch == 4)
+                        (*pLogIsudResultsStream_)
+                                << save_ISUDResults(epoch, "ZOOM", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
+                                                    isudTime_->dSinceStart().count(), subProTime,
+                                                    MasterPro_->auxObjValue_);
+                        isudIter_++;
+                        isCPImproved = true;
+                        updateReducedCosts(pInst);
+                        /*CompPro_->routesToAdd_.clear();
+                        updateIncDegrees(pInst);
+                        updateRoutesToAdd(maxIncDegree_, pInst);*/
+                        //                       std::cout << "ZOOM improve: " << objValue_ << std::endl;
+                        break;
+                    }
+                    else {
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                }
+                else if (pInst->parameters_->useMultiStage_) {
+                    if (cpIncDegree_ < maxIncDegree_)
+                        cpIncDegree_++;
+                    else {
+                        restartAlgorithm = false;
+                        break;
+                    }
+                }
+                else {
+                    //                          if (CPCounter == 0) {
+                    restartAlgorithm = false;
+                    break;
+                    //                         }
+                }
+            }
+            else if (CompPro_->status_ == POSITIVE_VALUE) {
+                if (pInst->parameters_->useMultiStage_)
+                    if (cpIncDegree_ < maxIncDegree_)
+                        cpIncDegree_++;
+                    else {
+                        isCPImproved = false;
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                else {
+                    isCPImproved = false;
+                    if (CPCounter == 0) {
+                        restartAlgorithm = false;
+                        break;
+                    }
+                }
+            }
+            else if (CompPro_->status_ == INFEASIBLE) {
+                if (pInst->parameters_->useMultiStage_)
+                    if (cpIncDegree_ < maxIncDegree_)
+                        cpIncDegree_++;
+                    else {
+                        isCPImproved = false;
+                        if (CPCounter == 0) {
+                            restartAlgorithm = false;
+                            break;
+                        }
+                    }
+                else {
+                    isCPImproved = false;
+                    if (CPCounter == 0) {
+                        restartAlgorithm = false;
+                        break;
+                    }
+                }
+            }
+            else {
+                CPSuccess_++;
+                for (auto & routeObj : routeSolution_) {
+                    pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+                }
+                //               if (epoch == 4)
+                (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
+                                                              isudTime_->dSinceStart().count(), subProTime, 0.0);
+                previousObj = objValue_;
+                isudIter_++;
+                isCPImproved = true;
+                CPCounter++;
+                availableTime_ = tilim - isudTime_->dSinceStart().count();
+                if (availableTime_ <= 0) {
+                    restartAlgorithm = false;
+                    break;
+                }
+            }
+        } else
+            restartAlgorithm = false;
+    }
+    (*pLogIterSolutionStream_) << pInst->saveISUDRoutes(epoch, isudIter_);
     CompPro_.reset();
     CompPro_ = std::make_shared<ComplementPro>();
 
@@ -1382,12 +1869,14 @@ void ISUDAlgorithm::updateRoutesToAdd(bool compatible, PInstance &pInst) {
         std::bitset<MAX_SIZE>  coveredList;
         if (compatible) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-                if ((routeObj->isCompatible_)&&(routeObj->reducedCost_ <= 0) && !routeObj->mpAdded_) {
-                    MIPReducedPro_->routesToAdd_.push_back(routeObj);
-                    numAdded++;
+                if (routeObj->incompatibilityDegree_ < 2) {
+                    if ((routeObj->reducedCost_ <= 0) && !routeObj->mpAdded_) {
+                        MIPReducedPro_->routesToAdd_.push_back(routeObj);
+                        numAdded++;
+                    }
+                    if (numAdded > 60)
+                        break;
                 }
-                if (numAdded > 60)
-                    break;
             }
 
             /*for (auto & routeObj : availableRoutes_[vehicleObj->VehicleID_]) {
