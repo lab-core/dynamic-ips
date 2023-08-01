@@ -22,6 +22,7 @@ public:
     IloNumVarArray zIncVar_;
     IloNumVarArray routeSolVar_;
     IloNumVarArray zSolVar_;
+    IloNumVar auxVar_;
 
     std::vector<PRoute> fractionalRoutes_;
     std::vector<PRequest> fractionalZ_;
@@ -42,16 +43,23 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
+    void addAuxVar(PInstance &pInst, double cost, int nbVehicles);
 
     // this function build the model at each iteration
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     int nbVehicles);
+
+    void buildModelCP2(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    int nbVehicles, double preObj);
 
     // this function update the model and variables
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
     // this function solve the model
     void solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                      InputPaths &inputPaths);
+
+    void solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                       InputPaths &inputPaths);
 
     // this function check the situation of the CP solution to be column disjoint
