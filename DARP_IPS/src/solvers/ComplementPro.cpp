@@ -540,7 +540,9 @@ bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> 
 bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRoute> &routeResults, int nbVehicle) {
     std::vector<std::bitset<MAX_SIZE>> Columns;
     std::bitset<MAX_SIZE> unions;
+    std::bitset<MAX_SIZE> vehicles;
     int counts = 0;
+    int veh = 0;
     for (auto & requestObj : zResults) {
         std::bitset<MAX_SIZE>  zCol;
         unions.set(requestObj->taskIndex_, true);
@@ -549,9 +551,11 @@ bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRout
     for (auto & routeObj : routeResults) {
         unions = unions|routeObj->column_;
         counts += routeObj->column_.count();
+        vehicles.set(routeObj->vehicleID_, true);
+        veh ++;
     }
 
-    if (unions.count() != counts)
+    if (unions.count() != counts || vehicles.count() != veh)
         return false;
     else
         return true;  // Sets are disjoint
