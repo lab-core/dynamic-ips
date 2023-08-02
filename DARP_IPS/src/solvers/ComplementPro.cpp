@@ -213,7 +213,6 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
         logFile << "----------------------- CP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(logFile.rdbuf());
-        env_.out() << Model_ << std::endl;
         solveTime_->start();
         if (!Cplex_.solve()) {
             Cplex_.clearModel();
