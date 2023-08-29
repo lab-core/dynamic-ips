@@ -111,13 +111,17 @@ std::string Instance::toString() {
 }
 
 std::string Instance::solutionToString() {
-    int numServed = 0;              // total requests in routes
-    float totalWaiting = 0;         // total route waiting times
-    float totalTripDelay = 0;       // total trip delay considering the initial onboards
-    int totalNumServed = 0;         // total requests served considering initial onboards
-    double penalty = 0;             // total penalty of un-served
-    float idleTime = 0;             // total vehicle idle times
+    int numServed = 0;                  // total requests in routes
+    float totalWaiting = 0;             // total route waiting times
+    float totalWaitingPartial = 0;      // total waiting times after one hour / after simulation start
+    float totalTripDelay = 0;           // total trip delay considering the initial onboards
+    float totalTripDelayPartial = 0;    // total trip delay after one hour / after simulation start
+    int totalNumServed = 0;             // total requests served considering initial onboards
+    int totalNumServedPartial = 0;      // total requests served after one hour starting from scratch
+    double penalty = 0;                 // total penalty of un-served
+    float idleTime = 0;                 // total vehicle idle times
     int totalCustomers = 0;
+    int totalCustomersPartial = 0;
     int nbIdle = 0;
     int totalStops = 0;
     int totalStopLoad = 0;
@@ -167,6 +171,23 @@ std::string Instance::solutionToString() {
 
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
             totalNumServed ++;
+            if (parameters_->savePartial_) {
+                if (requests_[i]->earlyPick_ >= simulationStartTime_ + 3600) {
+                    totalNumServedPartial++;
+                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
+                    totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
+                    totalCustomersPartial += requests_[i]->nbPassengers_;
+                }
+            }
+            else {
+                if (requests_[i]->earlyPick_ >= simulationStartTime_) {
+                    totalNumServedPartial++;
+                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
+                    totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
+                    totalCustomersPartial += requests_[i]->nbPassengers_;
+                }
+            }
+
             totalCustomers += requests_[i]->nbPassengers_;
         }
         else {
@@ -210,20 +231,26 @@ std::string Instance::solutionToString() {
         repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
         repStr << std::setw(sentenceSize) << "# WAIT TIME PER PASSENGER" << " = " << totalWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
         repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(totalNumServed) << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# WAIT TIME PER REQUEST AFTER 1H" << " = " << totalWaitingPartial/static_cast<float>(totalNumServedPartial) << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# WAIT TIME PER PASSENGER AFTER 1H" << " = " << totalWaitingPartial/static_cast<float>(totalCustomersPartial) << " (s)" << std::endl;
+        repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST AFTER 1H" << " = " << totalTripDelayPartial/static_cast<float>(totalNumServedPartial) << " (s)" << std::endl;
     }
     repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << totalStopLoad/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
     instRepStr_ << totalCustomers << ",";
-    if (totalCustomers > 50000)
-        instRepStr_ << "50000 <" << ",";
-    else if (totalCustomers < 40000)
-        instRepStr_ << "< 40000" << ",";
+    if (totalCustomersPartial > 100000)
+        instRepStr_ << "100000 <" << ",";
+    else if (totalCustomersPartial < 90000)
+        instRepStr_ << "< 90000" << ",";
     else
-        instRepStr_ << "40000 - 50000" << ",";
+        instRepStr_ << "90000 - 100000" << ",";
     instRepStr_ << totalNumServed << "," << totalWaiting/static_cast<float>(numServed) << ",";
     instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
-    instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << ",";
+    instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << "," << totalNumServedPartial << ",";
+    instRepStr_ << totalCustomersPartial << "," << totalWaitingPartial/static_cast<float>(totalNumServedPartial) << ",";
+    instRepStr_ << totalWaitingPartial/static_cast<float>(totalCustomersPartial) << ",";
+    instRepStr_ << totalTripDelayPartial/static_cast<float>(totalNumServedPartial) << ",";
     instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
     instRepStr_ << nbIdle << ",";
     instRepStr_ << totalStopLoad/static_cast<float>(totalStops) << ",";
@@ -234,7 +261,7 @@ std::string Instance::solutionToString() {
 void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
-        instGraph_->addNewNode(mainInst->instGraph_->sinkNodes_[vehicleObj->vehicleID_]);
+        instGraph_->addNewNode(vehicleObj->sinkNode_);
 
         vehicleObj->score_ = INFINITY;
     }
@@ -374,7 +401,7 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
 void Instance::buildDataZone(const PInstance &mainInst, int zoneID) {
     for (auto & vehicleObj : vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
-        instGraph_->addNewNode(mainInst->instGraph_->nodes_[vehicleObj->sinkID_]);
+        instGraph_->addNewNode(vehicleObj->sinkNode_);
     }
     nbNewRequests_ = 0;
 
@@ -610,7 +637,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
         myFile << std::setw(10) << vehicleObj->departTime_ ;
         myFile << std::setw(10) << vehicleObj->endTime_ ;
         myFile << std::setw(setwSize) << vehicleObj->departNode_->locationID_ ;
-        myFile << std::setw(setwSize) << instGraph_->nodes_[vehicleObj->sinkID_]->locationID_;
+        myFile << std::setw(setwSize) << vehicleObj->sinkNode_->locationID_;
         myFile << std::setw(setwSize) << vehicleObj->zoneID_;
         myFile << std::setw(setwSize) << vehicleObj->currentRoute_->routeNodes_.size();
         myFile << std::setw(setwSize) << vehicleObj->InitialDual_;
@@ -696,7 +723,8 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "REQUESTS_INFO" << std::endl;
 
     for (auto & requestObj: requests_) {
-        if (requestObj->earlyPick_ >= simulationStart && requestObj->earlyPick_ <= simulationStart + 2 * parameters_->epochLength_) {
+ //       if (requestObj->earlyPick_ >= simulationStart && requestObj->earlyPick_ <= simulationStart + 2 * parameters_->epochLength_) {
+        if (requestObj->earlyPick_ >= simulationStart) {
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
             myFile << std::setw(10) << requestObj->DropOffID_;
