@@ -58,7 +58,8 @@ public:
     static bool strEndWith(const std::string& sentence, const std::string& word);
 
     // Read the parameters datafile
-    static void readInstNames(const std::string& strInstanceNameFile, std::vector<std::string> &fileNames, int nbInstances);
+    static void readInstNames(const std::string& strInstanceNameFile, std::vector<std::string> &fileNames,
+                              int nbInstances, std::string index);
 };
 
 

@@ -695,7 +695,8 @@ bool ReadWrite::strEndWith(const std::string& sentence, const std::string& word)
     }
 }
 
-void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::string> &fileNames, int nbInstances) {
+void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::string> &fileNames, int nbInstances,
+                              std::string index) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strInstanceNameFile << " >>" << std::endl;
@@ -716,7 +717,7 @@ void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::str
     while (file.good()) {
         for (int i = 0; i < nbInstances; ++i) {
             file >> instName;
-            fileNames.push_back(instName);
+            fileNames.push_back(instName + index);
         }
     }
 }
