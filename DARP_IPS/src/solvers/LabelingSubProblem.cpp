@@ -477,8 +477,8 @@ void LabelingSubProblem::solveDynamic_pushing() {
 
 
         while (!activeNodes_.empty()) {
-            std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
-                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
+            /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
+                return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});*/
 
             // select a node to extend active labels
             Node *currentNode = activeNodes_.back();
@@ -507,12 +507,15 @@ void LabelingSubProblem::solveDynamic_pushing() {
                     /*else
                         labelExtend(selectedLabel, subGraph_->sinkNodes_[0], false);*/
                     // push to pickup points
-                    for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
-                        if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->usePick_, Vehicle_->capacity_)) {
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            labelExtend(selectedLabel, neighbourNode, true);
-                            if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                activeNodes_.push_back(neighbourNode);
+                    if (selectedLabel->load_ < Vehicle_->capacity_) {
+                        for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
+                            if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->usePick_,
+                                                                Vehicle_->capacity_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                labelExtend(selectedLabel, neighbourNode, true);
+                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(neighbourNode);
+                                }
                             }
                         }
                     }
