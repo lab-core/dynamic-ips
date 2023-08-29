@@ -59,7 +59,7 @@ public:
     void solveCG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
 
     // this function is to solve the main instance in anytime mode
-    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths);
+    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime);
 
     void anyTimeSolverEvent(PInstance & mainInst, InputPaths &inputPaths);
 

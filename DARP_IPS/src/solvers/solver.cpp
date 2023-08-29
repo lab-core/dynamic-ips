@@ -89,6 +89,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
     isudObj_->InrouteSolution_ = isudObj_->routeSolution_;
     isudObj_->InzSolution_ = isudObj_->zSolution_;
+
+    // add this recently to save tho model between iterations
+    isudObj_->MIPReducedPro_.reset();
+    isudObj_->MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
     // save initial solution
     /*if (epoch_ == 182)
         (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);*/
@@ -247,6 +251,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                 break;
+            // if the size of epoch is larger than 30s disable the following
             else if (subProblemTime_->dSinceStart().count() > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
                 break;
         }
@@ -295,7 +300,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     isudObj_->setObjValue();
 }
 
-void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
+void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave,
+                           float saveTime) {
     // define required variables
     int nbReceivedRequest;
     epoch_ = 0;
@@ -306,7 +312,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
-        mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
+        if (mainInst->vehicles_[v]->currentRoute_ == nullptr)
+            mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
 
     nbReceivedRequest = mainInst->nbOnboards_;
@@ -357,9 +364,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths) {
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
-
-        /*if ((epochRuntime_ > 150)||(EpochInst->nbRequests_ >= 400))
-            break;*/
+        if (elapsedTime_ >= saveTime && middleSave) {
+            inputPaths.makeInstanceOutput(instNum);
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_);
+            break;
+        }
         if (EpochInst->nbNewRequests_ == 0 && isudObj_->zSolution_.empty()) {
  //           std::cout << "next event" << std::endl;
             simulationTime_->stop();
