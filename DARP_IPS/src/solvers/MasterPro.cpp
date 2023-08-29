@@ -42,7 +42,7 @@ void MasterPro::buildModelMP(PInstance &pInst, vector<PRequest> &zSolution, vect
 void MasterPro::updateModel(PInstance &pInst) {
     if (routesToAdd_.empty()) {
         std::cout << "There is no route to be added" << std::endl;
-        throw myTools::myException("The input route is empty, No new column is passed to be added", __LINE__);
+//        throw myTools::myException("The input route is empty, No new column is passed to be added", __LINE__);
     }
 
     // add the new compatible column to the model
