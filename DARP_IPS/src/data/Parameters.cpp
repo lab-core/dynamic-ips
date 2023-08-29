@@ -29,6 +29,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), bigM_(bigM),
         solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
         addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode), MIPGap_(MIPGap) {
+    savePartial_ = false;
 }
 
 Parameters::~Parameters() = default;
@@ -55,6 +56,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
     repStr << std::setw(setwLength) << "# One iter per epoch " << " = " << oneIter_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
+    repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;

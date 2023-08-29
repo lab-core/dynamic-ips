@@ -23,10 +23,11 @@ public:
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
     bool addOneRequestColumn_{};
-    SolutionMode solutionMode_;
-    bool oneIter_;
-    bool greedyReOptimize_;
-    bool saveScratch_;
+    SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
+    bool oneIter_;                  // solve master problem one time at each iteration of the CG
+    bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
+    bool saveScratch_;              // save the results in scratch place of the server
+    bool savePartial_;              // calculate the avg. wait time after one hour
 
     // ISUD parameters
     warmStart initialStart_;
