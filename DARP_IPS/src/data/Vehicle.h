@@ -25,7 +25,8 @@ public:
     PNode departNodeActual_;
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
     PNode departNode_;
-    std::string sinkID_;
+    PNode sinkNode_;
+//    std::string sinkNode_;
     PRoute currentRoute_;
     PRoute solutionRoute_;
     PRoute emptyRoute_;
@@ -42,8 +43,8 @@ public:
 
 
     // Constructor and Destructor
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, std::string sinkID);
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, std::string sinkID, int zoneID);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, PNode & sinkNode);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, PNode & sinkNode, int zoneID);
 
     virtual ~Vehicle();
 

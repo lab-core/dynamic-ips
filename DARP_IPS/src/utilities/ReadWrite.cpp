@@ -114,7 +114,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID));
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
-                                                                            myTools::createSourceID(vehicleID, SINK),zoneID));
+                                                                            pInstance->instGraph_->sinkNodes_.back(),zoneID));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
             }
         }
@@ -163,7 +163,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID));
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
-                                                                            myTools::createSourceID(vehicleID, SINK),zoneID));
+                                                                            pInstance->instGraph_->sinkNodes_.back(),zoneID));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
 /*                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
                     pInstance->vehicles_.back()->dual_ = lDual;

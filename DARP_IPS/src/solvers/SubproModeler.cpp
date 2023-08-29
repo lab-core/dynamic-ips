@@ -28,7 +28,7 @@ SubproModeler::~SubproModeler() {
 /*void SubproModeler::initSubGraph(PInstance &pInst) {
     nbTotalRequest_ = pInst->nbRequests_;
 // create graph with source and sink
-    subGraph_ = std::make_shared<Graph>((*Vehicle_)->departNode_,pInst->instGraph_->nodes_[(*Vehicle_)->sinkID_]);
+    subGraph_ = std::make_shared<Graph>((*Vehicle_)->departNode_,pInst->instGraph_->nodes_[(*Vehicle_)->sinkNode_]);
 
     // adding onboard nodes to the graph
     for (auto & nodeID: (*Vehicle_)->onboards_) {

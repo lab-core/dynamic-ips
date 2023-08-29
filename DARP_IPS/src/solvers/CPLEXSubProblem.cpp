@@ -29,9 +29,9 @@ void CPLEXSubProblem::BuildModelCPLEX(int maxPickUp)
     W = IloNumVarArray(env_, subGraph_->nbNodes_, 0, IloInfinity, ILOFLOAT);
 
     /*int sourceIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->departID_];
-    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkID_];*/
+    int sinkIndex = subGraph_->nodeIDToInt_[(*Vehicle_)->sinkNode_];*/
     int sourceIndex = (Vehicle_)->departNode_->nodeIndex_;
-    int sinkIndex = subGraph_->nodes_[(Vehicle_)->sinkID_]->nodeIndex_;
+    int sinkIndex = (Vehicle_)->sinkNode_->nodeIndex_;
 
     for (int i = 0; i < subGraph_->nbNodes_; ++i) {
         X[i] = IloNumVarArray(env_, subGraph_->nbNodes_, 0.0, 1.0, ILOBOOL);
@@ -316,7 +316,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
 
                 // creating the route
                 int sourceIndex = (Vehicle_)->departNode_->nodeIndex_;
-                int sinkIndex = subGraph_->nodes_[(Vehicle_)->sinkID_]->nodeIndex_;
+                int sinkIndex = (Vehicle_)->sinkNode_->nodeIndex_;
                 PRoute newRoute = std::make_shared<Route>((Vehicle_)->vehicleID_);
 
                 // adding the source node of the route

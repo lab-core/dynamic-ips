@@ -101,6 +101,14 @@ void Route::addNode(PNode &node, float reachTime, float departTime) {
     routeNodes_.push_back(node);
 }
 
+void Route::addSink(PNode &node) {
+    routeSize_ ++;
+    plannedPassengers_.push_back(plannedPassengers_.back());
+    float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
+    plannedReachTime_.push_back(reachTime);
+    plannedDepartTime_.push_back(reachTime + node->serviceTime_);
+    routeNodes_.push_back(node);
+}
 
 // this function is used to remove completed nodes from the routes
 void Route::removeNode(int nodeIndex) {

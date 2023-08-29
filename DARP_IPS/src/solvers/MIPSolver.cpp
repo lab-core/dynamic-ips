@@ -74,7 +74,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
     for (int v = 0; v < PInst->nbVehicles_; ++v) {
         int sourceIndex = PInst->vehicles_[v]->departNode_->nodeIndex_;
-        int sinkIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->sinkID_]->nodeIndex_;
+        int sinkIndex = PInst->vehicles_[v]->sinkNode_->nodeIndex_;
         // add these constraints for just solving the extraction problem of variables
         /*IloExpr exprP(env);
         for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
@@ -373,7 +373,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
             // creating the route
             int sourceIndex = PInst->vehicles_[v]->departNode_->nodeIndex_;
-            int sinkIndex = PInst->instGraph_->nodes_[PInst->vehicles_[v]->sinkID_]->nodeIndex_;
+            int sinkIndex = PInst->vehicles_[v]->sinkNode_->nodeIndex_;
             PRoute newRoute = std::make_shared<Route>(PInst->vehicles_[v]->vehicleID_);
 
             newRoute->addSource(PInst->vehicles_[v]->departNode_,PInst->vehicles_[v]->departTime_,
