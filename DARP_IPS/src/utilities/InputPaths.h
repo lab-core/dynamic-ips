@@ -28,6 +28,7 @@ protected:
     std::string outputDir_;
     std::string instanceNameOut_;
     std::string instanceFolder_;
+    std::string prefix_;
 
     std::string input_TripData_;
     std::string input_InstanceData_;
@@ -63,6 +64,7 @@ protected:
     std::string output_reqDuals_;
     std::string output_vehDuals_;
     std::string output_solutionChange_;
+    std::string output_summary_;
 
 
     double timeOut_ = 3600;
@@ -109,6 +111,8 @@ public:
     const std::string &getOutputCplexLog() const;
     const std::string &getOutputReqDuals() const;
     const std::string &getOutputVehDuals() const;
+
+    const string &getOutputSummary() const;
 
     const std::string &getOutputSolutionChange() const;
 

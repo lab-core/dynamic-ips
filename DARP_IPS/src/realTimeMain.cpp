@@ -13,6 +13,7 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
+bool savePartial = true;
 std::string instNum = "1";
 int numVehicles = 2000;
 
@@ -20,7 +21,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "sufficient_manhattan-vehicles";
+    std::string vehicleFolder = "sufficient_manhattan-vehicles-300";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
@@ -28,8 +29,8 @@ int main(int argc, char** argv) {
     std::cout << "Number of arguments = " << argc << std::endl;
     int mainAlgo = -1;
     if (argc == 4){
-        std::string instanceNames = "datasets/Instances-240.txt";
-        ReadWrite::readInstNames(instanceNames, instNames , 24);
+        std::string instanceNames = "datasets/InstanceNames.txt";
+        ReadWrite::readInstNames(instanceNames, instNames , 24, "_17-300m_1");
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
         std::string word = argv[2];
@@ -54,7 +55,7 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
 
-    Tools::LogOutput finalInstanceStream("datasets/results.csv", true);
+
     for (auto & instanceName : instNames){
         // create output files for epoch results
         inputPaths.initializeInputs(instFolder, instanceName);
@@ -65,6 +66,7 @@ int main(int argc, char** argv) {
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
         mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+        mainInst->parameters_->savePartial_ = savePartial;
         mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
         ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
         std::cout << mainInst->toString();
@@ -84,7 +86,7 @@ int main(int argc, char** argv) {
                 /*if (mainInst->parameters_->mainAlgorithm_ == GREEDY)
                     instanceSolver->anyTimeSolverEvent(mainInst, inputPaths);
                 else*/
-                    instanceSolver->anyTimeSolver(mainInst, inputPaths);
+                    instanceSolver->anyTimeSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
             } catch (const std::exception &e) {
                 std::cout << "ANY_TIME solving caught an exception=: "
                           << e.what() << std::endl;
@@ -93,7 +95,7 @@ int main(int argc, char** argv) {
 
         else {
             try {
-                instanceSolver->staticSolver(mainInst, inputPaths, "1", middleSave, saveTime);
+                instanceSolver->staticSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
             } catch (const std::exception &e) {
                 std::cout << "STATIC solving caught an exception=: "
                           << e.what() << std::endl;
@@ -119,7 +121,14 @@ int main(int argc, char** argv) {
         Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
         requestResultsStream << mainInst->saveRequestsResults();
         requestResultsStream.close();
+        Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
+        finalInstanceStream << "instance,Algorithm,Mode,# requests,# vehicles,# Threads,# customers,customer Group,";
+        finalInstanceStream << "# served Req.,avg. wait/req,avg. wait/cust,avg. trip delay/req,# (Lim) served Req.,";
+        finalInstanceStream << "# (Lim) served Cust.,(Lim) avg. wait/req,(Lim) avg. wait/cust,(Lim) avg. trip delay/req,";
+        finalInstanceStream << "idel time/vehicle,# Idle Vehicles,avg. pass in vehicle,# epoch,# LMP Iter,# IMP Iter,";
+        finalInstanceStream << "# RP Iter,# CP Iter,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
+        finalInstanceStream << "Total time,RP/ISUD,CP/ISUD,ISUD/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
         finalInstanceStream << mainInst->instRepStr_.str();
+        finalInstanceStream.close();
     }
-    finalInstanceStream.close();
 }

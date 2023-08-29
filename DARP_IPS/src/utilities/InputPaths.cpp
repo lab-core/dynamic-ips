@@ -78,6 +78,8 @@ const std::string &InputPaths::getOutputReqDuals() const { return output_reqDual
 const std::string &InputPaths::getOutputVehDuals() const { return output_vehDuals_; }
 const std::string &InputPaths::getOutputDir() const {return outputDir_;}
 const std::string &InputPaths::getOutputSolutionChange() const {return output_solutionChange_;}
+const std::string &InputPaths::getOutputSummary() const {return output_summary_;}
+
 
 double InputPaths::getTimeOut() const {return timeOut_; }
 
@@ -137,25 +139,28 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         int check = mkdir(path, 0777);
         outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder + "/";
     }
+    prefix_ = solutionMode[0];
+    prefix_ = prefix_ + "_" + algorithm;
 
     //initialize the file names for saving outputs
-    output_epochISUD_ = outputDir_ + "epochSolution_" + instanceName_ + ".csv";
-    output_epochFinal_ = outputDir_ + "finalSolution_" + instanceName_ + ".csv";
-    output_finalLog_ = outputDir_ + "LogFinalResults_" + instanceName_ + ".txt";
-    output_reqDuals_ = outputDir_ + "RequestDuals" + ".csv";
-    output_vehDuals_ = outputDir_ + "VehicleDuals" + ".csv";
-    output_finalRoutes_ = outputDir_ + "Routes_" + instanceName_ + ".csv";
-    output_offlineRoutes_ = outputDir_ + "OfflineRoutes_" + instanceName_ + ".csv";
-    output_finalRequests_ = outputDir_ + "Requests_" + instanceName_ + ".csv";
-    output_MIPStart_ = outputDir_ + "MIPStart_" + instanceName_;
+    output_epochISUD_ = outputDir_ + "epochSolution_" + prefix_ + ".csv";
+    output_epochFinal_ = outputDir_ + "finalSolution_" + prefix_ + ".csv";
+    output_finalLog_ = outputDir_ + "LogFinalResults_" + prefix_ + ".txt";
+    output_reqDuals_ = outputDir_ + "RequestDuals" + prefix_ + ".csv";
+    output_vehDuals_ = outputDir_ + "VehicleDuals" + prefix_ + ".csv";
+    output_finalRoutes_ = outputDir_ + "Routes_" + prefix_ + ".csv";
+    output_offlineRoutes_ = outputDir_ + "OfflineRoutes_" + prefix_ + ".csv";
+    output_finalRequests_ = outputDir_ + "Requests_" + prefix_ + ".csv";
+    output_MIPStart_ = outputDir_ + "MIPStart_" + prefix_;
     output_paramFile_ = outputDir_ + "Parameters.txt";
-    output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + instanceName_ + ".csv";
-    output_epochRunTime_ = outputDir_ + "epochRuntime_" + instanceName_ + ".csv";
-    output_epochResults_ = outputDir_ + "epochResults_" + instanceName_ + ".csv";
-    output_subproSize_ = outputDir_ + "epochSubRunTimes_" + instanceName_ + ".csv";
-    output_subproRouteTime_ = outputDir_ + "epochSubRouteTimes_" + instanceName_ + ".csv";
-    output_cplexLog_ = outputDir_ + "LogCplex_" + instanceName_ + ".txt";
-    output_solutionChange_ = outputDir_ + "solutionChange_" + instanceName_ + ".csv";
+    output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + prefix_ + ".csv";
+    output_epochRunTime_ = outputDir_ + "epochRuntime_" + prefix_ + ".csv";
+    output_epochResults_ = outputDir_ + "epochResults_" + prefix_ + ".csv";
+    output_subproSize_ = outputDir_ + "epochSubRunTimes_" + prefix_ + ".csv";
+    output_subproRouteTime_ = outputDir_ + "epochSubRouteTimes_" + prefix_ + ".csv";
+    output_cplexLog_ = outputDir_ + "LogCplex_" + prefix_ + ".txt";
+    output_solutionChange_ = outputDir_ + "solutionChange_" + prefix_ + ".csv";
+    output_summary_ = outputDir_ + "summary_" + prefix_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;
@@ -180,6 +185,7 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
 
 
 
