@@ -72,7 +72,7 @@ void ReducedProblem:: addZVar(PRequest &request) {
 void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution) {
     if (routesToAdd_.empty()) {
         std::cout << "There is no route to be added" << std::endl;
-        throw myTools::myException("The input route is empty, No new column is passed to be added", __LINE__);
+ //       throw myTools::myException("The input route is empty, No new column is passed to be added", __LINE__);
     }
 
     // add the new compatible column to the model
