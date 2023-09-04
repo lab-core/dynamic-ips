@@ -34,10 +34,10 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     taskIncIndex_ = -1;
     taskIndexLabel_ = -1;
 }
-Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int zoneID) :
+Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int pickZoneID, int dropZoneID) :
         requestID_(requestCount_++), PickUpID_(pickUpID),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
-        zoneID_(zoneID){
+        pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
     allocVehicleID_ = 999999;
     initialVehicleID_ = 999999;
     solVehicleID_ = 999999;
