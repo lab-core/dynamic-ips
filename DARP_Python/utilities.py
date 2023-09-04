@@ -175,15 +175,74 @@ def create_vehicles_from_files(network, selected_districts=None, replace=False):
 
 
 def create_vehicles_files(network, initial_vehicle):
-    for num in c.NB_VEHICLES:
+    # for num in c.NB_VEHICLES:
+    #     for cap in c.CAPACITY:
+    #         file = "vehicles_" + str(num) + "_" + str(cap)
+    #         vehicle_obj = Vehicle(len(network.districts), nb_trip_per_district=initial_vehicle.nb_trip_per_district,
+    #                               file_name=file, nb_vehicles=num, capacity=cap)
+    #         vehicle_obj.calculate_vehicle_per_district()
+    #         vehicle_obj.create_vehicle_data_from_districts(network=network)
+    #         if cap == 4:
+    #             vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
+    #         vehicle_obj.save_vehicle(folder_name="sufficient_manhattan-vehicles")
+
+    nb_vehicles = c.NB_VEHICLES
+    initial_total = nb_vehicles.pop()
+    for cap in c.CAPACITY:
+        file = "vehicles_" + str(initial_total) + "_" + str(cap)
+        vehicle_obj = Vehicle(len(network.districts), nb_trip_per_district=initial_vehicle.nb_trip_per_district,
+                              file_name=file, nb_vehicles=initial_total, capacity=cap)
+        vehicle_obj.calculate_vehicle_per_district()
+        vehicle_obj.create_vehicle_data_from_districts(network=network)
+        if cap == 4:
+            vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
+        vehicle_obj.save_vehicle(folder_name="sufficient_manhattan-vehicles")
+
+    df = vehicle_obj.vehicle_data
+    while nb_vehicles:
+        num = nb_vehicles.pop()
+        counts = df['zone_ID'].value_counts().to_dict()
+
+        total = 0
+        new_counts = {}
+        n_to_remove = {}
+        for key, value in counts.items():
+            new_counts[key] = round((num * value) / initial_total)
+            total = total + new_counts[key]
+        if total != num:
+            new_counts[189] = new_counts[189] + num - total
+
+        for key, value in new_counts.items():
+            n_to_remove[key] = counts[key] - new_counts[key]
+
+        # Iterate over each group in the DataFrame
+        to_drop = []
+        for key, value in n_to_remove.items():
+            # Select n rows randomly from the current group
+            selected = df.loc[df['zone_ID'] == key].sample(value)
+            # Append the index of the selected rows to the list of rows to drop
+            to_drop.extend(selected.index)
+
+        # Drop the selected rows from the DataFrame
+        df = df.drop(to_drop)
+
+        # correct ids
+        v_id = 0
+        for index, row in df.iterrows():
+            row['vehicle_ID'] = v_id
+            v_id = v_id + 1
+
+        vehicle_obj.vehicle_data = df
         for cap in c.CAPACITY:
             file = "vehicles_" + str(num) + "_" + str(cap)
-            vehicle_obj = Vehicle(len(network.districts), nb_trip_per_district=initial_vehicle.nb_trip_per_district,
-                                  file_name=file, nb_vehicles=num, capacity=cap)
-            vehicle_obj.calculate_vehicle_per_district()
-            vehicle_obj.create_vehicle_data_from_districts(network=network)
-            vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
+            vehicle_obj.vehicle_data['capacity'] = cap
+            vehicle_obj.file_name = file
+            vehicle_obj.nb_vehicles = num
             vehicle_obj.save_vehicle(folder_name="sufficient_manhattan-vehicles")
+            if cap == 4:
+                vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_vehicles_plots")
+
+        initial_total = num
 
 
 def create_vehicles_files_random_remove(network, file_name):
@@ -230,3 +289,25 @@ def create_vehicles_files_random_remove(network, file_name):
         vehicle_obj.plot_map_vehicle_cells(network, print_id=False, folder_name="sufficient_new_vehicles_plots")
         vehicle_obj.save_vehicle(folder_name="sufficient_new_manhattan-vehicles")
         initial_total = num
+
+
+def merge_csv_files(instance_folder):
+    root_folder = c.DATASETS_DIR + instance_folder
+    all_data = pd.DataFrame()
+    header_added = False
+
+    for root, dirs, files in os.walk(root_folder):
+        for file in files:
+            if file.endswith(".csv") and file.startswith("summary"):
+
+                file_path = os.path.join(root, file)
+                data = pd.read_csv(file_path, index_col=False)
+                parent_folder = os.path.basename(root)
+                parent_folder_col = pd.Series([parent_folder] * len(data))
+                data['Test_Folder'] = parent_folder_col
+                all_data = pd.concat([all_data, data], ignore_index=True)
+
+    root_file = root_folder + "/" + "results.csv"
+    all_data.to_csv(root_file, index=False)
+    print("CSV files merged and saved to", root_folder)
+
