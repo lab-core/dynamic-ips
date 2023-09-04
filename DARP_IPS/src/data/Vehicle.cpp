@@ -30,7 +30,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
 }
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  PNode & sinkNode, int zoneID) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                                                 endTime_(endTime), departNode_(std::move(departNode)), sinkNode_(std::move(sinkNode)) , zoneID_(zoneID){
+                                                 endTime_(endTime), departNode_(departNode), sinkNode_(sinkNode) , zoneID_(zoneID){
     numPassengers_ = 0;
     dual_=0;
     InitialDual_ = 0;
@@ -115,6 +115,11 @@ void Vehicle::updateState(int epoch, int &epochLength) {
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
         emptyRoute_->routeNodes_[0]->nodeStatus_ = DONE;
     }
+    if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < startTime_ + static_cast<float>(epoch * epochLength)
+        && currentRoute_->routeSize_ == 1){
+        if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_)
+            currentRoute_->addSink(sinkNode_);
+    }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + static_cast<float>((epoch+1) * epochLength) ||
@@ -127,6 +132,8 @@ void Vehicle::updateState(int epoch, int &epochLength) {
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
                 solutionRoute_->addNode(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i],
                                         currentRoute_->plannedDepartTime_[i]);
+                if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
+                    sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
 
                 // set request status
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
@@ -207,6 +214,10 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
         solutionRoute_->addSource(emptyRoute_->routeNodes_[0], departTime_, numPassengers_);
         solutionRoute_->plannedDepartTime_.back() = solutionRoute_->plannedReachTime_.back();
     }
+    if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < startTime_ + elapsedTime && currentRoute_->routeSize_ == 1){
+        if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_)
+            currentRoute_->addSink(sinkNode_);
+    }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < startTime_ + elapsedTime + epochLength || currentRoute_->plannedReachTime_[1] == departTime_) {
@@ -218,6 +229,8 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
                 solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i],
                                         currentRoute_->plannedDepartTime_[i]);
+                if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
+                    sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
 
                 // set request status
                 if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
@@ -260,9 +273,11 @@ void Vehicle::updateStateTime(float elapsedTime, float &epochLength) {
                 }
             }
             for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
-                if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-                    currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
-                    onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                if (currentRoute_->routeNodes_[i]->type_ != SOURCE && currentRoute_->routeNodes_[i]->type_ != SINK) {
+                    if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+                        currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
+                        onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                    }
                 }
 /*                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + epochLength)
                     currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/

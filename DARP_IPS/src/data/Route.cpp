@@ -169,8 +169,8 @@ std::string Route::toString() const {
     // print the internal nodes of the route
     for (int i = 1; i < routeSize_; ++i) {
         repStr << "#" << std::setw(4) << i + 1 << "  ";
-        if (routeNodes_[i]->type_ == SINK)
-            repStr << std::left << std::setw(24) << "(SINK   ) return";
+        if (routeNodes_[i]->initialType_ == SINK)
+            repStr << std::left << std::setw(23) << "(SINK   ) return   ";
         else {
             repStr << "(" << NodeTypeStr[routeNodes_[i]->initialType_] << ") REQ ";
             repStr << std::left << std::setw(9) << routeNodes_[i]->related_Request_->getRequestId();
@@ -180,10 +180,13 @@ std::string Route::toString() const {
         repStr << std::right << std::setw(9) << routeNodes_[i]->departTime_ << " (s)  ";
         /*repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
         repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";*/
-        if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i])||(routeNodes_[i]->reachTime_ != plannedReachTime_[i])){
-            std::cout << "Connectivity constraint violated at node : ";
-            std::cout << routeNodes_[i]->nodeID_ << std::endl;
- //           myTools::throwException("Route-Validation");
+        if (routeNodes_[i]->initialType_ != SINK) {
+            if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i]) ||
+                (routeNodes_[i]->reachTime_ != plannedReachTime_[i])) {
+                std::cout << "Connectivity constraint violated at node : ";
+                std::cout << routeNodes_[i]->nodeID_ << std::endl;
+                //           myTools::throwException("Route-Validation");
+            }
         }
         repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
         if (routeNodes_[i]->initialType_ == PICKUP)
