@@ -118,14 +118,17 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRequest> &zSoluti
         if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
             addRouteVar(routeObj, pInst);
     }
-//    env_.out() << Model_;
+    Model_.add(requestConst_);
+    Model_.add(vehicleConst_);
+    Model_.add(objFunction_);
+
 }
 
 void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
     try {
-        Model_.add(requestConst_);
+        /*Model_.add(requestConst_);
         Model_.add(vehicleConst_);
-        Model_.add(objFunction_);
+        Model_.add(objFunction_);*/
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOFLOAT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOFLOAT);
@@ -141,6 +144,7 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
 
         solveTime_->start();
         Cplex_.solve();
@@ -191,9 +195,9 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
 void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                    InputPaths &inputPaths, float availableTime, double preObj) {
     try {
-        Model_.add(requestConst_);
+        /*Model_.add(requestConst_);
         Model_.add(vehicleConst_);
-        Model_.add(objFunction_);
+        Model_.add(objFunction_);*/
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
@@ -210,10 +214,10 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
 
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
-
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -271,9 +275,9 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
     try {
 
         // Solve the Linear Relaxation
-        Model_.add(requestConst_);
+        /*Model_.add(requestConst_);
         Model_.add(vehicleConst_);
-        Model_.add(objFunction_);
+        Model_.add(objFunction_);*/
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOFLOAT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOFLOAT);
@@ -289,10 +293,9 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         Cplex_.solve();
-//        std::cout.rdbuf(coutBuffer);
         solveTime_->stop();
 
         objValue_ = Cplex_.getObjValue();
@@ -337,6 +340,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -429,9 +433,9 @@ void ReducedProblem::restartRP() {
 void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                       InputPaths &inputPaths, float availableTime, double preObj) {
     try {
-        Model_.add(requestConst_);
+        /*Model_.add(requestConst_);
         Model_.add(vehicleConst_);
-        Model_.add(objFunction_);
+        Model_.add(objFunction_);*/
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
@@ -446,6 +450,7 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
 
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
@@ -509,7 +514,7 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
                 createIloNumArray (vehicleRHS, pInst->nbVehicles_, 0.0);
                 requestConst_.setBounds(requestRHS, requestRHS);
                 vehicleConst_.setBounds(vehicleRHS, vehicleRHS);
-
+                Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
                 solveTime_->start();
                 Cplex_.solve();
                 solveTime_->stop();
