@@ -40,6 +40,7 @@ public:
     float travelTimeFromSource_;          // is used in labeling for sorting successors_
     int nodeIndex_;
     double maxLabelReducedCost_;
+    int zoneID_;
 
     std::vector<PLabel> activeLabels_;
 

@@ -105,6 +105,7 @@ Node::Node(const PNode &oldNode) {
     maxLabelReducedCost_ = bestLabelReduceCost_ * (-1);
     nodeIndex_ = -1;
     pairNode_ = nullptr;
+    zoneID_ = oldNode->zoneID_;
 }
 
 // this function return the index in of the first label in the active labels of the node whose reduced cost
