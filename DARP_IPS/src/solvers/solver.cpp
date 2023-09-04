@@ -91,8 +91,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     isudObj_->InzSolution_ = isudObj_->zSolution_;
 
     // add this recently to save tho model between iterations
-    isudObj_->MIPReducedPro_.reset();
-    isudObj_->MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
+    /*isudObj_->MIPReducedPro_.reset();
+    isudObj_->MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();*/
     // save initial solution
     /*if (epoch_ == 182)
         (*isudObj_->pLogIterSolutionStream_) << EpochInst->saveISUDRoutes(epoch_, isudObj_->isudIter_);*/
@@ -581,6 +581,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in previous epoch
+        /*if (epoch_ == 236)
+            EpochInst->parameters_->greedyReOptimize_ = true;*/
         EpochInst->buildPartialData(mainInst, isudObj_->zSolution_,
                                     static_cast<float>((epoch_) * mainInst->parameters_->epochLength_),
                                     nbReceivedRequest);
@@ -608,7 +610,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
  //       preprocessTime_->stop();
         if (MIP_Stop) {
-            if (epoch_ == 115) {
+            if (epoch_ == 236) {
                 EpochInst->parameters_->mainAlgorithm_ = MP_MIP;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
