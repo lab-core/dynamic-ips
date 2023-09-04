@@ -464,7 +464,6 @@ void ComplementPro::solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolu
                 }
 
                 Cplex_.clearModel();
-                if (isColumnDisjointBit(zResult, routeResult, pInst->nbVehicles_)) {
                     //           if (isColumnDisjointBit(zResult, routeResult,pInst->nbVehicles_, pInst->requests_.size())) {
                     // remove outgoing variable
                     routeSolution = routeResult;

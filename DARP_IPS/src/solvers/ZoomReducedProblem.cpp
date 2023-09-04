@@ -27,9 +27,9 @@ void ZoomReducedProblem::updateModel(PInstance &pInst, vector<PRequest> &fractio
 void ZoomReducedProblem::solveModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                     InputPaths &inputPaths, int availableTime, double preObj) {
     try {
-        Model_.add(requestConst_);
+        /*Model_.add(requestConst_);
         Model_.add(vehicleConst_);
-        Model_.add(objFunction_);
+        Model_.add(objFunction_);*/
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
         IloConversion convR = IloConversion(env_, routeVar_, ILOINT);

@@ -37,6 +37,9 @@ void MasterPro::buildModelMP(PInstance &pInst, vector<PRequest> &zSolution, vect
         compRoutes_.push_back(routeObj);
         routeObj->mpAdded_ = true;
     }
+    Model_.add(requestConst_);
+    Model_.add(vehicleConst_);
+    Model_.add(objFunction_);
 }
 
 void MasterPro::updateModel(PInstance &pInst) {
