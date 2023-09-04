@@ -138,7 +138,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
                             (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_;
                 }
             }
-            else
+            else if (newLabel->currentNode_->type_ == PICKUP)
                 totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->requestTime_);
 
         }
@@ -884,7 +884,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     if (newRoute->totalDelay_ != totalDelay_){
         std::cout << "Total delay of the greedy solution is not the same as the route delay!";
         std::cout << "Vehicle ID: " << newRoute->vehicleID_ << std::endl;
-        //           myTools::throwException("Route-Validation");
+        // myTools::throwException("Route-Validation");
     }
     /*std::cout << "Created route from the GreedyLinkList" << std::endl;
     std::cout << newRoute->toString() << std::endl;*/
