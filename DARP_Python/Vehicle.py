@@ -79,6 +79,34 @@ class Vehicle(object):
         self.vehicle_data = pd.DataFrame(vehicle_data, columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time',
                                                                 'depart_ID', 'sink_ID', 'zone_ID'])
 
+    def create_vehicle_data_from_districts_uni(self, network):
+        vehicle_data = []
+        vehicle_id = 0
+        for count, item in enumerate(network.districts):
+            source_ids = []
+            for cell in item.cells:
+                source_ids.append(int(cell[0]))
+            source_ids = sorted(source_ids)
+            if (self.nb_vehicle_per_district[count] < len(source_ids)):
+                select_source_ids = random.sample(source_ids, k=self.nb_vehicle_per_district[count])
+            else:
+                if (len(source_ids) != 0):
+                    times = self.nb_vehicle_per_district[count] // len(source_ids)
+                    remaining = self.nb_vehicle_per_district[count] % len(source_ids)
+                    select_source_ids = random.choices(source_ids, k=remaining)
+                    for i in range(times):
+                        select_source_ids = select_source_ids + source_ids
+                else:
+                    select_source_ids = random.choices(source_ids, k=self.nb_vehicle_per_district[count])
+            for i in range(self.nb_vehicle_per_district[count]):
+                source_id = select_source_ids[i];
+                #              source_id = source_ids[i % len(source_ids)]
+                zone_id = network.cell_to_district[int(source_id)]
+                vehicle_data.append([vehicle_id, self.capacity, 0, 90000, source_id, source_id, zone_id])
+                vehicle_id = vehicle_id + 1
+        self.vehicle_data = pd.DataFrame(vehicle_data, columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time',
+                                                                'depart_ID', 'sink_ID', 'zone_ID'])
+
     def update_nb_trip_per_district(self, network, dataset):
         dataset.calculate_trip_per_district(network)
         self.nb_trip_per_district = [self.nb_trip_per_district[i] + dataset.nb_trip_per_district[i] for i in
@@ -125,10 +153,10 @@ class Vehicle(object):
         vehicle_cells = np.array(
             [district_network.locations[index] for index in (np.array(self.vehicle_data["depart_ID"].astype('int')))])
         vehicle_cells = pd.DataFrame(vehicle_cells, columns=['cell_ID', 'latitude', 'longitude'])
-        vehicle_points = vehicle_cells.groupby(['cell_ID', 'latitude', 'longitude'])['cell_ID'].size().reset_index(
+        vehicle_points = vehicle_cells.groupby(['cell_ID', 'longitude', 'latitude'])['cell_ID'].size().reset_index(
             name='cell_size')
-        x = np.array(vehicle_points['latitude'])
-        y = np.array(vehicle_points['longitude'])
+        y = np.array(vehicle_points['latitude'])
+        x = np.array(vehicle_points['longitude'])
         cell_size = 10 * np.array(vehicle_points['cell_size'])
         colors = np.random.randint(100, size=(len(x)))
         # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
