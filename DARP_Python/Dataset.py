@@ -73,13 +73,13 @@ class Dataset(object):
     def remove_unwanted_columns_instance(self):
         if 'tpep_pickup_datetime' in self.instance.columns:
             self.instance = self.instance.drop(columns=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
-        if 'dropoff_district' in self.instance.columns:
-            self.instance = self.instance.drop(columns=['dropoff_district'])
+ #       if 'dropoff_district' in self.instance.columns:
+ #           self.instance = self.instance.drop(columns=['dropoff_district'])
         #            self.instance = self.instance.drop(columns=['pickup_district'])
         if 'pickup_latitude' in self.instance.columns:
             self.instance.drop(columns=['pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'])
         self.instance = self.instance[
-            ['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district']]
+            ['passenger_count', 'pickup_ID', 'dropoff_ID', 'request_time_sec', 'pickup_district', 'dropoff_district']]
 
     def limit_time_instance(self, start_hr=None, end_hr=None, start_min=None, end_min=None):
         if start_hr is not None:
@@ -114,8 +114,6 @@ class Dataset(object):
         self.dataset = self.dataset[self.dataset.request_time_sec >= start_seconds]
         self.dataset = self.dataset[self.dataset.request_time_sec < end_seconds]
         self.update_state()
-        print("\nThe number of trips after time limit:", self.nb_requests)
-        print("The number of customers after time limit:", self.nb_customers)
         self.instance = self.dataset
 
     def update_state(self):
@@ -249,6 +247,7 @@ class Dataset(object):
 
         file_name = period_start.strftime("%Y%m%d") + "_" + period_start.strftime("%H") + "-" + str(
             int((period_end - period_start).seconds / 60)) + "m"
+        self.file_name = period_start.strftime("%Y%m%d")
 
         # instance folder
         parent_folder = c.DAYS_DIR + "Instances"
