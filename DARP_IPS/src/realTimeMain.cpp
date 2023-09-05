@@ -11,17 +11,17 @@
 
 
 using namespace std::chrono;
-float saveTime = 3600;
+float saveTime = 7200;
 bool middleSave = false;
 bool savePartial = true;
-std::string instNum = "1";
+std::string instNum = "2";
 int numVehicles = 2000;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "sufficient_manhattan-vehicles-300";
+    std::string vehicleFolder = "manhattan-vehicles";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int mainAlgo = -1;
     if (argc == 4){
         std::string instanceNames = "datasets/InstanceNames.txt";
-        ReadWrite::readInstNames(instanceNames, instNames , 24, "_17-300m_1");
+        ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
         std::string word = argv[2];

@@ -118,8 +118,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         EpochInst->updateTaskIndexLabeling();
         std::vector<PLabelingSubPro> subProSolve;
 
-        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
-            subProOptions_->usePick_ = true;
+        /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
+            subProOptions_->usePick_ = true;*/
 
         if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 600)
             subProOptions_->MaxLabel_ = 10;
@@ -228,7 +228,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
             else
-                isudObj_->availableTime_ = 1000;
+                isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
  //           std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
             if (isudObj_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
                 break;
