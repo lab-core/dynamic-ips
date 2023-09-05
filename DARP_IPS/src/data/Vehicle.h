@@ -51,6 +51,7 @@ public:
     // Setters
     void setDepartTime(float departTime);
     void setEmptyRoute(PInstance &pInst);
+    void setSolutionRoute();
     void setCurrentRoute(PRoute &currentRoute);
 
     // this function set bestReducedCost_ to infinity
@@ -61,8 +62,8 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateState(int epoch, int &epochLength);
-    void updateStateTime(float elapsedTime, float &epochLength);
+    void updateState(int epoch, int &epochLength, float simulationStart);
+    void updateStateTime(float elapsedTime, float &epochLength, float simulationStart);
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
