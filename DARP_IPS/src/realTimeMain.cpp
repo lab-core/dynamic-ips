@@ -11,17 +11,17 @@
 
 
 using namespace std::chrono;
-float saveTime = 7200;
-bool middleSave = false;
-bool savePartial = true;
-std::string instNum = "2";
+float saveTime = 3600;
+bool middleSave = true;
+bool savePartial = false;
+std::string instNum = "1";
 int numVehicles = 2000;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles";
+    std::string vehicleFolder = "sufficient_manhattan-vehicles-300";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
@@ -104,31 +104,38 @@ int main(int argc, char** argv) {
         // testing the solution route
         for(auto  &vehicleObj : mainInst->vehicles_)
             vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_ );
+        if (!middleSave) {
 
-        std::cout << std::endl << std::endl;
+            std::cout << std::endl << std::endl;
 
-        // print final solution to txt file
-        Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
-        finalStream << instanceSolver->toString(mainInst);
-        finalStream.close();
+            // print final solution to txt file
+            Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
+            finalStream << instanceSolver->toString(mainInst);
+            finalStream.close();
 
-        // print final routes to csv
-        Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
-        solutionRoutesStream << mainInst->saveSolutionRoutes();
-        solutionRoutesStream.close();
+            // print final routes to csv
+            Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
+            solutionRoutesStream << mainInst->saveSolutionRoutes();
+            solutionRoutesStream.close();
 
-        // print requests results to csv
-        Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
-        requestResultsStream << mainInst->saveRequestsResults();
-        requestResultsStream.close();
-        Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
-        finalInstanceStream << "instance,Algorithm,Mode,# requests,# vehicles,# Threads,# customers,customer Group,";
-        finalInstanceStream << "# served Req.,avg. wait/req,avg. wait/cust,avg. trip delay/req,# (Lim) served Req.,";
-        finalInstanceStream << "# (Lim) served Cust.,(Lim) avg. wait/req,(Lim) avg. wait/cust,(Lim) avg. trip delay/req,";
-        finalInstanceStream << "idel time/vehicle,# Idle Vehicles,avg. pass in vehicle,# epoch,# LMP Iter,# IMP Iter,";
-        finalInstanceStream << "# RP Iter,# CP Iter,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
-        finalInstanceStream << "Total time,RP/ISUD,CP/ISUD,ISUD/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
-        finalInstanceStream << mainInst->instRepStr_.str();
-        finalInstanceStream.close();
+            // print requests results to csv
+            Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
+            requestResultsStream << mainInst->saveRequestsResults();
+            requestResultsStream.close();
+            Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
+            finalInstanceStream
+                    << "instance,Algorithm,Mode,# requests,# vehicles,# Threads,# customers,customer Group,";
+            finalInstanceStream
+                    << "# served Req.,avg. wait/req,avg. wait/cust,avg. trip delay/req,# (Lim) served Req.,";
+            finalInstanceStream
+                    << "# (Lim) served Cust.,(Lim) avg. wait/req,(Lim) avg. wait/cust,(Lim) avg. trip delay/req,";
+            finalInstanceStream
+                    << "idel time/vehicle,# Idle Vehicles,avg. pass in vehicle,# epoch,# LMP Iter,# IMP Iter,";
+            finalInstanceStream
+                    << "# RP Iter,# CP Iter,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
+            finalInstanceStream << "Total time,RP/ISUD,CP/ISUD,ISUD/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+            finalInstanceStream << mainInst->instRepStr_.str();
+            finalInstanceStream.close();
+        }
     }
 }

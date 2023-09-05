@@ -367,7 +367,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 
         if (elapsedTime_ >= saveTime && middleSave) {
             inputPaths.makeInstanceOutput(instNum);
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,mainInst->parameters_->epochLength_);
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);
             inputPaths.makeInstanceOutput("2");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
@@ -388,7 +388,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             GreedyModel_->GreedySolver(EpochInst);
 
         simulationTime_->stop();
-        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
 
@@ -449,7 +450,8 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
             vehicleObj->updateCurrentRoute(elapsedTime_);*/
 
         simulationTime_->stop();
-        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
         epoch_++;
     }
 
@@ -646,7 +648,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             GreedyModel_->GreedySolver(EpochInst);
         simulationTime_->stop();
-        (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
  //       (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
         epoch_++;
     }
