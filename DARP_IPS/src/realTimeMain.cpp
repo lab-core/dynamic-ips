@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
             finalInstanceStream
                     << "idel time/vehicle,# Idle Vehicles,avg. pass in vehicle,# epoch,# LMP Iter,# IMP Iter,";
             finalInstanceStream
-                    << "# RP Iter,# CP Iter,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
+                    << "# RP Iter,# CP Iter,Zoom Iter ,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
             finalInstanceStream << "Total time,RP/ISUD,CP/ISUD,ISUD/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
             finalInstanceStream << mainInst->instRepStr_.str();
             finalInstanceStream.close();

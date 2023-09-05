@@ -740,7 +740,7 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
     mainInst->instRepStr_ << epoch_-1 << "," << isudObj_->LPIter_ << "," << isudObj_->MPIter_ << ",";
-    mainInst->instRepStr_ << isudObj_->RPIter_ << "," << isudObj_->CPIter_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
+    mainInst->instRepStr_ << isudObj_->RPIter_ << "," << isudObj_->CPIter_ << "," << isudObj_->ZoomIter_ << "," << isudObj_->isudTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->RPTime_->dSinceInit().count() << "," << isudObj_->CPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << isudObj_->isudMIPTime_->dSinceInit().count() << ",";
     mainInst->instRepStr_ << subProblemTime_->dSinceInit().count() << "," << GreedyModel_->greedyTime_->dSinceInit().count() << ",";
