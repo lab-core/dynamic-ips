@@ -110,10 +110,11 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID));
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID));
-                pInstance->instGraph_->sourceNodes_.back()->zoneID_ = zoneID;
-                pInstance->instGraph_->sinkNodes_.back()->zoneID_ = zoneID;
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, zoneID));
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, zoneID));
+                pInstance->instGraph_->sourceNodes_.back()->reachTime_ = pInstance->simulationStartTime_;
+                pInstance->instGraph_->sourceNodes_.back()->departTime_ = pInstance->simulationStartTime_;
+                pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             pInstance->instGraph_->sinkNodes_.back(),zoneID));
@@ -162,15 +163,14 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                 file >> iDual;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID));
-                pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID));
-                pInstance->instGraph_->sourceNodes_.back()->zoneID_ = departID;
-                pInstance->instGraph_->sinkNodes_.back()->zoneID_ = sinkID;
-
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, departZoneID));
+                pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, sinkZoneID));
+                pInstance->instGraph_->sourceNodes_.back()->reachTime_ = departTime;
+                pInstance->instGraph_->sourceNodes_.back()->departTime_ = departTime;
+                pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             pInstance->instGraph_->sinkNodes_.back(), departZoneID));
-                pInstance->instGraph_->sourceNodes_.back() = pInstance->vehicles_.back()->departNode_;
 /*                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
                     pInstance->vehicles_.back()->dual_ = lDual;
                     pInstance->vehicles_.back()->InitialDual_ = lDual;
@@ -583,39 +583,6 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }
 
-// function that open all input files and create the main instance
-/*PInstance ReadWrite::createMainInstance(InputPaths &inputPaths) {
-    PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-    ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-//    mainInst->nbOnboards_ = 0;
-    if (mainInst->nbOnboards_ > 0){
-        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFile(), mainInst);
-        ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), mainInst);
-    }
-    else
-        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), mainInst);
-
-    if (mainInst->nbWaiting_ > 0)
-        ReadWrite::readTripRequests(inputPaths.getInputWaitRequests(), mainInst, mainInst->nbWaiting_);
-    ReadWrite::readTripRequests(inputPaths.getInputTripData(), mainInst, mainInst->nbRequests_);
-    mainInst->nbRequests_ += (mainInst->nbOnboards_ + mainInst->nbWaiting_);
-    mainInst->nbNewRequests_ += mainInst->nbWaiting_;
-
-    inputPaths.initializeOutputs(mainAlgorithmName[mainInst->parameters_->mainAlgorithm_],
-                                 solutionModeName[mainInst->parameters_->solutionMode_], false);
-
-    // write the parameters in file
-    Tools::LogOutput parameterStream(inputPaths.getOutputParamFile());
-    parameterStream << mainInst->saveSolutionRoutes();
-    parameterStream.close();
-
-    *//*std::ofstream myFile;
-    myFile.open (inputPaths.getOutputParamFile());
-    myFile << mainInst->parameters_->toString();
-    myFile.close();*//*
-
-    return mainInst;
-}*/
 
 // function that open all input files and update main instance data
 void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch) {

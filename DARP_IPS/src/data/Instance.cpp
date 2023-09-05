@@ -618,7 +618,7 @@ std::string Instance::saveRoutesTimes(int epoch) {
     return repStr.str();
 }
 
-void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
+void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration) {
     std::ofstream myFile;
     int setwSize = 15;
     int nbOnboards = 0;
@@ -729,8 +729,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart) {
     myFile << "REQUESTS_INFO" << std::endl;
 
     for (auto & requestObj: requests_) {
-        if (requestObj->earlyPick_ >= simulationStart && requestObj->earlyPick_ <= simulationStart + 1 * parameters_->epochLength_) {
- //       if (requestObj->earlyPick_ >= simulationStart) {
+        if (requestObj->earlyPick_ >= simulationStart && requestObj->earlyPick_ <= simulationStart + instDuration) {
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
             myFile << std::setw(10) << requestObj->DropOffID_;

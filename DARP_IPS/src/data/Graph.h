@@ -47,7 +47,7 @@ public:
     // Constructor and Destructor
     Node(string nodeId, PRequest &relatedRequest, NodeType type);
     Node(int locationID, NodeType type);
-    Node(int locationID, NodeType type, int vehicleID);
+    Node(int locationID, NodeType type, int vehicleID, int zoneID);
 
     explicit Node(const PNode& oldNode);
 

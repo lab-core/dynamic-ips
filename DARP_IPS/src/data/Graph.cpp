@@ -62,7 +62,7 @@ Node::Node(int locationID, NodeType type) : locationID_(locationID), type_(type)
         nodeID_ = myTools::createNodeID(0, SINK);
 }
 
-Node::Node(int locationID, NodeType type, int vehicleID) : locationID_(locationID), type_(type) {
+Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationID_(locationID), type_(type), zoneID_(zoneID) {
 
     related_Request_ = nullptr;
     reachTime_ = 0;

@@ -39,9 +39,6 @@ public:
     // Read the parameters datafile
     static void readParameters(const std::string& strParamFile, PInstance &pInstance);
 
-    // function that open all input files and create the main instance
-//    static PInstance createMainInstance(InputPaths &inputPaths);
-
     // function that open all input files and update main instance data
     static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch);
 
