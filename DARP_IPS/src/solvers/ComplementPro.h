@@ -49,6 +49,9 @@ public:
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     int nbVehicles);
 
+    void repairModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                    int nbVehicles);
+
     void buildModelCP2(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     int nbVehicles, double preObj);
 
@@ -64,7 +67,7 @@ public:
 
     // this function check the situation of the CP solution to be column disjoint
     bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
-    bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
+    bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults);
 
     // Display function
     std::string toString() const override;
