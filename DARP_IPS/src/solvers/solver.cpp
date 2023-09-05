@@ -300,7 +300,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     isudObj_->setObjValue();
 }
 
-void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave,
+void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave,
                            float saveTime) {
     // define required variables
     int nbReceivedRequest;
@@ -312,6 +312,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
+        mainInst->vehicles_[v]->setSolutionRoute();
         if (mainInst->vehicles_[v]->currentRoute_ == nullptr)
             mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
@@ -351,7 +352,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
 //            vehicleObj->updateCurrentRoute(elapsedTime_);
-            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
+            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_, mainInst->simulationStartTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         isudObj_->nbRoutes_ = 0;
@@ -366,7 +367,9 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
 
         if (elapsedTime_ >= saveTime && middleSave) {
             inputPaths.makeInstanceOutput(instNum);
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_);
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,mainInst->parameters_->epochLength_);
+            inputPaths.makeInstanceOutput("2");
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
         }
         if (EpochInst->nbNewRequests_ == 0 && isudObj_->zSolution_.empty()) {
@@ -404,6 +407,7 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
+        mainInst->vehicles_[v]->setSolutionRoute();
         mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
 
@@ -425,7 +429,7 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_);
+            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_, mainInst->simulationStartTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         isudObj_->nbRoutes_ = 0;
@@ -455,7 +459,7 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
 
 }
 
-void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime) {
+void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
     int nbReceivedRequest;
@@ -464,6 +468,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
+        mainInst->vehicles_[v]->setSolutionRoute();
         if (mainInst->vehicles_[v]->currentRoute_ == nullptr)
             mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
@@ -510,8 +515,12 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, const std
                 inputPaths.makeInstanceOutput(instNum);
                 float length = 0;
                 for (auto & vehicleObj: StaticInst->vehicles_)
-                    vehicleObj->updateStateTime(saveTime, length);
-                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime);
+                    vehicleObj->updateStateTime(saveTime, length, mainInst->simulationStartTime_);
+                inputPaths.makeInstanceOutput(instNum);
+                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,mainInst->parameters_->epochLength_);
+                inputPaths.makeInstanceOutput("2");
+                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,3600*5);
+                break;
             }
             else {
                 for (auto & vehicleObj : StaticInst->vehicles_)
@@ -545,6 +554,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
         mainInst->vehicles_[v]->setEmptyRoute(mainInst);
+        mainInst->vehicles_[v]->setSolutionRoute();
         if (mainInst->vehicles_[v]->currentRoute_ == nullptr)
             mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
@@ -573,7 +583,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         mainInst->nbOnboards_ = 0;
         isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_);
+            vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_, mainInst->simulationStartTime_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         isudObj_->nbRoutes_ = 0;
@@ -599,7 +609,11 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         if ((static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
             inputPaths.makeInstanceOutput(instNum);
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
-                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_));
+                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),mainInst->parameters_->epochLength_);
+            inputPaths.makeInstanceOutput("2");
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
+                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);
+
             break;
         }
 

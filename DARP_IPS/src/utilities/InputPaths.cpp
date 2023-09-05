@@ -175,10 +175,12 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
 
 void InputPaths::makeInstanceOutput(const std::string& instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
-    std::string folder_name = outputDir_ + instanceNameOut_;
-    char *path = const_cast<char *>(folder_name.c_str());
+//    std::string folder_name = outputDir_ + instanceNameOut_;
+    std::string folder_name = dataDir_ + instanceFolder_+"_"+instNum;
+    std::string outputDir = folder_name + "/" + instanceNameOut_ + "/";
+    char *path = const_cast<char *>(outputDir.c_str());
     int check = mkdir(path, 0777);
-    std::string outputDir = outputDir_ + instanceNameOut_ + "/";
+
     output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
     output_vehicles_ = outputDir + "VEHICLES_" + instanceNameOut_ + ".txt";
