@@ -33,7 +33,7 @@ public:
     std::vector<PRoute> routeSolution_;
     std::vector<PRequest> zSolution_;
 
-    std::vector<PRoute> InrouteSolution_;
+    std::vector<PRoute> InrouteSolution_;      // Initial solutions
     std::vector<PRequest> InzSolution_;
 
     int maxIncDegree_;
@@ -53,6 +53,7 @@ public:
     int CPIter_;
     int LPIter_;
     int MPIter_;
+    int ZoomIter_;
     int CPSuccess_;             // number of time CP succeed in finding integer
     int CPFails_;             // number of time CP fails in finding integer
     double objValue_;
@@ -60,6 +61,7 @@ public:
     double GreedyObjValue_;
     double RPEpochSolveTime_;
     double CPEpochSolveTime_;
+    bool CPBuilt_;
 
     myTools::Timer *isudTime_;
     myTools::Timer *RPTime_;
