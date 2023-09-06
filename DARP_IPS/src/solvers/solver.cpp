@@ -170,9 +170,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             isudObj_->nbVehicles_ = EpochInst->nbVehicles_;
         }
 
-
-        changeStr << epoch_ << "," << subProSolve.size() << "," << EpochInst->nbRequests_ << ",";
-        changeStr << EpochInst->nbNewRequests_ << "," << EpochInst->nbRequests_-EpochInst->nbNewRequests_ << ",";
+        if (isudObj_->isudIter_ == 1) {
+            changeStr << epoch_ << "," << subProSolve.size() << "," << EpochInst->nbRequests_ << ",";
+            changeStr << EpochInst->nbNewRequests_ << "," << EpochInst->nbRequests_ - EpochInst->nbNewRequests_ << ",";
+        }
 
 
         /*std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
