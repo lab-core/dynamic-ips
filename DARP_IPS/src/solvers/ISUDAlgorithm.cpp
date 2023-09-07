@@ -632,9 +632,9 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
 
                     if (CompPro_->status_ == FRACTIONAL) {
                         CPFails_++;
-                        if (pInst->parameters_->useZoom_) {
+                        availableTime_ = tiLim - isudTime_->dSinceStart().count();
+                        if (pInst->parameters_->useZoom_ && availableTime_ > 1) {
                             isudMIPTime_->start();
-                            availableTime_ = tiLim - isudTime_->dSinceStart().count();
                             solveRP_LPINT(pInst, 1, inputPaths);
                             ZoomIter_++;
                             (*pLogIsudResultsStream_)
