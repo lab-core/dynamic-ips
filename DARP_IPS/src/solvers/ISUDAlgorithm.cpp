@@ -526,12 +526,12 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
         /*MIPReducedPro_.reset();
         MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();*/
 
-//        if (isudIter_ == 1) {
+        if (isudIter_ == 1) {
             RPBuildTime_->start();
             MIPReducedPro_->routesToAdd_.clear();
             MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
             RPBuildTime_->stop();
- //       }
+        }
 
         if (pInst->parameters_->solutionMode_ != ANYTIME) {
             (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, isudIter_, "initial");
@@ -734,10 +734,10 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             CPBuilt_ = false;
             CPTime_->stop();
         }
-        for (auto & routeObj: MIPReducedPro_->compRoutes_)
+        /*for (auto & routeObj: MIPReducedPro_->compRoutes_)
             routeObj->mpAdded_ = false;
         MIPReducedPro_.reset();
-        MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();
+        MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();*/
         std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
         std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
                   << std::endl;
