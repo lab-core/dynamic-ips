@@ -367,9 +367,9 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         if (elapsedTime_ >= saveTime && middleSave) {
-            inputPaths.makeInstanceOutput(instNum);
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);
-            inputPaths.makeInstanceOutput("2");
+            /*inputPaths.makeInstanceOutput(instNum);
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);*/
+            inputPaths.makeInstanceOutput("3");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
         }
