@@ -738,11 +738,11 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             routeObj->mpAdded_ = false;
         MIPReducedPro_.reset();
         MIPReducedPro_ = std::make_shared<ZoomReducedProblem>();*/
-        std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
+        /*std::cout << "# number of unserved requests: " << zSolution_.size() << std::endl;
         std::cout << "# Time spent on ISUD iteration  = " << isudTime_->dSinceStart().count() << " (seconds)"
                   << std::endl;
         for (auto &requestObj: zSolution_)
-            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;
+            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
         (*pLogIsudResultsStream_)
                 << save_ISUDResults(epoch, "ISUD", nbRoutes_, isudTime_->dSinceStart().count(), subProTime, 0.0);
         isudTime_->stop();
