@@ -138,7 +138,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder+ "_" + std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
         int check = mkdir(path, 0777);
-        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder + "/";
+        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder +  "_" + std::to_string(nbVehicles) + "/";
     }
     prefix_ = solutionMode[0];
     prefix_ = prefix_ + "_" + algorithm;
