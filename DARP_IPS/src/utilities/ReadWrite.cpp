@@ -616,7 +616,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
     pInstance->nbNewRequests_ += pInstance->nbWaiting_;
 
     inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
-                                 solutionModeName[pInstance->parameters_->solutionMode_], saveScratch);
+                                 solutionModeName[pInstance->parameters_->solutionMode_], saveScratch, pInstance->nbVehicles_);
 
     // write the parameters in file
     std::ofstream myFile;

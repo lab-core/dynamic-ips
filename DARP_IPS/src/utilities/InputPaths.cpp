@@ -99,7 +99,8 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
 
-void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch) {
+void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch,
+                                   int nbVehicles) {
     // create directory for results
     if (saveScratch){
         std::string instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
@@ -122,7 +123,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         tm * curr_tm = localtime(&now);
         char resultFolder[100];
         strftime(resultFolder, 50, "%Y%m%d-%I%M" , curr_tm);
-        std::string folder_name = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder;
+        std::string folder_name = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder + "_" + std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
         int check = mkdir(path, 0777);
         if (check == -1)
@@ -134,7 +135,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         tm *curr_tm = localtime(&now);
         char resultFolder[100];
         strftime(resultFolder, 50, "%Y%m%d-%I%M", curr_tm);
-        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder;
+        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder+ "_" + std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
         int check = mkdir(path, 0777);
         outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder + "/";
