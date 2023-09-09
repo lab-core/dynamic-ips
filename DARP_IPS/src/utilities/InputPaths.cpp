@@ -128,7 +128,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         int check = mkdir(path, 0777);
         if (check == -1)
             myTools::throwException("Unable to create output folder!");
-        outputDir_ = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder + "/";
+        outputDir_ = outputFolder + "/" + solutionMode + "_"+ algorithm + "_" + resultFolder  + "_" + std::to_string(nbVehicles) + "/";
     }
     else {
         time_t now = time(nullptr);
