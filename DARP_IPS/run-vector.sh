@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=80G
 #SBATCH --time=04:15:00
-#SBATCH --array=1-72
+#SBATCH --array=1-96
 #SBATCH --output=/dev/null
 
 
@@ -10,7 +10,7 @@ module load eigen
 module load gcc
 
 i=1
-for algorithm in 4 2 3
+for algorithm in 4 2 3 0
 do
   for directory in Instances-300_10
   do
