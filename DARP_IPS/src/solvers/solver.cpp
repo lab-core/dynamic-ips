@@ -369,7 +369,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         if (elapsedTime_ >= saveTime && middleSave) {
             /*inputPaths.makeInstanceOutput(instNum);
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);*/
-            inputPaths.makeInstanceOutput("4");
+            inputPaths.makeInstanceOutput("10");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
         }
