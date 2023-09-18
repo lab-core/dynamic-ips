@@ -73,6 +73,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     double previousObj;
     int nbNegativeFound;
     bool isSolved = false;
+    int iter = 0;
     std::stringstream changeStr;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
@@ -101,6 +102,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     SubproEpochTime_ = 0;
 
     while (true) {
+        iter++;
         nbNegativeFound = 0;
         previousObj = isudObj_->objValue_;
 
@@ -216,6 +218,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
             GreedyModel_->GreedySolver(EpochInst, isudObj_->availableRoutes_, EpochInst->nbRequests_);*/
+        while(true){
+            if (!pPool->wait())
+                break;
+        }
 
         preprocessTime_->start();
         subProSolve.clear();
@@ -253,16 +259,15 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
                 break;
             // if the size of epoch is larger than 30s disable the following
-            else if (subProblemTime_->dSinceStart().count() > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
+            else if (simulationTime_->dSinceStart().count()/iter > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
                 break;
+            /*else if (subProblemTime_->dSinceStart().count() > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
+                break;*/
         }
         if (previousObj == isudObj_->objValue_) {
             break;
         }
-        while(true){
-            if (!pPool->wait())
-                break;
-        }
+
         subProSolve.clear();
     }  // end of CG while
 
