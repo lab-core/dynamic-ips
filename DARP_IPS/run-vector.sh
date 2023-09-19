@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
+#SBATCH --cpus-per-task=20
+#SBATCH --mem=100G
 #SBATCH --time=04:15:00
-#SBATCH --array=1-3
+#SBATCH --array=1-12
 #SBATCH --output=/dev/null
 
 
@@ -10,11 +10,11 @@ module load eigen
 module load gcc
 
 i=1
-for algorithm in 4
+for algorithm in 4 3 2
 do
   for directory in Instances-300_10
   do
-    for instance in 20150715_17-300m_10 20160129_17-300m_10 20160329_17-300m_10
+    for instance in 20160129_17-300m_10 20160225_17-300m_10 20160329_17-300m_10 20160401_17-300m_10
 #    for instance in 20150706_17-300m_10 20150715_17-300m_10 20150804_17-300m_10 20150828_17-300m_10 20150917_17-300m_10 20150926_17-300m_10 20151008_17-300m_10 20151025_17-300m_10 20151110_17-300m_10 20151130_17-300m_10 20151211_17-300m_10  20151230_17-300m_10 20160109_17-300m_10 20160129_17-300m_10 20160222_17-300m_10 20160225_17-300m_10 20160316_17-300m_10 20160329_17-300m_10 20160401_17-300m_10 20160427_17-300m_10 20160512_17-300m_10 20160521_17-300m_10 20160613_17-300m_10 20160628_17-300m_10
     do
       for num_vehicles in 1800
@@ -22,8 +22,8 @@ do
       do
         if [ $SLURM_ARRAY_TASK_ID -eq $i ]
         then
-          bin/realtime_DARP $directory $instance $num_vehicles $algorithm
-#          bin/realtime_DARP $directory $instance $num_vehicles $algorithm > "/scratch/amirelah/dynamic-ips/${directory}_${instance}_${num_vehicles}_${algorithm}.txt" 2>&1
+#          bin/realtime_DARP $directory $instance $num_vehicles $algorithm
+          bin/realtime_DARP $directory $instance $num_vehicles $algorithm > "/scratch/amirelah/dynamic-ips/${directory}_${instance}_${num_vehicles}_${algorithm}.txt" 2>&1
         fi
         (( i = $i + 1 ))
       done
