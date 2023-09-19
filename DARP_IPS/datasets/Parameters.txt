@@ -10,8 +10,8 @@ nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 2
 addOneRequestColumn = 0
-solutionMode = 1
-OneIter = 0
+solutionMode = 2
+OneIter = 1
 GreedyReOptimize = 0
 saveScratch = 1
 
@@ -22,7 +22,7 @@ MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
 minImp = 0.0025
-useZoom = 1
+useZoom = 0
 
 # LABEL SETTING STRATEGIES
 #
