@@ -10,7 +10,7 @@ module load eigen
 module load gcc
 
 i=1
-for algorithm in 0
+for algorithm in 3
 do
   for directory in Instances-120
   do
