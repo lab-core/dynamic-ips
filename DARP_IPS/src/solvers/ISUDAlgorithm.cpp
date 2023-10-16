@@ -1007,8 +1007,8 @@ void ISUDAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPa
         if (previousObj > objValue_) {
             previousObj = objValue_;
         }
-//        else
-        else if (proSize == MasterPro_->compRoutes_.size())
+        else
+//        else if (proSize == MasterPro_->compRoutes_.size())
             break;
     }
 
