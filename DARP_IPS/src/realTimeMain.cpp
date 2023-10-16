@@ -13,7 +13,7 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false;
+bool savePartial = true;
 std::string instNum = "10";
 int numVehicles = 2000;
 
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles";
+    std::string vehicleFolder = "sufficient_manhattan-vehicles-300";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
