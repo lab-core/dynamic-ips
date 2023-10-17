@@ -331,11 +331,11 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         simulationTime_->start();
  //       preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
-        /*std::cout << "---------------------"<< std::endl;
+        std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
-        std::cout << "---------------------"<< std::endl;*/
+        std::cout << "---------------------"<< std::endl;
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
         logFile << " EPOCH: " << epoch_ << std::endl;
