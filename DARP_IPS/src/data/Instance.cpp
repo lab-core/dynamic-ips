@@ -239,12 +239,12 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
     instRepStr_ << totalCustomers << ",";
-    if (totalCustomersPartial > 100000)
-        instRepStr_ << "100000 <" << ",";
-    else if (totalCustomersPartial < 90000)
-        instRepStr_ << "< 90000" << ",";
+    if (totalCustomersPartial > 135000)
+        instRepStr_ << "135000 <" << ",";
+    else if (totalCustomersPartial < 125000)
+        instRepStr_ << "< 125000" << ",";
     else
-        instRepStr_ << "90000 - 100000" << ",";
+        instRepStr_ << "125000 - 135000" << ",";
     instRepStr_ << totalNumServed << "," << totalWaiting/static_cast<float>(numServed) << ",";
     instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
     instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << "," << totalNumServedPartial << ",";
@@ -445,9 +445,11 @@ void Instance::setInitialTimes() {
     else if (parameters_->solutionMode_ == ANYTIME){
         for (auto & vehicleObj : vehicles_){
             if (vehicleObj->onboards_.empty()){
-                vehicleObj->idle_ = true;
-                vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
-                vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
+                if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
+                    vehicleObj->idle_ = true;
+                    vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
+                    vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
+                }
             }
         }
     }
