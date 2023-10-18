@@ -620,31 +620,39 @@ std::string Instance::saveRoutesTimes(int epoch) {
     return repStr.str();
 }
 
-void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration) {
+void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration,
+                          std::vector<int> & selectedVehicles_) {
     std::ofstream myFile;
     int setwSize = 15;
     int nbOnboards = 0;
     int nbWaiting = 0;
     int nbRequests = 0;
+    int nbVehicles = 0;
+    int vehicleIter;
 
     // print vehicles
     myFile.open (inputPaths.getOutputVehicles(), std::ofstream::app);
     myFile << "COLUMNS\n\n" << "vehicle_ID\n" << "capacity\n" << "depart_Time\n" << "end_Time\n" << "depart_ID\n";
     myFile << "sink_ID\n" << "departZone_ID\n" << "sinkZone_ID\n" << "Route_size\n" << "LDual\n" << "IDuals\n\n" << "VEHICLES_INFO" << std::endl;
-
+    vehicleIter = 0;
     for (auto & vehicleObj : vehicles_) {
-        nbOnboards += int(vehicleObj->onboards_.size());
-        myFile << std::left << std::setw(7) << vehicleObj->vehicleID_;
-        myFile << std::setw(10) << vehicleObj->capacity_ ;
-        myFile << std::setw(10) << vehicleObj->departTime_ ;
-        myFile << std::setw(10) << vehicleObj->endTime_ ;
-        myFile << std::setw(setwSize) << vehicleObj->departNode_->locationID_ ;
-        myFile << std::setw(setwSize) << vehicleObj->sinkNode_->locationID_;
-        myFile << std::setw(setwSize) << vehicleObj->departNode_->zoneID_ ;
-        myFile << std::setw(setwSize) << vehicleObj->sinkNode_->zoneID_;
-        myFile << std::setw(setwSize) << vehicleObj->currentRoute_->routeNodes_.size();
-        myFile << std::setw(setwSize) << vehicleObj->InitialDual_;
-        myFile << std::setw(setwSize) << vehicleObj->dual_ << "\n";
+        if (selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+            nbVehicles++;
+            nbOnboards += int(vehicleObj->onboards_.size());
+    //        myFile << std::left << std::setw(7) << vehicleObj->vehicleID_;
+            myFile << std::left << std::setw(7) << vehicleIter;
+            vehicleIter++;
+            myFile << std::setw(10) << vehicleObj->capacity_;
+            myFile << std::setw(10) << vehicleObj->departTime_;
+            myFile << std::setw(10) << vehicleObj->endTime_;
+            myFile << std::setw(setwSize) << vehicleObj->departNode_->locationID_;
+            myFile << std::setw(setwSize) << vehicleObj->sinkNode_->locationID_;
+            myFile << std::setw(setwSize) << vehicleObj->departNode_->zoneID_;
+            myFile << std::setw(setwSize) << vehicleObj->sinkNode_->zoneID_;
+            myFile << std::setw(setwSize) << vehicleObj->currentRoute_->routeNodes_.size();
+            myFile << std::setw(setwSize) << vehicleObj->InitialDual_;
+            myFile << std::setw(setwSize) << vehicleObj->dual_ << "\n";
+        }
     }
     myFile.close();
 
@@ -652,21 +660,26 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     myFile.open (inputPaths.getOutputOnboards(), std::ofstream::app);
     myFile << "COLUMNS\n\n" << "passenger_count\n" << "pickup_ID\n" << "dropoff_ID\n" << "request_time_sec\n";
     myFile << "pickup_time_sec\n" << "pickup_depart_sec\n" << "vehicle_ID\n" << "pickup_district\n" <<  "dropoff_district\n" << "position\n\n" << "REQUESTS_INFO" << std::endl;
-
+    vehicleIter = 0;
     for (auto & vehicleObj : vehicles_) {
-        for (int i = 1; i < vehicleObj->currentRoute_->routeNodes_.size(); ++i) {
-            if (vehicleObj->currentRoute_->routeNodes_[i]->initialType_ != SINK && vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD){
-                PRequest requestObj = vehicleObj->currentRoute_->routeNodes_[i]->related_Request_;
-                myFile << std::left << std::setw(7) << requestObj->nbPassengers_ ;
-                myFile << std::setw(10) << requestObj->PickUpID_ ;
-                myFile << std::setw(10) << requestObj->DropOffID_ ;
-                myFile << std::setw(10) << requestObj->earlyPick_ ;
-                myFile << std::setw(10) << requestObj->pickTime_;
-                myFile << std::setw(10) << (vehicleObj->currentRoute_->routeNodes_[i]->pairNode_)->departTime_;
-                myFile << std::setw(setwSize) << vehicleObj->vehicleID_;
-                myFile << std::setw(setwSize) << requestObj->pickZoneID_;
-                myFile << std::setw(setwSize) << requestObj->dropZoneID_;
-                myFile << std::setw(setwSize) << i << "\n";
+        if (selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+            vehicleIter++;
+            for (int i = 1; i < vehicleObj->currentRoute_->routeNodes_.size(); ++i) {
+                if (vehicleObj->currentRoute_->routeNodes_[i]->initialType_ != SINK &&
+                    vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+                    PRequest requestObj = vehicleObj->currentRoute_->routeNodes_[i]->related_Request_;
+                    myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
+                    myFile << std::setw(10) << requestObj->PickUpID_;
+                    myFile << std::setw(10) << requestObj->DropOffID_;
+                    myFile << std::setw(10) << requestObj->earlyPick_;
+                    myFile << std::setw(10) << requestObj->pickTime_;
+                    myFile << std::setw(10) << (vehicleObj->currentRoute_->routeNodes_[i]->pairNode_)->departTime_;
+              //      myFile << std::setw(setwSize) << vehicleObj->vehicleID_;
+                    myFile << std::setw(setwSize) << vehicleIter-1;
+                    myFile << std::setw(setwSize) << requestObj->pickZoneID_;
+                    myFile << std::setw(setwSize) << requestObj->dropZoneID_;
+                    myFile << std::setw(setwSize) << i << "\n";
+                }
             }
         }
     }
@@ -677,30 +690,34 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     myFile << "COLUMNS\n\n" << "passenger_count\n" << "pickup_ID\n" << "dropoff_ID\n" << "request_time_sec\n";
     myFile << "pickup_district\n" << "dropoff_district\n" << "LDuals\n" << "IDuals\n" << "vehicle_ID\n" << "pick_position\n" << "drop_position\n\n";
     myFile << "REQUESTS_INFO" << std::endl;
-
+    vehicleIter = 0;
     for (auto & vehicleObj : vehicles_) {
-        for (int i = 1; i < vehicleObj->currentRoute_->routeNodes_.size(); ++i) {
-            if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP &&
-                vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ != ON_BOARD){
-                PRequest requestObj = vehicleObj->currentRoute_->routeNodes_[i]->related_Request_;
-                myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
-                myFile << std::setw(10) << requestObj->PickUpID_;
-                myFile << std::setw(10) << requestObj->DropOffID_;
-                myFile << std::setw(10) << requestObj->earlyPick_;
-                myFile << std::setw(10) << requestObj->pickZoneID_;
-                myFile << std::setw(10) << requestObj->dropZoneID_;
-                myFile << std::setw(10) << requestObj->InitialDual_;
-                myFile << std::setw(10) << requestObj->dual_;
-                myFile << std::setw(10) << vehicleObj->vehicleID_;
-                myFile << std::setw(10) << i;
-                for (int j = i+1; j < vehicleObj->currentRoute_->routeNodes_.size(); ++j){
-                    if (vehicleObj->currentRoute_->routeNodes_[j]->initialType_ != SINK) {
-                        if (vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId() ==
-                            vehicleObj->currentRoute_->routeNodes_[j]->related_Request_->getRequestId())
-                            myFile << std::setw(10) << j << "\n";
+        if (selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+            vehicleIter++;
+            for (int i = 1; i < vehicleObj->currentRoute_->routeNodes_.size(); ++i) {
+                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP &&
+                    vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ != ON_BOARD) {
+                    PRequest requestObj = vehicleObj->currentRoute_->routeNodes_[i]->related_Request_;
+                    myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
+                    myFile << std::setw(10) << requestObj->PickUpID_;
+                    myFile << std::setw(10) << requestObj->DropOffID_;
+                    myFile << std::setw(10) << requestObj->earlyPick_;
+                    myFile << std::setw(10) << requestObj->pickZoneID_;
+                    myFile << std::setw(10) << requestObj->dropZoneID_;
+                    myFile << std::setw(10) << requestObj->InitialDual_;
+                    myFile << std::setw(10) << requestObj->dual_;
+        //            myFile << std::setw(10) << vehicleObj->vehicleID_;
+                    myFile << std::setw(10) << vehicleIter-1;
+                    myFile << std::setw(10) << i;
+                    for (int j = i + 1; j < vehicleObj->currentRoute_->routeNodes_.size(); ++j) {
+                        if (vehicleObj->currentRoute_->routeNodes_[j]->initialType_ != SINK) {
+                            if (vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId() ==
+                                vehicleObj->currentRoute_->routeNodes_[j]->related_Request_->getRequestId())
+                                myFile << std::setw(10) << j << "\n";
+                        }
                     }
+                    nbWaiting++;
                 }
-                nbWaiting ++;
             }
         }
     }
@@ -747,7 +764,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     myFile.open (inputPaths.getOutputInstance(), std::ofstream::app);
     myFile << "INSTANCE = " << inputPaths.getInstanceNameOut() << std::endl << std::endl;
     myFile << "SIMULATION_START = " << simulationStart << std::endl << std::endl;
-    myFile << "NUM_VEHICLES = " << nbVehicles_ << std::endl;
+    myFile << "NUM_VEHICLES = " << nbVehicles << std::endl;
     myFile << "NUM_ONBOARDS = " << nbOnboards << std::endl;
     myFile << "NUM_RECEIVED = " << nbWaiting << std::endl;
     myFile << "NUM_REQUESTS = " << nbRequests << std::endl;

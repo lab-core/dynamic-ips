@@ -372,10 +372,25 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
         if (elapsedTime_ >= saveTime && middleSave) {
-            /*inputPaths.makeInstanceOutput(instNum);
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);*/
-            inputPaths.makeInstanceOutput("10");
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
+            if (instNum == "S") {
+                EpochInst->parameters_->greedyReOptimize_ = true;
+                GreedyModel_->GreedyAssignment(EpochInst);
+                // add vehicles in previous solution
+                for (auto &vehicleObj: EpochInst->vehicles_) {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                        GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_]++;
+                    }
+                }
+                inputPaths.makeInstanceOutput(instNum);
+                mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,
+                                     1.5 * mainInst->parameters_->epochLength_, GreedyModel_->selectedVehicles_);
+            }
+            else {
+                GreedyModel_->selectedVehicles_.clear();
+                GreedyModel_->selectedVehicles_.resize(mainInst->nbVehicles_,1);
+                inputPaths.makeInstanceOutput("10");
+                mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_, 3600 * 5, GreedyModel_->selectedVehicles_);
+            }
             break;
         }
         if (EpochInst->nbNewRequests_ == 0 && isudObj_->zSolution_.empty()) {
@@ -525,9 +540,10 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                 for (auto & vehicleObj: StaticInst->vehicles_)
                     vehicleObj->updateStateTime(saveTime, length, mainInst->simulationStartTime_);
                 inputPaths.makeInstanceOutput(instNum);
-                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,mainInst->parameters_->epochLength_);
+                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,mainInst->parameters_->epochLength_,
+                                       GreedyModel_->selectedVehicles_);
                 inputPaths.makeInstanceOutput("2");
-                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,3600*5);
+                StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,3600*5, GreedyModel_->selectedVehicles_);
                 break;
             }
             else {
@@ -615,12 +631,28 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
         // saving the status in the middle of running
         if ((static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
-            inputPaths.makeInstanceOutput(instNum);
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
-                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),mainInst->parameters_->epochLength_);
-            inputPaths.makeInstanceOutput("2");
-            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
-                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);
+            if (instNum == "S") {
+                EpochInst->parameters_->greedyReOptimize_ = true;
+                GreedyModel_->GreedyAssignment(EpochInst);
+                // add vehicles in previous solution
+                for (auto &vehicleObj: EpochInst->vehicles_) {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                        GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_]++;
+                    }
+                }
+                inputPaths.makeInstanceOutput(instNum);
+                mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
+                                                 static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),
+                                     mainInst->parameters_->epochLength_, GreedyModel_->selectedVehicles_);
+            }
+            else {
+                GreedyModel_->selectedVehicles_.clear();
+                GreedyModel_->selectedVehicles_.resize(mainInst->nbVehicles_,1);
+                inputPaths.makeInstanceOutput("2");
+                mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
+                                                 static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),
+                                     3600 * 5, GreedyModel_->selectedVehicles_);
+            }
 
             break;
         }

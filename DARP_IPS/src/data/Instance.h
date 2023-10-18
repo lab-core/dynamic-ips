@@ -97,7 +97,7 @@ public:
 
     // this function save the creation time of the current solution in a csv
     std::string saveRoutesTimes(int epoch);
-    void saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration);
+    void saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration, std::vector<int> & selectedVehicles_);
 
     // this function set all the selected vehicles to none (partially solving the subproblems)
     void resetVehicleSelection();
