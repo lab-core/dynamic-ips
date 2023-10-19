@@ -19,7 +19,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOp
     nbEliminated_ = 0;
     nbGenerated_ = 0;
     nbOutputs_ = 0;
-    maxPickup_ = 3;
+    maxPickup_ = 4;
     /*subproTime_ = new myTools::Timer(); subproTime_->init();
     subproRouteTime_ = new myTools::Timer(); subproRouteTime_->init();
     sortTime_ = new myTools::Timer(); sortTime_->init();*/
