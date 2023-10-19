@@ -12,7 +12,7 @@
 
 using namespace std::chrono;
 float saveTime = 3600;
-bool middleSave = true;
+bool middleSave = false;
 bool savePartial = false;
 std::string instNum = "S";
 int numVehicles = 2000;
@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
         std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
         Request::requestCount_ = 0;
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-        mainInst->nbVehicles_ = numVehicles;
+        if (mainInst->nbOnboards_ == 0)
+            mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
         mainInst->parameters_->savePartial_ = savePartial;
         mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);

@@ -80,8 +80,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         GreedyModel_->GreedySolver(EpochInst);
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
         isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_);
-    else
+    else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
         isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
+    else
+        isudObj_->availableTime_ = 99999;
 
     isudObj_->initialization(EpochInst, inputPaths);
     for (auto & vehicleObj : EpochInst->vehicles_){
@@ -234,9 +236,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else {
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
-            else
+            else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
                 isudObj_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
- //           std::cout << "Available time: " << isudObj_->availableTime_ << std::endl;
+            else
+                isudObj_->availableTime_ = 99999;
             if (isudObj_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
                 break;
             }
@@ -331,6 +334,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         simulationTime_->start();
  //       preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
+
         std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
@@ -509,8 +513,10 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
     simulationTime_->stop();
     isudObj_->availableRoutes_.resize(mainInst->nbVehicles_);
-    for (auto &vehicleObj: mainInst->vehicles_){
-        vehicleObj->currentRoute_->createColumn();
+    if (StaticInst->parameters_->mainAlgorithm_ != GREEDY) {
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            vehicleObj->currentRoute_->createColumn();
+        }
     }
 
     StaticInst->updatePenalties(0);
