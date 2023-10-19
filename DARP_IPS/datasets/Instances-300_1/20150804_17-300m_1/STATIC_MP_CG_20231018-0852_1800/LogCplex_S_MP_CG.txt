@@ -1,0 +1,163 @@
+20150804_17-300m_1 solved in STATIC mode by MP_CG
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3381.000000
+Iteration:   241   Dual objective     =         11215.000000
+Iteration:   467   Dual objective     =         15802.199219
+Iteration:   668   Dual objective     =         16560.199219
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3373.000000
+Iteration:   238   Dual objective     =         11126.000000
+Iteration:   454   Dual objective     =         15574.000000
+Iteration:   642   Dual objective     =         16401.699219
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.4609375
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 118098.761597 after 0.01 sec. (6.74 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (12.42 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       118098.7616        0.0000           100.00%
+*     0+    0                        33340.1229        0.0000           100.00%
+      0     0    16402.6992    14    33340.1229    16402.6992      663   50.80%
+*     0+    0                        16634.6992    16402.6992             1.39%
+*     0     0      integral     0    16402.6992    16402.6992      663    0.00%
+Elapsed time = 0.12 sec. (86.41 ticks, tree = 0.01 MB, solutions = 4)
+
+Root node processing (before b&c):
+  Real time             =    0.12 sec. (87.01 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.12 sec. (87.01 ticks)
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3057.000000
+Iteration:   253   Dual objective     =         11732.000000
+Iteration:   458   Dual objective     =         15558.296875
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.921875
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 118098.761597 after 0.01 sec. (6.84 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (12.52 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       118098.7616        0.0000           100.00%
+*     0+    0                        33340.1229        0.0000           100.00%
+      0     0    16357.1992    24    33340.1229    16357.1992      670   50.94%
+*     0+    0                        16534.6992    16357.1992             1.07%
+*     0     0      integral     0    16358.6992       Cuts: 8      678    0.00%
+      0     0        cutoff          16358.6992    16358.6992      678    0.00%
+Elapsed time = 0.11 sec. (92.31 ticks, tree = 0.01 MB, solutions = 4)
+
+Zero-half cuts applied:  3
+Gomory fractional cuts applied:  5
+
+Root node processing (before b&c):
+  Real time             =    0.11 sec. (92.92 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.11 sec. (92.92 ticks)
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3057.000000
+Iteration:   245   Dual objective     =         11108.000000
+Iteration:   453   Dual objective     =         15500.796875
+Iteration:   645   Dual objective     =         16336.699219
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.9296875
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 118098.761597 after 0.01 sec. (6.91 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (12.72 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       118098.7616        0.0000           100.00%
+*     0+    0                        33340.1229        0.0000           100.00%
+      0     0    16357.1992    36    33340.1229    16357.1992      662   50.94%
+*     0+    0                        16705.6992    16357.1992             2.09%
+*     0     0      integral     0    16358.6992       Cuts: 8      675    0.00%
+      0     0        cutoff          16358.6992    16358.6992      675    0.00%
+Elapsed time = 0.13 sec. (94.43 ticks, tree = 0.01 MB, solutions = 4)
+
+Zero-half cuts applied:  4
+Gomory fractional cuts applied:  4
+
+Root node processing (before b&c):
+  Real time             =    0.13 sec. (95.04 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.13 sec. (95.04 ticks)

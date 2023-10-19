@@ -1,0 +1,134 @@
+20160512_17-300m_1 solved in STATIC mode by MP_MIP
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 111780.302155 after 0.01 sec. (6.69 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (9.95 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       111780.3022        0.0000           100.00%
+*     0+    0                        31131.6413        0.0000           100.00%
+      0     0    14560.8008    18    31131.6413    14560.8008      560   53.23%
+*     0+    0                        14885.3008    14560.8008             2.18%
+*     0     0      integral     0    14568.3008       Cuts: 5      567    0.00%
+      0     0        cutoff          14568.3008    14568.3008      567    0.00%
+Elapsed time = 0.18 sec. (74.04 ticks, tree = 0.01 MB, solutions = 4)
+
+Zero-half cuts applied:  3
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =    0.18 sec. (74.60 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.18 sec. (74.60 ticks)
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =         11307.300781
+Iteration:   267   Dual objective     =          2286.000000
+Iteration:   473   Dual objective     =           304.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 111780.302155 after 0.01 sec. (6.83 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (10.82 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       111780.3022        0.0000           100.00%
+*     0+    0                        31131.6413        0.0000           100.00%
+      0     0    14526.8008    24    31131.6413    14526.8008      569   53.34%
+*     0+    0                        14699.3008    14526.8008             1.17%
+*     0     0      integral     0    14536.3008       Cuts: 4      578    0.00%
+      0     0        cutoff          14536.3008    14536.3008      578    0.00%
+Elapsed time = 0.15 sec. (84.18 ticks, tree = 0.01 MB, solutions = 4)
+
+Zero-half cuts applied:  2
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =    0.15 sec. (84.73 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.15 sec. (84.73 ticks)
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =         11289.300781
+Iteration:   258   Dual objective     =          2786.097656
+Iteration:   463   Dual objective     =           344.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 111780.302155 after 0.01 sec. (6.91 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (9.69 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       111780.3022        0.0000           100.00%
+*     0+    0                        31131.6413        0.0000           100.00%
+      0     0    14470.3008    16    31131.6413    14470.3008      575   53.52%
+*     0+    0                        14615.3008    14470.3008             0.99%
+
+Root node processing (before b&c):
+  Real time             =    0.07 sec. (36.58 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.07 sec. (36.58 ticks)

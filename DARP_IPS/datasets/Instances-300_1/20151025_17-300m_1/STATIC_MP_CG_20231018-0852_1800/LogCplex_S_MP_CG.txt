@@ -1,0 +1,117 @@
+20151025_17-300m_1 solved in STATIC mode by MP_CG
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2697.000000
+Iteration:   256   Dual objective     =         11294.199219
+Iteration:   476   Dual objective     =         13586.199219
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2697.000000
+Iteration:   256   Dual objective     =         11410.199219
+Iteration:   479   Dual objective     =         13652.199219
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2697.000000
+Iteration:   259   Dual objective     =         11150.199219
+Iteration:   468   Dual objective     =         13497.199219
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.5078125
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 107845.029663 after 0.01 sec. (6.95 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.02 sec. (10.84 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       107845.0297        0.0000           100.00%
+*     0+    0                        30760.8881        0.0000           100.00%
+      0     0    13842.1992    22    30760.8881    13842.1992      592   55.00%
+*     0+    0                        14116.1992    13842.1992             1.94%
+*     0+    0                        13869.1992    13842.1992             0.19%
+
+Root node processing (before b&c):
+  Real time             =    0.08 sec. (44.98 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.08 sec. (44.98 ticks)
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2820.000000
+Iteration:   260   Dual objective     =         11538.199219
+Iteration:   474   Dual objective     =         13556.199219
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.9296875
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 107845.029663 after 0.01 sec. (7.02 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (9.00 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       107845.0297        0.0000           100.00%
+*     0+    0                        30760.8881        0.0000           100.00%
+      0     0    13811.6992    12    30760.8881    13811.6992      556   55.10%
+*     0+    0                        14049.1992    13811.6992             1.69%
+*     0+    0                        13851.1992    13811.6992             0.29%
+
+Root node processing (before b&c):
+  Real time             =    0.11 sec. (43.34 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.11 sec. (43.34 ticks)

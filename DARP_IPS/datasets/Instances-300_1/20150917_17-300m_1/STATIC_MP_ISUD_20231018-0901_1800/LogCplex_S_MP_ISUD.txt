@@ -1,0 +1,354 @@
+20150917_17-300m_1 solved in STATIC mode by MP_ISUD
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3179.000000
+Iteration:   263   Dual objective     =         11450.000000
+Iteration:   485   Dual objective     =         13549.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.9375
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 102773.214050 after 0.03 sec. (6.53 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (1.60 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       102773.2141        0.0000           100.00%
+      0     0    13648.0000     6   102773.2141    13648.0000        0   86.72%
+*     0+    0                        13657.0000    13648.0000             0.07%
+*     0+    0                        13656.0000    13648.0000             0.06%
+
+Root node processing (before b&c):
+  Real time             =    0.09 sec. (28.93 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.09 sec. (28.93 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1537 rows and 3889 columns.
+Aggregator did 255 substitutions.
+Reduced LP has 282 rows, 11814 columns, and 41092 nonzeros.
+Presolve time = 0.02 sec. (15.92 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =       -207573.363333
+Iteration:   148   Dual objective     =           -54.000000
+Iteration:   210   Dual objective     =           -17.500000
+Iteration:   274   Dual objective     =            -6.666667
+Iteration:   336   Dual objective     =            -2.250000
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          3141.000000
+Iteration:   263   Dual objective     =         11525.000000
+Iteration:   480   Dual objective     =         13531.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99997.703125
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 102773.214050 after 0.01 sec. (6.69 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (1.61 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       102773.2141        0.0000           100.00%
+      0     0    13643.0000    14   102773.2141    13643.0000        0   86.73%
+*     0+    0                        13679.0000    13643.0000             0.26%
+*     0+    0                        13651.0000    13643.0000             0.06%
+
+Root node processing (before b&c):
+  Real time             =    0.07 sec. (29.23 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.07 sec. (29.23 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1537 rows and 3843 columns.
+Aggregator did 255 substitutions.
+Reduced LP has 282 rows, 11850 columns, and 41276 nonzeros.
+Presolve time = 0.02 sec. (15.94 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =       -196308.866667
+Iteration:   155   Dual objective     =           -59.000000
+Iteration:   217   Dual objective     =           -22.000000
+Iteration:   286   Dual objective     =            -7.666667
+Iteration:   348   Dual objective     =            -3.000000
+Iteration:   411   Dual objective     =            -0.750000
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1536 rows and 3866 columns.
+Aggregator did 257 substitutions.
+Reduced LP has 281 rows, 11825 columns, and 41165 nonzeros.
+Presolve time = 0.02 sec. (15.94 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =       -197411.740000
+Iteration:   164   Dual objective     =           -56.000000
+Iteration:   229   Dual objective     =           -18.000000
+Iteration:   296   Dual objective     =            -6.500000
+Iteration:   358   Dual objective     =            -2.200000
+Iteration:   421   Dual objective     =            -0.500000
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1536 rows and 3873 columns.
+Aggregator did 257 substitutions.
+Reduced LP has 281 rows, 11817 columns, and 41143 nonzeros.
+Presolve time = 0.02 sec. (15.94 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =       -183668.373333
+Iteration:   165   Dual objective     =           -54.000000
+Iteration:   228   Dual objective     =           -18.000000
+Iteration:   294   Dual objective     =            -6.500000
+Iteration:   356   Dual objective     =            -2.250000
+Iteration:   418   Dual objective     =            -0.400000
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2450.000000
+Iteration:   281   Dual objective     =         11888.000000
+Iteration:   496   Dual objective     =         13525.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99995.7890625
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 102773.214050 after 0.01 sec. (7.22 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (1.82 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       102773.2141        0.0000           100.00%
+      0     0    13640.0000     8   102773.2141    13640.0000        0   86.73%
+*     0+    0                        13649.0000    13640.0000             0.07%
+
+Root node processing (before b&c):
+  Real time             =    0.08 sec. (32.22 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.08 sec. (32.22 ticks)
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2412.000000
+Iteration:   279   Dual objective     =         11794.000000
+Iteration:   498   Dual objective     =         13471.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.9921875
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 102773.214050 after 0.01 sec. (7.28 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (1.83 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       102773.2141        0.0000           100.00%
+      0     0    13631.0000     8   102773.2141    13631.0000        0   86.74%
+*     0+    0                        13640.0000    13631.0000             0.07%
+
+Root node processing (before b&c):
+  Real time             =    0.08 sec. (32.39 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.08 sec. (32.39 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1537 rows and 3171 columns.
+Aggregator did 296 substitutions.
+Reduced LP has 241 rows, 9477 columns, and 27749 nonzeros.
+Presolve time = 0.02 sec. (15.26 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        -63691.540000
+Iteration:    73   Dual objective     =           -46.000000
+Iteration:   135   Dual objective     =           -10.000000
+Iteration:   197   Dual objective     =            -3.666667
+Iteration:   259   Dual objective     =            -1.000000
+----------------------- LMP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =          2412.000000
+Iteration:   279   Dual objective     =         11720.000000
+Iteration:   495   Dual objective     =         13461.000000
+----------------------- MP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_Preprocessing_Presolve                  0
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+CPXPARAM_TimeLimit                               99998.609375
+CPXPARAM_MIP_Tolerances_MIPGap                   0.0099999997764825821
+Found incumbent of value 102773.214050 after 0.01 sec. (7.29 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 16 threads.
+Root relaxation solution time = 0.01 sec. (1.83 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       102773.2141        0.0000           100.00%
+      0     0    13630.0000     8   102773.2141    13630.0000        0   86.74%
+*     0+    0                        13639.0000    13630.0000             0.07%
+
+Root node processing (before b&c):
+  Real time             =    0.08 sec. (32.42 ticks)
+Parallel b&c, 16 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.08 sec. (32.42 ticks)
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1537 rows and 3172 columns.
+Aggregator did 296 substitutions.
+Reduced LP has 241 rows, 9476 columns, and 27746 nonzeros.
+Presolve time = 0.02 sec. (15.26 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        -63817.900000
+Iteration:    73   Dual objective     =           -46.000000
+Iteration:   135   Dual objective     =           -11.000000
+Iteration:   197   Dual objective     =            -4.000000
+Iteration:   259   Dual objective     =            -1.250000
+----------------------- CP ------------------------
+Version identifier: 22.1.0.0 | 2022-03-09 | 1a383f8ce
+CPXPARAM_LPMethod                                2
+CPXPARAM_QPMethod                                2
+CPXPARAM_Threads                                 16
+CPXPARAM_MIP_Strategy_StartAlgorithm             2
+Tried aggregator 1 time.
+LP Presolve eliminated 1537 rows and 3125 columns.
+Aggregator did 296 substitutions.
+Reduced LP has 241 rows, 9531 columns, and 27911 nonzeros.
+Presolve time = 0.02 sec. (15.28 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        -60017.840000
+Iteration:    74   Dual objective     =           -38.000000
+Iteration:   136   Dual objective     =            -9.500000
+Iteration:   198   Dual objective     =            -3.500000
+Iteration:   260   Dual objective     =            -1.000000
