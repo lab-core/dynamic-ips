@@ -10,8 +10,8 @@ nbThreads = 24
 InitialDual = 0
 mainAlgorithm = 2
 addOneRequestColumn = 0
-solutionMode = 1
-OneIter = 0
+solutionMode = 2
+OneIter = 1
 GreedyReOptimize = 0
 saveScratch = 1
 
