@@ -60,6 +60,7 @@ void Instance::resetInstance() {
     nbRequests_ = 0;
     nbNewRequests_ = 0;
     nbWaiting_ = 0;
+    instGraph_->nbNodes_ = 0;
 //    instGraph_ = std::make_shared<Graph>();
 
     requests_.clear();

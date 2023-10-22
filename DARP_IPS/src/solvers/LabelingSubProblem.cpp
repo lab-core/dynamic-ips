@@ -675,7 +675,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
                     currentNode->nbActiveLabels_--;
                     selectedLabel->status_ = INACTIVE;
-                    if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1 && selectedLabel->load_ < Vehicle_->capacity_){
+                    /*if (!selectedLabel->isDropped_ && selectedLabel->pathNode_.size() > 1 && selectedLabel->load_ < Vehicle_->capacity_){
                         // the drop has been done in one of the pick points
                         for (auto &neighbourNode: (selectedLabel->pathNode_.back())->closeSuccessors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, true, Vehicle_->capacity_)) {
@@ -686,7 +686,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                                 }
                             }
                         }
-                    }
+                    }*/
                     // terminate to sink
  //                   if (selectedLabel->openNode_.empty())
  //                       labelExtend(selectedLabel, subGraph_->sinkNodes_[0]);
