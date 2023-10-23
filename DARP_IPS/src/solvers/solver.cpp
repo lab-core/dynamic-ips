@@ -370,14 +370,15 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in previous epoch
-        if (elapsedTime_ >= saveTime && middleSave && instNum == "S"){
+        EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        /*if (elapsedTime_ >= saveTime && middleSave && instNum == "S"){
             float deadline;
             deadline = elapsedTime_ + 1.5 * mainInst->parameters_->epochLength_;
             EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , deadline, nbReceivedRequest);
 
         }
         else
-            EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
+            EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);*/
         EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
