@@ -180,9 +180,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
 
-        /*std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
+        std::cout << "nb Requests: " << EpochInst->nbRequests_ << std::endl;
         std::cout << "nb new Requests: " << EpochInst->nbNewRequests_ << std::endl;
-        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;*/
+        std::cout << "nb of sub problems: " << subProSolve.size() << std::endl;
 
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
@@ -370,7 +370,14 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in previous epoch
-        EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        if (elapsedTime_ >= saveTime && middleSave && instNum == "S"){
+            float deadline;
+            deadline = elapsedTime_ + 1.5 * mainInst->parameters_->epochLength_;
+            EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , deadline, nbReceivedRequest);
+
+        }
+        else
+            EpochInst->buildPartialData(mainInst, isudObj_->zSolution_ , elapsedTime_, nbReceivedRequest);
         EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
