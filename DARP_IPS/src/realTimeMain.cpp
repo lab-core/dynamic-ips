@@ -12,9 +12,9 @@
 
 using namespace std::chrono;
 float saveTime = 3600;
-bool middleSave = false;
+bool middleSave = true;
 bool savePartial = false;
-std::string instNum = "10";
+std::string instNum = "N";
 int numVehicles = 2000;
 
 int main(int argc, char** argv) {

@@ -123,8 +123,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;*/
 
-        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 600)
-            subProOptions_->MaxLabel_ = 10;
+        /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 600)
+            subProOptions_->MaxLabel_ = 10;*/
 
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
@@ -374,7 +374,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         if (elapsedTime_ >= saveTime && middleSave) {
             /*inputPaths.makeInstanceOutput(instNum);
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);*/
-            inputPaths.makeInstanceOutput("10");
+            inputPaths.makeInstanceOutput("N");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
         }
