@@ -312,7 +312,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     int nbReceivedRequest;
     epoch_ = 0;
     std::vector<float> EpochTime = {1,1,1};
-    int commitTime = mainInst->parameters_->committedTime_;
+//    int commitTime = mainInst->parameters_->epochLength_;
 
     // start simulation timer
     mainInst->setInitialTimes();
@@ -342,16 +342,16 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         logFile.close();
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
         int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
-        if (commitTime > std::max(avg, (int)mainInst->parameters_->committedTime_)) {
-            commitTime = std::max(avg, (int)mainInst->parameters_->committedTime_);
-            std::cout << "dec commit time: " << commitTime << std::endl;
+        if (mainInst->parameters_->committedTime_ > std::max(avg, mainInst->parameters_->epochLength_)) {
+            mainInst->parameters_->committedTime_ = std::max(avg, mainInst->parameters_->epochLength_);
+            std::cout << "dec commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
-        if (commitTime < epochRuntime_) {
-            commitTime = ceil(epochRuntime_ + 2);
-            std::cout << "inc commit time: " << commitTime << std::endl;
+        if (mainInst->parameters_->committedTime_ < epochRuntime_) {
+            mainInst->parameters_->committedTime_ = ceil(epochRuntime_ + 2);
+            std::cout << "inc commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
 
-        mainInst->parameters_->committedTime_ = commitTime;
+//        mainInst->parameters_->committedTime_ = commitTime;
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
