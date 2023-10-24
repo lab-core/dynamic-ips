@@ -123,8 +123,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;*/
 
-        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 600)
+        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 400) {
             subProOptions_->MaxLabel_ = 10;
+            subProOptions_->usePick_ = true;
+        }
 
         isudObj_->nbVehicles_ = 0;
         if (EpochInst->parameters_->greedyPortion_){
