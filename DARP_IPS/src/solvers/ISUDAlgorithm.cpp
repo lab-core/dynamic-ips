@@ -532,7 +532,7 @@ void ISUDAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPath
             MIPReducedPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
             RPBuildTime_->stop();
             if (availableTime_ < 1 && pInst->parameters_->solutionMode_ != ANYTIME)
-                tiLim = tiLim +1
+                tiLim = tiLim +1;
         }
 
         if (pInst->parameters_->solutionMode_ != ANYTIME) {
