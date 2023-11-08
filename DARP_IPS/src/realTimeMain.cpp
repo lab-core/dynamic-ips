@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int mainAlgo = -1;
     if (argc == 4){
         std::string instanceNames = "datasets/InstanceNames.txt";
-        ReadWrite::readInstNames(instanceNames, instNames , 24, "_17-300m");
+        ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
         std::string word = argv[2];
