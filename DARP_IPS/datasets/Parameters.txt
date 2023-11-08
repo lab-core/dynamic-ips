@@ -30,14 +30,14 @@ isTruncated = 1
 MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
 usePick = 1
-nbPick = 3
+nbPick = 2
 sortPath = 0
 
 # CPLEX PARAMETERS
