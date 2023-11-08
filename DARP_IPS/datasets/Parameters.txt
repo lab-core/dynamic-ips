@@ -11,7 +11,7 @@ InitialDual = 0
 mainAlgorithm = 2
 addOneRequestColumn = 0
 solutionMode = 1
-OneIter = 0
+OneIter = 1
 GreedyReOptimize = 1
 saveScratch = 1
 
@@ -26,7 +26,7 @@ useZoom = 1
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
+isTruncated = 0
 MaxLabel = 25
 isDominanceReleased = 0
 isSuccessorsLimited = 0
