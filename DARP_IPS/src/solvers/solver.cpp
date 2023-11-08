@@ -202,7 +202,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)
+            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && iter > 1 && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3))
                 break;
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -249,8 +249,12 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else {
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 masterModel_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
-            else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
-                masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
+            else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+                masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
+                                                      simulationTime_->dSinceStart().count());
+                if (iter == 1 && masterModel_->availableTime_ < 3)
+                    masterModel_->availableTime_ = 3;
+            }
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
  //           std::cout << "Available time: " << masterModel_->availableTime_ << std::endl;

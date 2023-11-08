@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
     std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "sufficient_manhattan-vehicles_240";
+    std::string vehicleFolder = "manhattan-vehicles";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
