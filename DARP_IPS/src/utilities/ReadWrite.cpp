@@ -117,7 +117,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
-                                                                            pInstance->instGraph_->sinkNodes_.back(),zoneID));
+                                                                            pInstance->instGraph_->sinkNodes_.back()));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
             }
         }
@@ -140,7 +140,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
     string title;
     std::vector<PVehicle> vehicles;
     int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1, departZoneID = -1, sinkZoneID = -1, routeSize = -1;
-    float departTime = -1, endTime = -1, lDual = -1, iDual = -1;;
+    float departTime = -1, endTime = -1, lDual = -1, iDual = -1;
 
     // add this only when I want to use less vehicles
 //    pInstance->nbVehicles_ = 150;
@@ -170,7 +170,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                 pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
-                                                                            pInstance->instGraph_->sinkNodes_.back(), departZoneID));
+                                                                            pInstance->instGraph_->sinkNodes_.back()));
 /*                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
                     pInstance->vehicles_.back()->dual_ = lDual;
                     pInstance->vehicles_.back()->InitialDual_ = lDual;
@@ -453,7 +453,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
     bool greedyReOptimize = false, saveScratch = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1;
+    int solutionMode = -1, nbPick = -1, sortPath = -1;
 
     bool addOneRequestColumn = false;
     float mipGap = -1;
@@ -554,6 +554,12 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "usePick "))
             file >> usePick;
 
+        else if (strEndWith(title, "nbPick "))
+            file >> nbPick;
+
+        else if (strEndWith(title, "sortPath "))
+            file >> sortPath;
+
         else if (strEndWith(title, "BigM "))
             file >> bigM;
 
@@ -578,8 +584,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          vehicle_portion, greedyPortion, usePick, bigM, solveTimeLimit,
-                                                          populateTimeLimit, addOneRequestColumn,
+                                                          vehicle_portion, greedyPortion, usePick, nbPick,
+                                                          static_cast<SortPaths>(sortPath),bigM,
+                                                          solveTimeLimit, populateTimeLimit, addOneRequestColumn,
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }
 
@@ -623,6 +630,15 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
     myFile.open (inputPaths.getOutputParamFile());
     myFile << pInstance->parameters_->toString();
     myFile.close();
+
+    Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
+    parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
+                        "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,MIP_maxIncDegree,CP_IncDegree,"
+                        "useMultiStage,useZoom,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
+                        "LabelingStrategy,Greedy_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
+
+    parametersStream << pInstance->parameters_->toStr();
+    parametersStream.close();
 }
 
 // Parsing functions
@@ -707,4 +723,5 @@ void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::str
         }
     }
 }
+
 

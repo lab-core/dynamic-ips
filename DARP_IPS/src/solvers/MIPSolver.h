@@ -6,7 +6,6 @@
 #define _MIPSOLVER_H
 
 #include "data/Instance.h"
-#include "solvers/CPLEXModeler.h"
 #include "utilities/InputPaths.h"
 
 //-----------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 #ifndef DARP_IPS_REDUCEDPROBLEM_H
 #define DARP_IPS_REDUCEDPROBLEM_H
 
-#include "solvers/MasterModeler.h"
+#include "solvers/CplexModeler.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -13,18 +13,16 @@
 //---------------------------------------------------------------------------------------------
 
 
-class ReducedProblem : public MasterModeler{
+class ReducedProblem : public CplexModeler{
 public:
     // Variables
-    IloNumVarArray routeVar_;
-    IloNumVarArray zVar_;
+    IloNumVarArray routeVar_;               // route variables
+    IloNumVarArray zVar_;                   // request(z) variables
 
-    IloNumArray zLb_;
-    IloNumArray rLb_;
     double objValue_;
-    double auxObjValue_;
+    double auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
 
-    std::vector<PRoute> compRoutes_;
+    std::vector<PRoute> compRoutes_;        // list of route variables in the model
 
     // Constructor and Destructor
     ReducedProblem();
@@ -35,17 +33,16 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVar(PRoute &newRoute, PInstance &pInst);
-    void addRouteVars(std::vector<PRoute> &newRoutes);
+    void addRouteVarFloat(PRoute &newRoute, PInstance &pInst);
 
     // this function adds zVar to the model used for the routes that served only one request
-    void addZVars(std::vector<PRequest> &requests);
     void addZVar(PRequest &request);
 
     // this function add one route at each iteration of the algorithm during one epoch
-    void updateModel(PInstance &pInst, std::vector<PRoute> &routeSolution);
+    void updateModel(PInstance &pInst, std::vector<PRequest> &fractionalZ);
 
     // this function build the model at the start of each epoch
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+    void buildModel(PInstance &pInst, std::vector<PRoute> &routeSolution,
                     int nbVehicles);
 
     // solve functions
@@ -56,8 +53,6 @@ public:
     void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                          InputPaths &inputPaths, float availableTime, double preObj);
 
-    // function to check whether the route is repeated before
-    static bool isColumnRepeat(std::vector<PRoute> &routeSet, PRoute &newRoute, std::map<unsigned int, int>& requestToOrder);
 
     void solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                           InputPaths &inputPaths, float availableTime, double preObj);

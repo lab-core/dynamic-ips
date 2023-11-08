@@ -196,10 +196,17 @@ class Dataset(object):
         self.dataset = self.dataset.sort_values(by=['tpep_pickup_datetime'])
         self.update_state()
 
-    def remove_same_pick_drop(self):
+    def remove_same_pick_drop(self, network=None):
         for index, row in self.dataset.iterrows():
             if row['pickup_ID'] == row['dropoff_ID']:
                 self.dataset = self.dataset.drop(index)
+        else:
+            duration_dict = network.durations.set_index(['startID', 'EndID']).to_dict()['duration']
+            for index, row in self.dataset.iterrows():
+                key = (row['pickup_ID'], row['dropoff_ID'])
+                specified_duration = duration_dict.get(key, None)
+                if specified_duration <= 60:
+                    self.dataset = self.dataset.drop(index)
         self.update_state()
 
     def calculate_trip_per_district(self, network):
@@ -229,15 +236,32 @@ class Dataset(object):
         if total != self.nb_vehicles:
             self.nb_vehicle_per_district[0] = self.nb_vehicle_per_district[0] + self.nb_vehicles - total
 
-    def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None):
+    def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None,
+                        restrict=None, visualize=False, remove_same=False):
         self.read_dataset_data()
         if network is not None:
             self.add_district_id(network)
             self.calculate_trip_per_district(network)
+        if visualize:
+            vf.show_dataset_per_hr(self.dataset, self.origin, save_image=True)
         if start_hr is not None:
             self.limit_time_dataset(start_hr, end_hr, start_min, end_min)
+        if remove_same:
+            self.remove_same_pick_drop(network=network)
+        if restrict is not None:
+            self.restrict_to_district(restrict)
         if capacity is not None:
             self.split_requests(capacity)
+
+        print("\nThe number of trips after time limit:", self.nb_requests)
+        print("The number of customers after time limit:", self.nb_customers)
+        self.calculate_trip_per_district(network)
+        if visualize:
+            self.visualize_dataset(network)
+        self.save_dataset()
+        self.save_instance()
+
+
 
     def save_instance(self, nb_vehicles=None):
         period_start, period_end = uf.calculate_time_from_origin(self.origin, self.start_hr, self.end_hr,

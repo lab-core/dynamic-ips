@@ -32,6 +32,8 @@ class Network(object):
         self.cell_to_longitude = cell_to_longitude
         self.locations = locations
         self.outbound_replace = outbound_replace
+        self.inbound_districts = []
+        self.limited_districts = []
 
 
     def __str__(self):
@@ -155,6 +157,20 @@ class Network(object):
         if make_plot:
             vf.plot_districts(district_network=self, print_id=True, add_legend=True,
                               file_name="districts")
+            vf.plot_map_cells(district_network=self, print_id=True, pause=False, file_name="Map_Cells")
 
+        """SELECT LIMITED DISTRICTS"""
+        self.limited_districts = []
+        for ID in c.LIMITED_DISTRICTS:
+            for item in self.districts:
+                if item.cartodb_id == ID:
+                    self.limited_districts.append(item)
+                    break
 
-
+        """SELECT INBOUND DISTRICTS"""
+        self.inbound_districts = []
+        for ID in c.INBOUND_DISTRICTS:
+            for item in self.districts:
+                if item.cartodb_id == ID:
+                    self.inbound_districts.append(item)
+                    break

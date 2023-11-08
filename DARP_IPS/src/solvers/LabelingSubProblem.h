@@ -17,19 +17,17 @@
 
 class LabelingSubProblem : public SubproModeler{
 public:
-    std::vector<PLabel> labelPool_;           // list of active labels, ordered based on reduced cost
-    std::vector<Node*> activeNodes_;
-    int nbDominated_;                               // number of labels removed via Domination Rules
-    int nbEliminated_;                              // number of labels removed via Elimination Rules
-    int nbGenerated_;
-    int nbOutputs_;
-    int maxPickup_;
+    std::vector<PLabel> labelPool_;             // pool of generated labels to re-use
+    std::vector<Node*> activeNodes_;            // list of nodes with active labels
+    int nbDominated_;                           // number of labels removed via Domination Rules
+    int nbEliminated_;                          // number of labels removed via Elimination Rules
+    int nbGenerated_;                           // number of generated labels
+    int nbOutputs_;                             // total number of generated routes
+    int maxPickup_;                             // number of pickups that are allowed in each path
 
     PSolverOption solverOptions_;
-//    myTools::Timer *subproTime_;
-//    myTools::Timer *subproRouteTime_;
-//    myTools::Timer *sortTime_;
-    std::string initialNodeID_;
+ //   myTools::Timer *subproTime_;                // timer for labeling algorithm
+    std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
     LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
@@ -44,8 +42,6 @@ public:
     void initialization();
     // main function of the dynamic programming
     void labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
-    void labelExtend2(PLabel &parentLabel, Node *outNode);
-    void labelDrop(PLabel &parentLabel);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
@@ -59,12 +55,14 @@ public:
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
+    void solutionSummery(std::vector<int> &subProResults);
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;
     void restProblem();
+
+    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
 };
-typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
-void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
-void truncateLabelList(Node *node, int MaxLabel);
+
+
 #endif //LABELINGSUBPROBLEM_H

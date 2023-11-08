@@ -2,11 +2,10 @@
 // Created by Ella on 2021-11-17.
 //
 
-#ifndef MASTERMODELER_H
-#define MASTERMODELER_H
+#ifndef CPLEXMODELER_H
+#define CPLEXMODELER_H
 
 
-#include "solvers/CPLEXModeler.h"
 #include "data/Instance.h"
 #include "data/Route.h"
 
@@ -15,9 +14,9 @@
 // Reduced problem and Complementary problem
 //-----------------------------------------------------------------------------
 
-enum VarSign { POSITIVE, NEGATIVE };
+//enum VarSign { POSITIVE, NEGATIVE };
 
-class MasterModeler {
+class CplexModeler {
 public:
     IloEnv env_;
     IloModel Model_;
@@ -37,16 +36,15 @@ public:
     IloRangeArray requestConst_;
     IloRangeArray vehicleConst_;
 
-    vector<unsigned int> orderToRequest_;
-//    std::unordered_map<unsigned int, int> requestToOrder_;
+    int nbRequestTask_;
 
     std::vector<PRoute> routesToAdd_;
-    myTools::Timer *solveTime_;
+    myTools::Timer *solveTime_;                             // time to solve the model
 
     // Constructor and Destructor
-    MasterModeler();
+    CplexModeler();
 
-    virtual ~MasterModeler();
+    virtual ~CplexModeler();
 
     // this function reset the model based the current set of routes and changed the set of constraints (size)
 //    void updateRequestOrder(PInstance &pInst);
@@ -66,14 +64,20 @@ public:
     // this function adds zVar to the model
     void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
     void addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign);
-    void addZVars(IloNumVarArray &zVar, std::vector<PRequest> &requests, VarSign sign);
 
     // this function adds routeVar to the model
     void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
     void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void addRouteVars(IloNumVarArray &routeVar, std::vector<PRoute> &newRoutes, VarSign sign);
 
 };
 
+// function to create IloNumArray with identical elements
+static void createIloNumArray (IloNumArray& numArray, unsigned int size, int elementValue) {
+    numArray.clear();
+    for (int i = 0; i < size; ++i) {
+        numArray.add(elementValue);
+    }
+}
 
-#endif //MASTERMODELER_H
+
+#endif //CPLEXMODELER_H

@@ -124,7 +124,7 @@ namespace Tools{
             return !active();
         }
 
-        // Ask to the attached task to stop if any
+        // Ask to stop the attached task if any
         void askStop() {
             if (pTask_) pTask_->askStop();
         }
@@ -135,7 +135,7 @@ namespace Tools{
             return false;
         }
 
-        // ask to the attached task to pause if any
+        // Ask to pause the attached task if any
         void askPause() {
             if (pTask_) pTask_->askPause();
         }
@@ -215,7 +215,7 @@ namespace Tools{
         // local number of available threads for the local pool
         int nThreadsAvailable_;
 
-        // store the shared_pointer to ensure that a copy is always stored and
+        // store the shared_pointer to ensure that a copy is always stored, and
         // thus we can control when to destroy each pool. It is necessary to keep
         // at least one copy of the shared pointer until each job running
         // in the pool finishes
@@ -277,7 +277,7 @@ namespace Tools{
     };
 
 
-    // Instantiate an obect of this class to write directly in the attribute log
+    // Instantiate an object of this class to write directly in the attribute log
 // file.
 // The class can be initialized with an arbitrary width if all the outputs must
 // have the same minimum width. Precision can be set to force a maximum width
@@ -302,7 +302,6 @@ namespace Tools{
             else {
                 pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::out);
             }
-            // logStream_.open(logName.c_str(), std::fstream::out);
         }
         LogOutput(std::string logName, int width, bool append = false):width_(width), precision_(5), logName_(logName) {
             if(append) {
@@ -310,7 +309,6 @@ namespace Tools{
             }
             else
                 pLogStream_ = new std::ofstream(logName.c_str(), std::fstream::out);
-            // logStream_.open(logName.c_str(), std::fstream::out);
         }
 
         ~LogOutput() {
@@ -327,7 +325,7 @@ namespace Tools{
             else pLogStream_ = NULL;
         }
 
-        // switch from unformatted to formatted inputs and reversely
+        // switch from un-formatted to formatted inputs and reversely
         //
         void switchToFormatted(int width) {
             width_ = width;

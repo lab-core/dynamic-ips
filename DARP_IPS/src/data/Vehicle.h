@@ -21,30 +21,25 @@ public:
     int capacity_;                          // vehicle capacity
     int numPassengers_;                     // number of passengers in the vehicle
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
-    float departTimeActual_;                      // time the vehicle arrives at its departing stop for the epoch
-    PNode departNodeActual_;
+    PNode departNode_;                      // vehicle departing stop
+    PNode sinkNode_;                        // vehicle sink node
     std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
-    PNode departNode_;
-    PNode sinkNode_;
-//    std::string sinkNode_;
-    PRoute currentRoute_;
-    PRoute solutionRoute_;
-    PRoute emptyRoute_;
+
+    PRoute currentRoute_;                   // current vehicle plan
+    PRoute solutionRoute_;                  // actual vehicle plan (performed plan)
+    PRoute emptyRoute_;                     // empty route which may contain drop of points
     double dual_;
-    double InitialDual_;
-    double bestReducedCost_;
-    float idleTime_;
-    float score_;
-    int zoneID_;
-    bool selected_;                         // this variable indicates which subProblem is selected to be solved
+    double InitialDual_;                    // when in parameters we use penalties as duals we save previous duals in it
+    double bestReducedCost_;                // best reduce cost of the routes generated after solving its subproblem
+    float idleTime_;                        // idle time of the vehicle
+    float score_;                           // calculated based on earliest possible pickup (for selection vehicle portion)
     bool idle_;
-    int vehicleIndex_;
-    std::bitset<MAX_SIZE> graphRequests_;
+    int vehicleIndex_;                      // used for considering a part of vehicle constraints in master problems
+    std::bitset<MAX_BIT_SIZE> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
 
 
     // Constructor and Destructor
     Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, PNode & sinkNode);
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, PNode & sinkNode, int zoneID);
 
     virtual ~Vehicle();
 
@@ -53,9 +48,6 @@ public:
     void setEmptyRoute(PInstance &pInst);
     void setSolutionRoute();
     void setCurrentRoute(PRoute &currentRoute);
-
-    // this function set bestReducedCost_ to infinity
-    void resetBestReducedCost();
 
     // Display function
     std::string toString() const;
@@ -67,7 +59,7 @@ public:
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
-    void finalizeSolutionRoutes(PInstance & pInst) const;
+    void finalizeSolutionRoutes() const;
     void updateDepartTime(float departTime);
 };
 

@@ -302,6 +302,8 @@ def merge_csv_files(instance_folder):
 
                 file_path = os.path.join(root, file)
                 data = pd.read_csv(file_path, index_col=False)
+                group = get_group(data['# (Lim) served Cust.'][0])
+                data.loc[0,'customer Group'] = group
                 parent_folder = os.path.basename(root)
                 parent_folder_col = pd.Series([parent_folder] * len(data))
                 data['Test_Folder'] = parent_folder_col
@@ -310,4 +312,75 @@ def merge_csv_files(instance_folder):
     root_file = root_folder + "/" + "results.csv"
     all_data.to_csv(root_file, index=False)
     print("CSV files merged and saved to", root_folder)
+
+
+def merge_requests(instance_folder, algorithms, start_time):
+    root_folder = c.DATASETS_DIR + instance_folder
+
+    wait_time_col = []
+    trip_delay_col = []
+    summary = []
+    for algorithm in algorithms:
+        for root, dirs, files in os.walk(root_folder):
+            for file in files:
+                if file.endswith(".csv") and file.startswith("Requests_" + algorithm):
+                    file_path = os.path.join(root, file)
+                    data = pd.read_csv(file_path, index_col=False)
+                    filtered_data = data[data['RequestTime'] >= start_time]
+                    filtered_data = filtered_data.reset_index(drop=True)
+                    wait_time_col.append(filtered_data[' WaitTime'])
+                    trip_delay_col.append(filtered_data[' TripDelay'])
+                    nb_Requests = filtered_data[' WaitTime'].count()
+
+                    summary.append({
+                        'Instance': "R" + str(nb_Requests),
+                        'nb_customers': filtered_data['nbPassengers'].sum(),
+                        'nb_requests': nb_Requests,
+                        'Group': get_group(filtered_data['nbPassengers'].sum()),
+                        'Algorithm': c.ALGORITHMS[algorithm],
+                        'Avg. wait_time': filtered_data[' WaitTime'].sum()/nb_Requests,
+                        'Avg. trip_delay': filtered_data[' TripDelay'].sum() / nb_Requests,
+                    })
+
+        wait_time_col.sort(key=len)
+        trip_delay_col.sort(key=len)
+        df_wait_times = pd.DataFrame({f'R{len(series)}': series for series in wait_time_col})
+        df_trip_delays = pd.DataFrame({f'R{len(series)}': series for series in trip_delay_col})
+
+        wait_file = root_folder + "/" + "waitTimes_" + c.ALGORITHMS[algorithm] + ".csv"
+        delay_file = root_folder + "/" + "tripDelay_" + c.ALGORITHMS[algorithm] + ".csv"
+        df_wait_times.to_csv(wait_file, index=False)
+        df_trip_delays.to_csv(delay_file, index=False)
+    df_summary = pd.DataFrame(summary)
+    summary_file = root_folder + "/" + "summary_" + ".csv"
+    df_summary.to_csv(summary_file, index=False)
+
+def merge_change_solutions(instance_folder, algorithms):
+    root_folder = c.DATASETS_DIR + instance_folder
+
+    result_df = pd.DataFrame()
+    for algorithm in algorithms:
+        for root, dirs, files in os.walk(root_folder):
+            for file in files:
+                if file.endswith(".csv") and file.startswith("solutionChange_" + algorithm):
+                    file_path = os.path.join(root, file)
+                    data = pd.read_csv(file_path, index_col=False)
+                    num_rows = len(data)
+                    data = data.iloc[:, 1:]
+                    avg_values = data.mean()
+                    # Create a new row with the calculated metrics
+                    parent_folder = os.path.basename(root)
+                    new_row = pd.Series([num_rows] + list(avg_values), name=parent_folder)
+
+                    # Append the new row to the result DataFrame
+                    result_df = result_df.append(new_row)
+    # Reset column names
+    summary_file = root_folder + "/" + "change_solutions_" + ".csv"
+    result_df.to_csv(summary_file, index=False)
+
+def get_group(size):
+    for key, value in c.TEST_SIZE.items():
+        if value[0] <= size <= value[1]:
+            return c.TEST_GROUP[key]
+
 

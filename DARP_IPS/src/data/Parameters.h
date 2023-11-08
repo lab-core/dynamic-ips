@@ -50,6 +50,8 @@ public:
     float vehicle_portion_;
     bool greedyPortion_{};
     bool usePick_;
+    int nbPick_;
+    SortPaths sortPath_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -60,17 +62,18 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
-               bool greedyReOptimize, bool saveScratch,
-               warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
-               bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
-               bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-               subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
+               bool greedyReOptimize, bool saveScratch, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
+               bool useMultiStage, float minImp, bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
+               bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
+               LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, float vehicle_portion,
+               bool greedyPortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();
 
     // Display function
     std::string toString() const;
+    std::string toStr() const;
 };
 
 
@@ -88,17 +91,20 @@ struct solverOption {
     LabelingStrategy LabelingStrategy_;
     int MaxLabel_;
     bool usePick_;
+    int nbPick_;
+    SortPaths pathSort_;
     // Constructor and Destructor
-    solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased,
+    solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick, SortPaths pathSort,
                  bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
     explicit solverOption(PParameters &MainParams);
-    void updateOptions(float maxReachTime);
 
     virtual ~solverOption();
     void disableHeuristics();
     bool areHeuristicsDisabled() const;
 };
+
+std::string boolToString(bool value);
 
 
 #endif //PARAMETERS_H

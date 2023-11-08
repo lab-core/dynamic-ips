@@ -2,21 +2,26 @@
 // Created by Ella on 5/25/2022.
 //
 
-#ifndef GREEDYMODELER_H
-#define GREEDYMODELER_H
+#ifndef GREEDY_MODELLER_H
+#define GREEDY_MODELLER_H
 
 
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
 #include "data/Greedy.h"
 
+//-----------------------------------------------------------------------------
+// GreedyModeler class
+// functions to solve instance with greedy approach based on cheapest insertion
+//-----------------------------------------------------------------------------
+
 class GreedyModeler {
 public:
-    std::vector<PGreedyRoute> solutionList_;
-    myTools::Timer *greedyTime_;
-    myTools::Timer *greedyAssignTime_;
-    std::vector<int> selectedVehicles_;
-    std::vector<PStopLabel> greedyLabelPool_;
+    std::vector<PGreedyRoute> greedyRouteList_;
+    myTools::Timer *greedyTime_;                            // time to solve the problem with greedy
+    myTools::Timer *greedyAssignTime_;                      // time to solve the assignment problem for dynamic pro.
+    std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
+    std::vector<PStopLabel> greedyLabelPool_;               // pool of greedy labels to re-use
     std::vector<PInsertPosition> positionList_;
     double objValue_;
 
@@ -25,8 +30,8 @@ public:
     virtual ~GreedyModeler();
 
     void initialization(PInstance &PInst);
+    // this function convert GreedyRoute to Route
     void solutionToRoute(PInstance &PInst);
-    // Greedy solver
     void GreedySolver(PInstance &PInst);
     void GreedyAssignment(PInstance &PInst);
     void solveInsertion(PInstance &PInst);
@@ -38,4 +43,4 @@ public:
 // any pick up is followed by the drop-off
 void GreedySolver_noShare(PInstance& PInst);
 
-#endif //GREEDYMODELER_H
+#endif //GREEDY_MODELLER_H

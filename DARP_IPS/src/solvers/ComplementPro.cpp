@@ -3,7 +3,7 @@
 //
 
 #include "ComplementPro.h"
-ComplementPro::ComplementPro() : MasterModeler() {
+ComplementPro::ComplementPro() : CplexModeler() {
 
     routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
@@ -29,7 +29,7 @@ void ComplementPro::initializeCPModel(PInstance &pInst, int nbVehicles) {
 void ComplementPro::addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign) {
 
     if (sign == NEGATIVE)
-        MasterModeler::addZVarFloat(zVar, request, sign);
+        CplexModeler::addZVarFloat(zVar, request, sign);
     else if (sign == POSITIVE) {
         IloNumVar numVar = IloNumVar(objFunction_(request->penalty_) +
                                      requestConst_[request->taskIndex_](1) +
@@ -43,10 +43,10 @@ void ComplementPro::addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign
 void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
 
     if (sign == NEGATIVE)
-        MasterModeler::addRouteVarFloat(routeVar, newRoute, sign, pInst);
+        CplexModeler::addRouteVarFloat(routeVar, newRoute, sign, pInst);
     else {
-        IloNumArray columnVar(env_, (signed) orderToRequest_.size());
-        MasterModeler::createPattern(columnVar, newRoute, POSITIVE);
+        IloNumArray columnVar(env_, nbRequestTask_);
+        CplexModeler::createPattern(columnVar, newRoute, POSITIVE);
         IloNumVar numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
                                      + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](1)
                                      + normalConst_[0](newRoute->incompatibilityDegree_));
@@ -62,7 +62,7 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
 
 void ComplementPro::addAuxVar(PInstance &pInst, double cost, int nbVehicles) {
 
-    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
+    IloNumArray columnVar(env_, nbRequestTask_);
     for (auto & requestObj : pInst->requests_)
         columnVar[requestObj->taskIndex_] = -1;
 
@@ -78,8 +78,6 @@ void ComplementPro::addAuxVar(PInstance &pInst, double cost, int nbVehicles) {
 void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                int nbVehicles) {
     // model initialization (defining empty set of constraints and adding objective)
-//    ResetCPModel();
-//    clearModel();
     initializeCPModel(pInst, nbVehicles);
 
     // adding solution route columns
@@ -87,7 +85,6 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         if (pInst->vehicles_[routeSolution[r]->vehicleID_]->vehicleIndex_ > -1) {
             addRouteVar(routeSolVar_, routeSolution[r], NEGATIVE, pInst);
             routeSolution[r]->cpAdded_ = true;
-//            solIndexes_.push_back(r);
         }
     }
 
@@ -131,16 +128,13 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 void ComplementPro::repairModel(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                int nbVehicles) {
     routeSolVar_.endElements();
-//    routeSolVar_.end();
     zSolVar_.endElements();
-//    zSolVar_.end();
 
     // adding solution route columns
     for (int r = 0; r < routeSolution.size(); r++) {
         if (pInst->vehicles_[routeSolution[r]->vehicleID_]->vehicleIndex_ > -1) {
             addRouteVar(routeSolVar_, routeSolution[r], NEGATIVE, pInst);
             routeSolution[r]->cpAdded_ = true;
-//            solIndexes_.push_back(r);
         }
     }
 
@@ -149,8 +143,8 @@ void ComplementPro::repairModel(PInstance &pInst, vector<PRequest> &zSolution, v
         addZVar(zSolVar_, zSol, NEGATIVE);
     }
 }
-void ComplementPro::buildModelCP2(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                               int nbVehicles, double preObj) {
+void ComplementPro::buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                                          int nbVehicles, double preObj) {
     // model initialization (defining empty set of constraints and adding objective)
     initializeCPModel(pInst, nbVehicles);
 
@@ -240,7 +234,6 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
             Cplex_.clearModel();
             solveTime_->stop();
             status_ = INFEASIBLE;
-            env_.out() << Model_ << std::endl;
             std::cout << "Failed to optimize the problem" << std::endl;
 //        throw myTools::myException("the Complementary model is infeasible!!!", __LINE__);
         }
@@ -316,7 +309,6 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                     }
                 }
                 if (isColumnDisjointBit(zResult, routeResult)) {
-                    // if (isColumnDisjointBit(zResult, routeResult,pInst->nbVehicles_, pInst->requests_.size())) {
                     // remove outgoing variable
                     Cplex_.clearModel();
                     for (auto &r: OutRouteVar) {
@@ -521,11 +513,11 @@ void ComplementPro::solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolu
 
 // this function check the situation of the CP solution to be column disjoint
 bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> &routeResults, int nbVehicle) {
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero((signed)orderToRequest_.size()+ nbVehicle, (signed)zResults.size() + (signed)routeResults.size());
+    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(nbRequestTask_ + nbVehicle, (signed)zResults.size() + (signed)routeResults.size());
     for (int r = 0; r < routeResults.size(); ++r) {
         for (int i = 0; i < routeResults[r]->routeRequests_.size(); ++i)
             A(routeResults[r]->routeRequests_[i]->taskIndex_, r) = 1;
-        A((signed)orderToRequest_.size()+routeResults[r]->vehicleID_,r) = 1;
+        A(nbRequestTask_ + routeResults[r]->vehicleID_, r) = 1;
     }
     for (int i = 0; i < zResults.size(); ++i) {
         A((signed)zResults[i]->taskIndex_,(signed)routeResults.size()+i) = 1;
@@ -543,13 +535,13 @@ bool ComplementPro::isColumnDisjoint(vector<PRequest> &zResults, vector<PRoute> 
         return false;
 }
 bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRoute> &routeResults) {
-    std::vector<std::bitset<MAX_SIZE>> Columns;
-    std::bitset<MAX_SIZE> unions;
-    std::bitset<MAX_SIZE> vehicles;
+    std::vector<std::bitset<MAX_BIT_SIZE>> Columns;
+    std::bitset<MAX_BIT_SIZE> unions;
+    std::bitset<MAX_BIT_SIZE> vehicles;
     int counts = 0;
     int veh = 0;
     for (auto & requestObj : zResults) {
-        std::bitset<MAX_SIZE>  zCol;
+        std::bitset<MAX_BIT_SIZE>  zCol;
         unions.set(requestObj->taskIndex_, true);
         counts ++;
     }
@@ -572,7 +564,7 @@ std::string ComplementPro::toString() const {
     repStr << std::endl;
     repStr << "# ====================  COMPLEMENTARY PROBLEM SOLVED  ==================== " << std::endl;
     repStr << "# COMPLEMENTARY PROBLEM SOLVED: " << std::endl;
-    repStr << MasterModeler::toString();
+    repStr << CplexModeler::toString();
     return repStr.str();
 }
 

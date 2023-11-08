@@ -6,7 +6,7 @@
 #define ROUTE_H
 
 #include "data/Graph.h"
-#include <ilcplex/ilocplex.h>
+
 
 //---------------------------------------------------------------------------------------------
 //  Route class
@@ -22,25 +22,22 @@ public:
     static unsigned int routeCount_;            // Counter the number of routes generated
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
-    float totalDelay_;                         // sum of waiting times of the requests served by the route
+    float totalDelay_;                          // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // ordered list of the nodes that are visited within the route
-    std::vector<PRequest> routeRequests_;   // list of requests served by the route
+    std::vector<PRequest> routeRequests_;       // list of requests served by the route
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
-    std::vector<float> plannedDepartTime_;       // time that vehicle is planned to reach each node
+    std::vector<float> plannedDepartTime_;      // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
     double reducedCost_;
     int incompatibilityDegree_;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
-    double createTime_;
+    double createTime_;                         // time that route is created through solving sub problems
     float totalLength_;
-//    Eigen::MatrixXd fullPattern_;
-//    myTools::BitVector * column_;
- //   std::shared_ptr<myTools::BitVector> column_;
-    std::bitset<MAX_SIZE> column_;
-    bool isCompatible_;
-    bool mpAdded_;
-    bool cpAdded_;
-    double score_;
+    std::bitset<MAX_BIT_SIZE> column_;
+    bool isCompatible_;                         // return false if the corresponding column is compatible
+    bool mpAdded_;                              // is the route has already been added to the RP/MP/CG model
+    bool cpAdded_;                              // is the route has already been added to the CP model
+    double score_;                              // equals to the reduced cost/number of pickups(or tasks)
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
@@ -48,12 +45,12 @@ public:
 
     // Getters and Setters
     unsigned int getRouteId() const;
-    void updateReducedCost(IloNumArray& requestDuals, IloNumArray& vehicleDual);
 
     // these functions are used to add nodes to the routes
     void addSource(PNode &node, float departTime, int departPassengers);
     void addNode(PNode &node);
-    void addNode1(PNode &node);
+
+    // function to add node to the solution route
     void addNode(PNode &node, float reachTime, float departTime);
     void addSink(PNode &node);
 
@@ -64,7 +61,7 @@ public:
     std::string toString() const;
 
     // this function is for testing the validation of the route
-    void testRoute(PVehicle & vehicle, PParameters &parameters);
+    void testRoute(PVehicle & vehicle);
 
     // This function is to reset the status of the nodes in the route
     void resetRoute();
@@ -76,10 +73,6 @@ public:
         else
             return false;
     }
-
-    // this function is for creating the column pattern from the route for CPLEX or IncDegree
-    /*void createFullPattern(std::unordered_map<unsigned int, int>& incRequestToOrder,
-                           std::unordered_map<int, int> &incVehicleToOrder);*/
     void createColumn();
 };
 

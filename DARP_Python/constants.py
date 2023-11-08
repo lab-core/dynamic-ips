@@ -32,3 +32,18 @@ INBOUND_DISTRICTS = [189, 131, 280, 199, 52, 54, 57, 100, 119, 127, 168, 174, 20
                      287, 290, 291, 299, 87, 178, 9, 98, 84, 129, 142, 192, 296]
 
 OUT_BOUND_DISTRICTS = [91, 50, 180, 172, 117, 257, 247]
+
+ALGORITHMS = {"A_GREEDY": "Greedy",
+              "A_MP_CG": "A_CG",
+              "A_MP_ISUD":"A_ICG",
+              "A_MP_MIP":"A_MIP"}
+
+TEST_SIZE = {"small": [0,125000],
+             "medium":[125000,135000],
+             "large":[135000,200000]}
+
+TEST_GROUP = {"small": "< 125,000",
+              "medium": "125,000 - 135,000",
+              "large": "135,000 < "}
+
+RUNTIME_COLUMNS = ['EpochRuntime', ' MP_Runtime', ' RP_Runtime', 'CP_Runtime', 'SubProbRuntime', 'waitTime', 'Objective','nbRequests']

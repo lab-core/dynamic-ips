@@ -5,27 +5,27 @@
 #ifndef COMPLEMENTPRO_H
 #define COMPLEMENTPRO_H
 
-#include "solvers/MasterModeler.h"
+#include "solvers/CplexModeler.h"
 
 //---------------------------------------------------------------------------------------------
 //  Complementary Problem class
 //  Build and solve the Complementary problem of the ISUD
 //---------------------------------------------------------------------------------------------
 
-enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
+//enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
 
-class ComplementPro : public MasterModeler{
+class ComplementPro : public CplexModeler{
 public:
     // Variables
-    IloNumVarArray routeIncVar_;
-    vector<PRoute> IncRoute_;
-    IloNumVarArray zIncVar_;
-    IloNumVarArray routeSolVar_;
-    IloNumVarArray zSolVar_;
-    IloNumVar auxVar_;
+    IloNumVarArray routeIncVar_;                // route Incompatible variables
+    vector<PRoute> IncRoute_;                   // list of Incompatible routes
+    IloNumVarArray zIncVar_;                    // request (z) Incompatible variables
+    IloNumVarArray routeSolVar_;                // route compatible variables (current basis)
+    IloNumVarArray zSolVar_;                    // request (z) compatible variables (current basis)
+    IloNumVar auxVar_;                          // auxiliary variable for improved version
 
-    std::vector<PRoute> fractionalRoutes_;
-    std::vector<PRequest> fractionalZ_;
+    std::vector<PRoute> fractionalRoutes_;      // list of routes in fractional solution
+    std::vector<PRequest> fractionalZ_;         // list of requests in fractional solution
 
     // set of constraints
     IloRangeArray normalConst_;
@@ -52,8 +52,9 @@ public:
     void repairModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                     int nbVehicles);
 
-    void buildModelCP2(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    int nbVehicles, double preObj);
+    // this function use auxiliary variable
+    void buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                               int nbVehicles, double preObj);
 
     // this function update the model and variables
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);

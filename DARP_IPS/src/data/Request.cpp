@@ -16,17 +16,17 @@ unsigned int Request::requestCount_ = 0;
 Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
         requestID_(requestCount_++), PickUpID_(pickUpID),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime){
-    allocVehicleID_ = 999999;
-    initialVehicleID_ = 999999;
-    solVehicleID_ = 999999;
+    allocVehicleID_ = LARGE_CONSTANT;
+    initialVehicleID_ = LARGE_CONSTANT;
+    solVehicleID_ = LARGE_CONSTANT;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
     char *name2 = new char[255];
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
-    pickTime_ = MAXReachTime;
-    dropTime_ = MAXReachTime;
+    pickTime_ = LARGE_CONSTANT;
+    dropTime_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
     minTravelTime_ = 0;
@@ -38,17 +38,17 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
         requestID_(requestCount_++), PickUpID_(pickUpID),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
         pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
-    allocVehicleID_ = 999999;
-    initialVehicleID_ = 999999;
-    solVehicleID_ = 999999;
+    allocVehicleID_ = LARGE_CONSTANT;
+    initialVehicleID_ = LARGE_CONSTANT;
+    solVehicleID_ = LARGE_CONSTANT;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
     char *name2 = new char[255];
     strncpy(name2, std::to_string(requestID_).c_str(), 255);
     name_ = name2;
-    pickTime_ = MAXReachTime;
-    dropTime_ = MAXReachTime;
+    pickTime_ = LARGE_CONSTANT;
+    dropTime_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
     minTravelTime_ = 0;

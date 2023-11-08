@@ -11,24 +11,24 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       bool oneIter, bool greedyReOptimize, bool saveScratch,
-                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp,
-                       bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       bool oneIter, bool greedyReOptimize, bool saveScratch, warmStart initialStart,
+                       int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
+                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick, int bigM,
-                       int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode,
-                       float MIPGap):
+                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick,
+                       int nbPick, SortPaths sortPath, int bigM, int solveTimeLimit, int populateTimeLimit,
+                       bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
-        initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
-        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
-        isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
-        isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), bigM_(bigM),
-        solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
-        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode), MIPGap_(MIPGap) {
+        initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree),
+        useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom), isTruncated_(isTruncated),
+        MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
+        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy),
+        subAlgorithm_(subAlgorithm), vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion),
+        usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath) , bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
+        MIPGap_(MIPGap) {
     savePartial_ = false;
 }
 
@@ -75,13 +75,15 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
-    repStr << std::setw(setwLength) << "# Is Pickup allowd after Drop " << " = " << isDropPickPossible_ << std::endl;
+    repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveMode_] << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
     repStr << std::setw(setwLength) << "# use greedy for vehicle portion " << " = " << greedyPortion_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
+    repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
+    repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
@@ -96,15 +98,45 @@ std::string Parameters::toString() const {
 
 }
 
+std::string Parameters::toStr() const {
+    std::stringstream repStr;
+    repStr << alphaParam_ << ",";
+    repStr << betaParam_ << ",";
+    repStr << deltaPram_ << ",";
+    repStr << epochLength_ << ",";
+    repStr << committedTime_ << ",";
+    repStr << nbThreads_ << ",";
+    repStr << InitialDualName[initialDual_] << ",";
+    repStr << warmStartName[initialStart_] << ",";
+    repStr << mainAlgorithmName[mainAlgorithm_] << ",";
+    repStr << solutionModeName[solutionMode_] << ",";
+    repStr << boolToString(oneIter_) << ",";
+    repStr << boolToString(greedyReOptimize_) << ",";
+    repStr << MIP_maxIncDegree_ << ",";
+    repStr << CP_IncDegree_ << ",";
+    repStr << boolToString(useMultiStage_) << ",";
+    repStr << boolToString(useZoom_) << ",";
+    repStr << boolToString(isTruncated_) << ",";
+    repStr << MaxLabel_ << ",";
+    repStr << boolToString(isDominanceReleased_) << ",";
+    repStr << boolToString(isDropPickPossible_) << ",";
+    repStr << LabelingStrategyName[LabelingStrategy_] << ",";
+    repStr << boolToString(greedyPortion_) << ",";
+    repStr << nbPick_ << ",";
+    repStr << SortPathsName[sortPath_] << ",";
+    repStr << MIPGap_ << "\n";
+    return repStr.str();
+}
+
 
 //-----------------------------------------------------------------------------
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 
-solverOption::solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased,
-                           bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy) :
-                           maxReachTime_(maxReachTime), isTruncated_(isTruncated),
-                           MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
+solverOption::solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick,
+                           SortPaths pathSort, bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy) :
+                           maxReachTime_(maxReachTime), isTruncated_(isTruncated), nbPick_(nbPick),
+                           MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited), pathSort_(pathSort),
                            isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
                            LabelingStrategy_(labelingStrategy), usePick_(false) {}
 
@@ -124,17 +156,19 @@ solverOption::solverOption(PParameters &MainParams) {
     isSuccessorsLimited_ = MainParams->isSuccessorsLimited_;
     isDropPickPossible_ = MainParams->isDropPickPossible_;
     usePick_ = MainParams->usePick_;
+    nbPick_ = MainParams->nbPick_;
+    pathSort_ = MainParams->sortPath_;
 }
 
-void solverOption::updateOptions(float maxReachTime) {
-    maxReachTime_ = maxReachTime;
-}
 
 bool solverOption::areHeuristicsDisabled() const {
-    if (isTruncated_ || isSuccessorsLimited_ || isDominanceReleased_)
+    if (isTruncated_ || isSuccessorsLimited_ || isDominanceReleased_ || !isDropPickPossible_)
         return false;
     else
         return true;
 }
 
 
+std::string boolToString(bool value) {
+    return value ? "True" : "False";
+}

@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(Vehicle *vehicle, PNode &source, int numRequests) : labelID_(labelCount_++) {
+Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -14,29 +14,20 @@ Label::Label(Vehicle *vehicle, PNode &source, int numRequests) : labelID_(labelC
     load_ = vehicle->numPassengers_;
     passedTime_ = vehicle->departTime_;
     reachedTime_ = vehicle->departTime_;
-//    pathNodes_.push_back(source->nodeID_);
     pathNode_.push_back(&(*source));
- //   path_.push_back(&source);
     reducedCost_ = 0;
-    score_ = 0;
+    labelScore_ = 0;
     totalDelay_ = 0;
     status_ = ACTIVE;
-//    openNodes_.clear();
     openNode_.clear();
     openRequests_.clear();
- //   completedRequests_.clear();
- //   completedRequest_.clear();
-    /*completeRequests_ = std::make_shared<myTools::BitVector>(numRequests);
-    extendCheck_ = std::make_shared<myTools::BitVector>(numRequests);*/
+
     completeRequests_.reset();
     extendCheck_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
-//    currentNode_ = &source;
     nbPickUp_ = 0;
-    nbPickMove_ = 0;
-//    extendCheck_.insert(source->nodeID_);
-//    parent_ = nullptr;
+ //   nbPickMove_ = 0;
     isDropped_ = false;
     isDropExtend_ = false;
     createTime_ = 0;
@@ -50,39 +41,22 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     load_ = label.load_;
     passedTime_ = label.passedTime_;
     reachedTime_ = label.reachedTime_;
-//    vehicle_ = label.vehicle_;
-//    openReachTime_ = label.openReachTime_;
-//    travelResource_ = label.travelResource_;
     travelResources_ = label.travelResources_;
-//    pathNodes_ = label.pathNodes_;
     pathNode_ = label.pathNode_;
- //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
-    score_ = label.score_;
-//    currentNode_ = label.currentNode_;
+    labelScore_ = label.labelScore_;
     totalDelay_ = label.totalDelay_;
-//    openNodes_ = label.openNodes_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
-//    completedRequests_ = label.completedRequests_;
 
-    /*completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
     completeRequests_ = label.completeRequests_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
-//    extendCheck_ = completedRequests_;
-//    if ((*currentNode_)->type_ == PICKUP)
-//        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
- //   completedRequest_ = label.completedRequest_;
-//    requestIDToInt_ = label.requestIDToInt_;
+
     nbPickUp_ = label.nbPickUp_;
-    nbPickMove_ = label.nbPickMove_;
-    /*for (auto & nodeObj:label.pathNodes_) {
-        if (nodeObj->type_ == PICKUP)
-            extendCheck_.insert(nodeObj->nodeID_);
-    }*/
+ //   nbPickMove_ = label.nbPickMove_;
+
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
     createTime_ = 0;
@@ -92,40 +66,26 @@ void Label::copyLabel(const Label &label) {
     load_ = label.load_;
     passedTime_ = label.passedTime_;
     reachedTime_ = label.reachedTime_;
-//    vehicle_ = label.vehicle_;
-//    parent_ = nullptr;
     travelResources_ = label.travelResources_;
-//    pathNodes_ = label.pathNodes_;
     pathNode_ = label.pathNode_;
- //   path_ = label.path_;
     reducedCost_ = label.reducedCost_;
-    score_ = label.score_;
-//    currentNode_ = label.currentNode_;
+    labelScore_ = label.labelScore_;
+
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
-//    completedRequests_ = label.completedRequests_;
-    /*completeRequests_.reset();
-    extendCheck_.reset();
-    completeRequests_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);
-    extendCheck_ = std::make_shared<myTools::BitVector>(*label.completeRequests_);*/
-    /*completeRequests_->copyValues(*label.completeRequests_);
-    extendCheck_->copyValues(*label.completeRequests_);*/
+
     completeRequests_ = label.completeRequests_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
-//    extendCheck_ = label.completedRequests_;
-//    if ((*currentNode_)->type_ == PICKUP)
-//        extendCheck_[(*currentNode_)->related_Request_->taskIndexLabel_] = 1;
+
     nbPickUp_ = label.nbPickUp_;
-    nbPickMove_ = label.nbPickMove_;
+ //   nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
 }
 Label::~Label() {
-//    openNode_.clear();
-//    pathNodes_.clear();
     delete[] name_;
 }
 
@@ -159,8 +119,7 @@ void Label::extend(Node *outNode) {
             }
         }
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        if ((!isDropped_ && travelTime >0) || (travelTime == 0 && ServiceTime > 0))
-            isDropped_ = true;
+        isDropped_ = true;
     }
     else if (outNode->type_ == PICKUP){
         openNode_.push_back(outNode->pairNode_);
@@ -170,66 +129,17 @@ void Label::extend(Node *outNode) {
         numExtendCheck_++;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         reducedCost_ -= (outNode->related_Request_)->dual_;
-
-        if (travelTime > 0){
+        /*if (travelTime > 0){
             nbPickMove_++;
-        }
+        }*/
         nbPickUp_ ++;
         totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
-        score_ = reducedCost_/nbPickUp_;
+        labelScore_ = reducedCost_ / nbPickUp_;
     }
 
     passedTime_ = reachedTime_ + outNode->serviceTime_;
-    pathNode_.push_back(outNode);
-}
-
-void Label::extend1(Node *outNode) {
-    load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE)){
-        reachedTime_ = passedTime_ + travelTime;
-        for (auto &node: openNode_) {
-            travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
-                                                                            passedTime_);
-        }
-    }
-    else
-        reachedTime_ = passedTime_;
-
-    if (outNode->type_ == DROPOFF) {
-        travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
-        for (int i = 0; i < openNode_.size(); i++){
-            if ((openNode_[i])->nodeID_ == outNode->nodeID_){
-                openNode_.erase(openNode_.begin()+i);
-                break;
-            }
-        }
-        openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        if (!isDropped_ && travelTime > 0)
-            isDropped_ = true;
-
-    }
-    else if (outNode->type_ == PICKUP){
-        openNode_.push_back(outNode->pairNode_);
-        completeRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
-        numCompleted_++;
-        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
-        numExtendCheck_++;
-        openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
-        reducedCost_ -= (outNode->related_Request_)->dual_;
-        if (travelTime > 0){
-            nbPickMove_++;
-        }
-        nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_);
-        reducedCost_ += (reachedTime_ - outNode->requestTime_);
-        travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
-        score_ = reducedCost_/nbPickUp_;
-    }
-    if ((travelTime > 0)||(pathNode_.back()->initialType_==SOURCE))
-        passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }
 
@@ -239,17 +149,20 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
     }
+    // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
     if (outNode->type_ == PICKUP) {
-        if (usePick){
+        if (nbPickUp_ >= maxPickUp)
+            return false;
+        /*if (usePick){
             if (nbPickUp_ >= maxPickUp)
                 return false;
         }
         else{
             if (nbPickMove_ >= maxPickUp && durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] != 0)
                 return false;
-        }
+        }*/
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
@@ -261,6 +174,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
         if (!openNode_.empty())
             return false;
     }
+    // check travel time limitation
     for (auto &nodeObj: openNode_) {
         float travelToDrop =
                 durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
@@ -273,90 +187,24 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     return true;
 }
 
-bool Label::isExtendFeasible1(Node *outNode, int maxPickUp, bool usePick, int capacity) {
-    if (outNode->type_ == PICKUP){
-        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
-        numExtendCheck_++;
-    }
-    if ((load_ + outNode->nbPassengers_) > capacity)
-        return false;
-    if (outNode->type_ == PICKUP) {
-        if (usePick){
-            if (nbPickUp_ >= maxPickUp)
-                return false;
-        }
-        else{
-            if (nbPickMove_ >= maxPickUp && durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] != 0)
-                return false;
-        }
-        if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
-            return false;
-    }
-    if (outNode->type_ == DROPOFF) {
-        if (openRequests_[outNode->related_Request_->taskIndexLabel_] == 0)
-            return false;
-    }
-    if (outNode->type_ == SINK) {
-        if (!openNode_.empty())
-            return false;
-    }
-    float travelTime = durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    if (travelTime > 0){
-        for (auto &nodeObj: openNode_) {
-            float travelToDrop =
-                    durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
-                    outNode->serviceTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
-
-            if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
-                return false;
-        }
-    }
-    return true;
-}
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (pathNode_.back() != otherLabel->pathNode_.back())
-        myTools::throwException("Label Domination error!!");
+        throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);
 
-    if (pathNode_.back()->type_ == SINK){
-        if (this->passedTime_ >= otherLabel->passedTime_) {
-            if (this->reducedCost_ >= otherLabel->reducedCost_) {
-                if (this->numCompleted_ >= otherLabel->numCompleted_) {
+    if (this->passedTime_ >= otherLabel->passedTime_) {
+        if (this->reducedCost_ >= otherLabel->reducedCost_) {
+            if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                if (this->openRequests_ == otherLabel->openRequests_) {
                     if (solverOption->isDominanceReleased_) {
-                        return true;
-                    }
-                    else {
-                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_)
+                        if (this->numCompleted_ > otherLabel->numCompleted_)
                             return true;
-                    }
-                }
-            }
-        }
-    }
-    else {
-
-        if (this->passedTime_ >= otherLabel->passedTime_) {
-            if (this->reducedCost_ >= otherLabel->reducedCost_) {
-                if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                    if (this->openRequests_ == otherLabel->openRequests_) {
-                        if (solverOption->isDominanceReleased_) {
-                            if (this->numCompleted_ > otherLabel->numCompleted_)
-                                return true;
-                        } else {
-                            if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                                return true;
-                                /*if ((this->passedTime_ == otherLabel->passedTime_) &&
-                                    (this->reducedCost_ == otherLabel->reducedCost_)) {
-                                    if (this->travelResources_ == otherLabel->travelResources_)
-                                        return true;
-                                    else
-                                        return false;
-                                } else
-                                    return true;*/
-                            }
+                    } else {
+                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
+                            return true;
                         }
-
                     }
+
                 }
             }
         }
@@ -373,43 +221,13 @@ bool Label::isEliminated() {
     return false;
 }
 
-// this function check whether the label is originated from a dominated parent or not
-bool Label::haveDominatedParent() {
-    /*PLabel  childLabel = parent_;
-    if (childLabel != nullptr) {
-        while (childLabel->parent_ != nullptr) {
-            if (childLabel->status_ == DOMINATED)
-                return true;
-            else
-                childLabel = childLabel->parent_;
-        }
-    }*/
-    return false;
-}
-
-/*PRoute Label::labelToRoute(PVehicle &vehicle) {
-    PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
-    newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
-    newRoute->addSource(pathNodes_[0], vehicle->departureTime_, vehicle->numPassengers_);
-    for (int i = 1; i < pathNodes_.size()-1; ++i) {
-        newRoute->addNode(pathNodes_[i]);
-    }
-    newRoute->createTime_ = createTime_;
-    if (totalDelay_ != newRoute->totalDelay_) {
-        std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
-        myTools::throwException("Label convert problem");
-    }
-    return newRoute;
-}*/
 
 PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->totalLength_ = passedTime_ - vehicle->departTime_;
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
-    /*for (int i = 1; i < pathNodes_.size()-1; ++i) {
-        newRoute->addNode(pInst->instGraph_->nodes_[pathNodes_[i]]);
-    }*/
+
     for (int i = 1; i < pathNode_.size()-1; ++i) {
         if (pathNode_[i]->type_ == PICKUP)
             newRoute->addNode(pInst->instGraph_->pickNodes_[pathNode_[i]->related_Request_->getRequestId()]);
@@ -429,7 +247,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
         std::cout << toString();
         std::cout << "route: " << std::endl;
         std::cout << newRoute->toString();
-//        myTools::throwException("Label convert problem");
+        throw myTools::myException("Label convert problem!!!", __FILE__,__LINE__);
     }
     return newRoute;
 }

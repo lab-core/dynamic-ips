@@ -6,13 +6,13 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 16
+nbThreads = 8
 InitialDual = 0
 mainAlgorithm = 2
 addOneRequestColumn = 0
-solutionMode = 2
+solutionMode = 0
 OneIter = 1
-GreedyReOptimize = 0
+GreedyReOptimize = 1
 saveScratch = 0
 
 # ISUD PARAMETERS
@@ -22,7 +22,7 @@ MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
 minImp = 0.0025
-useZoom = 0
+useZoom = 1
 
 # LABEL SETTING STRATEGIES
 #
@@ -36,7 +36,9 @@ LabelingStrategy = 0
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
-usePick = 0
+usePick = 1
+nbPick = 2
+sortPath = 0
 
 # CPLEX PARAMETERS
 #

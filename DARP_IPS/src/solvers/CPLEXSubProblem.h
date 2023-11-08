@@ -7,7 +7,6 @@
 
 #include "data/Instance.h"
 #include "solvers/SubproModeler.h"
-#include "solvers/CPLEXModeler.h"
 
 //-----------------------------------------------------------------------------
 //  CPLEXSubProblem class

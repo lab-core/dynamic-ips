@@ -6,7 +6,7 @@
 #define SOLVER_H
 
 #include "data/Instance.h"
-#include "solvers/ISUDAlgorithm.h"
+#include "solvers/MasterAlgorithm.h"
 #include "solvers/CPLEXSubProblem.h"
 #include "solvers/LabelingSubProblem.h"
 #include "solvers/MIPSolver.h"
@@ -16,13 +16,18 @@
 extern vector2D<float> durationMatrix_;
 // extern Tools::PThreadsPool pPool;
 
+//-----------------------------------------------------------------------------
+//  solver class
+//  Main algorithms to solve the problem in anytime, fixed epoch or static mode
+//-----------------------------------------------------------------------------
+
 class solver {
 public:
     double elapsedTime_;
     double avgEpochRuntime_;
     double epochRuntime_;
     double SubproEpochTime_;
-    double isudEpochTime_;
+    double masterEpochTime_;
     double RPEpochTime_;
     double CPEpochTime_;
     double RPEpochBuildTime_;
@@ -30,6 +35,10 @@ public:
     double GreedyTime_;
     double AssignTime_;
     double isudMIPEpochTime_;
+    int nbDominated_;                           // number of labels removed via Domination Rules
+    int nbEliminated_;                          // number of labels removed via Elimination Rules
+    int nbGenerated_;                           // number of generated labels
+    int nbNegativeFound_;
     int minSubSize_;
     int maxSubSize_;
     int avgSubSize_;
@@ -37,7 +46,7 @@ public:
 
     myTools::SharedVector<PLabel> labelsPool_;
 
-    std::shared_ptr<ISUDAlgorithm> isudObj_;
+    std::shared_ptr<MasterAlgorithm> masterModel_;
     PGreedyModeler GreedyModel_;
     PSolverOption subProOptions_;
 
@@ -45,7 +54,6 @@ public:
     myTools::Timer *subProblemTime_;
     myTools::Timer *preprocessTime_;
     Tools::LogOutput* pLogRunTimesStream_;
-    Tools::LogOutput* pLogEpochSolutionStream_;
     Tools::LogOutput* pLogEpochSubRuntimeStream_;
 //    Tools::LogOutput* pLogEpochSubRouteStream_;
     Tools::LogOutput* pLogSolutionChange_;

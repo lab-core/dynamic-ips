@@ -9,23 +9,25 @@
 #include "utilities/MyTools.h"
 #include "data/Graph.h"
 
+//-----------------------------------------------------------------------------
+// SubproModeler class
+// General class to define subproblem objects corresponding to each vehicle
+//-----------------------------------------------------------------------------
 
 class SubproModeler {
 public:
     Vehicle* Vehicle_;                     // the vehicle for which we are solving the sub problem
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
     std::vector<PRequest> subRequests_;     // List of requests
-//    double bestReducedCost_;
-    int nbNegativeColumns_;
-    int nbTotalRequest_;
-    float score_;
+    int nbNegativeColumns_;                 // number negative reduced cost routes found
+    int nbTotalRequest_;                    // equals to the number of requests in the corresponding graph
 
     // Constructor and Destructor
     explicit SubproModeler(PVehicle &vehicle);
     virtual ~SubproModeler();
 
     // calculation of penalties and initialization of the subgraph
-    void initSubGraph2(PInstance &pInst);
+    void initSubGraph(PInstance &pInst);
 };
 
 

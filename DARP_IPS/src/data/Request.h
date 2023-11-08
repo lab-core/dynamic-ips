@@ -12,13 +12,14 @@
 //  contains the request info request time, number of passengers, pickup and drop off location
 //---------------------------------------------------------------------------------------------
 
-enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
+/*enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
 static const std::vector<std::string> reqStatusName = {
-        "NO_ACTION", "ON_BOARD ", "COMPLETED" };
+        "NO_ACTION", "ON_BOARD ", "COMPLETED" };*/
 
-enum SubSelectionStatus {NOT_SELECTED = 0, SELECTED = 1};
-
-
+//-----------------------------------------------------------------------------
+// Request class
+// object use save trip information received from passengers
+//-----------------------------------------------------------------------------
 
 class Request {
 private:
@@ -38,13 +39,13 @@ public:
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     double dual_;
-    double InitialDual_;
-    int allocVehicleID_;                     // the vehicle that serve the request
-    int initialVehicleID_;
-    int solVehicleID_;
-    int taskIndex_;
-    int taskIndexLabel_;
-    int taskIncIndex_;
+    double InitialDual_;                // when in parameters we use penalties as duals we save previous duals in it
+    int allocVehicleID_;                // the vehicle that serve the request
+    int initialVehicleID_;              // this is saved to calculate displacement at the end of each epoch
+    int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement
+    int taskIndex_;                     // request index (row) in master model
+    int taskIndexLabel_;                // request index in sub problems graph
+    int taskIncIndex_;                  // used before for eigen library to calculate inc degree
     int pickZoneID_;
     int dropZoneID_;
 

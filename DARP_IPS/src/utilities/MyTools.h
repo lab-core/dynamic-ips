@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-07.
 //
 
-#ifndef _MYTOOLS_H
-#define _MYTOOLS_H
+#ifndef MY_TOOLS_H
+#define MY_TOOLS_H
 
 #include <vector>
 #include <iostream>
@@ -27,7 +27,7 @@
 #include <valarray>
 #include <numeric>
 #include <bitset>
-
+#include <ilcplex/ilocplex.h>
 
 using std::string;
 using std::vector;
@@ -54,8 +54,6 @@ class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
 class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
-class ZoomReducedProblem;
-typedef std::shared_ptr<ZoomReducedProblem> PZoomReducedProblem;
 class Label;
 typedef std::shared_ptr<Label> PLabel;
 struct Parameters;
@@ -70,8 +68,11 @@ class GreedyModeler;
 typedef std::shared_ptr<GreedyModeler> PGreedyModeler;
 struct insertPosition;
 typedef std::shared_ptr<insertPosition> PInsertPosition;
-class MasterPro;
-typedef std::shared_ptr<MasterPro> PMasterPro;
+class MIPMasterProblem;
+typedef std::shared_ptr<MIPMasterProblem> PMasterPro;
+class LabelingSubProblem;
+typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
+
 // extern PTravelTime travelMat;
 
 // SubProblem solution status
@@ -82,6 +83,21 @@ enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, MP_CG = 2, MP_ISUD = 3, MP_MIP = 
 enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2};
 enum InitialDual {LAST_CP = 0, PENALTIES = 1};
+enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 , COMMITTED = 3};
+enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3, SCORE = 4};
+enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};
+enum selectionMode { NR = 0, RP = 1, CP = 2};
+enum SortPaths {L_SCORE = 0, RD_COST = 1};
+enum VarSign { POSITIVE, NEGATIVE };
+enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
+enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
+static const std::vector<std::string> reqStatusName = {
+        "NO_ACTION", "ON_BOARD ", "COMPLETED" };
+
+static const std::vector<std::string> SortPathsName = {
+        "PATH_SCORE  ",
+        "REDUCED_COST"};
+
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",
         "PULLING" };
@@ -99,9 +115,9 @@ static const std::vector<std::string> mainAlgorithmName = {
         "MP_CP"};
 
 static const std::vector<std::string> warmStartName = {
-        "GREEDY_START     ",
-        "PREVIOUS_SOLUTION",
-        "EMPTY_START      "};
+        "GREEDY_START",
+        "PRE_SOLUTION",
+        "EMPTY_START "};
 
 static const std::vector<std::string> solutionModeName = {
         "STATIC",
@@ -109,8 +125,8 @@ static const std::vector<std::string> solutionModeName = {
         "ANYTIME"};
 
 static const std::vector<std::string> InitialDualName = {
-        "LAST_CP  ",
-        "PENALTIES"};
+        "LAST_SOl",
+        "PENALTY "};
 static const std::vector<std::string> SubProSolveStartName = {
         "NOT_RESTRICTED     ",
         "TIME_RESTRICTED    ",
@@ -131,73 +147,110 @@ static const char *NodeTypeStr[] = {
         "DROPOFF"
 };
 
-#define MAXReachTime 9999999
-const int MAX_SIZE = 2500;
+#define LARGE_CONSTANT 9999999
+const int MAX_BIT_SIZE = 3000;
 
-static const int DECIMALS = 3;          // precision when printing floats
-static const float TimePerMile = 10;   // travel time per mile distance
 static const int sentenceSize = 47;
 static const int ServiceTime = 30;
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;
-template<class T> using vector3D = std::vector<vector2D<T>>;
+
+typedef IloArray<IloNumVarArray> IloNumVar2D;		// 2-dim array of variables
+typedef IloArray<IloNumVar2D> IloNumVar3D;          // 3-dim array of variables
+typedef IloArray<IloNumArray> IloNum2D;		        // 2-dim array of variables
 
 
 namespace myTools {
     // class for defining exception errors
-
-    // class for defining exception errors
-    class myException : public std::exception
-    {
+    class myException : public std::exception {
     public:
-        // Constructor
-        myException(const char* Msg, int Line)
-        {
-            std::ostringstream oss;
-            oss << "Error line" << Line << " : " << Msg;
-            this->msg = oss.str();
+        // Constructor with just the line number
+        explicit myException(const char* Msg, int Line = 0) noexcept {
+            initialize(Msg, "", Line);
+        }
+
+        // Constructor with both file name and line number
+        myException(const char* Msg, const char* File, int Line) noexcept {
+            initialize(Msg, File, Line);
+        }
+
+        // Copy constructor
+        myException(const myException& other) noexcept
+                : msg(other.msg) { }
+
+        // Move constructor
+        myException(myException&& other) noexcept
+                : msg(std::move(other.msg)) { }
+
+        // Copy assignment operator
+        myException& operator=(const myException& other) noexcept {
+            if (this != &other) {
+                msg = other.msg;
+            }
+            return *this;
+        }
+
+        // Move assignment operator
+        myException& operator=(myException&& other) noexcept {
+            if (this != &other) {
+                msg = std::move(other.msg);
+            }
+            return *this;
         }
 
         // Destructor
         ~myException() noexcept override = default;
 
         // Returns a pointer to the (constant) error description
-        /* The underlying memory is in possession of the Except object.
-         * Callers must not attempt to free the memory */
-         const char* what() const noexcept override { return this->msg.c_str();}
+        const char* what() const noexcept override {
+            return msg.c_str();
+        }
+
+        // Throw an exception with the input message
+        static void throwException(const char *exceptionMsg) {
+            try {
+                throw myException(exceptionMsg);
+            }
+            catch (std::exception& e) {
+                printf("Exception caught: %s\n", e.what());
+                throw;
+            }
+        }
+
+        static void throwException(const std::string &strMsg) {
+            throwException(strMsg.c_str());
+        }
+
+        static void throwError(const std::string &strMsg) {
+            try {
+                throw strMsg;
+            }
+            catch (std::string& Msg) {
+                printf("Error caught: %s\n", Msg.c_str());
+                throw;
+            }
+        }
+
+        static void throwError(const char *exceptionMsg) {
+            throwError(std::string(exceptionMsg));
+        }
+
     private:
         std::string msg;
-    };
 
-    // Throw an exception with the input message
-    struct INMsgException: std::exception {
-        explicit INMsgException(const char* what): std::exception(), what_(what) {}
-        const char* what() const noexcept override {
-            return what_;
+        void initialize(const char* Msg, const char* File, int Line) {
+            std::ostringstream oss;
+            oss << Msg;
+            if (File && File[0] != '\0') {
+                oss << "\nError occurred at line " << Line << " in file " << File;
+            } else {
+                oss << "\nError occurred at line " << Line;
+            }
+            msg = oss.str();
         }
-    private:
-        const char* what_;
     };
 
-    void throwException(const char* exceptionMsg);
-    void throwException(const std::string& strMsg);
-    void throwError(const std::string& strMsg);
-    void throwError(const char* exceptionMsg);
-
-    //-----------------------------------------------------------------------------
-    //  Functions for calculating the shortest spherical
-    //  distance between to points on earth surface
-    //-----------------------------------------------------------------------------
-
-    // function to convert degrees to radians
-    double toRadians(double degree);
-
-    // function to calculate the distance
-    double calcDistance(double lat1, double long1, double lat2, double long2);
-
-    // function to calculate travel time between two coordinate
-    double calcTravelTime(double lat1, double long1, double lat2, double long2);
 
     // functions to create node IDs
     std::string createNodeID(unsigned int requestID, NodeType type);
@@ -207,8 +260,10 @@ namespace myTools {
     bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs);
 
 
-    // Appends the values of v2 vector to at the end of v1 vector
 
+    //-----------------------------------------------------------------------------
+    //  TIMER CLASS
+    //-----------------------------------------------------------------------------
     class Timer {
     private:
         high_resolution_clock::time_point cpuInit_;
@@ -237,72 +292,6 @@ namespace myTools {
         std::chrono::duration<double> dSinceInit();
         std::chrono::duration<double> dSinceStart();
     };
-
-
-    //-----------------------------------------------------------------------------
-    //  SET CLASS WITH BIT ARRAY
-    //  Functions for defining sets with bit array
-    //-----------------------------------------------------------------------------
-
-#include <iostream>
-
-    class BitVector {
-    private:
-        const int max_elem_;    // maximum element that can be stored in the set
-        const int array_size_;  // size of the bit array
-        unsigned long long* bit_array_;  // the bit array to represent the set
-        static const int WORD_SIZE = sizeof(unsigned long long) * 8;  // number of bits in a word
-
-        int getArrayIndex(int elem) const { return elem /WORD_SIZE; }
-        int getBitIndex(int elem) const { return elem % WORD_SIZE; }
-
-
-    public:
-        // Constructor
-        BitVector(int max_elem);
-
-        // Copy constructor
-        BitVector(const BitVector& other);
-
-        // Destructor
-        virtual ~BitVector();
-
-        // Add an element to the set
-        void add(int x);
-
-        // Remove an element from the set
-        void remove(int x);
-
-        // Check if an element is in the set
-        bool contains(int x) const;
-
-        // Check if one set is a subset of another set
-        bool isSubset(const BitVector& other) const;
-
-        // Check if one set is equal to another set
-        bool operator==(const BitVector& other) const;
-        bool isEqual(const BitVector& other) const;
-
-        void copyValues(const BitVector& other) const;
-
-        // Check if the intersection of two sets is empty
-        bool isIntersectionEmpty(const BitVector& other) const;
-        void AddSet(const BitVector& other);
-
-        // function to return the number of elements in the set
-        int numElements() const;
-
-        const int getMaxElem() const;
-
-        const int getArraySize() const;
-
-        unsigned long long int *getBitArray() const;
-
-        // Display function
-        std::string toString() const;
-    };
-
-
 
     //-----------------------------------------------------------------------------
     //  SHARED VECTOR CLASS
@@ -339,4 +328,4 @@ namespace myTools {
 } // myTools namespace
 
 
-#endif //_MYTOOLS_H
+#endif //MY_TOOLS_H

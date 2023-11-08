@@ -13,9 +13,9 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false;
-std::string instNum = "N";
-int numVehicles = 2000;
+bool savePartial = true;
+std::string instNum = "S";
+int numVehicles;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int mainAlgo = -1;
     if (argc == 4){
         std::string instanceNames = "datasets/InstanceNames.txt";
-        ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
+        ReadWrite::readInstNames(instanceNames, instNames , 24, "_17-300m");
         std::cout << "24 Instance read!! " << std::endl;
         instFolder = argv[1];
         std::string word = argv[2];
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     }
     else if (argc == 5){
         instFolder = argv[1];
-        instNames.push_back(argv[2]);
+        instNames.emplace_back(argv[2]);
         std::cout << "Instance : " << argv[1] << "/" << argv[2]  << std::endl;
         std::string word = argv[3];
         vehicleFile = "vehicles_" + word + "_4";
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         mainAlgo = std::stoi(argv[4]);
     }
     else
-        myTools::throwError("There should be at least 2 arguments!");
+        myTools::myException::throwError("There should be at least 2 arguments!");
 
     // build the path of input files
     // create output files for epoch results
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
         }
         // testing the solution route
         for(auto  &vehicleObj : mainInst->vehicles_)
-            vehicleObj->solutionRoute_->testRoute(vehicleObj, mainInst->parameters_ );
+            vehicleObj->solutionRoute_->testRoute(vehicleObj);
         if (!middleSave) {
 
             std::cout << std::endl << std::endl;
@@ -124,16 +124,12 @@ int main(int argc, char** argv) {
             requestResultsStream.close();
             Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
             finalInstanceStream
-                    << "instance,Algorithm,Mode,# requests,# vehicles,# Threads,# customers,customer Group,";
-            finalInstanceStream
-                    << "# served Req.,avg. wait/req,avg. wait/cust,avg. trip delay/req,# (Lim) served Req.,";
-            finalInstanceStream
-                    << "# (Lim) served Cust.,(Lim) avg. wait/req,(Lim) avg. wait/cust,(Lim) avg. trip delay/req,";
-            finalInstanceStream
-                    << "idel time/vehicle,# Idle Vehicles,avg. pass in vehicle,# epoch,# LMP Iter,# IMP Iter,";
-            finalInstanceStream
-                    << "# RP Iter,# CP Iter,Zoom Iter ,MP time,RMP time,CP time,Zoom time,SP time,Greedy time,Assign time,";
-            finalInstanceStream << "Total time,RP/ISUD,CP/ISUD,ISUD/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+                    << "Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
+                       "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
+                       "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
+                       "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
+                       "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
+                       "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
             finalInstanceStream << mainInst->instRepStr_.str();
             finalInstanceStream.close();
         }

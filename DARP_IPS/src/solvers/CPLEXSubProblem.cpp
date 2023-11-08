@@ -232,18 +232,10 @@ void CPLEXSubProblem::SolveCPLEX() {
 //        SubProbCplex_.solve();
         else {
             if (SubProbCplex_.getObjValue() <= -0.0001) {
-//                bestReducedCost_ = SubProbCplex_.getObjValue();
                 SubProbCplex_.setParam(IloCplex::Param::TimeLimit, 200);
                 SubProbCplex_.populate();
             }
         }
-
-
-        /*if (SubProbCplex_.getObjValue() < 0) {
-            std::cout << "# Incumbent objective value = " << SubProbCplex_.getObjValue() << std::endl;
-            std::cout << "# Second phase (population is started: " << std::endl;
-            SubProbCplex_.populate();
-        }*/
 
 //        SubProbCplex_.solve();
     }
@@ -272,47 +264,6 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                     xVal[i] = IloNumArray(env_);
                     SubProbCplex_.getValues(xVal[i], X[i], s);
                 }
-                /*std::cout << "--------------------------" << std::endl;
-                std::cout << "Solution: " << s << std::endl;
-                std::cout << "--------------------------" << std::endl;
-
-                for (int i = 0; i < subGraph_->nbNodes_; ++i) {
-                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-                        if (xVal[i][j] > 0)
-                            std::cout << "X[" << subGraph_->intToNodeID_[i] <<"][" << subGraph_->intToNodeID_[j] <<"]: " << xVal[i][j] << std::endl;
-                    }
-                }
-                for (int i = 0; i < subGraph_->nbNodes_; ++i) {
-                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-                        if (xVal[i][j] > 0) {
-                            std::cout << "W[" << subGraph_->intToNodeID_[i] <<"]: " << wVal[i] << std::endl;
-                            std::cout << "U[" << subGraph_->intToNodeID_[i] <<"]: " << uVal[i] << std::endl;
-                        }
-                    }
-                }
-
-                double newObj = 0;
-
-                for (int i = 0; i < subRequests_.size(); ++i) {
-                    int nodeIndex = subGraph_->nodeIDToInt_[myTools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
-                    newObj += (uVal[nodeIndex] - subRequests_[i]->earlyPick_);
-                    std::cout << "Request U: " << subRequests_[i]->getRequestId() << " :: ";
-                    std::cout << uVal[nodeIndex] << "--" << subRequests_[i]->earlyPick_ << std::endl;
-                }
-                std::cout << "new object delay: " << newObj << std::endl;
-                for (int i = 0; i < subRequests_.size(); ++i) {
-                    int nodeIndex = subGraph_->nodeIDToInt_[myTools::createNodeID(subRequests_[i]->getRequestId(), PICKUP)];
-                    for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-                        newObj -= (xVal[nodeIndex][j] * subRequests_[i]->dual_);
-                        if (xVal[nodeIndex][j] > 0) {
-                            std::cout << "Request U: " << subRequests_[i]->getRequestId() << " :: ";
-                            std::cout << subRequests_[i]->dual_ << std::endl;
-                        }
-                    }
-                }
-                std::cout << "new object after request dual: " << newObj << std::endl;
-                newObj -= (*Vehicle_)->dual_;
-                std::cout << "new object final: " << newObj << std::endl;*/
 
                 // creating the route
                 int sourceIndex = (Vehicle_)->departNode_->nodeIndex_;
@@ -337,16 +288,7 @@ void CPLEXSubProblem::SolutionToRoutes(std::vector<PRoute> &availableRoutes) {
                     }
                 }
                 availableRoutes.push_back(newRoute);
-                /*for (int r = 0; r < availableRoutes.size(); ++r) {
-                    if (newRoute == availableRoutes[r]) {
-                        isRepeated = true;
-                        break;
-                    }
-                }
-                if (!isRepeated) {
-                    availableRoutes.push_back(newRoute);
-                    generatedRoutes.insert(std::pair <std::string , PRoute> (newRoute->name_ , newRoute));
-                }*/
+
             }
         }
     }

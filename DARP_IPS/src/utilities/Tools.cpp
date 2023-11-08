@@ -11,7 +11,7 @@ using std::thread;
 //************************************************************************
 
 namespace Tools {
-    int ThreadsPool::maxGlobalThreads_ = 16;
+    int ThreadsPool::maxGlobalThreads_ = 24;
     PThreadsPool::~PThreadsPool() {
         if (get())
             get()->removePtr();
@@ -161,7 +161,7 @@ namespace Tools {
     void Thread::run(std::function<void(void)> f) {
         std::lock_guard<std::mutex> l(mutex_);
         if (f_ != nullptr)
-            myTools::throwError("The thread is already associated to a job.");
+            myTools::myException::throwError("The thread is already associated to a job.");
         f_ = std::move(f);
         cWaiting_.notify_one();
     }
@@ -312,7 +312,7 @@ namespace Tools {
 
     void ThreadsPool::run(Job job, bool force_detach) {
         if (pThreadsPool_ == nullptr)
-            myTools::throwError("PThreadsPool has been deleted, "
+            myTools::myException::throwError("PThreadsPool has been deleted, "
                        "cannot run a new job in this pool.");
         PTask pTask = job.pTask_;
         if (pTask->nThreads() > maxThreads_) {

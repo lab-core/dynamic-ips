@@ -25,6 +25,8 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     mpAdded_ = false;
     cpAdded_ = false;
     score_ = 0;
+    createTime_ = 0;
+    totalLength_ = 0;
 }
 Route::~Route(){
     delete[] name_;
@@ -33,12 +35,6 @@ Route::~Route(){
 // Getters and Setters
 unsigned int Route::getRouteId() const {return routeID_;}
 
-void Route::updateReducedCost(IloNumArray &requestDuals, IloNumArray &vehicleDual) {
-    reducedCost_ = totalDelay_ - vehicleDual[vehicleID_];
-    for (auto & requestObj : routeRequests_) {
-        reducedCost_ -= requestDuals[requestObj->taskIndex_];
-    }
-}
 // these functions are used to add nodes to the routes
 void Route::addSource(PNode &node, float departTime, int departPassengers) {
     routeSize_ ++;
@@ -68,32 +64,12 @@ void Route::addNode(PNode &node) {
     }
 }
 
-void Route::addNode1(PNode &node) {
-    routeSize_ ++;
-    plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_)
-        plannedDepartTime_.back() = node->requestTime_;
-
-    float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
-    plannedReachTime_.push_back(reachTime);
-    if ((durationMatrix_[routeNodes_.back()->locationID_][node->locationID_] == 0)&&(routeNodes_.back()->initialType_ != SOURCE))
-        plannedDepartTime_.push_back(reachTime);
-    else
-        plannedDepartTime_.push_back(reachTime + node->serviceTime_);
-
-    routeNodes_.push_back(node);
-    if (node->initialType_ == PICKUP) {
-        routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
-    }
-}
 
 void Route::addNode(PNode &node, float reachTime, float departTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     plannedReachTime_.push_back(reachTime);
     plannedDepartTime_.push_back(departTime);
-//    plannedDepartTime_.push_back(reachTime + node->serviceTime_);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
         totalDelay_ += (reachTime - node->requestTime_);
@@ -147,8 +123,6 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(9) << " NODE_ID" << std::right;
     repStr << std::right << std::setw(9) << " REACH_TIME"<< "(s)  ";
     repStr << std::right << std::setw(9) << " DEPART_TIME"<< "(s)  ";
-    /*repStr << std::right << std::setw(9) << " PREACH_TIME"<< "(s)  ";
-    repStr << std::right << std::setw(9) << " PDEPART_TIME"<< "(s)  ";*/
     repStr << std::right << std::setw(9) << " TRAVEL_TIME"<< "(s)  ";
     repStr << std::right << std::setw(10) << " EARLy_PICK"<< "(s)  ";
     repStr << "#PASSENGERS" <<std::endl;
@@ -160,8 +134,6 @@ std::string Route::toString() const {
     repStr << std::left << std::setw(9) << routeNodes_[0]->nodeID_;
     repStr << std::right << std::setw(9) << routeNodes_[0]->reachTime_ << " (s)  ";
     repStr << std::right << std::setw(9) << routeNodes_[0]->departTime_ << " (s)  ";
-    /*repStr << std::right << std::setw(9) << plannedReachTime_[0] << " (s)  ";
-    repStr << std::right << std::setw(9) << plannedDepartTime_[0] << " (s)  ";*/
     repStr << std::right << std::setw(11) << "0" << " (s)  ";
     repStr << std::right << std::setw(11) << "0" << " (s)  ";
     repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
@@ -178,8 +150,6 @@ std::string Route::toString() const {
         repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;
         repStr << std::right << std::setw(9) << routeNodes_[i]->reachTime_ << " (s)  ";
         repStr << std::right << std::setw(9) << routeNodes_[i]->departTime_ << " (s)  ";
-        /*repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
-        repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";*/
         if (routeNodes_[i]->initialType_ != SINK) {
             if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i]) ||
                 (routeNodes_[i]->reachTime_ != plannedReachTime_[i])) {
@@ -201,7 +171,7 @@ std::string Route::toString() const {
 }
 
 // this function is for testing the validation of the route
-void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
+void Route::testRoute(PVehicle & vehicle) {
     PRoute testRoute = std::make_shared<Route>(vehicleID_);
     testRoute->addSource(routeNodes_[0], vehicle->solutionRoute_->routeNodes_[0]->departTime_,
                          vehicle->solutionRoute_->plannedPassengers_[0]);
@@ -211,7 +181,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
         if (testRoute->routeNodes_.back()->reachTime_ != testRoute->plannedReachTime_.back()){
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
- //           myTools::throwException("Route-Validation");
+            throw myTools::myException("Route-Validation", __FILE__,__LINE__);
         }
         if (testRoute->plannedPassengers_.back() == 0){
             testRoute->plannedDepartTime_.back() = testRoute->routeNodes_.back()->departTime_;
@@ -220,7 +190,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
         if (testRoute->routeNodes_.back()->departTime_ != testRoute->plannedDepartTime_.back()){
             std::cout << "Connectivity constraint violated at node : ";
             std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
- //           myTools::throwException("Route-Validation");
+            throw myTools::myException("Route-Validation", __FILE__,__LINE__);
         }
 
         // checking request data (pick up and drop off time)
@@ -229,7 +199,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
                 testRoute->routeNodes_.back()->related_Request_->pickTime_) {
                 std::cout << "Request pickup time is not equal to the pick node reach time at node : ";
                 std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
- //               myTools::throwException("Route-Validation");
+                throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
         else if (testRoute->routeNodes_.back()->initialType_ == DROPOFF) {
@@ -237,7 +207,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
                 testRoute->routeNodes_.back()->related_Request_->dropTime_) {
                 std::cout << "Request drop-off time is not equal to the drop node reach time at node : ";
                 std::cout << testRoute->routeNodes_.back()->nodeID_ << std::endl;
- //               myTools::throwException("Route-Validation");
+                throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
  /*//       if (mainAlgorithm != GREEDY){
@@ -249,7 +219,7 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
             std::cout << "Capacity constraint violated at node : " << testRoute->routeNodes_.back()->nodeID_ << std::endl;
-//            myTools::throwException("Route-Validation");
+            throw myTools::myException("Route-Validation", __FILE__,__LINE__);
         }
 
         // checking trip delay constraint
@@ -259,29 +229,24 @@ void Route::testRoute(PVehicle & vehicle, PParameters &parameters) {
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
                 testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
- //               myTools::throwException("Route-Validation");
+                throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
     }
 
     if (testRoute->totalDelay_ != totalDelay_){
         std::cout << "Total delay is not the same" << std::endl;
- //       myTools::throwException("Route-Validation");
+        throw myTools::myException("Route-Validation", __FILE__,__LINE__);
     }
     if (testRoute->plannedPassengers_.back() != plannedPassengers_.back()){
         std::cout << "Final Load is not the same" << std::endl;
- //       myTools::throwException("Route-Validation");
+        throw myTools::myException("Route-Validation", __FILE__,__LINE__);
     }
     if (testRoute->plannedReachTime_.back()!= plannedReachTime_.back()){
-//        std::cout << "End time is not the same" << std::endl;
-//        myTools::throwException("Route-Validation");
+        std::cout << "End time is not the same" << std::endl;
+        throw myTools::myException("Route-Validation", __FILE__,__LINE__);
     }
 
-
-    /*std::cout << "####################### TEST Route ##########################" << std::endl;
-    std::cout << testRoute->toString() << std::endl;
-    std::cout << "##################### SOLUTION Route ########################" << std::endl;
-    std::cout << toString() << std::endl;*/
 }
 // This function is to reset the status of the nodes in the route
 void Route::resetRoute() {
@@ -289,12 +254,12 @@ void Route::resetRoute() {
         routeNodes_[i]->nodeStatus_ = DEFINED;
         if (routeNodes_[i]->type_ == DROPOFF) {
             routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
-            routeNodes_[i]->related_Request_->dropTime_ = MAXReachTime;
+            routeNodes_[i]->related_Request_->dropTime_ = LARGE_CONSTANT;
         }
         else if (routeNodes_[i]->type_ == PICKUP) {
             routeNodes_[i]->related_Request_->requestStatus_ = NO_ACTION;
-            routeNodes_[i]->related_Request_->pickTime_ = MAXReachTime;
-            routeNodes_[i]->related_Request_->dropTime_ = MAXReachTime;
+            routeNodes_[i]->related_Request_->pickTime_ = LARGE_CONSTANT;
+            routeNodes_[i]->related_Request_->dropTime_ = LARGE_CONSTANT;
         }
     }
 }

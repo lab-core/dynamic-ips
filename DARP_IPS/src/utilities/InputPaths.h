@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-06.
 //
 
-#ifndef INPUTPATHS_H
-#define INPUTPATHS_H
+#ifndef INPUT_PATHS_H
+#define INPUT_PATHS_H
 
 #include <sstream>
 #include <string>
@@ -22,81 +22,72 @@
 class InputPaths {
 protected:
     // input data addresses
-    std::string dataDir_;
-    std::string instanceName_;
-    std::string instanceDir_;
-    std::string outputDir_;
-    std::string instanceNameOut_;
-    std::string instanceFolder_;
-    std::string prefix_;
+    std::string dataDir_;                       // main directory where all instance folders are located
+    std::string instanceName_;                  // instance name
+    std::string instanceFolder_;                // instance folder which contains a set of instances
+    std::string instanceDir_;                   // instance directory
+    std::string outputDir_;                     // directory that is created for each run to save outputs
+    std::string instanceNameOut_;               // instance name when we are saving the state in the middle
+    std::string prefix_;                        // indicate the solution mode and algorithm used to solve
 
+    // input data files
     std::string input_TripData_;
     std::string input_InstanceData_;
     std::string input_durationData_;
-    std::string input_MIPStart_;
     std::string input_paramFile_;
     std::string input_vehicleFileGeneral_;
     std::string input_vehicleFile_;
     std::string input_onboardsFile_;
     std::string input_waitRequests_;
 
-    // output data addresses
-    std::string output_epochISUD_;
-    std::string output_epochFinal_;
-    std::string output_epochRunTime_;
-    std::string output_epochResults_;
+    // out put save state files
 
-    std::string output_finalLog_;
-    std::string output_finalRoutes_;
-    std::string output_finalRequests_;
-    std::string output_MIPStart_;
-    std::string output_offlineRoutes_;
-    std::string output_paramFile_;
     std::string output_onboards_;
     std::string output_waitRequests_;
+    std::string output_trip_;
     std::string output_vehicles_;
     std::string output_instance_;
-    std::string output_incDegree_RDCost_;
-    std::string output_trip_;
-    std::string output_subproSize_;
-    std::string output_subproRouteTime_;
-    std::string output_cplexLog_;
-    std::string output_reqDuals_;
-    std::string output_vehDuals_;
-    std::string output_solutionChange_;
-    std::string output_summary_;
 
+    // output data addresses
+    std::string output_epochRunTime_;           // save the summary of each epoch runtimes (master, sub problems,..)
+    std::string output_epochResults_;           // save the results of solving master problem at each epoch
+    std::string output_finalLog_;               // save the final routes and parameters and solution in a txt file
+    std::string output_finalRoutes_;            // save final routes in a csv
+    std::string output_finalRequests_;          // save the status of final requests in a csv
+    std::string output_paramFile_;              // save the parameters
+    std::string output_paramCSV_;              // save the parameters csv
 
-    double timeOut_ = 3600;
+    std::string output_incDegree_RDCost_;       // save the reduced cost at each epoch
+    std::string output_subproSize_;             // save the information of solving subproblems, nb generated, dominated,...
+    std::string output_cplexLog_;               // save cplex log file
+    std::string output_reqDuals_;               // save requests duals after each iteration of solving MP
+    std::string output_vehDuals_;               // save vehicles duals after each iteration of solving MP
+    std::string output_solutionChange_;         // save the changes in incompatibility degree at each epoch
+    std::string output_summary_;                // save the summary of final solution
 
 public:
 
     // Constructors
-    explicit InputPaths(std::string  datadir, std::string vehicleFile, std::string vehicleFolder);
+    explicit InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder);
     InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-               std::string vehicleFile, std::string vehicleFolder);
+               const std::string& vehicleFile, const std::string& vehicleFolder);
 
     // getters
     const std::string &getInstanceName() const;
     const std::string &getInputTripData() const;
     const std::string &getInputInstanceData() const;
     const std::string &getInputDurationData() const;
-    const std::string &getInputMipStart() const;
     const std::string &getInputParamFile() const;
     const std::string &getInputVehicleFile() const;
     const std::string &getInputVehicleFileGeneral() const;
     const std::string &getInputOnboardsFile() const;
     const std::string &getInputWaitRequests() const;
-    const std::string &getOutputEpochIsud() const;
-    const std::string &getOutputEpochFinal() const;
     const std::string &getOutputEpochResults() const;
     const std::string &getOutputFinalLog() const;
     const std::string &getOutputFinalRoutes() const;
     const std::string &getOutputFinalRequests() const;
-    const std::string &getOutputMipStart() const;
-    const std::string &getOutputOfflineRoutes() const;
-    const std::string &getOutputParameters() const;
     const std::string &getOutputParamFile() const;
+    const std::string &getOutputParamCsv() const;
     const std::string &getOutputOnboards() const;
     const std::string &getOutputWaitRequests() const;
     const std::string &getOutputVehicles() const;
@@ -106,8 +97,6 @@ public:
     const std::string &getInstanceNameOut() const;
     const std::string &getOutputTrip() const;
     const std::string &getOutputSubproSize() const;
-    const std::string &getOutputSubproRouteTime() const;
-
     const std::string &getOutputCplexLog() const;
     const std::string &getOutputReqDuals() const;
     const std::string &getOutputVehDuals() const;
@@ -115,11 +104,6 @@ public:
     const string &getOutputSummary() const;
 
     const std::string &getOutputSolutionChange() const;
-
-    const std::string &getOutputDir() const;
-
-    double getTimeOut() const;
-    void setTimeOUt(double timeOUt);
 
     // this function defines the path to input data files
     void initializeInputs(const std::string& instFolder, const std::string& instanceName);
@@ -132,4 +116,4 @@ public:
 };
 
 
-#endif //INPUTPATHS_H
+#endif //INPUT_PATHS_H

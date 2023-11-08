@@ -2,10 +2,10 @@
 // Created by Ella on 2021-11-17.
 //
 
-#include "MasterModeler.h"
+#include "CplexModeler.h"
 
 // Constructor and Destructor
-MasterModeler::MasterModeler() {
+CplexModeler::CplexModeler() {
     Model_ = IloModel(env_);
     objFunction_ = IloMinimize(env_);
 //    Model_.add(objFunction_);
@@ -18,26 +18,26 @@ MasterModeler::MasterModeler() {
     solveTime_ = new myTools::Timer(); solveTime_->init();
 }
 
-MasterModeler::~MasterModeler() {
+CplexModeler::~CplexModeler() {
     delete solveTime_;
     env_.end();
 }
 
 // this function reset the model based the current set of routes and changed the set of constraints (size)
-/*void MasterModeler::updateRequestOrder(PInstance &pInst) {
-    orderToRequest_.clear();
+/*void CplexModeler::updateRequestOrder(PInstance &pInst) {
+    nbTasks_.clear();
     requestToOrder_.clear();
 
     int orderCounter = 0;
     for (auto & requestObj : pInst->requests_){
         requestToOrder_[requestObj->getRequestId()] = orderCounter;
-        orderToRequest_.push_back(requestObj->getRequestId());
+        nbTasks_.push_back(requestObj->getRequestId());
         orderCounter++;
     }
 }*/
 
 // this function clear all objects from the model at the start of each epoch
-void MasterModeler::clearModel() {
+void CplexModeler::clearModel() {
     Model_.end();
     std::cout << "The Model is destroyed" << std::endl;
     Model_ = IloModel(env_);
@@ -46,7 +46,7 @@ void MasterModeler::clearModel() {
 }
 
 // Display function
-std::string MasterModeler::toString() const {
+std::string CplexModeler::toString() const {
     std::stringstream repStr;
     repStr << "#" << std::endl;
     repStr << "# Solution status = " << Cplex_.getStatus() << std::endl;
@@ -56,7 +56,7 @@ std::string MasterModeler::toString() const {
 }
 
 // function to create pattern from routes
-void MasterModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
+void CplexModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
     if (sign == POSITIVE) {
         for (auto & requestObj : route->routeRequests_) {
             pattern[requestObj->taskIndex_] = 1;
@@ -70,7 +70,7 @@ void MasterModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign s
 }
 
 // this function adds zVar to the model
-void MasterModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+void CplexModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
 
     try {
         IloNumColumn numVar;
@@ -87,7 +87,7 @@ void MasterModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign 
     }
 }
 
-void MasterModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
 
     try {
         IloNumColumn numVar;
@@ -104,29 +104,10 @@ void MasterModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSig
     }
 }
 
-void MasterModeler::addZVars(IloNumVarArray &zVar, std::vector<PRequest> &requests, VarSign sign) {
-    try {
-        for (auto & request : requests) {
-            IloNumVar numVar;
-            if (sign == POSITIVE)
-                numVar = IloNumVar(objFunction_(request->penalty_) +
-                                   requestConst_[request->taskIndex_](1));
-            else
-                numVar = IloNumVar(objFunction_(-request->penalty_) +
-                                   requestConst_[request->taskIndex_](-1));
-            numVar.setName(request->name_);
-            zVar.add(numVar);
-        }
-    }
-    catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
-        std::cout << e << std::endl;
-    }
-}
 
 // this function adds routeVar to the model
-void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
-    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
+void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
+    IloNumArray columnVar(env_, nbRequestTask_);
     createPattern(columnVar, newRoute, sign);
     IloNumColumn numVar;
     if (sign == POSITIVE) {
@@ -143,8 +124,8 @@ void MasterModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, V
 }
 
 // this function adds routeVar to the model
-void MasterModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
-    IloNumArray columnVar(env_, (signed) orderToRequest_.size());
+void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
+    IloNumArray columnVar(env_, nbRequestTask_);
     createPattern(columnVar, newRoute, sign);
     IloNumColumn numVar;
     if (sign == POSITIVE) {
@@ -161,13 +142,13 @@ void MasterModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute,
 }
 
 // this function initialized the model
-void MasterModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
+void CplexModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests
-    orderToRequest_ = pInst->orderToRequest_;
+    nbRequestTask_ = pInst->nbTasks_;
 
     // define and add objective
 
-    createIloNumArray (requestRHS_, orderToRequest_.size(), rhs);
+    createIloNumArray (requestRHS_, nbRequestTask_, rhs);
     createIloNumArray (vehicleRHS_, nbVehicles, rhs);
 
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
@@ -175,23 +156,4 @@ void MasterModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
 
 }
 
-void MasterModeler::addRouteVars(IloNumVarArray &routeVar, vector<PRoute> &newRoutes, VarSign sign) {
-//    IloNumColumnArray cols(env_, newRoutes.size());
-    for (int r = 0; r < newRoutes.size(); r++){
-        IloNumArray columnVar(env_, (signed) orderToRequest_.size());
-        createPattern(columnVar, newRoutes[r], sign);
-        if (sign == POSITIVE)
-            routeVar.add(IloNumVar(objFunction_(newRoutes[r]->totalDelay_) + requestConst_(columnVar)
-                                   + vehicleConst_[newRoutes[r]->vehicleID_](1)));
-            /*cols[r] = objFunction_(newRoutes[r]->totalDelay_) + requestConst_(columnVar)
-                     + vehicleConst_[newRoutes[r]->vehicleID_](1);*/
-        else
-            routeVar.add(IloNumVar(objFunction_(newRoutes[r]->totalDelay_) + requestConst_(columnVar)
-                                   + vehicleConst_[newRoutes[r]->vehicleID_](-1)));
-            /*cols[r] = objFunction_(newRoutes[r]->totalDelay_) + requestConst_(columnVar)
-                      + vehicleConst_[newRoutes[r]->vehicleID_](-1);*/
-        columnVar.end();
-    }
-//    cols.end();
-}
 

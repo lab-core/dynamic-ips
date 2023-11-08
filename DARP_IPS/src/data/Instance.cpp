@@ -8,7 +8,6 @@ vector2D<float> durationMatrix_;
 //  Instance class
 //  contains the instance data including vehicle info and requests
 //-----------------------------------------------------------------------------
-extern vector2D<float> durationMatrix_;
 // Constructor and Destructor
 Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
                    std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph) : name_(name),
@@ -19,6 +18,7 @@ Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int
     std::cout << "Instance created!"<< std::endl;
     requests_.reserve(nbRequests + nbOnboards);
     vehicles.reserve(nbVehicles);
+    nbTasks_ = nbRequests;
 }
 
 
@@ -34,27 +34,10 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbOnboards_ = mainInst.nbOnboards_;
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
+    nbTasks_ = 0;
 //    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
 }
 
-Instance::Instance(const Instance &mainInst, int zoneID) : name_(mainInst.name_){
-    for (auto & vehicleObj : mainInst.vehicles_){
-        if (vehicleObj->zoneID_ == zoneID)
-            vehicles_.push_back(vehicleObj);
-    }
-    nbVehicles_ = vehicles_.size();
-    parameters_ = mainInst.parameters_;
-    simulationStartTime_ = mainInst.simulationStartTime_;
-    nbRequests_ = 0;
-    nbNewRequests_ = 0;
-    nbWaiting_ = 0;
-    instGraph_ = std::make_shared<Graph>();
-    nbOnboards_ = 0;
-    nbLocations_ = mainInst.nbLocations_;
-    requests_.reserve(mainInst.requests_.size());
-    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
-
-}
 
 void Instance::resetInstance() {
     nbRequests_ = 0;
@@ -64,7 +47,7 @@ void Instance::resetInstance() {
 
     requests_.clear();
     nameToRequest_.clear();
-    orderToRequest_.clear();
+    nbTasks_ = 0;
     instGraph_->nodes_.clear();
     instGraph_->intToNodeID_.clear();
     instGraph_->pickNodes_.clear();
@@ -91,19 +74,6 @@ std::string Instance::toString() {
     repStr << "# NUMBER_OF_REQUESTS  \t= " << nbRequests_ <<std::endl;
     repStr << "# " << std::endl;
 
-    // display 3 requests information
-    /*repStr << "--------------------- REQUESTS_INFO (Max 3 records) ---------------------" << std::endl;
-    int n = std::min(3, nbRequests_);
-    for (int i = 0; i < n; ++i) {
-        repStr << requests_[i]->toString();
-    }
-    repStr << "--------------------- VEHICLES_INFO (Max 3 records) ---------------------" << std::endl;
-    int m = std::min(3, nbVehicles_);
-    for (int i = 0; i < m; ++i) {
-        repStr << vehicles_[i]->toString();
-    }
-
-    repStr << "# " << std::endl;*/
     repStr << "------------------------ PARAMETERS AND OPTIONS -------------------------" << std::endl;
     repStr << parameters_->toString();
     repStr << "# " << std::endl;
@@ -123,14 +93,14 @@ std::string Instance::solutionToString() {
     int totalCustomers = 0;
     int totalCustomersPartial = 0;
     int nbIdle = 0;
-    int totalStops = 0;
+    unsigned int totalStops = 0;
     int totalStopLoad = 0;
 
     std::stringstream repStr;
 
-    instRepStr_ << "\n" << name_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
+    instRepStr_ << "\n" << name_ << "," << "R" << nbRequests_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
     instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
-    instRepStr_ << nbRequests_ << "," << nbVehicles_ << "," << parameters_->nbThreads_ << ",";
+    instRepStr_ << nbVehicles_ << "," << nbRequests_ << ",";
 
     // print table header
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
@@ -220,7 +190,7 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# NUMBER OF UNSERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
+    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF EMPTY VEHICLES" << " = " << nbIdle << std::endl;
@@ -235,16 +205,24 @@ std::string Instance::solutionToString() {
         repStr << std::setw(sentenceSize) << "# WAIT TIME PER PASSENGER AFTER 1H" << " = " << totalWaitingPartial/static_cast<float>(totalCustomersPartial) << " (s)" << std::endl;
         repStr << std::setw(sentenceSize) << "# TRIP DELAY PER REQUEST AFTER 1H" << " = " << totalTripDelayPartial/static_cast<float>(totalNumServedPartial) << " (s)" << std::endl;
     }
-    repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << totalStopLoad/static_cast<float>(totalStops) << std::endl;
+    repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
     repStr << "#" << std::endl;
     instRepStr_ << totalCustomers << ",";
+
     if (totalCustomersPartial > 135000)
         instRepStr_ << "135000 <" << ",";
-    else if (totalCustomersPartial < 125000)
-        instRepStr_ << "< 125000" << ",";
-    else
+    else if (totalCustomersPartial >= 125000 && totalCustomersPartial <= 135000)
         instRepStr_ << "125000 - 135000" << ",";
+    else if (totalCustomersPartial >= 70000 && totalCustomersPartial < 125000)
+        instRepStr_ << "< 125000" << ",";
+    else if (totalCustomersPartial >= 50000 && totalCustomersPartial < 70000)
+        instRepStr_ << "< 50000 <" << ",";
+    else if (totalCustomersPartial >= 40000 && totalCustomersPartial <= 50000)
+        instRepStr_ << "40000 - 50000" << ",";
+    else if (totalCustomersPartial < 40000)
+        instRepStr_ << "40000 <" << ",";
+
     instRepStr_ << totalNumServed << "," << totalWaiting/static_cast<float>(numServed) << ",";
     instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
     instRepStr_ << totalTripDelay/static_cast<float>(totalNumServed) << "," << totalNumServedPartial << ",";
@@ -253,7 +231,7 @@ std::string Instance::solutionToString() {
     instRepStr_ << totalTripDelayPartial/static_cast<float>(totalNumServedPartial) << ",";
     instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
     instRepStr_ << nbIdle << ",";
-    instRepStr_ << totalStopLoad/static_cast<float>(totalStops) << ",";
+    instRepStr_ << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << ",";
     return repStr.str();
 }
 
@@ -317,7 +295,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
         else {
             if (mainInst->requests_[i]->earlyPick_ < simulationStartTime_ + elapsedTime) {
-                if (mainInst->requests_[i]->solVehicleID_ == 999999) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
@@ -329,7 +307,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
     }
 
-    nbOnboards_ = instGraph_->onboards_.size();
+    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
 
     // calculate vehicle scores
     if (mainInst->parameters_->vehicle_portion_ < 1){
@@ -385,7 +363,7 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
 
     // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (mainInst->requests_[i]->solVehicleID_ == 999999) {
+        if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
             nbNewRequests_++;
             addRequest(mainInst->requests_[i]);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
@@ -393,29 +371,11 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
         }
     }
 
-    nbOnboards_ = instGraph_->onboards_.size();
+    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
 
     updateRequestOrder();
 }
 
-void Instance::buildDataZone(const PInstance &mainInst, int zoneID) {
-    for (auto & vehicleObj : vehicles_){
-        instGraph_->addNewNode(vehicleObj->departNode_);
-        instGraph_->addNewNode(vehicleObj->sinkNode_);
-    }
-    nbNewRequests_ = 0;
-
-    for (auto & requestObj : mainInst->requests_) {
-        if (requestObj->pickZoneID_ == zoneID) {
-            nbNewRequests_++;
-            addRequest(requestObj);
-            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[pickID]);
-            instGraph_->addNewNode(mainInst->instGraph_->nodes_[dropID]);
-        }
-    }
-}
 // function to add requests from previous epochs to the current partial instance
 void Instance::addRequest(PRequest &request) {
     nbRequests_++;
@@ -462,7 +422,7 @@ void Instance::setInitialTimes() {
 }
 
 // function to sort vehicles based on ID
-void Instance::restVehicleOrder() {
+void Instance::resetVehicleOrder() {
     std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
         return lhs->vehicleID_ < rhs->vehicleID_;});
 }
@@ -509,14 +469,13 @@ void Instance::updatePenalties(float elapsedTime) {
 
 //determine an order for requests to use in CPLEX modeling
 void Instance::updateRequestOrder() {
-    orderToRequest_.clear();
+    nbTasks_ = 0;
 //    requestToOrder_.clear();
 
     int orderCounter = 0;
+    nbTasks_ = (signed) requests_.size();
     for (auto & requestObj : requests_){
-//        requestToOrder_[requestObj->getRequestId()] = orderCounter;
         requestObj->taskIndex_ = orderCounter;
-        orderToRequest_.push_back(requestObj->getRequestId());
         orderCounter++;
     }
 }
@@ -705,7 +664,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
         }
     }
     for (auto & requestObj: requests_) {
-        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->earlyPick_ < simulationStart) && requestObj->solVehicleID_ == 999999) {
+        if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->earlyPick_ < simulationStart) && requestObj->solVehicleID_ == LARGE_CONSTANT) {
             nbWaiting ++;
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
@@ -779,21 +738,8 @@ void Instance::updateTaskIndexLabeling() {
     }
 }
 
-void Instance::resetVehicleSelection() {
-    for (auto & vehicleObj : vehicles_)
-        vehicleObj->selected_ = false;
-}
 
-int Instance::getNbUnselectedVehicles() {
-    int nbUnselected = 0;
-    for (auto & vehicleObj : vehicles_){
-        if (!vehicleObj->selected_)
-            nbUnselected++;
-    }
-    return nbUnselected;
-}
-
-std::string Instance::saveReqDuals(int epoch, int isudIter, string model) {
+std::string Instance::saveReqDuals(int epoch, int isudIter, const string& model) {
     std::stringstream repStr;
     for (auto & requestObj : requests_) {
         repStr << epoch << ",";
@@ -806,7 +752,7 @@ std::string Instance::saveReqDuals(int epoch, int isudIter, string model) {
     return repStr.str();
 }
 
-std::string Instance::saveVehDuals(int epoch, int isudIter, string model) {
+std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model) {
     std::stringstream repStr;
     for (auto & vehicleObj : vehicles_) {
         repStr << epoch << ",";

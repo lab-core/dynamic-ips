@@ -202,121 +202,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
 
 
     IloCplex MIPCplex(MIPModel);
-    IloNumVarArray startVar(env);
-    IloNumArray startVal(env);
-    startVar.add(X[0][0][57]);
-    startVar.add(X[0][57][35]);
-    startVar.add(X[0][35][12]);
-    startVar.add(X[0][12][13]);
-    startVar.add(X[0][13][36]);
-    startVar.add(X[0][36][58]);
-    startVar.add(X[0][58][1]);
-    startVar.add(X[1][2][14]);
-    startVar.add(X[1][14][41]);
-    startVar.add(X[1][41][51]);
-    startVar.add(X[1][51][25]);
-    startVar.add(X[1][25][15]);
-    startVar.add(X[1][15][42]);
-    startVar.add(X[1][42][52]);
-    startVar.add(X[1][52][26]);
-    startVar.add(X[1][26][3]);
-    startVar.add(X[2][4][16]);
-    startVar.add(X[2][16][17]);
-    startVar.add(X[2][17][29]);
-    startVar.add(X[2][29][30]);
-    startVar.add(X[2][30][55]);
-    startVar.add(X[2][55][27]);
-    startVar.add(X[2][27][18]);
-    startVar.add(X[2][18][56]);
-    startVar.add(X[2][56][28]);
-    startVar.add(X[2][28][5]);
-    startVar.add(X[3][6][31]);
-    startVar.add(X[3][31][45]);
-    startVar.add(X[3][45][49]);
-    startVar.add(X[3][49][19]);
-    startVar.add(X[3][19][37]);
-    startVar.add(X[3][37][38]);
-    startVar.add(X[3][38][50]);
-    startVar.add(X[3][50][46]);
-    startVar.add(X[3][46][32]);
-    startVar.add(X[3][32][7]);
-    startVar.add(X[4][8][39]);
-    startVar.add(X[4][39][22]);
-    startVar.add(X[4][22][40]);
-    startVar.add(X[4][40][59]);
-    startVar.add(X[4][59][43]);
-    startVar.add(X[4][43][21]);
-    startVar.add(X[4][21][53]);
-    startVar.add(X[4][53][20]);
-    startVar.add(X[4][20][44]);
-    startVar.add(X[4][44][54]);
-    startVar.add(X[4][54][60]);
-    startVar.add(X[4][60][9]);
-    startVar.add(X[5][10][33]);
-    startVar.add(X[5][33][23]);
-    startVar.add(X[5][23][47]);
-    startVar.add(X[5][47][48]);
-    startVar.add(X[5][48][24]);
-    startVar.add(X[5][24][34]);
-    startVar.add(X[5][34][11]);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
-    startVal.add(1);
 
-    MIPCplex.addMIPStart(startVar, startVal);
-//    MIPCplex.readMIPStarts(filePaths.getInputMipStart().c_str());
     MIPCplex.setParam(IloCplex::Param::MIP::Limits::RepairTries, 10);
     MIPCplex.setParam(IloCplex::Param::MIP::PolishAfter::Time, 100);
     MIPCplex.setParam(IloCplex::Param::TimeLimit, 300);
@@ -332,30 +218,7 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
     try {
         MIPCplex.solve();
         std::cout << "The objective value: " << MIPCplex.getObjValue() << std::endl;
-        MIPCplex.writeMIPStarts(filePaths.getOutputMipStart().c_str());
-
         std::cout << " ================  THE RESULT OF SOLVING WITH MIP SOLVER  ================ " << std::endl;
-
-        /*for (int i = 0; i < PInst->nbRequests_; ++i) {
-            float Zval = MIPCplex.getValue(Z[i]);
-            if (Zval > 0)
-                std::cout << "Z[" << i <<"]: " << Zval << std::endl;
-        }
-        for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
-            for (int v = 0; v < PInst->nbVehicles_; ++v) {
-                float Uval = MIPCplex.getValue(U[v][i]);
-                float Wval = MIPCplex.getValue(W[v][i]);
-
-                for (int j = 0; j < PInst->instGraph_->nbNodes_; ++j) {
-                    float Xval = MIPCplex.getValue(X[v][i][j]);
-                    if (Xval > 0) {
-                        std::cout << "X[" << v <<"][" << i <<"][" << j <<"]: " << Xval << std::endl;
-                        std::cout << "W[" << v <<"][" << i <<"]: " << Wval << std::endl;
-                        std::cout << "U[" << v <<"][" << i <<"]: " << Uval << std::endl;
-                    }
-                }
-            }
-        }*/
 
         for (int v = 0; v < PInst->nbVehicles_; ++v) {
             IloNumArray uVal(env);
@@ -383,17 +246,16 @@ void MIPSolver(PInstance& PInst, InputPaths &filePaths)
             while (currentNodeIndex != sinkIndex) {
                 for (int i = 0; i < PInst->instGraph_->nbNodes_; ++i) {
                     if (xVal[currentNodeIndex][i] > 0.9) {
-                        newRoute->addNode1(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]);
+                        newRoute->addNode(PInst->instGraph_->nodes_[PInst->instGraph_->intToNodeID_[i]]);
                         currentNodeIndex = i;
                         break;
                     }
                 }
             }
-//            std::cout << newRoute->toString() << std::endl;
             PInst->vehicles_[v]->currentRoute_ = newRoute;
 //            PInst->vehicles_[v]->solutionRoute_ = newRoute;
         }
-//        PInst->saveSolutionRoutes(filePaths.getOutputOfflineRoutes());
+        PInst->saveSolutionRoutes();
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
