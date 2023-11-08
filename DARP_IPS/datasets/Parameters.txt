@@ -26,8 +26,8 @@ useZoom = 1
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
-MaxLabel = 15
+isTruncated = 1
+MaxLabel = 5
 isDominanceReleased = 0
 isSuccessorsLimited = 0
 isDropPickPossible = 0
