@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=80G
-#SBATCH --time=02:15:00
+#SBATCH --time=05:15:00
 #SBATCH --array=1-24
 #SBATCH --output=/dev/null
 
