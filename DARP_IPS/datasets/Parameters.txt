@@ -37,8 +37,8 @@ subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
 usePick = 1
-nbPick = 3
-sortPath = 0
+nbPick = 2
+sortPath = 1
 
 # CPLEX PARAMETERS
 #
