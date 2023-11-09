@@ -11,7 +11,7 @@ InitialDual = 0
 mainAlgorithm = 2
 addOneRequestColumn = 0
 solutionMode = 1
-OneIter = 1
+OneIter = 0
 GreedyReOptimize = 1
 saveScratch = 1
 
@@ -32,7 +32,7 @@ isDominanceReleased = 0
 isSuccessorsLimited = 0
 isDropPickPossible = 0
 SubproSolveStartState = 2
-LabelingStrategy = 0
+LabelingStrategy = 1
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 1
