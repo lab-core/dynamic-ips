@@ -11,5 +11,5 @@ module load gcc
 #20160225_07-120m
 
 #bin/realtime_DARP Instances-120 20160225_07-120m
-bin/realtime_DARP $1 $2 2500
+bin/realtime_DARP $1 $2 $3 $4
  
