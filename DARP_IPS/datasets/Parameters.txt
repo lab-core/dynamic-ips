@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 1
-saveScratch = 1
+saveScratch = 0
 
 # ISUD PARAMETERS
 #
