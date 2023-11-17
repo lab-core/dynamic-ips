@@ -3,6 +3,7 @@
 #SBATCH --mem=80G
 #SBATCH --time=02:30:00
 #SBATCH --array=1-24
+#SBATCH --mail-user=elahe.amiri66@gmail.com
 #SBATCH --output=/dev/null
 
 
