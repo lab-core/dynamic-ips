@@ -11,7 +11,7 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       bool oneIter, bool greedyReOptimize, bool saveScratch, warmStart initialStart,
+                       bool oneIter, bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart,
                        int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
@@ -21,13 +21,14 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
-        initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree),
-        useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom), isTruncated_(isTruncated),
-        MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
-        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy),
-        subAlgorithm_(subAlgorithm), vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion),
-        usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath) , bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
+        vehicleReturn_(vehicleReturn),initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
+        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
+        isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
+        isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
+        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
+        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), nbPick_(nbPick),
+        sortPath_(sortPath) , bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
+        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
         MIPGap_(MIPGap) {
     savePartial_ = false;
 }
@@ -57,6 +58,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# One iter per epoch " << " = " << oneIter_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
     repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
+    repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -112,6 +114,7 @@ std::string Parameters::toStr() const {
     repStr << solutionModeName[solutionMode_] << ",";
     repStr << boolToString(oneIter_) << ",";
     repStr << boolToString(greedyReOptimize_) << ",";
+    repStr << boolToString(vehicleReturn_) << ",";
     repStr << MIP_maxIncDegree_ << ",";
     repStr << CP_IncDegree_ << ",";
     repStr << boolToString(useMultiStage_) << ",";

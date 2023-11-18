@@ -382,7 +382,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
 //            vehicleObj->updateCurrentRoute(elapsedTime_);
-            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_, mainInst->simulationStartTime_);
+            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_,
+                                        mainInst->simulationStartTime_, mainInst->parameters_->vehicleReturn_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         masterModel_->nbRoutes_ = 0;
@@ -465,7 +466,8 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
         masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
         masterModel_->subProResults_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_, mainInst->simulationStartTime_);
+            vehicleObj->updateStateTime(elapsedTime_, mainInst->parameters_->committedTime_,
+                                        mainInst->simulationStartTime_, mainInst->parameters_->vehicleReturn_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         masterModel_->nbRoutes_ = 0;
@@ -553,7 +555,8 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
                 inputPaths.makeInstanceOutput(instNum);
                 float length = 0;
                 for (auto & vehicleObj: StaticInst->vehicles_)
-                    vehicleObj->updateStateTime(saveTime, length, mainInst->simulationStartTime_);
+                    vehicleObj->updateStateTime(saveTime, length, mainInst->simulationStartTime_,
+                                                mainInst->parameters_->vehicleReturn_);
                 inputPaths.makeInstanceOutput(instNum);
                 StaticInst->saveStatus(inputPaths, StaticInst->simulationStartTime_ + saveTime,mainInst->parameters_->epochLength_);
                 inputPaths.makeInstanceOutput("2");
@@ -610,7 +613,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-
+        if (epoch_ > 10)
+            break;
 
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
@@ -621,7 +625,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
         masterModel_->subProResults_.resize(mainInst->nbVehicles_);
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_, mainInst->simulationStartTime_);
+            vehicleObj->updateState(epoch_, mainInst->parameters_->epochLength_,
+                                    mainInst->simulationStartTime_, mainInst->parameters_->vehicleReturn_);
             mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
         }
         masterModel_->nbRoutes_ = 0;

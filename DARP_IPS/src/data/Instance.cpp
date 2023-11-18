@@ -98,7 +98,7 @@ std::string Instance::solutionToString() {
 
     std::stringstream repStr;
 
-    instRepStr_ << "\n" << name_ << "," << "R" << nbRequests_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
+    instRepStr_ << name_ << "," << "R" << nbRequests_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
     instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
     instRepStr_ << nbVehicles_ << "," << nbRequests_ << ",";
 

@@ -54,8 +54,8 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateState(int epoch, int &epochLength, float simulationStart);
-    void updateStateTime(float elapsedTime, float &epochLength, float simulationStart);
+    void updateState(int epoch, int &epochLength, float simulationStart, bool vehicleReturn);
+    void updateStateTime(float elapsedTime, float &epochLength, float simulationStart, bool vehicleReturn);
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch

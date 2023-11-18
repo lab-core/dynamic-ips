@@ -20,35 +20,37 @@ int numVehicles;
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
     std::string dataDir = "datasets/";
-    std::string vehicleFile = "vehicles_2000_4";
-    std::string vehicleFolder = "manhattan-vehicles";
+    std::string vehicleFile = "";
+    std::string vehicleFolder = "";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     int mainAlgo = -1;
-    if (argc == 4){
+    if (argc == 5){
         std::string instanceNames = "datasets/InstanceNames.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
-        instFolder = argv[1];
-        std::string word = argv[2];
-        mainAlgo = std::stoi(argv[3]);
-        vehicleFile = "vehicles_" + word + "_4";
-        numVehicles = std::stoi(argv[2]);
-    }
-    else if (argc == 5){
-        instFolder = argv[1];
-        instNames.emplace_back(argv[2]);
-        std::cout << "Instance : " << argv[1] << "/" << argv[2]  << std::endl;
+        vehicleFolder = argv[1];
+        instFolder = argv[2];
         std::string word = argv[3];
         vehicleFile = "vehicles_" + word + "_4";
         numVehicles = std::stoi(argv[3]);
         mainAlgo = std::stoi(argv[4]);
     }
+    else if (argc == 6){
+        vehicleFolder = argv[1];
+        instFolder = argv[2];
+        instNames.emplace_back(argv[3]);
+        std::cout << "Instance : " << argv[2] << "/" << argv[3]  << std::endl;
+        std::string word = argv[4];
+        vehicleFile = "vehicles_" + word + "_4";
+        numVehicles = std::stoi(argv[4]);
+        mainAlgo = std::stoi(argv[5]);
+    }
     else
-        myTools::myException::throwError("There should be at least 2 arguments!");
+        myTools::myException::throwError("There should be at least 5 arguments!");
 
     // build the path of input files
     // create output files for epoch results
@@ -124,12 +126,13 @@ int main(int argc, char** argv) {
             requestResultsStream.close();
             Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
             finalInstanceStream
-                    << "Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
+                    << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
                        "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
                        "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
                        "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
                        "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
                        "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+            finalInstanceStream << "\n" << vehicleFolder << ",";
             finalInstanceStream << mainInst->instRepStr_.str();
             finalInstanceStream.close();
         }

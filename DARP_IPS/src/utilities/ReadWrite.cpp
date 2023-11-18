@@ -451,7 +451,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, saveScratch = false;
+    bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1;
 
@@ -502,6 +502,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "saveScratch "))
             file >> saveScratch;
+
+        else if (strEndWith(title, "vehicleReturn "))
+            file >> vehicleReturn;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -576,7 +579,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
-                                                          greedyReOptimize, saveScratch,
+                                                          greedyReOptimize, saveScratch, vehicleReturn,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, isTruncated, maxLabel, isSuccessorsLimited,
@@ -633,7 +636,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
-                        "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,MIP_maxIncDegree,CP_IncDegree,"
+                        "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
                         "LabelingStrategy,Greedy_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
 

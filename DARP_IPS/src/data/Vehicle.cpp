@@ -89,8 +89,8 @@ std::string Vehicle::toString() const {
 // function to update vehicle depart time at each time and
 // update the situation of nodes and ride requests
 
-void Vehicle::updateState(int epoch, int &epochLength, float simulationStart) {
-    /*if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < simulationStart + static_cast<float>(epoch * epochLength)
+void Vehicle::updateState(int epoch, int &epochLength, float simulationStart, bool vehicleReturn) {
+    if (vehicleReturn && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < simulationStart + static_cast<float>(epoch * epochLength)
         && currentRoute_->routeSize_ == 1){
         if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
             idleTime_ += (simulationStart + static_cast<float>((epoch+1) * epochLength) - departTime_);
@@ -99,7 +99,7 @@ void Vehicle::updateState(int epoch, int &epochLength, float simulationStart) {
             solutionRoute_->plannedDepartTime_.back() = currentRoute_->plannedDepartTime_[0];
             currentRoute_->addSink(sinkNode_);
         }
-    }*/
+    }
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < simulationStart + static_cast<float>((epoch+1) * epochLength) ||
@@ -180,8 +180,8 @@ void Vehicle::updateState(int epoch, int &epochLength, float simulationStart) {
     }
 }
 
-void Vehicle::updateStateTime(float elapsedTime, float &epochLength, float simulationStart) {
-    if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < simulationStart + elapsedTime && currentRoute_->routeSize_ == 1){
+void Vehicle::updateStateTime(float elapsedTime, float &epochLength, float simulationStart, bool vehicleReturn) {
+    if (vehicleReturn && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < simulationStart + elapsedTime && currentRoute_->routeSize_ == 1){
         if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
             idleTime_ += (simulationStart + elapsedTime + epochLength - departTime_);
             currentRoute_->plannedDepartTime_[0] = simulationStart + elapsedTime + epochLength;
