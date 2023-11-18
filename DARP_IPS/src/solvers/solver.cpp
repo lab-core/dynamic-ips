@@ -613,8 +613,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-        if (epoch_ > 10)
-            break;
 
         std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
