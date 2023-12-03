@@ -88,6 +88,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         masterModel_->availableTime_ = LARGE_CONSTANT;
 
     masterModel_->initialization(EpochInst, inputPaths);
+    for (auto &vehicleObj: EpochInst->vehicles_) {
+        vehicleObj->vehicleIndex_ = -1;
+        masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
+    }
     for (auto & vehicleObj : EpochInst->vehicles_){
         for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_)
             requestObj->initialVehicleID_ = vehicleObj->vehicleID_;
@@ -142,39 +146,46 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
         masterModel_->nbVehicles_ = 0;
-        if (EpochInst->parameters_->greedyPortion_){
+
+        if (EpochInst->parameters_->greedyPortion_) {
             if (!isSolved) {
                 bool state = EpochInst->parameters_->greedyReOptimize_;
                 EpochInst->parameters_->greedyReOptimize_ = true;
                 GreedyModel_->GreedyAssignment(EpochInst);
                 EpochInst->parameters_->greedyReOptimize_ = state;
                 isSolved = true;
-                // add vehicles in previous solution
-                if (EpochInst->parameters_->initialStart_ != GREEDY_START) {
-                    for (auto &vehicleObj: EpochInst->vehicles_) {
-                        if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
-                            GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_]++;
-                        }
-                    }
-                }
+
             }
+        }
+        else if (EpochInst->parameters_->zonePortion_) {
+            if (!isSolved) {
+                EpochInst->resetZoneVehicles();
+                EpochInst->selectVehiclesByZone();
+                isSolved = true;
+            }
+        }
+        else {
+            // select all the vehicles
+            for (auto & vehicleObj : EpochInst->vehicles_) {
+                EpochInst->selectedVehicles_[vehicleObj->vehicleID_]++;
+            }
+        }
+        // add vehicles in previous solution
+        if (EpochInst->parameters_->initialStart_ != GREEDY_START) {
             for (auto &vehicleObj: EpochInst->vehicles_) {
-                vehicleObj->vehicleIndex_ = -1;
-                masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                if (GreedyModel_->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
-                    subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                    vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
-                    masterModel_->nbVehicles_++;
+                if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                    EpochInst->selectedVehicles_[vehicleObj->vehicleID_]++;
                 }
             }
         }
-
-        else {
-            for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
-                masterModel_->availableRoutes_[EpochInst->vehicles_[v]->vehicleID_].clear();
-                subProSolve.emplace_back(
-                        std::make_shared<LabelingSubProblem>(EpochInst->vehicles_[v], subProOptions_));
-                EpochInst->vehicles_[v]->vehicleIndex_ = masterModel_->nbVehicles_;
+        // create subproblems
+        masterModel_->nbVehicles_ = 0;
+        for (auto &vehicleObj: EpochInst->vehicles_) {
+            vehicleObj->vehicleIndex_ = -1;
+//           masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
+            if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+                subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
             }
         }

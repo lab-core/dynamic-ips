@@ -19,6 +19,8 @@ Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int
     requests_.reserve(nbRequests + nbOnboards);
     vehicles.reserve(nbVehicles);
     nbTasks_ = nbRequests;
+    zones_.resize(MAX_ZONE);
+    nbZones_ = 0;
 }
 
 
@@ -35,6 +37,8 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbLocations_ = mainInst.nbLocations_;
     requests_.reserve(mainInst.requests_.size());
     nbTasks_ = 0;
+    zones_ = mainInst.zones_;
+    nbZones_ = mainInst.nbZones_;
 //    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
 }
 
@@ -310,7 +314,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
 
     // calculate vehicle scores
-    if (mainInst->parameters_->vehicle_portion_ < 1){
+    /*if (mainInst->parameters_->vehicle_portion_ < 1){
         for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
             for (auto & vehicleObj: mainInst->vehicles_){
                 float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
@@ -319,7 +323,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                     vehicleObj->score_ = earliestPick;
             }
         }
-    }
+    }*/
     updateRequestOrder();
 }
 
@@ -454,7 +458,85 @@ void Instance::sortVehicles(SortVehicle sortBase) {
     }
 }
 
+void Instance::sortZones() {
+    for (auto & zoneObj : zones_){
+        if (zoneObj != nullptr) {
+            for (auto &nextZoneObj: zones_) {
+                if (nextZoneObj != nullptr && zoneObj->zoneID_ != nextZoneObj->zoneID_) {
+                    nextZoneObj->travelToZone_ = durationMatrix_[zoneObj->centerLocationID_][nextZoneObj->centerLocationID_];
+                    zoneObj->successors_.push_back(&(*nextZoneObj));
+                }
+            }
+            std::stable_sort(zoneObj->successors_.begin(), zoneObj->successors_.end(), [](Zone *lhs, Zone *rhs) {
+                return lhs->travelToZone_ < rhs->travelToZone_;
+            });
+        }
+    }
+}
 
+void Instance::resetZoneVehicles(){
+    for (auto & zoneObj : zones_) {
+        if (zoneObj != nullptr) {
+            zoneObj->zoneVehicles_.clear();
+        }
+    }
+
+    for (auto vehicleObj: vehicles_){
+        zones_[vehicleObj->departNode_->zoneID_]->zoneVehicles_.push_back(vehicleObj);
+    }
+    for (auto & zoneObj : zones_) {
+        if (zoneObj != nullptr) {
+            std::stable_sort(zoneObj->zoneVehicles_.begin(), zoneObj->zoneVehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+                return lhs->departTime_ < rhs->departTime_;});
+        }
+    }
+}
+
+void Instance::selectVehiclesByZone() {
+    selectedVehicles_.clear();
+    selectedVehicles_.resize(nbVehicles_, 0);
+    for (int i = 0; i < requests_.size(); i++) {
+        if (requests_[i]->requestStatus_ == NO_ACTION) {
+            bool vehicleSelected = false;
+            PZone selectedZone = nullptr;
+            if (requests_[i]->pickZoneID_ > zones_.size() || zones_[requests_[i]->pickZoneID_] == nullptr) {
+                int distance = LARGE_CONSTANT;
+                for (auto & zoneObj : zones_) {
+                    if (zoneObj != nullptr) {
+                        if (distance > durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj->centerLocationID_]) {
+                            distance = durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj->centerLocationID_];
+                            selectedZone = zoneObj;
+                        }
+                    }
+                }
+
+            }
+            else {
+                selectedZone = zones_[requests_[i]->pickZoneID_];
+            }
+            for (auto &vehicleObj: zones_[requests_[i]->pickZoneID_]->zoneVehicles_) {
+                if (!selectedVehicles_[vehicleObj->vehicleID_]) {
+                    selectedVehicles_[vehicleObj->vehicleID_]++;
+                    vehicleSelected = true;
+                    break;
+                }
+            }
+            if (!vehicleSelected) {
+                for (auto & zoneObj : zones_[requests_[i]->pickZoneID_]->successors_) {
+                    for (auto &vehicleObj: zoneObj->zoneVehicles_) {
+                        if (!selectedVehicles_[vehicleObj->vehicleID_]) {
+                            selectedVehicles_[vehicleObj->vehicleID_]++;
+                            vehicleSelected = true;
+                            break;
+                        }
+                    }
+                    if (vehicleSelected)
+                        break;
+                }
+            }
+        }
+    }
+}
 // function to update penalties in rolling horizon approach
 /*void Instance::updatePenaltiesEpoch(int epoch) {
     for (auto & requestObj : requests_)

@@ -65,7 +65,8 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRequest> &fracti
 
     // add the new compatible column to the model
     for (auto & routeObj : routesToAdd_) {
-        addRouteVar(routeObj, pInst);
+        if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
+            addRouteVar(routeObj, pInst);
     }
 }
 
@@ -73,7 +74,6 @@ void ReducedProblem::updateModel(PInstance &pInst, std::vector<PRequest> &fracti
 // this function build the model at the start of each epoch
 void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolution,
                                 int nbVehicles) {
-
     // model initialization (defining empty set of constraints and adding objective)
     int rhs = 1;
     CplexModeler::initializeModel(pInst, rhs, nbVehicles);

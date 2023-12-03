@@ -130,3 +130,7 @@ void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
     nodes_[pickNode->nodeID_]->pairNode_ = &(*nodes_[dropNode->nodeID_]);
     nodes_[dropNode->nodeID_]->pairNode_ = &(*nodes_[pickNode->nodeID_]);
 }
+
+Zone::Zone(const unsigned int zoneId, int centerLocationId) : zoneID_(zoneId), centerLocationID_(centerLocationId) {
+    travelToZone_ = 0;
+}

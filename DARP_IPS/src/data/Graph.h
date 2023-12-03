@@ -81,5 +81,17 @@ public:
 };
 
 
+class Zone {
+public:
+    const unsigned int zoneID_;
+    int centerLocationID_;
+    std::vector<PVehicle> zoneVehicles_;
+    std::vector<Zone *> successors_;
+    int travelToZone_;
+
+    // Constructor and Destructor
+    Zone(const unsigned int zoneId, int centerLocationId);
+};
+
 
 #endif //GRAPH_H

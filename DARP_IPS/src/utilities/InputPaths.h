@@ -39,6 +39,7 @@ protected:
     std::string input_vehicleFile_;
     std::string input_onboardsFile_;
     std::string input_waitRequests_;
+    std::string input_zones_;
 
     // out put save state files
 
@@ -82,6 +83,8 @@ public:
     const std::string &getInputVehicleFileGeneral() const;
     const std::string &getInputOnboardsFile() const;
     const std::string &getInputWaitRequests() const;
+    const std::string &getInputZones() const;
+
     const std::string &getOutputEpochResults() const;
     const std::string &getOutputFinalLog() const;
     const std::string &getOutputFinalRoutes() const;

@@ -50,6 +50,8 @@ class Node;
 typedef std::shared_ptr<Node> PNode;
 class Route;
 typedef std::shared_ptr<Route> PRoute;
+class Zone;
+typedef std::shared_ptr<Zone> PZone;
 class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
 class ComplementPro;
@@ -149,6 +151,7 @@ static const char *NodeTypeStr[] = {
 
 #define LARGE_CONSTANT 9999999
 const int MAX_BIT_SIZE = 3000;
+const int MAX_ZONE = 300;
 
 static const int sentenceSize = 47;
 static const int ServiceTime = 30;

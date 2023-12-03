@@ -709,12 +709,12 @@ void LabelingSubProblem::solutionSummery(vector<int> &subProResults) {
     }
     else
     {
-        subProResults[0] =+ nbOutputs_;
-        subProResults[1] =+ nbGenerated_;
-        subProResults[2] =+ nbDominated_;
-        subProResults[3] =+ nbEliminated_;
-        subProResults[4] =+ subGraph_->nbNodes_;
-        subProResults[5] =+ subGraph_->pickNodes_.size();
+        subProResults[0] += nbOutputs_;
+        subProResults[1] += nbGenerated_;
+        subProResults[2] += nbDominated_;
+        subProResults[3] += nbEliminated_;
+        subProResults[4] += subGraph_->nbNodes_;
+        subProResults[5] += subGraph_->pickNodes_.size();
     }
 }
 

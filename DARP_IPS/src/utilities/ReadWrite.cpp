@@ -451,7 +451,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false;
+    bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false, zonePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1;
 
@@ -554,6 +554,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Greedy_portion "))
             file >> greedyPortion;
 
+        else if (strEndWith(title, "Zone_portion "))
+            file >> zonePortion;
+
         else if (strEndWith(title, "usePick "))
             file >> usePick;
 
@@ -587,12 +590,47 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          vehicle_portion, greedyPortion, usePick, nbPick,
+                                                          vehicle_portion, greedyPortion, zonePortion, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),bigM,
                                                           solveTimeLimit, populateTimeLimit, addOneRequestColumn,
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }
 
+void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
+// open the file
+    std::fstream file;
+    std::cout << "Reading << " << strZoneFile << " >>" << std::endl;
+    file.open(strZoneFile, std::fstream::in);
+    if (!file.is_open())
+    {
+        std::cout << "While trying to read the file " << strZoneFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    string title;
+
+    while (file.good()) {
+//        readUntilChar(file, '\n', title);
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
+        if (strEndWith(title, "ZONE_INFO")) {
+            pInstance->nbZones_ = 0;
+            while (!file.eof()) {
+                // attributes for reading trip requests file
+//                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
+                int zoneID = -1, centerLocationID = -1;
+
+                file >> zoneID;
+                file >> centerLocationID;
+
+                pInstance->nbZones_++;
+                pInstance->zones_[zoneID] = std::move(std::make_shared<Zone>(zoneID, centerLocationID));
+            }
+        }
+    }
+    pInstance->sortZones();
+}
 
 // function that open all input files and update main instance data
 void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch) {
@@ -638,7 +676,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "LabelingStrategy,Greedy_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
+                        "LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();
@@ -726,5 +764,7 @@ void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::str
         }
     }
 }
+
+
 
 

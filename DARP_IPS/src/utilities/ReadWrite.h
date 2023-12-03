@@ -38,6 +38,7 @@ public:
 
     // Read the parameters datafile
     static void readParameters(const std::string& strParamFile, PInstance &pInstance);
+    static void readZones(const std::string& strZoneFile, PInstance &pInstance);
 
     // function that open all input files and update main instance data
     static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch);

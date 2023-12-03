@@ -50,6 +50,7 @@ public:
     subproblemAlgorithm subAlgorithm_;
     float vehicle_portion_;
     bool greedyPortion_{};
+    bool zonePortion_{};
     bool usePick_;
     int nbPick_;
     SortPaths sortPath_;
@@ -67,7 +68,7 @@ public:
                bool useMultiStage, float minImp, bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, float vehicle_portion,
-               bool greedyPortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,
+               bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();

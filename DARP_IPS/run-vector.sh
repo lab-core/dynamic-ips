@@ -12,21 +12,24 @@ module load gcc
 i=1
 for vehicles in manhattan-vehicles
 do
-  for algorithm in 3
+  for mode in 1
   do
-    for directory in Instances-120
+    for algorithm in 3
     do
-      for instance in 20150706_07-120m 20150715_07-120m 20150804_07-120m 20150828_07-120m 20150917_07-120m 20150926_07-120m 20151008_07-120m 20151025_07-120m 20151110_07-120m 20151130_07-120m 20151211_07-120m  20151230_07-120m 20160109_07-120m 20160129_07-120m 20160222_07-120m 20160225_07-120m 20160316_07-120m 20160329_07-120m 20160401_07-120m 20160427_07-120m 20160512_07-120m 20160521_07-120m 20160613_07-120m 20160628_07-120m
+      for directory in Instances-120
       do
-        for num_vehicles in 2000
-#       for num_vehicles in 1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500
+        for instance in 20150706_07-120m 20150715_07-120m 20150804_07-120m 20150828_07-120m 20150917_07-120m 20150926_07-120m 20151008_07-120m 20151025_07-120m 20151110_07-120m 20151130_07-120m 20151211_07-120m  20151230_07-120m 20160109_07-120m 20160129_07-120m 20160222_07-120m 20160225_07-120m 20160316_07-120m 20160329_07-120m 20160401_07-120m 20160427_07-120m 20160512_07-120m 20160521_07-120m 20160613_07-120m 20160628_07-120m
         do
-          if [ $SLURM_ARRAY_TASK_ID -eq $i ]
-          then
-            bin/realtime_DARP $vehicles $directory $instance $num_vehicles $algorithm
-#          bin/realtime_DARP $directory $instance $num_vehicles $algorithm > "/scratch/amirelah/dynamic-ips/${directory}_${instance}_${num_vehicles}_${algorithm}.txt" 2>&1
-          fi
-          (( i = $i + 1 ))
+          for num_vehicles in 2000
+#         for num_vehicles in 1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500
+          do
+            if [ $SLURM_ARRAY_TASK_ID -eq $i ]
+            then
+              bin/realtime_DARP $vehicles $directory $instance $num_vehicles $algorithm $mode
+#             bin/realtime_DARP $directory $instance $num_vehicles $algorithm $mode > "/scratch/amirelah/dynamic-ips/${directory}_${instance}_${num_vehicles}_${algorithm}_${mode}.txt" 2>&1
+            fi
+            (( i = $i + 1 ))
+          done
         done
       done
     done

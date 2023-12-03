@@ -20,7 +20,7 @@ public:
     std::vector<PGreedyRoute> greedyRouteList_;
     myTools::Timer *greedyTime_;                            // time to solve the problem with greedy
     myTools::Timer *greedyAssignTime_;                      // time to solve the assignment problem for dynamic pro.
-    std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
+//    std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
     std::vector<PStopLabel> greedyLabelPool_;               // pool of greedy labels to re-use
     std::vector<PInsertPosition> positionList_;
     double objValue_;

@@ -26,6 +26,8 @@ public:
 
     int nbVehicles_;                                    // Number of vehicles
     std::vector<PVehicle> vehicles_;                    // List of vehicles
+    int nbZones_;
+    std::vector<PZone> zones_;
 
     int nbRequests_;                                    // Number of requests
     int nbOnboards_;                                    // Number of initial onboard requests
@@ -38,6 +40,7 @@ public:
     PGraph instGraph_;
     PParameters parameters_;
     std::stringstream instRepStr_;                      // save all the results as one record
+    std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
 
 
     // Constructor and Destructor
@@ -68,6 +71,10 @@ public:
     // function to sort vehicles based on ID
     void resetVehicleOrder();
     void sortVehicles(SortVehicle sortBase);
+
+    void sortZones();
+    void resetZoneVehicles();
+    void selectVehiclesByZone();
 
     // function to update penalties in rolling horizon approach
 //    void updatePenaltiesEpoch(int epoch);

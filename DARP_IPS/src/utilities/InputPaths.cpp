@@ -19,6 +19,7 @@ InputPaths::InputPaths(std::string  datadir, const std::string& vehicleFile, con
     input_durationData_ = "";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
     input_paramFile_ = dataDir_ + "Parameters.txt";
+    input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
 }
 
@@ -34,6 +35,7 @@ InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, cons
     //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
     input_paramFile_ = dataDir_ + "Parameters.txt";
+    input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
     input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
     input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
@@ -50,6 +52,7 @@ const std::string &InputPaths::getInputVehicleFile() const {return input_vehicle
 const std::string &InputPaths::getInputVehicleFileGeneral() const {return input_vehicleFileGeneral_;}
 const std::string &InputPaths::getInputOnboardsFile() const {return input_onboardsFile_;}
 const std::string &InputPaths::getInputWaitRequests() const { return input_waitRequests_;}
+const std::string &InputPaths::getInputZones() const {return input_zones_;}
 
 
 const std::string &InputPaths::getOutputEpochResults() const {return output_epochResults_;}
@@ -179,6 +182,7 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
+
 
 
 

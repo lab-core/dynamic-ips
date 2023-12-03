@@ -22,11 +22,11 @@ GreedyModeler::~GreedyModeler() {
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
-    selectedVehicles_.clear();
+    PInst->selectedVehicles_.clear();
     for (auto & vehicleObj : PInst->vehicles_) {
         greedyRouteList_.emplace_back(std::make_shared<GreedyRoute>(vehicleObj, PInst, greedyLabelPool_, PInst->parameters_->greedyReOptimize_));
     }
-    selectedVehicles_.resize(PInst->nbVehicles_,0);
+    PInst->selectedVehicles_.resize(PInst->nbVehicles_,0);
     if (positionList_.empty()){
         for (int i = 0; i < PInst->nbVehicles_; ++i)
             positionList_.emplace_back(std::make_shared<insertPosition>());
@@ -122,7 +122,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
                                                             PInst->instGraph_->dropNodes_[i],
                                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);
                 greedyRouteList_[vehicle_ID]->idle_ = false;
-                selectedVehicles_[vehicle_ID]++;
+                PInst->selectedVehicles_[vehicle_ID]++;
             }
         }
     }
@@ -151,7 +151,7 @@ void GreedyModeler::solveAssignment(PInstance &PInst) {
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             greedyRouteList_[vehicle_ID]->selected_ = true;
-            selectedVehicles_[vehicle_ID]++;
+            PInst->selectedVehicles_[vehicle_ID]++;
         }
     }
 }

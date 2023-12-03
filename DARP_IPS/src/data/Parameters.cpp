@@ -15,8 +15,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool usePick,
-                       int nbPick, SortPaths sortPath, int bigM, int solveTimeLimit, int populateTimeLimit,
+                       subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool zonePortion,
+                       bool usePick, int nbPick, SortPaths sortPath, int bigM, int solveTimeLimit, int populateTimeLimit,
                        bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
@@ -26,7 +26,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), usePick_(usePick), nbPick_(nbPick),
+        vehicle_portion_(vehicle_portion), greedyPortion_(greedyPortion), zonePortion_(zonePortion),usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath) , bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
         addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
         MIPGap_(MIPGap) {
@@ -83,6 +83,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of vehicles for subPro " << " = " << vehicle_portion_ << std::endl;
     repStr << std::setw(setwLength) << "# use greedy for vehicle portion " << " = " << greedyPortion_ << std::endl;
+    repStr << std::setw(setwLength) << "# use zones for vehicle portion " << " = " << zonePortion_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
@@ -125,6 +126,7 @@ std::string Parameters::toStr() const {
     repStr << boolToString(isDropPickPossible_) << ",";
     repStr << LabelingStrategyName[LabelingStrategy_] << ",";
     repStr << boolToString(greedyPortion_) << ",";
+    repStr << boolToString(zonePortion_) << ",";
     repStr << nbPick_ << ",";
     repStr << SortPathsName[sortPath_] << ",";
     repStr << MIPGap_ << "\n";

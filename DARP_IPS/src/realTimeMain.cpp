@@ -28,7 +28,8 @@ int main(int argc, char** argv) {
     std::string instFolder;                     // folder of instances
     std::cout << "Number of arguments = " << argc << std::endl;
     int mainAlgo = -1;
-    if (argc == 5){
+    int solMode = -1;
+    if (argc == 6){
         std::string instanceNames = "datasets/InstanceNames.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
@@ -38,8 +39,9 @@ int main(int argc, char** argv) {
         vehicleFile = "vehicles_" + word + "_4";
         numVehicles = std::stoi(argv[3]);
         mainAlgo = std::stoi(argv[4]);
+        solMode = std::stoi(argv[5]);
     }
-    else if (argc == 6){
+    else if (argc == 7){
         vehicleFolder = argv[1];
         instFolder = argv[2];
         instNames.emplace_back(argv[3]);
@@ -48,9 +50,10 @@ int main(int argc, char** argv) {
         vehicleFile = "vehicles_" + word + "_4";
         numVehicles = std::stoi(argv[4]);
         mainAlgo = std::stoi(argv[5]);
+        solMode = std::stoi(argv[6]);
     }
     else
-        myTools::myException::throwError("There should be at least 5 arguments!");
+        myTools::myException::throwError("There should be at least 6 arguments!");
 
     // build the path of input files
     // create output files for epoch results
@@ -68,8 +71,10 @@ int main(int argc, char** argv) {
         PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
         mainInst->nbVehicles_ = numVehicles;
         ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+        ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
         mainInst->parameters_->savePartial_ = savePartial;
         mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
+        mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
         ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
         std::cout << mainInst->toString();
 
