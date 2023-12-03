@@ -23,7 +23,7 @@ MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
 minImp = 0.0025
-useZoom = 1
+useZoom = 0
 NumColumn = 60
 
 # LABEL SETTING STRATEGIES
@@ -32,7 +32,7 @@ isTruncated = 1
 MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 3
