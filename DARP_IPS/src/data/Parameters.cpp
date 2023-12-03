@@ -12,7 +12,7 @@
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
                        bool oneIter, bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart,
-                       int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
+                       int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom, int nbColumn,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, float vehicle_portion, bool greedyPortion, bool zonePortion,
@@ -22,7 +22,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
         vehicleReturn_(vehicleReturn),initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
-        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
+        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
@@ -69,6 +69,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# use Multi stage " << " = " << useMultiStage_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
     repStr << std::setw(setwLength) << "# is Zooming used " << " = " << useZoom_ << std::endl;
+    repStr << std::setw(setwLength) << "# Column added to MP " << " = " << nbColumn_ << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;
@@ -120,6 +121,7 @@ std::string Parameters::toStr() const {
     repStr << CP_IncDegree_ << ",";
     repStr << boolToString(useMultiStage_) << ",";
     repStr << boolToString(useZoom_) << ",";
+    repStr << nbColumn_ << ",";
     repStr << boolToString(isTruncated_) << ",";
     repStr << MaxLabel_ << ",";
     repStr << boolToString(isDominanceReleased_) << ",";

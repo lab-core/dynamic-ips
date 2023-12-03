@@ -37,6 +37,7 @@ public:
     bool useMultiStage_;       // min incompatibility degree that CP starts from in multi-stage
     float minImp_;
     bool useZoom_;
+    int nbColumn_;
 
 
     // label setting strategies
@@ -65,7 +66,7 @@ public:
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
                bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-               bool useMultiStage, float minImp, bool useZoom, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
+               bool useMultiStage, float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, float vehicle_portion,
                bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,

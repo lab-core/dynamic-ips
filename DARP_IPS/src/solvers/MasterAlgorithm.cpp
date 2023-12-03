@@ -983,7 +983,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
                     }
                     break;
             }
-            if (numAdded > 60)
+            if (numAdded > pInst->parameters_->nbColumn_)
                 break;
         }
     }

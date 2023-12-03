@@ -453,7 +453,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
     bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false, zonePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1, nbPick = -1, sortPath = -1;
+    int solutionMode = -1, nbPick = -1, sortPath = -1, nbColumns = -1;
 
     bool addOneRequestColumn = false;
     float mipGap = -1;
@@ -524,6 +524,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "useZoom "))
             file >> useZoom;
 
+        else if (strEndWith(title, "NumColumn "))
+            file >> nbColumns;
+
         else if (strEndWith(title, "isTruncated "))
             file >> isTruncated;
 
@@ -585,7 +588,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           greedyReOptimize, saveScratch, vehicleReturn,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-                                                          useZoom, isTruncated, maxLabel, isSuccessorsLimited,
+                                                          useZoom, nbColumns, isTruncated, maxLabel, isSuccessorsLimited,
                                                           isDominanceReleased, isPickDropPossible,
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
@@ -675,7 +678,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
-                        "useMultiStage,useZoom,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
+                        "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
                         "LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
