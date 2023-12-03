@@ -151,7 +151,7 @@ static const char *NodeTypeStr[] = {
 
 #define LARGE_CONSTANT 9999999
 const int MAX_BIT_SIZE = 3000;
-const int MAX_ZONE = 300;
+const int MAX_ZONE = 350;
 
 static const int sentenceSize = 47;
 static const int ServiceTime = 30;

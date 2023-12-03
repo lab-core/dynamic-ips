@@ -482,7 +482,21 @@ void Instance::resetZoneVehicles(){
     }
 
     for (auto vehicleObj: vehicles_){
-        zones_[vehicleObj->departNode_->zoneID_]->zoneVehicles_.push_back(vehicleObj);
+        if (vehicleObj->departNode_->zoneID_ > zones_.size() || zones_[vehicleObj->departNode_->zoneID_] == nullptr) {
+            int distance = LARGE_CONSTANT;
+            PZone selectedZone = nullptr;
+            for (auto & zoneObj : zones_) {
+                if (zoneObj != nullptr) {
+                    if (distance > durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj->centerLocationID_]) {
+                        distance = durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj->centerLocationID_];
+                        selectedZone = zoneObj;
+                    }
+                }
+            }
+            selectedZone->zoneVehicles_.push_back(vehicleObj);
+        }
+        else
+            zones_[vehicleObj->departNode_->zoneID_]->zoneVehicles_.push_back(vehicleObj);
     }
     for (auto & zoneObj : zones_) {
         if (zoneObj != nullptr) {

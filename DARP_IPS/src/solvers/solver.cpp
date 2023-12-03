@@ -112,6 +112,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     for (auto &vehicleObj: EpochInst->vehicles_) {
         masterModel_->subProResults_[vehicleObj->vehicleID_].clear();
     }
+    masterModel_->nbRoutes_ = 0;
+    EpochInst->updateTaskIndexLabeling();
     while (true) {
         iter++;
         nbNegativeFound = 0;
@@ -128,13 +130,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // start the subproblems timer
         subProblemTime_->start();
         // defining subproblems
-        masterModel_->nbRoutes_ = 0;
+
         nbGenerated_ = 0;
         nbDominated_ = 0;
         nbEliminated_ = 0;
-        masterModel_->nbRoutes_ = 0;
-        masterModel_->nbRoutes_ = 0;
-        EpochInst->updateTaskIndexLabeling();
+
         std::vector<PLabelingSubPro> subProSolve;
 
         /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
@@ -154,9 +154,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 GreedyModel_->GreedyAssignment(EpochInst, iter);
                 EpochInst->parameters_->greedyReOptimize_ = state;
                 isSolved = true;
+                EpochInst->resetZoneVehicles();
             }
             else {
-                EpochInst->resetZoneVehicles();
                 EpochInst->selectVehiclesByZone(iter);
             }
         }
@@ -164,11 +164,12 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (!isSolved) {
                 EpochInst->selectedVehicles_.clear();
                 EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
-
+                EpochInst->resetZoneVehicles();
+                EpochInst->selectVehiclesByZone(iter);
                 isSolved = true;
             }
-            EpochInst->resetZoneVehicles();
-            EpochInst->selectVehiclesByZone(iter);
+            else
+                EpochInst->selectVehiclesByZone(iter);
         }
         else {
             // select all the vehicles
