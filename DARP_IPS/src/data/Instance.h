@@ -74,7 +74,7 @@ public:
 
     void sortZones();
     void resetZoneVehicles();
-    void selectVehiclesByZone();
+    void selectVehiclesByZone(int select);
 
     // function to update penalties in rolling horizon approach
 //    void updatePenaltiesEpoch(int epoch);

@@ -33,9 +33,9 @@ public:
     // this function convert GreedyRoute to Route
     void solutionToRoute(PInstance &PInst);
     void GreedySolver(PInstance &PInst);
-    void GreedyAssignment(PInstance &PInst);
+    void GreedyAssignment(PInstance &PInst, int select);
     void solveInsertion(PInstance &PInst);
-    void solveAssignment(PInstance &PInst);
+    void solveAssignment(PInstance &PInst,int select);
     void setObjValue();
 };
 

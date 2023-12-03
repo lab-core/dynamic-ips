@@ -1,0 +1,49 @@
+# MODEL PARAMETERS
+#
+# alpha Parameter              = 1.5
+# beta Parameter               = 240.0
+# delta Parameter              = 420.0
+# penalty epoch Length         = 30
+# number of threads            = 8
+# initial dual solution        = LAST_SOl
+# main algorithm               = MP_CG
+# add columns with one request = false
+# solution mode                = STATIC
+# One iter per epoch           = false
+# Is Greedy Re-Optimized       = false
+# drop first hour              = true
+# Idle vehicles return         = true
+
+# ISUD PARAMETERS
+#
+# warm start                   = PRE_SOLUTION
+# Zoom max MIP Inc. degree     = 2
+# max CP Inc. degree           = 10
+# use Multi stage              = false
+# min ISUD improvement         = 0.0
+# is Zooming used              = false
+# Column added to MP           = 60
+
+# LABEL SETTING STRATEGIES
+#
+# Use Truncated Labeling       = true
+# MaxLabel in Truncating       = 15
+# Release Dominance Rule       = false
+# Restrict outgoing arcs       = false
+# Is Pickup allowed after Drop  = false
+# Restrict Route Length        = NUM_PICK_RESTRICTED
+# Labeling Strategy            = PULLING
+# SubProblem solution Method   = PENALTY 
+# portion of vehicles for subPro  = 1.0
+# use greedy for vehicle portion  = true
+# use zones for vehicle portion  = false
+# number of pickups is limited  = true
+# number of pickups allowed    = 2
+# Sorting mode of paths        = PATH_SCORE  
+
+# CPLEX PARAMETERS
+#
+# BigM value                   = 27000
+# solve Time Limit             = 300
+# populate Time Limit          = 200
+# MIP Gap                      = 0

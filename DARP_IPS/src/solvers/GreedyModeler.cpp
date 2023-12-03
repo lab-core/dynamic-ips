@@ -58,10 +58,10 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
     greedyTime_->stop();
 }
 
-void GreedyModeler::GreedyAssignment(PInstance &PInst) {
+void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
     greedyAssignTime_->start();
     initialization(PInst);
-    solveAssignment(PInst);
+    solveAssignment(PInst, select);
     for (auto & greedySol : greedyRouteList_) {
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
@@ -132,7 +132,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
 
 
 
-void GreedyModeler::solveAssignment(PInstance &PInst) {
+void GreedyModeler::solveAssignment(PInstance &PInst, int select) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
@@ -151,7 +151,7 @@ void GreedyModeler::solveAssignment(PInstance &PInst) {
             }
             unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
             greedyRouteList_[vehicle_ID]->selected_ = true;
-            PInst->selectedVehicles_[vehicle_ID]++;
+            PInst->selectedVehicles_[vehicle_ID] = select;
         }
     }
 }

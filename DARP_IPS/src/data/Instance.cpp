@@ -492,9 +492,7 @@ void Instance::resetZoneVehicles(){
     }
 }
 
-void Instance::selectVehiclesByZone() {
-    selectedVehicles_.clear();
-    selectedVehicles_.resize(nbVehicles_, 0);
+void Instance::selectVehiclesByZone(int select) {
     for (int i = 0; i < requests_.size(); i++) {
         if (requests_[i]->requestStatus_ == NO_ACTION) {
             bool vehicleSelected = false;
@@ -514,18 +512,18 @@ void Instance::selectVehiclesByZone() {
             else {
                 selectedZone = zones_[requests_[i]->pickZoneID_];
             }
-            for (auto &vehicleObj: zones_[requests_[i]->pickZoneID_]->zoneVehicles_) {
-                if (!selectedVehicles_[vehicleObj->vehicleID_]) {
-                    selectedVehicles_[vehicleObj->vehicleID_]++;
+            for (auto &vehicleObj: selectedZone->zoneVehicles_) {
+                if (selectedVehicles_[vehicleObj->vehicleID_] == 0) {
+                    selectedVehicles_[vehicleObj->vehicleID_] = select;
                     vehicleSelected = true;
                     break;
                 }
             }
             if (!vehicleSelected) {
-                for (auto & zoneObj : zones_[requests_[i]->pickZoneID_]->successors_) {
+                for (auto & zoneObj : selectedZone->successors_) {
                     for (auto &vehicleObj: zoneObj->zoneVehicles_) {
                         if (!selectedVehicles_[vehicleObj->vehicleID_]) {
-                            selectedVehicles_[vehicleObj->vehicleID_]++;
+                            selectedVehicles_[vehicleObj->vehicleID_] = select;
                             vehicleSelected = true;
                             break;
                         }

@@ -151,30 +151,36 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (!isSolved) {
                 bool state = EpochInst->parameters_->greedyReOptimize_;
                 EpochInst->parameters_->greedyReOptimize_ = true;
-                GreedyModel_->GreedyAssignment(EpochInst);
+                GreedyModel_->GreedyAssignment(EpochInst, iter);
                 EpochInst->parameters_->greedyReOptimize_ = state;
                 isSolved = true;
-
+            }
+            else {
+                EpochInst->resetZoneVehicles();
+                EpochInst->selectVehiclesByZone(iter);
             }
         }
         else if (EpochInst->parameters_->zonePortion_) {
             if (!isSolved) {
-                EpochInst->resetZoneVehicles();
-                EpochInst->selectVehiclesByZone();
+                EpochInst->selectedVehicles_.clear();
+                EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
+
                 isSolved = true;
             }
+            EpochInst->resetZoneVehicles();
+            EpochInst->selectVehiclesByZone(iter);
         }
         else {
             // select all the vehicles
             for (auto & vehicleObj : EpochInst->vehicles_) {
-                EpochInst->selectedVehicles_[vehicleObj->vehicleID_]++;
+                EpochInst->selectedVehicles_[vehicleObj->vehicleID_] = iter;
             }
         }
         // add vehicles in previous solution
         if (EpochInst->parameters_->initialStart_ != GREEDY_START) {
             for (auto &vehicleObj: EpochInst->vehicles_) {
                 if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
-                    EpochInst->selectedVehicles_[vehicleObj->vehicleID_]++;
+                    EpochInst->selectedVehicles_[vehicleObj->vehicleID_] = 1;
                 }
             }
         }
@@ -183,7 +189,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto &vehicleObj: EpochInst->vehicles_) {
             vehicleObj->vehicleIndex_ = -1;
 //           masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
-            if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] > 0) {
+            if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] == iter) {
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
