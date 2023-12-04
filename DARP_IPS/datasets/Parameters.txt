@@ -14,7 +14,7 @@ solutionMode = 1
 OneIter = 0
 GreedyReOptimize = 0
 saveScratch = 1
-vehicleReturn = 0
+vehicleReturn = 1
 
 # ISUD PARAMETERS
 #
