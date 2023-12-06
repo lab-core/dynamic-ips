@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=2G
-#SBATCH --time=00:30:00
-#SBATCH --array=1-3
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=02:30:00
+#SBATCH --array=1-2
 #SBATCH --output=/dev/null
 
 
@@ -14,11 +14,11 @@ for vehicles in manhattan-vehicles
 do
   for mode in 1
   do
-    for algorithm in 0
+    for algorithm in 3
     do
       for directory in Instances-120
       do
-        for instance in 20160316_07-120m 20160401_07-120m 20160427_07-120m
+        for instance in 20151008_07-120m 20160109_07-120m
 #        for instance in 20150706_07-120m 20150715_07-120m 20150804_07-120m 20150828_07-120m 20150917_07-120m 20150926_07-120m 20151008_07-120m 20151025_07-120m 20151110_07-120m 20151130_07-120m 20151211_07-120m  20151230_07-120m 20160109_07-120m 20160129_07-120m 20160222_07-120m 20160225_07-120m 20160316_07-120m 20160329_07-120m 20160401_07-120m 20160427_07-120m 20160512_07-120m 20160521_07-120m 20160613_07-120m 20160628_07-120m
         do
           for num_vehicles in 2500
