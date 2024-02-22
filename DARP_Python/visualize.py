@@ -74,14 +74,24 @@ def plot_districts(district_network, print_id=False, x_lim=None, y_lim=None, fig
         if print_id is not False:
             text_y = (max(latitude) + min(latitude)) / 2
             text_x = (max(longitude) + min(longitude)) / 2
-            plt.text(text_x, text_y, region.cartodb_id, fontsize=5, fontweight='bold', color='k')
-        text_str = text_str + str(region.cartodb_id) + " - " + region.name + '\n'
+            # Calculate the centroid
+            if region.cells.size != 0:
+                centroid_lon = np.mean(region.cells[:, 1])
+                centroid_lat = np.mean(region.cells[:, 2])
+                # Find the ID of the point closest to the centroid
+                centroid_id = region.cells[
+                    np.argmin(np.sqrt((region.cells[:, 1] - centroid_lon) ** 2 + (region.cells[:, 2] - centroid_lat) ** 2)), 0]
+                centroid_index = np.where(region.cells[:, 0] == centroid_id)[0][0]
+                plt.scatter(region.cells[centroid_index, 2], region.cells[centroid_index, 1], s=1, color='red', label=f'Centroid (ID: {centroid_id})')
+ #           plt.text(text_x, text_y, region.cartodb_id, fontsize=5, fontweight='bold', color='k')
+ #       text_str = text_str + str(region.cartodb_id) + " - " + region.name + '\n'
 
     if (x_lim is not None) & (y_lim is not None):
         plt.xlim(x_lim)
         plt.ylim(y_lim)
     if add_legend:
         ax.text(0.03, 0.98, text_str, transform=ax.transAxes, fontsize=6, fontweight='bold', verticalalignment='top')
+    plt.xticks(rotation=30)
     plt.xlabel('Longitude', fontsize=10, fontweight='bold')
     plt.ylabel('Latitude', fontsize=10, fontweight='bold')
     plt.tick_params(axis='both', labelsize=7)
@@ -97,7 +107,7 @@ def plot_districts(district_network, print_id=False, x_lim=None, y_lim=None, fig
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
     return fig, ax
 
 
@@ -119,13 +129,13 @@ def plot_map_cells(district_network, print_id, pause=False, file_name=None):
     #   plt.scatter(district_network.outbound_cells[:, 1], district_network.outbound_cells[:, 2], c="red", s=1)
     ax.text(1.02, 0.53, text_str, transform=ax.transAxes, fontsize=6, fontweight='bold', verticalalignment='top')
     ax.set_title("Potential Stop Locations", fontsize=13, fontweight='bold', y=1.0, pad=-14)
-    fig.show()
+
     if file_name is not None:
         parent_folder = c.DAYS_DIR + "Map_Cells"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
     if pause:
         plt.pause(10)
     plt.close(fig)
@@ -146,16 +156,15 @@ def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
     cell_size = np.array(request_points['cell_size'])
     colors = np.random.randint(100, size=(len(x)))
     # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
-    plt.scatter(x, y, c='green', s=cell_size, alpha=0.4)
-    ax.set_title(file_name + ' pickup points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
-    fig.show()
+    plt.scatter(x, y, c='green', s=cell_size/3, alpha=0.4)
+#    ax.set_title(file_name + ' pickup points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
 
     if file_name is not None:
         parent_folder = c.DAYS_DIR + "Request_Cells"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name + '_pickup')
+        fig.savefig(image_dir + file_name + '_pickup', dpi=300, bbox_inches="tight")
     plt.close(fig)
 
     """ PLOT DROP OFF POINT """
@@ -172,16 +181,15 @@ def plot_map_request_cells(district_network, dataset, print_id, file_name=None):
     cell_size = np.array(request_points['cell_size'])
     colors = np.random.randint(100, size=(len(x)))
     # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
-    plt.scatter(x, y, c='blue', s=cell_size, alpha=0.4)
-    ax.set_title(file_name + ' dropoff points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
-    fig.show()
+    plt.scatter(x, y, c='blue', s=cell_size/3, alpha=0.4)
+#    ax.set_title(file_name + ' dropoff points', fontsize=13, fontweight='bold', y=1.0, pad=-14)
 
     if file_name is not None:
         parent_folder = c.DAYS_DIR + "Request_Cells"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name + '_dropoff')
+        fig.savefig(image_dir + file_name + '_dropoff', dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -202,14 +210,13 @@ def plot_map_vehicle_cells(district_network, df_vehicle, print_id, file_name=Non
     # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
     plt.scatter(x, y, c='red', s=cell_size, alpha=1)
     ax.set_title(file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
-    fig.show()
 
     if file_name is not None:
         parent_folder = c.DAYS_DIR + "Vehicle_Cells"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -236,9 +243,8 @@ def plot_unused_vehicle(district_network, instance_folder, nb_vehicles):
 
                 ax.set_title("Idle vehicles", fontsize=13, fontweight='bold', y=1.0,
                              pad=-14)
-                fig.show()
 
-                fig.savefig(root + "/IdleVehicles.png")
+                fig.savefig(root + "/IdleVehicles.png", dpi=300, bbox_inches="tight")
                 plt.close(fig)
 
 
@@ -273,8 +279,7 @@ def plot_sink_vehicle(district_network, instance_folder, nb_vehicles):
                 plt.scatter(x, y, c='blue', s=cell_size, alpha=1)
                 ax.set_title("Final position of vehicles", fontsize=13, fontweight='bold', y=1.0,
                              pad=-14)
-                fig.show()
-                fig.savefig(root + "/FinalVehiclesLocation.png")
+                fig.savefig(root + "/FinalVehiclesLocation.png", dpi=300, bbox_inches="tight")
                 plt.close(fig)
 
 
@@ -309,8 +314,8 @@ def plot_initial_vehicle(district_network, instance_folder, nb_vehicles):
                 plt.scatter(x, y, c='green', s=cell_size, alpha=1)
                 ax.set_title("Initial position of vehicles", fontsize=13, fontweight='bold', y=1.0,
                              pad=-14)
-                fig.show()
-                fig.savefig(root + "/InitialVehiclesLocation.png")
+
+                fig.savefig(root + "/InitialVehiclesLocation.png", dpi=300, bbox_inches="tight")
                 plt.close(fig)
 
 
@@ -330,15 +335,15 @@ def plot_districts_fill_by_id(district_network, print_id, color_ton, colors, bin
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     my_map = fig.colorbar(mpl.cm.ScalarMappable(cmap=cmap, norm=norm), ticks=bounds, orientation='vertical')
     my_map.ax.set_yticklabels(bounds, fontsize=8, fontweight='bold')
-    ax.text(0.03, 0.98, text_str, transform=ax.transAxes, fontsize=6, fontweight='bold', verticalalignment='top')
-    ax.set_title(file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
+ #   ax.text(0.03, 0.98, text_str, transform=ax.transAxes, fontsize=6, fontweight='bold', verticalalignment='top')
+#    ax.set_title(file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
     fig.canvas.draw()
     if file_name is not None:
         parent_folder = c.DAYS_DIR + "Maps"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
     if pause:
         plt.pause(10)
     plt.close(fig)
@@ -391,9 +396,9 @@ def show_request_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         file_name = str(year) + str(month) + str(day) + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-    fig.show()
+
     if pause:
         plt.pause(10)
     plt.close(fig)
@@ -441,9 +446,9 @@ def show_customer_per_hr(df_dataset, time_origin, save_image=False, os_type=None
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         file_name = str(year) + str(month) + str(day) + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-    fig.show()
+
     if pause:
         plt.pause(10)
     plt.close(fig)
@@ -501,9 +506,212 @@ def show_dataset_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
         file_name = str(year) + str(month) + str(day) + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-    fig.show()
+
+    if pause:
+        plt.pause(10)
+
+    plt.close(fig)
+
+
+def plot_number_of_requests(df_dataset, time_origin, os_type=None, save_image=False, pause=False):
+    year = time_origin.year
+    month = time_origin.month
+    day = time_origin.day
+    if os_type is None:
+        os_type = "osx"
+    title_size = c.WIN_TITLE_SIZE
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    df_dataset['count'] = 1
+    df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
+
+    # Group data into 30-second intervals
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='30S')).sum(numeric_only=True)
+
+    # Extract hours and minutes from the index
+    hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
+
+    if os_type == "windows":
+        fig = plt.figure(figsize=c.WIN_FIG_SIZE)
+    else:
+        fig = plt.figure(figsize=c.OS_FIG_SIZE)
+
+    title = "Number of requests per 30 seconds (" + str(year) + "-" + str(month) + "-" + str(day) + ")"
+    plt.title(title, fontsize=title_size, fontweight='bold')
+
+    num_requests = df_grouped['count'].tolist()
+    y_pos = np.arange(len(num_requests))
+
+    plt.bar(y_pos, num_requests, align='center', alpha=1, color='yellowgreen', width=0.6)
+    for i in range(len(num_requests)):
+        plt.annotate(num_requests[i], (0 + i, num_requests[i] + max(num_requests) * 0.3), weight='bold',
+                     size=text_size, ha='center', va='center', color='darkgreen')
+
+    plt.tick_params(axis='both', labelsize=text_size)
+    plt.xticks(y_pos, hour_list)
+    plt.ylabel('Number of requests', fontsize=text_size, fontweight='bold')
+
+    if save_image:
+        parent_folder = c.DAYS_DIR + "Images"
+    if not os.path.exists(parent_folder):
+        os.mkdir(parent_folder)
+    image_dir = parent_folder + "/"
+    file_name = f"{year}{month}{day}_requests.png"
+    plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+
+    plt.show()
+    if pause:
+        plt.pause(10)
+
+    plt.close(fig)
+
+
+
+def plot_number_of_requests(df_dataset, time_origin, os_type=None, save_image=False, pause=False, limit=None):
+    year = time_origin.year
+    month = time_origin.month
+    day = time_origin.day
+    if os_type is None:
+        os_type = "osx"
+    title_size = c.WIN_TITLE_SIZE
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    df_dataset['count'] = 1
+    df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
+
+    # Group data into 30-second intervals
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='30S')).sum(numeric_only=True)
+
+    # Extract hours and minutes from the index
+    hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
+
+    if os_type == "windows":
+        fig = plt.figure(figsize=c.WIN_FIG_SIZE)
+    else:
+        fig = plt.figure(figsize=c.OS_PAPER_SIZE)
+
+#    title = "Number of requests per 30 seconds (" + str(year) + "-" + str(month) + "-" + str(day) + ")"
+#    plt.title(title, fontsize=title_size, fontweight='bold')
+
+    num_requests = df_grouped['count'].tolist()
+
+    plt.plot(hour_list, num_requests, color='yellowgreen')
+
+    # Calculate the average number of requests and plot the horizontal line
+    average_requests = np.mean(num_requests)
+    plt.axhline(y=average_requests, color='blue', label=f'Average: {average_requests:.1f}', linewidth=1.5)
+
+    plt.xticks(rotation=40)
+    plt.tick_params(axis='both', labelsize=text_size)
+
+    # Set x-axis ticks to show time format with one tick per hour and add vertical grid lines
+    if limit is None:
+        limit = 24
+    num_ticks = len(hour_list) // limit  # Assuming 24 hours
+    x_ticks = [hour_list[i] for i in range(0, len(hour_list), num_ticks)]
+    x_labels = [hour_list[i] for i in range(0, len(hour_list), num_ticks)]
+
+
+    # Add the last time point to the x-ticks and labels
+    x_ticks.append(hour_list[-1])
+    x_labels.append(hour_list[-1])
+
+    plt.xticks(x_ticks, x_labels)
+#    plt.xlabel('Time', fontsize=text_size, fontweight='bold')
+    plt.ylabel('Number of requests', fontsize=text_size, fontweight='bold')
+
+    plt.grid(axis='x', linestyle='--', color='lightgray')
+    plt.legend()
+
+    # Set x-axis limits to exclude the empty space before the first x-tick
+    plt.xlim(x_ticks[0], x_ticks[-1])
+
+    if save_image:
+        parent_folder = c.DAYS_DIR + "Images"
+        image_dir = parent_folder + "/"
+        file_name = f"{limit}_{year}{month}{day}_requests.png"
+        plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+
+    if pause:
+        plt.pause(10)
+
+    plt.close(fig)
+
+
+
+def plot_number_of_customers(df_dataset, time_origin, os_type=None, save_image=False, pause=False, limit=None):
+    year = time_origin.year
+    month = time_origin.month
+    day = time_origin.day
+    if os_type is None:
+        os_type = "osx"
+    title_size = c.WIN_TITLE_SIZE
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    df_dataset['count'] = 1
+    df_dataset['tpep_pickup_datetime'] = pd.to_datetime(df_dataset['tpep_pickup_datetime'])
+
+    # Group data into 30-second intervals
+    df_grouped = df_dataset.groupby(pd.Grouper(key='tpep_pickup_datetime', freq='30S')).sum(numeric_only=True)
+
+    # Extract hours and minutes from the index
+    hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
+
+    if os_type == "windows":
+        fig = plt.figure(figsize=c.WIN_FIG_SIZE)
+    else:
+        fig = plt.figure(figsize=c.OS_PAPER_SIZE)
+
+#    title = "Number of customers per 30 seconds (" + str(year) + "-" + str(month) + "-" + str(day) + ")"
+#    plt.title(title, fontsize=title_size, fontweight='bold')
+
+    num_customers = df_grouped['passenger_count'].tolist()
+
+    plt.plot(hour_list, num_customers, color='orange')
+
+    # Calculate the average number of customers and plot the horizontal line
+    average_customers = np.mean(num_customers)
+    plt.axhline(y=average_customers, color='maroon', label=f'Average: {average_customers:.1f}',
+                linewidth=1.5)
+
+    plt.xticks(rotation=40)
+    plt.tick_params(axis='both', labelsize=text_size)
+
+    # Set x-axis ticks to show time format with one tick per hour and add vertical grid lines
+    if limit is None:
+        limit = 24
+    num_ticks = len(hour_list) // limit  # Assuming 24 hours
+    x_ticks = [hour_list[i] for i in range(0, len(hour_list), num_ticks)]
+    x_labels = [hour_list[i] for i in range(0, len(hour_list), num_ticks)]
+
+    # Add the last time point to the x-ticks and labels
+    x_ticks.append(hour_list[-1])
+    x_labels.append(hour_list[-1])
+
+    plt.xticks(x_ticks, x_labels)
+#    plt.xlabel('Time', fontsize=text_size, fontweight='bold')
+    plt.ylabel('Number of customers', fontsize=text_size, fontweight='bold')
+
+    plt.grid(axis='x', linestyle='--', color='lightgray')
+    plt.legend()
+
+    # Set x-axis limits to exclude the empty space before the first x-tick
+    plt.xlim(x_ticks[0], x_ticks[-1])
+
+    if save_image:
+        parent_folder = c.DAYS_DIR + "Images"
+        image_dir = parent_folder + "/"
+        file_name = f"{limit}_{year}{month}{day}_customers.png"
+        plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+
     if pause:
         plt.pause(10)
 
@@ -513,9 +721,14 @@ def show_dataset_per_hr(df_dataset, time_origin, save_image=False, os_type=None,
 def Create_box_plot(instance_folder, algorithms, start_time, save_image=False, os_type=None, pause=False,
                     rotate=False, per_min=False, show_outliers=False):
     root_folder = c.DATASETS_DIR + instance_folder
-    lighter_palette = sns.color_palette("Set3", n_colors=12, desat=0.6)
+    lighter_palette = sns.color_palette("pastel", n_colors=12)
     sns.set_theme(style="ticks", palette=lighter_palette)
     results = []
+    text_size = c.WIN_TEXT_SIZE
+    if os_type == "osx":
+        title_size = c.OS_TITLE_SIZE
+        text_size = c.OS_TEXT_SIZE
+    text_size = 12
     for algorithm in algorithms:
         wait_time_col = []
         for root, dirs, files in os.walk(root_folder):
@@ -544,7 +757,7 @@ def Create_box_plot(instance_folder, algorithms, start_time, save_image=False, o
     if os_type == "windows":
         fig = plt.figure(figsize=c.WIN_FIG_SIZE)
     else:
-        fig = plt.figure(figsize=c.OS_FIG_SIZE)
+        fig = plt.figure(figsize=c.OS_BOX_SIZE)
     if show_outliers:
         sns.boxplot(x="Instances", y="Wait_time", hue="Algorithm", data=df_results, width=0.8, linewidth=0.8, dodge=0.2,
                     flierprops=dict(markerfacecolor='white', markeredgewidth=0.8, marker='o', markersize=2))
@@ -553,11 +766,11 @@ def Create_box_plot(instance_folder, algorithms, start_time, save_image=False, o
                     dodge=True,
                     showfliers=False)
     #   sns.despine(offset=10, trim=True)
-    plt.xlabel('Instances', fontsize=10, fontweight='bold')
+    plt.xlabel('Instances', fontsize=text_size, fontweight='bold')
     if per_min:
-        plt.ylabel('wait time (Minutes)', fontsize=10, fontweight='bold')
+        plt.ylabel('wait time (Minutes)', fontsize=text_size, fontweight='bold')
     else:
-        plt.ylabel('wait time (Seconds)', fontsize=10, fontweight='bold')
+        plt.ylabel('wait time (Seconds)', fontsize=text_size, fontweight='bold')
     plt.legend(title="Algorithm")
     if rotate:
         plt.xticks(rotation=90)
@@ -567,9 +780,14 @@ def Create_box_plot(instance_folder, algorithms, start_time, save_image=False, o
             file_name = 'boxPlot_outlier' + '.png'
         else:
             file_name = 'boxPlot' + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+        if show_outliers:
+            file_name = 'boxPlot_outlier1' + '.eps'
+        else:
+            file_name = 'boxPlot1' + '.eps'
+        fig.savefig(image_dir + file_name, dpi=300, format='eps', bbox_inches="tight")
 
-    fig.show()
+
     if pause:
         plt.pause(10)
 
@@ -591,7 +809,7 @@ def Create_box_plot_by_size(instance_folder, algorithms, start_time, size, save_
                     data = pd.read_csv(file_path, index_col=False)
                     filtered_data = data[data['RequestTime'] >= start_time]
                     filtered_data = filtered_data.reset_index(drop=True)
-                    if c.TEST_SIZE[size][0] <= filtered_data['nbPassengers'].sum() <= c.TEST_SIZE[size][1]:
+                    if c.TEST_SIZE1[size][0] <= filtered_data['nbPassengers'].sum() <= c.TEST_SIZE1[size][1]:
                         if per_min:
                             wait_time_col.append(filtered_data[' WaitTime'] / 60)
                         else:
@@ -636,9 +854,9 @@ def Create_box_plot_by_size(instance_folder, algorithms, start_time, size, save_
             file_name = 'boxPlot_outlier_' + size + '.png'
         else:
             file_name = 'boxPlot_' + size + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-    fig.show()
+
     if pause:
         plt.pause(10)
 
@@ -692,9 +910,9 @@ def Create_histogram(instance_folder, algorithms, start_time, save_image=False, 
             file_name = 'histogram_log' + '.png'
         else:
             file_name = 'histogram' + '.png'
-        fig.savefig(image_dir + file_name)
+        fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-    fig.show()
+
     if pause:
         plt.pause(10)
 
@@ -704,6 +922,7 @@ def Create_histogram(instance_folder, algorithms, start_time, save_image=False, 
 def Create_histogram_by_file(instance_folder, algorithms, start_time, save_image=False, os_type=None, pause=False):
     root_folder = c.DATASETS_DIR + instance_folder
     results = []
+    bin = 60
     for test_folder in os.listdir(root_folder):
         folder_path = os.path.join(root_folder, test_folder)
         if os.path.isdir(folder_path):
@@ -734,26 +953,29 @@ def Create_histogram_by_file(instance_folder, algorithms, start_time, save_image
             if os_type == "windows":
                 fig = plt.figure(figsize=c.WIN_FIG_SIZE)
             else:
-                fig = plt.figure(figsize=c.OS_FIG_SIZE)
+                fig = plt.figure(figsize=c.OS_PAPER_SIZE)
 
             max_value = df_results['Wait_time'].max()
             sns.histplot(data=df_results, x="Wait_time", hue='Algorithm', binwidth=0.5, palette="deep", element="step",
-                         weights='nb_passengers', binrange=(0, 60))
+                         weights='nb_passengers', binrange=(0, bin))
 
             plt.xlabel('wait time (Minutes)', fontsize=10, fontweight='bold')
-            plt.xticks(np.arange(0, 60, step=2))
+            plt.xticks(np.arange(0, bin, step=5))
             plt.ylabel('number of passengers', fontsize=10, fontweight='bold')
 
             if save_image:
                 image_dir = folder_path + "/"
-                file_name = 'histogram_' + algorithms[0] + '_' + instance + '.png'
-                fig.savefig(image_dir + file_name)
+                file_name = 'histogram_' + str(bin) +algorithms[0] + '_' + instance + '.png'
+                file_name_eps = 'histogram_' + str(bin) + algorithms[0] + '_' + instance + '.eps'
+                fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+                fig.savefig(image_dir + file_name_eps, dpi=300, format='eps', bbox_inches="tight")
 
                 plt.yscale('log')
-                file_name = 'histogram_log_' + algorithms[0] + '_' + instance + '.png'
-                fig.savefig(image_dir + file_name)
+                file_name = 'histogram_log_' + str(bin) + algorithms[0] + '_' + instance + '.png'
+                file_name_eps = 'histogram_log_' + str(bin) + algorithms[0] + '_' + instance + '.eps'
+                fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+                fig.savefig(image_dir + file_name_eps, dpi=300, format='eps', bbox_inches="tight")
 
-            fig.show()
             if pause:
                 plt.pause(10)
 
@@ -822,9 +1044,9 @@ def Create_waitime_plot(instance_folder, save_image=False, os_type=None, pause=F
                                 if save_image:
                                     image_dir = run_folder_path + "/"
                                     file_name = 'wait_time' + '_' + instance + '.png'
-                                    fig.savefig(image_dir + file_name)
+                                    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-                                fig.show()
+
                                 if pause:
                                     plt.pause(10)
 
@@ -846,7 +1068,7 @@ def Create_runtime_plot(instance_folder, save_image=False, os_type=None, pause=F
                                 file_path = os.path.join(root, file)
                                 data = pd.read_csv(file_path, index_col=False)
                                 algorithm = "A_" + data['Algorithm'][0]
-                                instance = 'R' + str(data['# (Lim) served Req.'][0])
+                                instance = 'R' + str(data['#(Lim)served Req'][0])
 
                                 file = "epochRuntime_" + algorithm + ".csv"
                                 file_path = os.path.join(run_folder_path, file)
@@ -890,9 +1112,8 @@ def Create_runtime_plot(instance_folder, save_image=False, os_type=None, pause=F
                                 if save_image:
                                     image_dir = run_folder_path + "/"
                                     file_name = 'runtime' + '_' + instance + '.png'
-                                    fig.savefig(image_dir + file_name)
+                                    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-                                fig.show()
                                 if pause:
                                     plt.pause(10)
 
@@ -914,7 +1135,7 @@ def Create_time_plot(instance_folder, save_image=False, os_type=None, pause=Fals
                                 file_path = os.path.join(root, file)
                                 data = pd.read_csv(file_path, index_col=False)
                                 algorithm = "A_" + data['Algorithm'][0]
-                                instance = 'R' + str(data['# (Lim) served Req.'][0])
+                                instance = 'R' + str(data['##(Lim)served Req'][0])
 
                                 file = "epochRuntime_" + algorithm + ".csv"
                                 file_path = os.path.join(run_folder_path, file)
@@ -981,9 +1202,8 @@ def Create_time_plot(instance_folder, save_image=False, os_type=None, pause=Fals
                                 if save_image:
                                     image_dir = run_folder_path + "/"
                                     file_name = 'runtime_double' + '_' + instance + '.png'
-                                    fig.savefig(image_dir + file_name)
+                                    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-                                fig.show()
                                 if pause:
                                     plt.pause(10)
 
@@ -1005,7 +1225,7 @@ def Create_time_plot1(instance_folder, save_image=False, os_type=None, pause=Fal
                                 file_path = os.path.join(root, file)
                                 data = pd.read_csv(file_path, index_col=False)
                                 algorithm = "A_" + data['Algorithm'][0]
-                                instance = 'R' + str(data['# (Lim) served Req.'][0])
+                                instance = 'R' + str(data['##(Lim)served Req'][0])
 
                                 file = "epochRuntime_" + algorithm + ".csv"
                                 file_path = os.path.join(run_folder_path, file)
@@ -1074,9 +1294,8 @@ def Create_time_plot1(instance_folder, save_image=False, os_type=None, pause=Fal
                                 if save_image:
                                     image_dir = run_folder_path + "/"
                                     file_name = 'runtime_double' + '_' + instance + '.png'
-                                    fig.savefig(image_dir + file_name)
+                                    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
 
-                                fig.show()
                                 if pause:
                                     plt.pause(10)
 
@@ -1084,10 +1303,13 @@ def Create_time_plot1(instance_folder, save_image=False, os_type=None, pause=Fal
 
 
 def create_plots(instance_folder, algorithms, start_time, save_image=False, os_type=None, pause=False, Title=False):
-    for algo in ["A_MP_MIP", "A_MP_CG", "A_MP_ISUD"]:
-        if algo != "A_GREEDY":
-            Create_histogram_by_file(instance_folder=instance_folder, start_time=start_time,
-                                     algorithms=[algo, "A_GREEDY"], save_image=save_image, os_type=os_type, pause=pause)
+ #   for algo in ["D_MP_ISUD", "D_GREEDY"]:
+ #       if algo != "D_GREEDY":
+ #           Create_histogram_by_file(instance_folder=instance_folder, start_time=start_time,
+ #                                    algorithms=[algo, "D_GREEDY"], save_image=save_image, os_type=os_type, pause=pause)
+    for status in [True, False]:
+     Create_box_plot(instance_folder=instance_folder, algorithms=algorithms, start_time=start_time,
+                     save_image=save_image, os_type=os_type, pause=pause, rotate=False, per_min=True, show_outliers=status)
 
     for sizes in ["small", "medium", "large"]:
         for status in [True, False]:

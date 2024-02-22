@@ -1,8 +1,16 @@
+from networkx.readwrite import json_graph
+
 from District import *
 import json
 import pandas as pd
 import constants as c
 import visualize as vf
+import os
+import networkx as nx
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
 
 
 class Network(object):
@@ -34,7 +42,9 @@ class Network(object):
         self.outbound_replace = outbound_replace
         self.inbound_districts = []
         self.limited_districts = []
-
+        self.centers = []
+        self.graph = nx.DiGraph()
+        self.nodes = []
 
     def __str__(self):
         class_string = str(self.__class__) + ": {"
@@ -117,9 +127,13 @@ class Network(object):
                 k = k + 1
         self.durations = pd.DataFrame(duration_data, columns=['startID', 'EndID', 'duration'])
 
-    def save_duration_txt(self, duration_filename):
+    def save_duration_txt(self, folder_name, duration_filename):
         """ save data file """
-        duration_file = c.NETWORK_DIR + duration_filename + ".txt"
+        folder_name = c.DAYS_DIR + folder_name
+        if not os.path.exists(folder_name):
+            os.mkdir(folder_name)
+
+        duration_file = folder_name + "/" + duration_filename + ".txt"
         df_columns = self.durations.columns.tolist()
         file = open(duration_file, "w")
         file.write("COLUMNS\n\n")
@@ -132,6 +146,20 @@ class Network(object):
         file.write(df_as_string)
         file.close()
 
+    def save_graph_to_json(self, folder_name, graph_filename):
+        folder_name = c.DAYS_DIR + folder_name
+        if not os.path.exists(folder_name):
+            os.mkdir(folder_name)
+        graph_file = folder_name + "/"  + graph_filename + ".json"
+        # Save the graph as a JSON file
+        json_data = json_graph.node_link_data(self.graph)
+        with open(graph_file, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4, cls=CustomEncoder)
+
+        df_nodes = pd.DataFrame(self.nodes, columns=['Vertices','coordinate_x','coordinate_y'])
+        csv_file = folder_name + "/"  + "nodes.csv"
+        df_nodes.to_csv(csv_file, index=False, sep=';')
+
     def read_network_data(self, manhattan_geo_file, location_to_cell_file=None,
                           edge_time_matrix_file=None, stop_matrix_file=None, make_plot=False):
         self.read_district_data(manhattan_geo_file)
@@ -140,8 +168,8 @@ class Network(object):
         if edge_time_matrix_file is not None and stop_matrix_file is not None:
             self.read_duration_matrix(edge_time_matrix_file, stop_matrix_file)
         """determining outbound points replacements"""
-        filtered_df = self.durations[self.durations['startID'].isin(self.outbound_cells[:,0])]
-        filtered_data = filtered_df[~filtered_df['EndID'].isin(self.outbound_cells[:,0])]
+        filtered_df = self.durations[self.durations['startID'].isin(self.outbound_cells[:, 0])]
+        filtered_data = filtered_df[~filtered_df['EndID'].isin(self.outbound_cells[:, 0])]
         # Group the DataFrame by 'group' column and find the minimum value in 'startID' column
         min_df = filtered_data.groupby('startID')['duration'].min()
         # Merge the original DataFrame with the minimum values DataFrame on the 'startID' column
@@ -154,6 +182,33 @@ class Network(object):
         df_result = df_result.rename(columns={'duration_x': 'duration'})
         for idx, row in df_result.iterrows():
             self.outbound_replace[row['startID']] = row['EndID']
+        self.create_graph()
+        for region in self.districts:
+            if region.cells.size != 0:
+                centroid_lon = np.mean(region.cells[:, 1])
+                centroid_lat = np.mean(region.cells[:, 2])
+                # Find the ID of the point closest to the centroid
+                centroid_id = region.cells[
+                    np.argmin(
+                        np.sqrt(
+                            (region.cells[:, 1] - centroid_lon) ** 2 + (region.cells[:, 2] - centroid_lat) ** 2)), 0]
+  #              centroid_index = np.where(region.cells[:, 0] == centroid_id)[0][0]
+                self.centers.append([region.cartodb_id, int(centroid_id)])
+        self.centers = pd.DataFrame(self.centers, columns=["Zone_ID", "Location_ID"])
+        root_file = c.DAYS_DIR + "/" + "Zones.csv"
+        txt_file = c.DAYS_DIR + "/" + "Zones.txt"
+        self.centers.to_csv(root_file, index=False)
+
+        file = open(txt_file, "w")
+        file.write("COLUMNS\n\n")
+
+        for col in self.centers.columns:
+            file.write(col)
+            file.write("\n")
+        file.write("\nZONE_INFO\n")
+        df_as_string = self.centers.to_string(header=False, index=False)
+        file.write(df_as_string)
+        file.close()
         if make_plot:
             vf.plot_districts(district_network=self, print_id=True, add_legend=True,
                               file_name="districts")
@@ -174,3 +229,107 @@ class Network(object):
                 if item.cartodb_id == ID:
                     self.inbound_districts.append(item)
                     break
+
+    def read_network_data_limitted(self, manhattan_geo_file, location_to_cell_file=None,
+                                   edge_time_matrix_file=None, stop_matrix_file=None, make_plot=False):
+        self.read_district_data(manhattan_geo_file)
+        if location_to_cell_file is not None:
+            self.update_cells(location_to_cell_file)
+        if edge_time_matrix_file is not None and stop_matrix_file is not None:
+            self.read_duration_matrix(edge_time_matrix_file, stop_matrix_file)
+
+        """RESTRICT DISTRICTS"""
+        limited_districts = []
+        for ID in c.SMALL_REGION:
+            for item in self.districts:
+                if item.cartodb_id == ID:
+                    limited_districts.append(item)
+                    break
+
+        self.districts = limited_districts
+
+        restricted_cells = []
+        for item in self.districts:
+            restricted_cells.extend(item.cells)
+        restricted_cells = np.array(restricted_cells)
+
+        """restrict durations"""
+        filtered_df = self.durations[self.durations['startID'].isin(restricted_cells[:, 0])]
+        filtered_data = filtered_df[filtered_df['EndID'].isin(restricted_cells[:, 0])]
+        self.durations = filtered_data
+
+        """restrict dictionaries"""
+
+        self.cell_to_district = {key: value for key, value in self.cell_to_district.items() if
+                                 key in restricted_cells[:, 0]}
+        self.cell_to_latitude = {key: value for key, value in self.cell_to_latitude.items() if
+                                 key in restricted_cells[:, 0]}
+        self.cell_to_longitude = {key: value for key, value in self.cell_to_longitude.items() if
+                                 key in restricted_cells[:, 0]}
+
+        self.locations = self.locations[np.isin(self.locations[:, 0], restricted_cells[:, 0])]
+
+
+
+        self.create_graph()
+
+
+        for region in self.districts:
+            if region.cells.size != 0:
+                centroid_lon = np.mean(region.cells[:, 1])
+                centroid_lat = np.mean(region.cells[:, 2])
+                # Find the ID of the point closest to the centroid
+                centroid_id = region.cells[
+                    np.argmin(
+                        np.sqrt(
+                            (region.cells[:, 1] - centroid_lon) ** 2 + (region.cells[:, 2] - centroid_lat) ** 2)), 0]
+                self.centers.append([region.cartodb_id, int(centroid_id)])
+        self.centers = pd.DataFrame(self.centers, columns=["Zone_ID", "Location_ID"])
+
+        root_file = c.DAYS_DIR + "/" + "Zones.csv"
+        txt_file = c.DAYS_DIR + "/" + "Zones.txt"
+        self.centers.to_csv(root_file, index=False)
+
+        file = open(txt_file, "w")
+        file.write("COLUMNS\n\n")
+
+        for col in self.centers.columns:
+            file.write(col)
+            file.write("\n")
+        file.write("\nZONE_INFO\n")
+        df_as_string = self.centers.to_string(header=False, index=False)
+        file.write(df_as_string)
+        file.close()
+        if make_plot:
+            vf.plot_districts(district_network=self, print_id=True, add_legend=True,
+                              file_name="districts")
+            vf.plot_map_cells(district_network=self, print_id=True, pause=False, file_name="Map_Cells")
+
+    def create_graph(self):
+        for item in self.districts:
+            for row in item.cells:
+                self.nodes.append(row)
+                node_dict = {
+                    "id": str(int(row[0])),
+                    "coordinates": [float(row[1]), float(row[2])],
+                    "in_arcs": [],
+                    "_out_arcs": []
+                }
+                self.graph.add_node(str(int(row[0])), pos=[float(row[1]), float(row[2])], Node=node_dict)
+        for row in self.outbound_cells:
+            self.nodes.append(row)
+            node_dict = {
+                "id": str(int(row[0])),
+                "coordinates": [float(row[1]), float(row[2])],
+                "in_arcs": [],
+                "_out_arcs": []
+            }
+            self.graph.add_node(str(int(row[0])), pos=[float(row[1]), float(row[2])], Node=node_dict)
+        precision = 3
+        for index, row in self.durations.iterrows():
+            if row['duration'] != 0:
+                self.graph.add_edge(str(int(row['startID'])), str(int(row['EndID'])),
+                           cost=round(float(row['duration'])/3600*75, precision),
+                           length=round(float(row['duration']), precision))
+
+

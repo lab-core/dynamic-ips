@@ -61,7 +61,7 @@ class Vehicle(object):
                                          columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time', 'depart_ID',
                                                   'sink_ID', 'zone_ID'])
 
-    def create_vehicle_data_from_districts(self, network):
+    def create_vehicle_data_from_districts(self, network, start_time):
         vehicle_data = []
         vehicle_id = 0
         for count, item in enumerate(network.districts):
@@ -74,7 +74,7 @@ class Vehicle(object):
                 source_id = select_source_ids[i];
   #              source_id = source_ids[i % len(source_ids)]
                 zone_id = network.cell_to_district[int(source_id)]
-                vehicle_data.append([vehicle_id, self.capacity, 0, 90000, source_id, source_id, zone_id])
+                vehicle_data.append([vehicle_id, self.capacity, start_time, 90000, source_id, source_id, zone_id])
                 vehicle_id = vehicle_id + 1
         self.vehicle_data = pd.DataFrame(vehicle_data, columns=['vehicle_ID', 'capacity', 'depart_Time', 'end_Time',
                                                                 'depart_ID', 'sink_ID', 'zone_ID'])
@@ -127,13 +127,14 @@ class Vehicle(object):
         if total != self.nb_vehicles:
             self.nb_vehicle_per_district[0] = self.nb_vehicle_per_district[0] + self.nb_vehicles - total
 
-    def save_vehicle(self, folder_name):
+    def save_vehicle(self, folder_name, parent_dir):
         # save data file
-        folder_name = c.VEHICLES_DIR + folder_name
+        folder_name = c.DAYS_DIR + parent_dir + "/" + folder_name
         if not os.path.exists(folder_name):
             os.mkdir(folder_name)
 
         file_to_save = folder_name + "/" + self.file_name + ".txt"
+        csv_file = folder_name + "/" + self.file_name + ".csv"
         df_columns = self.vehicle_data.columns.tolist()
         file = open(file_to_save, "w")
         file.write("COLUMNS\n\n")
@@ -143,6 +144,13 @@ class Vehicle(object):
             file.write("\n")
         file.write("\nVEHICLES_INFO\n")
         df_as_string = self.vehicle_data.to_string(header=False, index=False)
+        df_csv = self.vehicle_data
+        df_csv.drop(columns=['end_Time', 'sink_ID', 'zone_ID'])
+        df_csv.rename(columns={'depart_Time': 'start_time', 'depart_ID': 'start_stop',
+                               'vehicle_ID': 'vehicle_id'}, inplace=True)
+        df_csv = df_csv[['vehicle_id','start_time','start_stop','capacity']]
+
+        df_csv.to_csv(csv_file, index=False, sep=';')
         file.write(df_as_string)
         file.close()
 
@@ -157,16 +165,15 @@ class Vehicle(object):
             name='cell_size')
         y = np.array(vehicle_points['latitude'])
         x = np.array(vehicle_points['longitude'])
-        cell_size = 10 * np.array(vehicle_points['cell_size'])
+        cell_size = 3 * np.array(vehicle_points['cell_size'])
         colors = np.random.randint(100, size=(len(x)))
         # plt.scatter(x, y, c=colors, s=cell_size, alpha=0.5, cmap='nipy_spectral')
         plt.scatter(x, y, c='red', s=cell_size, alpha=1)
-        ax.set_title(self.file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
-        fig.show()
+#        ax.set_title(self.file_name, fontsize=13, fontweight='bold', y=1.0, pad=-14)
 
         parent_folder = c.DAYS_DIR + folder_name
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         image_dir = parent_folder + "/"
-        fig.savefig(image_dir + self.file_name)
+        fig.savefig(image_dir + self.file_name, dpi=300, bbox_inches="tight")
         plt.close(fig)

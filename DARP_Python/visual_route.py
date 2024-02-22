@@ -54,6 +54,6 @@ for v in range(nbVehicle):
         route_nodes = np.array([manhattan_districts.locations[index] for index in (compResults[v][:, 4]).astype(int)])
         plt.plot(route_nodes[:,1], route_nodes[:,2], marker = "s", c='red', markersize=2)
 
-fig.savefig(data_path + "unused.png")
-fig.show()
+fig.savefig(data_path + "unused.png", dpi=300, bbox_inches="tight")
+
 

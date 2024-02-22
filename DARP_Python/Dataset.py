@@ -121,8 +121,8 @@ class Dataset(object):
         self.max_capacity = self.dataset.max(numeric_only=True)['passenger_count']
         self.nb_customers = self.dataset.sum(numeric_only=True)['passenger_count']
 
-    def save_dataset(self):
-        folder_name = c.DAYS_DIR + "Main"
+    def save_dataset(self, parent_dir):
+        folder_name = c.DAYS_DIR + parent_dir + "/" + "Main"
         if not os.path.exists(folder_name):
             os.mkdir(folder_name)
         trip_file = folder_name + "/" + self.file_name + ".csv"
@@ -197,16 +197,15 @@ class Dataset(object):
         self.update_state()
 
     def remove_same_pick_drop(self, network=None):
-        for index, row in self.dataset.iterrows():
-            if row['pickup_ID'] == row['dropoff_ID']:
-                self.dataset = self.dataset.drop(index)
-        else:
-            duration_dict = network.durations.set_index(['startID', 'EndID']).to_dict()['duration']
-            for index, row in self.dataset.iterrows():
-                key = (row['pickup_ID'], row['dropoff_ID'])
-                specified_duration = duration_dict.get(key, None)
-                if specified_duration <= 60:
-                    self.dataset = self.dataset.drop(index)
+        duration_dict = network.durations.set_index(['startID', 'EndID'])['duration']
+
+        # Create a boolean mask based on the specified condition
+        mask = self.dataset.apply(lambda row: duration_dict.get((row['pickup_ID'], row['dropoff_ID']), None) > 480,
+                                  axis=1)
+
+        # Apply the mask to filter the DataFrame
+        self.dataset = self.dataset[mask]
+
         self.update_state()
 
     def calculate_trip_per_district(self, network):
@@ -236,20 +235,25 @@ class Dataset(object):
         if total != self.nb_vehicles:
             self.nb_vehicle_per_district[0] = self.nb_vehicle_per_district[0] + self.nb_vehicles - total
 
-    def prepare_dataset(self, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None,
+    def prepare_dataset(self, parent_dir, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None,
                         restrict=None, visualize=False, remove_same=False):
         self.read_dataset_data()
         if network is not None:
             self.add_district_id(network)
             self.calculate_trip_per_district(network)
         if visualize:
+            vf.plot_number_of_requests(self.dataset, self.origin, save_image=True)
+            vf.plot_number_of_customers(self.dataset, self.origin, save_image=True)
             vf.show_dataset_per_hr(self.dataset, self.origin, save_image=True)
         if start_hr is not None:
             self.limit_time_dataset(start_hr, end_hr, start_min, end_min)
-        if remove_same:
-            self.remove_same_pick_drop(network=network)
+            vf.plot_number_of_requests(self.dataset, self.origin, save_image=True, limit = 5)
+            vf.plot_number_of_customers(self.dataset, self.origin, save_image=True, limit = 5)
+
         if restrict is not None:
             self.restrict_to_district(restrict)
+        if remove_same:
+            self.remove_same_pick_drop(network=network)
         if capacity is not None:
             self.split_requests(capacity)
 
@@ -258,12 +262,12 @@ class Dataset(object):
         self.calculate_trip_per_district(network)
         if visualize:
             self.visualize_dataset(network)
-        self.save_dataset()
-        self.save_instance()
+        self.save_dataset(parent_dir)
+        self.save_instance(parent_dir)
 
 
 
-    def save_instance(self, nb_vehicles=None):
+    def save_instance(self, parent_dir, nb_vehicles=None):
         period_start, period_end = uf.calculate_time_from_origin(self.origin, self.start_hr, self.end_hr,
                                                                  self.start_min, self.end_min)
         start_seconds, end_seconds = uf.calculate_time_from_origin_sec(self.origin, self.start_hr, self.end_hr,
@@ -274,7 +278,7 @@ class Dataset(object):
         self.file_name = period_start.strftime("%Y%m%d")
 
         # instance folder
-        parent_folder = c.DAYS_DIR + "Instances"
+        parent_folder = c.DAYS_DIR + parent_dir + "/" + "Instances"
         if not os.path.exists(parent_folder):
             os.mkdir(parent_folder)
         instance_dir = parent_folder + "/"
@@ -284,6 +288,7 @@ class Dataset(object):
         txt_file = instance_dir + file_name + "/" + "TRIP_" + file_name + ".txt"
         csv_file = instance_dir + file_name + "/" + "TRIP_" + file_name + ".csv"
         instance_file = instance_dir + file_name + "/" + "INSTANCE_" + file_name + ".txt"
+        requests_file = instance_dir + file_name + "/" + "REQUESTS_" + file_name + ".csv"
 
         self.remove_unwanted_columns_instance()
         df_columns = self.instance.columns.tolist()
@@ -314,7 +319,7 @@ class Dataset(object):
         if nb_vehicles is not None:
             file.write(str(nb_vehicles))
         else:
-            file.write(str(2000))
+            file.write(str(20))
         file.write("\n")
         file.write("NUM_ONBOARDS = ")
         file.write(str(0))
@@ -330,6 +335,16 @@ class Dataset(object):
         file.close()
         # write trip data to csv
         self.instance.to_csv(csv_file, index=False)
+        self.instance['trip_id'] = range(1, len(self.instance) + 1)
+        self.instance.rename(columns={'request_time_sec': 'ready_time', 'pickup_ID': 'origin',
+                                      'dropoff_ID': 'destination'}, inplace=True)
+
+        self.instance.drop(columns=['pickup_district', 'dropoff_district'])
+        self.instance['release_time'] = self.instance['ready_time']
+        self.instance['due_time'] = 100000
+        self.instance = self.instance[
+            ['trip_id','origin', 'destination', 'release_time', 'ready_time', 'due_time', 'passenger_count']]
+        self.instance.to_csv(requests_file, index=False, sep=';')
 
     def limit_capacity(self, capacity):
         self.dataset = self.dataset[self.dataset.passenger_count <= capacity]
@@ -338,5 +353,5 @@ class Dataset(object):
 
     def visualize_dataset(self, network):
         vf.plot_map_request_cells(district_network=network, dataset=self, print_id=False, file_name=self.file_name)
-        vf.plot_districts_by_nb_trips(trip_per_district=self.nb_trip_per_district, district_network=network,
-                                      print_id=True, file_name=self.file_name)
+#        vf.plot_districts_by_nb_trips(trip_per_district=self.nb_trip_per_district, district_network=network,
+#                                      print_id=True, file_name=self.file_name)
