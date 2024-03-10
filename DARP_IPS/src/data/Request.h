@@ -7,10 +7,6 @@
 
 #include "utilities/MyTools.h"
 #include "Parameters.h"
-//---------------------------------------------------------------------------------------------
-//  request class
-//  contains the request info request time, number of passengers, pickup and drop off location
-//---------------------------------------------------------------------------------------------
 
 /*enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
 static const std::vector<std::string> reqStatusName = {

@@ -173,6 +173,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         else {
             // select all the vehicles
+            EpochInst->selectedVehicles_.clear();
+            EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
             for (auto & vehicleObj : EpochInst->vehicles_) {
                 EpochInst->selectedVehicles_[vehicleObj->vehicleID_] = iter;
             }
@@ -198,7 +200,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
         if (EpochInst->parameters_->vehicle_portion_ == 1){
-            // the problem is solved in complete mode and not partially, rest the orders
+            // the problem is solved in complete mode and not partially, rest the orders (for constarints)
             for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
                 EpochInst->vehicles_[v]->vehicleIndex_ = v;
             }
