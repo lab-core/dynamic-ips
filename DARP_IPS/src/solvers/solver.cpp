@@ -358,14 +358,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     int iter = 0;
     std::stringstream changeStr;
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    if (EpochInst->parameters_->initialStart_ == GREEDY_START)
-        GreedyModel_->GreedySolver(EpochInst);
-    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-        masterModel_->availableTime_ = (int)(EpochInst->parameters_->committedTime_);
-    else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
-        masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
-    else
-        masterModel_->availableTime_ = LARGE_CONSTANT;
+
+    masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
+
 
     masterModel_->initialization(EpochInst, inputPaths);
     for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -496,8 +491,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
-            std::cout << masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() << std::endl;
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 5))
+            if (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count() <= 5)
                 break;
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -537,36 +531,22 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             break;
         }
         else {
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
-                masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
-                                                     simulationTime_->dSinceStart().count());
-                if (iter == 1 && masterModel_->availableTime_ < 5)
-                    masterModel_->availableTime_ = 5;
-            }
-            else
-                masterModel_->availableTime_ = LARGE_CONSTANT;
-            //           std::cout << "Available time: " << masterModel_->availableTime_ << std::endl;
-            if (masterModel_->availableTime_ <= 0 && EpochInst->parameters_->solutionMode_ == DYNAMIC){
-                break;
-            }
+            masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
+                                                 simulationTime_->dSinceStart().count());
+            if (masterModel_->availableTime_ < 5)
+                masterModel_->availableTime_ = 5;
             masterModel_->timeLimit_ = masterModel_->availableTime_;
 
             //solve the restricted Linear Mater Problem
             masterModel_->solveRLMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
 
-            if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
-                break;
-                // if the size of epoch is larger than 30s disable the following
-            else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
-                if (simulationTime_->dSinceStart().count()/iter > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
-                    break;
-            /*else if (subProblemTime_->dSinceStart().count() > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
-                break;*/
+
+            masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
+
             if (masterModel_->availableTime_ < 5){
                 masterModel_->availableTime_ = 5;
                 break;
             }
-
         }
 
         subProSolve.clear();

@@ -858,10 +858,6 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
 
             RMPCounter_++;
             // save duals
-            if (pInst->parameters_->solutionMode_ != ANYTIME) {
-                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "LMP");
-                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "LMP");
-            }
             if (lpObj > objValue_) {
                 lpObj = objValue_;
             } else
