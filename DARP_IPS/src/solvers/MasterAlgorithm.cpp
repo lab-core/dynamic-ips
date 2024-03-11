@@ -812,12 +812,6 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
                                                       masterTime_->dSinceStart().count(), subProTime, 0.0);
         RMPCounter_++;
-
-        /*std::cout << "# number of un-served requests: " << zSolution_.size() << std::endl;
-        std::cout << "# Time spent on ISUD iteration  = " << masterTime_->dSinceStart().count() << " (seconds)"
-                  << std::endl;
-        for (auto &requestObj: zSolution_)
-            std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
     }
 
     for (auto & routeObj : routeSolution_) {
@@ -827,6 +821,88 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     masterTime_->stop();
 }
 
+void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
+    masterTime_->start();
+    setObjValue();
+    double previousObj = objValue_;
+
+    if (RMPCounter_ == 1) {
+        MPBuildTime_->start();
+        MasterPro_->routesToAdd_.clear();
+        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
+        MPBuildTime_->stop();
+    }
+
+    // save initial duals
+    /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
+    }*/
+    /************************************************************************************************/
+    //                                     MASTER PROBLEM
+    /************************************************************************************************/
+    setAvailableTime();
+    if (availableTime_ > 1) {
+        double lpObj = previousObj;
+        // solve RP with MIP solver
+        while (true) {
+            updateReducedCosts(pInst);
+            setAvailableTime();
+            if (minReducedCost_ >= 0 || availableTime_ < 0)
+                break;
+
+            solveMP_LP(pInst, inputPaths);
+            LPIter_++;
+            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
+                                                          masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+            RMPCounter_++;
+            // save duals
+            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "LMP");
+                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "LMP");
+            }
+            if (lpObj > objValue_) {
+                lpObj = objValue_;
+            } else
+                break;
+        }
+    }
+    masterTime_->stop();
+}
+
+void MasterAlgorithm::solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
+    masterTime_->start();
+    double previousObj = objValue_;
+
+    /************************************************************************************************/
+    //                                     MASTER PROBLEM
+    /************************************************************************************************/
+    setAvailableTime();
+    if (availableTime_ > 1) {
+        double lpObj = previousObj;
+        // solve RP with MIP solver
+        if (availableTime_ < 1)
+            availableTime_ = 2;
+        // solve the model in Integer mode
+        lpObjValue_ = lpObj;
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
+        MIPIter_++;
+        MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        setObjValue();
+
+
+        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
+                                                      masterTime_->dSinceStart().count(), subProTime, 0.0);
+        RMPCounter_++;
+    }
+
+    for (auto & routeObj : routeSolution_) {
+        pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+    }
+
+    masterTime_->stop();
+}
 void MasterAlgorithm::solveRP_LPINT(PInstance &pInst, int compDegree, InputPaths &inputPaths) {
     // improve by solving the Reduced problem
     ReducedPro_->routesToAdd_.clear();

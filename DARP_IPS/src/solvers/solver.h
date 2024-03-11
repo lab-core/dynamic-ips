@@ -64,6 +64,7 @@ public:
     virtual ~solver();
 
     // this function is to solve the epoch instance with CG using ISUD
+    void solveMP_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
     void solveCG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
 
     // this function is to solve the main instance in anytime mode

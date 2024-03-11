@@ -98,6 +98,8 @@ public:
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveISUD_improved(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
 
     // These functions are used to solve master problems (CG, MP and RP)
