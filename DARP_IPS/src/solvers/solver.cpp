@@ -525,12 +525,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
         }
-        /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
-            GreedyModel_->GreedySolver(EpochInst, masterModel_->availableRoutes_, EpochInst->nbRequests_);*/
-        while(true){
-            if (!pPool->wait())
-                break;
-        }
+
 
         preprocessTime_->start();
         subProSolve.clear();
