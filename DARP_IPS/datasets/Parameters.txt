@@ -28,7 +28,7 @@ NumColumn = 60
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
+isTruncated = 0
 MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
