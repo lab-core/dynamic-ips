@@ -526,6 +526,7 @@ void Instance::selectVehiclesByZone(int select) {
             else {
                 selectedZone = zones_[requests_[i]->pickZoneID_];
             }
+            // select a vehicle from the request zone
             for (auto &vehicleObj: selectedZone->zoneVehicles_) {
                 if (selectedVehicles_[vehicleObj->vehicleID_] == 0) {
                     selectedVehicles_[vehicleObj->vehicleID_] = select;
@@ -533,6 +534,7 @@ void Instance::selectVehiclesByZone(int select) {
                     break;
                 }
             }
+            // select a vehicle from neighbor zones
             if (!vehicleSelected) {
                 for (auto & zoneObj : selectedZone->successors_) {
                     for (auto &vehicleObj: zoneObj->zoneVehicles_) {
