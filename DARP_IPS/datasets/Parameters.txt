@@ -29,10 +29,10 @@ NumColumn = 60
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 25
+MaxLabel = 10
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 3
