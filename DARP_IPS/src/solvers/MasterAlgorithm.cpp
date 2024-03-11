@@ -763,10 +763,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     }
 
     // save initial duals
-    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+    /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
         (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
         (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
-    }
+    }*/
     /************************************************************************************************/
     //                                     MASTER PROBLEM
     /************************************************************************************************/
@@ -787,10 +787,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
             RMPCounter_++;
             // save duals
-            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+            /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
                 (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "LMP");
                 (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "LMP");
-            }
+            }*/
             if (lpObj > objValue_) {
                 lpObj = objValue_;
             } else
