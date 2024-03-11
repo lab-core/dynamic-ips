@@ -41,7 +41,7 @@ Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
 nbPick = 2
-sortPath = 1
+sortPath = 0
 
 # CPLEX PARAMETERS
 #
