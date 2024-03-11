@@ -491,7 +491,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
-            if (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count() <= 5)
+            if (iter > 1 && (EpochInst->parameters_->epochLength_ - subProblemTime_->dSinceStart().count() <= 5))
                 break;
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -545,12 +545,16 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
             if (masterModel_->availableTime_ < 5){
                 masterModel_->availableTime_ = 5;
+                masterModel_->timeLimit_ = 5;
                 break;
             }
+            if (simulationTime_->dSinceStart().count()/iter > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
+                break;
         }
 
         subProSolve.clear();
     }  // end of CG while
+
     masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
     for (auto & routeObj : masterModel_->routeSolution_) {
         for (auto & requestObj : routeObj->routeRequests_)
