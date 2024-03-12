@@ -14,7 +14,7 @@ solutionMode = 1
 OneIter = 0
 GreedyReOptimize = 1
 saveScratch = 1
-vehicleReturn = 0
+vehicleReturn = 1
 
 # ISUD PARAMETERS
 #
@@ -38,7 +38,7 @@ LabelingStrategy = 1
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 0
-Zone_portion = 0
+Zone_portion = 1
 usePick = 1
 nbPick = 2
 sortPath = 0
