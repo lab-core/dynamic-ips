@@ -40,7 +40,7 @@ Vehicle_portion = 1
 Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
-nbPick = 1
+nbPick = 3
 sortPath = 0
 
 # CPLEX PARAMETERS
