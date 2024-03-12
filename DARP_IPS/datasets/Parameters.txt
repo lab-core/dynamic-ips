@@ -38,9 +38,9 @@ LabelingStrategy = 1
 subproblemAlgorithm = 3
 Vehicle_portion = 1
 Greedy_portion = 0
-Zone_portion = 1
+Zone_portion = 0
 usePick = 1
-nbPick = 2
+nbPick = 1
 sortPath = 0
 
 # CPLEX PARAMETERS
