@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=05:30:00
-#SBATCH --array=1-72
+#SBATCH --array=1-24
 #SBATCH --output=/dev/null
 
 
@@ -12,9 +12,9 @@ module load gcc
 i=1
 for vehicles in sufficient_manhattan-vehicles-300
 do
-  for mode in 2
+  for mode in 1
   do
-    for algorithm in 2 3 4
+    for algorithm in 2
     do
       for directory in Instances-300
       do
