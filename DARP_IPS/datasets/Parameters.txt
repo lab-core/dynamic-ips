@@ -11,9 +11,9 @@ InitialDual = 0
 mainAlgorithm = 3
 addOneRequestColumn = 0
 solutionMode = 1
-OneIter = 0
-GreedyReOptimize = 0
-saveScratch = 1
+OneIter = 1
+GreedyReOptimize = 1
+saveScratch = 0
 vehicleReturn = 1
 
 # ISUD PARAMETERS
@@ -37,10 +37,10 @@ SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 3
 Vehicle_portion = 1
-Greedy_portion = 0
+Greedy_portion = 1
 Zone_portion = 0
 usePick = 1
-nbPick = 1
+nbPick = 2
 sortPath = 0
 
 # CPLEX PARAMETERS
