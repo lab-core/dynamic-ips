@@ -446,7 +446,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     string title;
 
-    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, vehicle_portion = -1;
+    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, constPortion = -1;
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
@@ -551,8 +551,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "subproblemAlgorithm "))
             file >> subAlgorithm;
 
-        else if (strEndWith(title, "Vehicle_portion "))
-            file >> vehicle_portion;
+        else if (strEndWith(title, "constPortion "))
+            file >> constPortion;
 
         else if (strEndWith(title, "Greedy_portion "))
             file >> greedyPortion;
@@ -593,8 +593,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          vehicle_portion, greedyPortion, zonePortion, usePick, nbPick,
-                                                          static_cast<SortPaths>(sortPath),bigM,
+                                                          constPortion, greedyPortion, zonePortion, usePick, nbPick,
+                                                          static_cast<SortPaths>(sortPath), bigM,
                                                           solveTimeLimit, populateTimeLimit, addOneRequestColumn,
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }

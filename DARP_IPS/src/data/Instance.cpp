@@ -314,7 +314,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
 
     // calculate vehicle scores
-    /*if (mainInst->parameters_->vehicle_portion_ < 1){
+    /*if (mainInst->parameters_->constPortion_ < 1){
         for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
             for (auto & vehicleObj: mainInst->vehicles_){
                 float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]

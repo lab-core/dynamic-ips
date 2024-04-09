@@ -49,7 +49,7 @@ public:
     SubProSolveMode SubproSolveMode_;
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
-    float vehicle_portion_;
+    bool constPortion_;
     bool greedyPortion_{};
     bool zonePortion_{};
     bool usePick_;
@@ -68,7 +68,7 @@ public:
                bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
                bool useMultiStage, float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
-               LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, float vehicle_portion,
+               LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
                bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 

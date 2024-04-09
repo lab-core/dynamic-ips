@@ -114,6 +114,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
     masterModel_->nbRoutes_ = 0;
     EpochInst->updateTaskIndexLabeling();
+    EpochInst->selectedVehicles_.clear();
+    EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     while (true) {
         iter++;
         nbNegativeFound = 0;
@@ -140,36 +142,27 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         /*if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 200)
             subProOptions_->usePick_ = true;*/
 
-        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 400) {
+/*        if (!subProOptions_->usePick_ && EpochInst->nbRequests_ >= 400) {
             subProOptions_->MaxLabel_ = 10;
             subProOptions_->usePick_ = true;
-        }
+        }*/
 
         masterModel_->nbVehicles_ = 0;
 
         if (EpochInst->parameters_->greedyPortion_) {
-            if (!isSolved) {
-                bool state = EpochInst->parameters_->greedyReOptimize_;
-                EpochInst->parameters_->greedyReOptimize_ = true;
-                GreedyModel_->GreedyAssignment(EpochInst, iter);
-                EpochInst->parameters_->greedyReOptimize_ = state;
-                isSolved = true;
-                EpochInst->resetZoneVehicles();
-            }
-            else {
-                EpochInst->selectVehiclesByZone(iter);
-            }
+            bool state = EpochInst->parameters_->greedyReOptimize_;
+            EpochInst->parameters_->greedyReOptimize_ = true;
+            GreedyModel_->GreedyAssignment(EpochInst, iter);
+            EpochInst->parameters_->greedyReOptimize_ = state;
+            isSolved = true;
+ //           EpochInst->resetZoneVehicles();
         }
         else if (EpochInst->parameters_->zonePortion_) {
             if (!isSolved) {
-                EpochInst->selectedVehicles_.clear();
-                EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
                 EpochInst->resetZoneVehicles();
-                EpochInst->selectVehiclesByZone(iter);
                 isSolved = true;
             }
-            else
-                EpochInst->selectVehiclesByZone(iter);
+            EpochInst->selectVehiclesByZone(iter);
         }
         else {
             // select all the vehicles
@@ -199,8 +192,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
 
-        if (EpochInst->parameters_->vehicle_portion_ == 1){
-            // the problem is solved in complete mode and not partially, rest the orders (for constarints)
+        if (!EpochInst->parameters_->constPortion_){
+            // the problem is solved in complete mode and not partially, reset the orders (for constraints)
             for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
                 EpochInst->vehicles_[v]->vehicleIndex_ = v;
             }
@@ -609,7 +602,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     bool MIP_Stop = false;
     int nbReceivedRequest;
     epoch_ = 0;
-
+    int instance_count = 1;
 
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
@@ -668,14 +661,16 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
         // saving the status in the middle of running
         if ((static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
-            inputPaths.makeInstanceOutput(instNum);
+            inputPaths.makeInstanceOutput(std::to_string(instance_count));
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
                                     static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),mainInst->parameters_->epochLength_);
-            inputPaths.makeInstanceOutput("2");
+            /*inputPaths.makeInstanceOutput("2");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
-                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);
+                                    static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);*/
+            saveTime += 120;
+            instance_count ++;
 
-            break;
+  //          break;
         }
 
         if (EpochInst->nbRequests_ == 0) {

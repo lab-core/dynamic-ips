@@ -22,11 +22,11 @@ GreedyModeler::~GreedyModeler() {
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
-    PInst->selectedVehicles_.clear();
+//    PInst->selectedVehicles_.clear();
     for (auto & vehicleObj : PInst->vehicles_) {
         greedyRouteList_.emplace_back(std::make_shared<GreedyRoute>(vehicleObj, PInst, greedyLabelPool_, PInst->parameters_->greedyReOptimize_));
     }
-    PInst->selectedVehicles_.resize(PInst->nbVehicles_,0);
+//    PInst->selectedVehicles_.resize(PInst->nbVehicles_,0);
     if (positionList_.empty()){
         for (int i = 0; i < PInst->nbVehicles_; ++i)
             positionList_.emplace_back(std::make_shared<insertPosition>());
@@ -60,13 +60,18 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
 
 void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
     greedyAssignTime_->start();
-    initialization(PInst);
+    if (select == 1) {
+        for (auto & greedySol : greedyRouteList_) {
+            greedySol.reset();
+        }
+        greedyRouteList_.clear();
+        initialization(PInst);
+    }
     solveAssignment(PInst, select);
-    for (auto & greedySol : greedyRouteList_) {
-        greedySol->resetGreedyRoute(greedyLabelPool_);
+    /*for (auto & greedySol : greedyRouteList_) {
         greedySol.reset();
     }
-    greedyRouteList_.clear();
+    greedyRouteList_.clear();*/
     greedyAssignTime_->stop();
 }
 
