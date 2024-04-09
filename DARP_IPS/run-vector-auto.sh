@@ -10,7 +10,7 @@ module load eigen
 module load gcc
 
 DIRECTORY="Instances-120_Epoch"
-MAIN_DIR = "datasets/Instances-120_Epoch"
+MAIN_DIR="datasets/Instances-120_Epoch"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
@@ -30,7 +30,6 @@ do
         do
           if [ $SLURM_ARRAY_TASK_ID -eq $i ]
             then
-              echo "bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode"
               bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode
 #             bin/realtime_DARP $DIRECTORY $instance $num_vehicles $algorithm $mode > "/scratch/amirelah/dynamic-ips/${DIRECTORY}_${instance}_${num_vehicles}_${algorithm}_${mode}.txt" 2>&1
             fi
