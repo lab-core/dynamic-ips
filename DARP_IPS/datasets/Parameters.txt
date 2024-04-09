@@ -35,12 +35,12 @@ isSuccessorsLimited = 0
 isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
-subproblemAlgorithm = 3
+subproblemAlgorithm = 1
 constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
-nbPick = 4
+nbPick = 1
 sortPath = 1
 
 # CPLEX PARAMETERS
