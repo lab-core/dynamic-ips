@@ -83,7 +83,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
         masterModel_->availableTime_ = (int)(EpochInst->parameters_->committedTime_);
     else if (EpochInst->parameters_->solutionMode_ == DYNAMIC)
-        masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
+        masterModel_->availableTime_ = LARGE_CONSTANT;
+//        masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
     else
         masterModel_->availableTime_ = LARGE_CONSTANT;
 
@@ -263,8 +264,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 masterModel_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ - simulationTime_->dSinceStart().count());
             else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
-                masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
-                                                      simulationTime_->dSinceStart().count());
+                masterModel_->availableTime_ = LARGE_CONSTANT;
+                /*masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
+                                                      simulationTime_->dSinceStart().count());*/
                 if (iter == 1 && masterModel_->availableTime_ < 3)
                     masterModel_->availableTime_ = 3;
             }

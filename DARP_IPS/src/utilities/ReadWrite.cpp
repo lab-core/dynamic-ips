@@ -662,9 +662,12 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
             }
         }
     }
-    ReadWrite::readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
+    pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
+    pInstance->nbNewRequests_ = pInstance->nbWaiting_;
+
+    /*ReadWrite::readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
     pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
-    pInstance->nbNewRequests_ += pInstance->nbWaiting_;
+    pInstance->nbNewRequests_ += pInstance->nbWaiting_;*/
 
     inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
                                  solutionModeName[pInstance->parameters_->solutionMode_], saveScratch, pInstance->nbVehicles_);

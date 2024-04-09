@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=12G
+#SBATCH --time=02:30:00
+#SBATCH --array=1-744
+#SBATCH --output=/dev/null
+
+
+module load eigen
+module load gcc
+
+DIRECTORY="Instances-120_Epoch"
+
+# Dynamically create the INSTANCES array with paths to each test subdirectory
+INSTANCES=($(find ./$DIRECTORY -mindepth 1 -maxdepth 1 -type d -print | sort))
+
+i=1
+for vehicles in manhattan-vehicles
+do
+  for mode in 1
+  do
+    for algorithm in 2
+    do
+      for instance_path in "${INSTANCES[@]}";
+      do
+        instance=$(basename "$instance_path")
+        for num_vehicles in 2000
+#        for num_vehicles in 1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500
+        do
+          if [ $SLURM_ARRAY_TASK_ID -eq $i ]
+            then
+              echo "bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode"
+              bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode
+#             bin/realtime_DARP $DIRECTORY $instance $num_vehicles $algorithm $mode > "/scratch/amirelah/dynamic-ips/${DIRECTORY}_${instance}_${num_vehicles}_${algorithm}_${mode}.txt" 2>&1
+            fi
+            (( i = $i + 1 ))
+        done
+      done
+    done
+  done
+done
+
+sleep 60
