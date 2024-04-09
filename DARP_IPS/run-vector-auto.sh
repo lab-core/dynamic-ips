@@ -10,9 +10,10 @@ module load eigen
 module load gcc
 
 DIRECTORY="Instances-120_Epoch"
+MAIN_DIR = "datasets/Instances-120_Epoch"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
-INSTANCES=($(find ./$DIRECTORY -mindepth 1 -maxdepth 1 -type d -print | sort))
+INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
 
 i=1
 for vehicles in manhattan-vehicles
