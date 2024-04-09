@@ -1,0 +1,10 @@
+COLUMNS
+
+passenger_count
+pickup_ID
+dropoff_ID
+request_time_sec
+pickup_district
+dropoff_district
+
+REQUESTS_INFO
