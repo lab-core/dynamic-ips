@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=04:30:00
-#SBATCH --array=1-744
+#SBATCH --array=1-248
 #SBATCH --output=/dev/null
 
 
