@@ -1021,7 +1021,10 @@ std::string MasterAlgorithm::toStringTimersAvg(int epoch) const {
 
 void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pInst){
     for (auto & vehicleObj : pInst->vehicles_) {
-        if (pInst->parameters_->sortPath_ == L_SCORE) {
+        std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
+                         availableRoutes_[vehicleObj->vehicleID_].end(),
+                         [](const PRoute &lhs, const PRoute &rhs) { return lhs->reducedCost_ < rhs->reducedCost_; });
+        /*if (pInst->parameters_->sortPath_ == L_SCORE) {
             std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                              availableRoutes_[vehicleObj->vehicleID_].end(),
                              [](const PRoute &lhs, const PRoute &rhs) { return lhs->score_ < rhs->score_; });
@@ -1030,7 +1033,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
             std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                              availableRoutes_[vehicleObj->vehicleID_].end(),
                              [](const PRoute &lhs, const PRoute &rhs) { return lhs->reducedCost_ < rhs->reducedCost_; });
-        }
+        }*/
 
 
         int numAdded = 0;
