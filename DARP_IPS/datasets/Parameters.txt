@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 1
 OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 0
+saveScratch = 1
 vehicleReturn = 1
 
 # ISUD PARAMETERS
