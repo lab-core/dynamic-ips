@@ -40,7 +40,7 @@ constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
-nbPick = 3
+nbPick = 2
 sortPath = 1
 
 # CPLEX PARAMETERS
