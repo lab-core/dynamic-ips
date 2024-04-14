@@ -15,6 +15,7 @@ float saveTime = 3600;
 bool middleSave = false;
 bool savePartial = false;
 std::string instNum = "1";
+int numEpochTests = 31;
 int numVehicles;
 
 int main(int argc, char** argv) {
@@ -60,86 +61,93 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
 
+    if (numEpochTests > 1){
+        std::string instName = instNames[0];
+        instNames.clear();
+        for (int i = 0; i < numEpochTests; ++i)
+            instNames.push_back(instName+"_"+std::to_string(i+1));
+    }
 
     for (auto & instanceName : instNames){
-        // create output files for epoch results
-        inputPaths.initializeInputs(instFolder, instanceName);
+        for (int i = 0; i < 6; ++i) {
 
-        // Read data files and initialize instance and parameters in output path
-        std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
-        Request::requestCount_ = 0;
-        PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-        mainInst->nbVehicles_ = numVehicles;
-        ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-        ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
-        mainInst->parameters_->savePartial_ = savePartial;
-        mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
-        mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
-        ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
-        std::cout << mainInst->toString();
+            // create output files for epoch results
+            inputPaths.initializeInputs(instFolder, instanceName);
 
-        // create solver
-        std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
-        if (mainInst->parameters_->solutionMode_ == DYNAMIC){
-            try {
-                instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
-            } catch (const std::exception &e) {
-                std::cout << "DYNAMIC solving caught an exception=: "
-                          << e.what() << std::endl;
-            }
-        }
-        else if (mainInst->parameters_->solutionMode_ == ANYTIME){
-            try {
-                /*if (mainInst->parameters_->mainAlgorithm_ == GREEDY)
-                    instanceSolver->anyTimeSolverEvent(mainInst, inputPaths);
-                else*/
+            // Read data files and initialize instance and parameters in output path
+            std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
+            Request::requestCount_ = 0;
+            PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+            mainInst->nbVehicles_ = numVehicles;
+            ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+            mainInst->parameters_->MaxLabel_ = (i+1) * 5;
+            ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
+            mainInst->parameters_->savePartial_ = savePartial;
+            mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
+            mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
+            ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
+            std::cout << mainInst->toString();
+
+            // create solver
+            std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
+            if (mainInst->parameters_->solutionMode_ == DYNAMIC) {
+                try {
+                    instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+                } catch (const std::exception &e) {
+                    std::cout << "DYNAMIC solving caught an exception=: "
+                              << e.what() << std::endl;
+                }
+            } else if (mainInst->parameters_->solutionMode_ == ANYTIME) {
+                try {
+                    /*if (mainInst->parameters_->mainAlgorithm_ == GREEDY)
+                        instanceSolver->anyTimeSolverEvent(mainInst, inputPaths);
+                    else*/
                     instanceSolver->anyTimeSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
-            } catch (const std::exception &e) {
-                std::cout << "ANY_TIME solving caught an exception=: "
-                          << e.what() << std::endl;
+                } catch (const std::exception &e) {
+                    std::cout << "ANY_TIME solving caught an exception=: "
+                              << e.what() << std::endl;
+                }
+            } else {
+                try {
+                    instanceSolver->staticSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+                } catch (const std::exception &e) {
+                    std::cout << "STATIC solving caught an exception=: "
+                              << e.what() << std::endl;
+                }
             }
-        }
+            // testing the solution route
+            for (auto &vehicleObj: mainInst->vehicles_)
+                vehicleObj->solutionRoute_->testRoute(vehicleObj);
+            if (!middleSave) {
 
-        else {
-            try {
-                instanceSolver->staticSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
-            } catch (const std::exception &e) {
-                std::cout << "STATIC solving caught an exception=: "
-                          << e.what() << std::endl;
+                std::cout << std::endl << std::endl;
+
+                // print final solution to txt file
+                Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
+                finalStream << instanceSolver->toString(mainInst);
+                finalStream.close();
+
+                // print final routes to csv
+                Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
+                solutionRoutesStream << mainInst->saveSolutionRoutes();
+                solutionRoutesStream.close();
+
+                // print requests results to csv
+                Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
+                requestResultsStream << mainInst->saveRequestsResults();
+                requestResultsStream.close();
+                Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
+                finalInstanceStream
+                        << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
+                           "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
+                           "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
+                           "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
+                           "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
+                           "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+                finalInstanceStream << "\n" << vehicleFolder << ",";
+                finalInstanceStream << mainInst->instRepStr_.str();
+                finalInstanceStream.close();
             }
-        }
-        // testing the solution route
-        for(auto  &vehicleObj : mainInst->vehicles_)
-            vehicleObj->solutionRoute_->testRoute(vehicleObj);
-        if (!middleSave) {
-
-            std::cout << std::endl << std::endl;
-
-            // print final solution to txt file
-            Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
-            finalStream << instanceSolver->toString(mainInst);
-            finalStream.close();
-
-            // print final routes to csv
-            Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
-            solutionRoutesStream << mainInst->saveSolutionRoutes();
-            solutionRoutesStream.close();
-
-            // print requests results to csv
-            Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
-            requestResultsStream << mainInst->saveRequestsResults();
-            requestResultsStream.close();
-            Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
-            finalInstanceStream
-                    << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
-                       "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
-                       "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
-                       "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
-                       "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
-                       "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
-            finalInstanceStream << "\n" << vehicleFolder << ",";
-            finalInstanceStream << mainInst->instRepStr_.str();
-            finalInstanceStream.close();
         }
     }
 }

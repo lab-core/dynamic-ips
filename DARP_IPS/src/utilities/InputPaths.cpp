@@ -112,7 +112,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         time_t now = time(nullptr);
         tm *curr_tm = localtime(&now);
         char resultFolder[100];
-        strftime(resultFolder, 50, "%Y%m%d-%I%M", curr_tm);
+        strftime(resultFolder, 50, "%Y%m%d-%I%M%S", curr_tm);
         std::string folder_name = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + resultFolder + "_" +
                                   std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
@@ -125,7 +125,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         time_t now = time(nullptr);
         tm *curr_tm = localtime(&now);
         char resultFolder[100];
-        strftime(resultFolder, 50, "%Y%m%d-%I%M", curr_tm);
+        strftime(resultFolder, 50, "%Y%m%d-%I%M%S", curr_tm);
         std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + resultFolder + "_" +
                                   std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
