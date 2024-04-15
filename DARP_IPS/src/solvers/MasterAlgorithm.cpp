@@ -48,11 +48,11 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     pLogIsudResultsStream_ = new Tools::LogOutput(inputPaths.getOutputEpochResults());
     (*pLogIsudResultsStream_) << "Epoch,MPIter,subProIter,TotalGenColumns,nbColumns,Model,ObjectiveValue,MPTimeAcc.,SubProTime,AuxObj" << std::endl;
 
-    pLogIterReqDualStream_ = new Tools::LogOutput(inputPaths.getOutputReqDuals());
+    /*pLogIterReqDualStream_ = new Tools::LogOutput(inputPaths.getOutputReqDuals());
     (*pLogIterReqDualStream_) << "Epoch,ISUDIter,RequestID,Dual,Model,Penalty," << std::endl;
 
     pLogIterVehDualStream_ = new Tools::LogOutput(inputPaths.getOutputVehDuals());
-    (*pLogIterVehDualStream_) << "Epoch,ISUDIter,VehicleID, Dual, Model" << std::endl;
+    (*pLogIterVehDualStream_) << "Epoch,ISUDIter,VehicleID, Dual, Model" << std::endl;*/
 }
 
 MasterAlgorithm::~MasterAlgorithm() {
@@ -65,11 +65,11 @@ MasterAlgorithm::~MasterAlgorithm() {
 
     delete ZOOMTime_;
     pLogIsudResultsStream_->close();
-    pLogIterReqDualStream_->close();
-    pLogIterVehDualStream_->close();
+    /*pLogIterReqDualStream_->close();
+    pLogIterVehDualStream_->close();*/
     delete pLogIsudResultsStream_;
-    delete pLogIterReqDualStream_;
-    delete pLogIterVehDualStream_;
+    /*delete pLogIterReqDualStream_;
+    delete pLogIterVehDualStream_;*/
 }
 
 
