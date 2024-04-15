@@ -16,8 +16,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, bool constPortion, bool greedyPortion, bool zonePortion,
-                       bool usePick, int nbPick, SortPaths sortPath, int bigM, int solveTimeLimit, int populateTimeLimit,
-                       bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
+                       bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
+                       int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
@@ -27,8 +27,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
         constPortion_(constPortion), greedyPortion_(greedyPortion), zonePortion_(zonePortion), usePick_(usePick), nbPick_(nbPick),
-        sortPath_(sortPath) , bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
-        addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
+        sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
         MIPGap_(MIPGap) {
     savePartial_ = false;
 }
@@ -88,6 +88,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
+    repStr << std::setw(setwLength) << "# Sorting mode of columns " << " = " << SortColumnsName[sortColumn_] << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
@@ -131,6 +132,7 @@ std::string Parameters::toStr() const {
     repStr << boolToString(zonePortion_) << ",";
     repStr << nbPick_ << ",";
     repStr << SortPathsName[sortPath_] << ",";
+    repStr << SortColumnsName[sortColumn_] << ",";
     repStr << MIPGap_ << "\n";
     return repStr.str();
 }
