@@ -55,6 +55,7 @@ public:
     bool usePick_;
     int nbPick_;
     SortPaths sortPath_;
+    SortColumns sortColumn_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -69,7 +70,7 @@ public:
                bool useMultiStage, float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
-               bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, int bigM,
+               bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();

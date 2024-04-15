@@ -453,7 +453,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
     bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false, zonePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1, nbPick = -1, sortPath = -1, nbColumns = -1;
+    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1;
 
     bool addOneRequestColumn = false;
     float mipGap = -1;
@@ -569,6 +569,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "sortPath "))
             file >> sortPath;
 
+        else if (strEndWith(title, "sortColumn "))
+            file >> sortColumn;
+
         else if (strEndWith(title, "BigM "))
             file >> bigM;
 
@@ -594,8 +597,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
                                                           constPortion, greedyPortion, zonePortion, usePick, nbPick,
-                                                          static_cast<SortPaths>(sortPath), bigM,
-                                                          solveTimeLimit, populateTimeLimit, addOneRequestColumn,
+                                                          static_cast<SortPaths>(sortPath),
+                                                          static_cast<SortColumns>(sortColumn),
+                                                          bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }
 
@@ -682,7 +686,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,MIPGap\n" << pInstance->name_ << ",";
+                        "LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();

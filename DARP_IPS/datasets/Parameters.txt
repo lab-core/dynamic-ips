@@ -32,7 +32,7 @@ isTruncated = 1
 MaxLabel = 5
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
@@ -42,6 +42,7 @@ Zone_portion = 0
 usePick = 1
 nbPick = 2
 sortPath = 1
+sortColumn = 0
 
 # CPLEX PARAMETERS
 #
