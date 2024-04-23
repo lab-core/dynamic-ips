@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     }
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 2; ++j) {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 1; ++j) {
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
 
@@ -81,8 +81,7 @@ int main(int argc, char** argv) {
                 mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 
-                mainInst->parameters_->nbColumn_ = 40;
-                mainInst->parameters_->isDropPickPossible_ = j;
+                mainInst->parameters_->nbPick_ = i+1;
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
