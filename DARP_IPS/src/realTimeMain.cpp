@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     if (numEpochTests > 1){
         std::string instName = instNames[0];
         instNames.clear();
-        for (int i = 0; i < 27; ++i)
+        for (int i = 0; i < numEpochTests; ++i)
             instNames.push_back(instName+"_"+std::to_string(i+1));
     }
 
