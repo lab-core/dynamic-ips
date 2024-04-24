@@ -266,8 +266,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
                 masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
                         simulationTime_->dSinceStart().count());
-                if (iter == 1 && masterModel_->availableTime_ < 20)
-                    masterModel_->availableTime_ = 20;
+                if (iter == 1 && masterModel_->availableTime_ < 3)
+                    masterModel_->availableTime_ = 3;
             }
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
@@ -615,8 +615,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 
     nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
-//    while (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty()) {
-    while (nbReceivedRequest < mainInst->nbRequests_) {
+    while (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty()) {
+ //   while (nbReceivedRequest < mainInst->nbRequests_) {
         nextEpoch:
         // start simulation timer
         simulationTime_->start();

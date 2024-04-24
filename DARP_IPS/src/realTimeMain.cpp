@@ -63,9 +63,9 @@ int main(int argc, char** argv) {
 
     if (numEpochTests > 1){
         std::string instName = instNames[0];
-        instNames.clear();
+        /*instNames.clear();
         for (int i = 0; i < numEpochTests; ++i)
-            instNames.push_back(instName+"_"+std::to_string(i+1));
+            instNames.push_back(instName+"_"+std::to_string(i+1));*/
     }
 
     for (auto & instanceName : instNames){
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
             mainInst->nbVehicles_ = numVehicles;
             ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 
-            mainInst->parameters_->greedyPortion_ = i;
+            mainInst->parameters_->vehicleReturn_ = i;
             ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
             mainInst->parameters_->savePartial_ = savePartial;
             mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
