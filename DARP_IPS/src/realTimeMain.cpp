@@ -61,11 +61,11 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::string instName = instNames[0];
-    if (numEpochTests > 1){
+    /*if (numEpochTests > 1){
         instNames.clear();
         for (int i = 0; i < numEpochTests; ++i)
             instNames.push_back(instName+"_"+std::to_string(i+1));
-    }
+    }*/
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < 1; ++i) {
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
                 mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-                mainInst->parameters_->greedyPortion_ = j;
+                mainInst->parameters_->vehicleReturn_ = j;
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
