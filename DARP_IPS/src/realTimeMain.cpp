@@ -13,7 +13,7 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false;
+bool savePartial = true;
 std::string instNum = "1";
 int numEpochTests = 31;
 int numVehicles;
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 2; ++j){
+            for (int j = 0; j < 3; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -80,10 +80,10 @@ int main(int argc, char** argv) {
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
                 mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-                mainInst->parameters_->nbPick_ = j+1;
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
-                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
+                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(j+2);
+//                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
                 mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
                 std::cout << mainInst->toString();
