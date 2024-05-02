@@ -118,7 +118,7 @@ std::string Instance::solutionToString() {
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
     // print the internal nodes of the route
-    for (int i = nbOnboards_; i < nbRequests_; ++i) {
+    for (int i = 0; i < nbRequests_; ++i) {
 
         repStr << std::fixed;
         repStr << std::setprecision(2);
@@ -154,7 +154,7 @@ std::string Instance::solutionToString() {
                 }
             }
             else {
-                if (requests_[i]->getRequestId() >= nbOnboards_) {
+                if (requests_[i]->earlyPick_ >= simulationStartTime_) {
                     totalNumServedPartial++;
                     totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
                     totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
@@ -608,22 +608,20 @@ std::string Instance::saveRequestsResults() {
               "DropTime, InVehicleID, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
 
     for (auto & requestObj : requests_) {
-        if (requestObj->getRequestId() >= nbOnboards_) {
-            repStr << requestObj->getRequestId() << ",";
-            repStr << requestObj->nbPassengers_ << ",";
-            repStr << requestObj->PickUpID_ << ",";
-            repStr << requestObj->DropOffID_ << ",";
-            repStr << requestObj->earlyPick_ << ",";
-            repStr << requestObj->pickTime_ << ",";
-            repStr << requestObj->dropTime_ << ",";
-            repStr << requestObj->initialVehicleID_ << ",";
-            repStr << requestObj->allocVehicleID_ << ",";
-            repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
-            repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
-            repStr << requestObj->maxTravelTime_ << ",";
-            repStr << requestObj->minTravelTime_ << ",";
-            repStr << requestObj->pickZoneID_ << "\n";
-        }
+        repStr << requestObj->getRequestId() << ",";
+        repStr << requestObj->nbPassengers_ << ",";
+        repStr << requestObj->PickUpID_ << ",";
+        repStr << requestObj->DropOffID_ << ",";
+        repStr << requestObj->earlyPick_ << ",";
+        repStr << requestObj->pickTime_ << ",";
+        repStr << requestObj->dropTime_ << ",";
+        repStr << requestObj->initialVehicleID_ << ",";
+        repStr << requestObj->allocVehicleID_ << ",";
+        repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
+        repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
+        repStr << requestObj->maxTravelTime_ << ",";
+        repStr << requestObj->minTravelTime_ << ",";
+        repStr << requestObj->pickZoneID_ << "\n";
     }
     return repStr.str();
 }
