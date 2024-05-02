@@ -39,8 +39,8 @@ subproblemAlgorithm = 1
 constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
-usePick = 2
-nbPick = 1
+usePick = 1
+nbPick = 2
 sortPath = 0
 sortColumn = 1
 
