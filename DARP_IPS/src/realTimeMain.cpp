@@ -82,8 +82,7 @@ int main(int argc, char** argv) {
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
-                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(0);
-//                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
+                mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
                 mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
                 std::cout << mainInst->toString();
