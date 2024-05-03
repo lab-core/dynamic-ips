@@ -8,13 +8,13 @@ penaltyL = 30
 committedTime = 30
 nbThreads = 16
 InitialDual = 0
-mainAlgorithm = 0
+mainAlgorithm = 2
 addOneRequestColumn = 0
-solutionMode = 2
-OneIter = 1
+solutionMode = 1
+OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 0
-vehicleReturn = 1
+saveScratch = 1
+vehicleReturn = 0
 
 # ISUD PARAMETERS
 #
