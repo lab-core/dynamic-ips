@@ -8,9 +8,9 @@ penaltyL = 30
 committedTime = 30
 nbThreads = 16
 InitialDual = 0
-mainAlgorithm = 2
+mainAlgorithm = 0
 addOneRequestColumn = 0
-solutionMode = 1
+solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 1
 saveScratch = 1
@@ -29,7 +29,7 @@ NumColumn = 50
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 5
+MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
 isDropPickPossible = 0
