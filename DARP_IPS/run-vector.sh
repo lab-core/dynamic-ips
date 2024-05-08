@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=2:30:00
-#SBATCH --array=1-48
+#SBATCH --array=1-24
 #SBATCH --output=/dev/null
 
 
@@ -15,7 +15,7 @@ for vehicles in manhattan-vehicles
 do
   for mode in 2
   do
-    for algorithm in 3 4
+    for algorithm in 2
     do
       for directory in Instances-120
       do
