@@ -15,7 +15,7 @@ for vehicles in manhattan-vehicles
 do
   for mode in 2
   do
-    for algorithm in
+    for algorithm in 4
     do
       for directory in Instances-120
       do
