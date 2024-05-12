@@ -40,7 +40,7 @@ constPortion = 0
 Greedy_portion = 1
 Zone_portion = 0
 usePick = 1
-nbPick = 1
+nbPick = 2
 sortPath = 0
 sortColumn = 1
 
