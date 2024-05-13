@@ -98,8 +98,13 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
             char *folderPath = const_cast<char *>(instFolder.c_str());
             int check = mkdir(folderPath, 0777);
-            if (check == -1)
-                throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
+            if (check == -1){
+                instFolder = "/local1/amirelah/dynamic-ips/" + instanceFolder_;
+                char *folderPath1 = const_cast<char *>(instFolder.c_str());
+                check = mkdir(folderPath1, 0777);
+                if (check == -1)
+                    throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
+            }
         }
         std::string outputFolder = instFolder + "/" + instanceName_;
         if (!(stat(outputFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
