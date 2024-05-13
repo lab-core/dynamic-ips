@@ -652,7 +652,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
                                     static_cast<float>((epoch_) * mainInst->parameters_->epochLength_),
                                     nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
-            vehicleObj->setCurrentRoute(vehicleObj->emptyRoute_);
             vehicleObj->currentRoute_->createColumn();
         }
         EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
