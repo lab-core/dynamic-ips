@@ -615,8 +615,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 
     nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
-    while (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty()) {
- //   while (nbReceivedRequest < mainInst->nbRequests_) {
+//    while (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty()) {
+    while (nbReceivedRequest < mainInst->nbRequests_) {
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
@@ -652,6 +652,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
                                     static_cast<float>((epoch_) * mainInst->parameters_->epochLength_),
                                     nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
+            vehicleObj->setCurrentRoute(vehicleObj->emptyRoute_);
             vehicleObj->currentRoute_->createColumn();
         }
         EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
