@@ -93,7 +93,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
                                    int nbVehicles) {
     // create directory for results
     if (saveScratch) {
-        std::string instFolder = "/local1/amirelah/dynamic-ips/" + instanceFolder_;
+        std::string instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
         struct stat buffer{};
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
             char *folderPath = const_cast<char *>(instFolder.c_str());
