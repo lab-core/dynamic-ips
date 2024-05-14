@@ -3,6 +3,9 @@
 #SBATCH --account=def-legraina
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
+#SBATCH --array=1-744
+#SBATCH --mail-user=elahe.amiri66@gmail.com
+#SBATCH --mail-type=ALL
 #SBATCH --output=/dev/null
 
 
