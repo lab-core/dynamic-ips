@@ -16,7 +16,7 @@ do
       for instance_path in "${INSTANCES[@]}"; 
       do
         instance=$(basename "$instance_path")
-        for num_vehicles in 1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500
+        for num_vehicles in 2000
         do
           echo "bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode"
         done
