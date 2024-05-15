@@ -61,15 +61,15 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::string instName = instNames[0];
-    if (numEpochTests > 1){
+    /*if (numEpochTests > 1){
         instNames.clear();
         for (int i = 0; i < numEpochTests; ++i)
             instNames.push_back(instName+"_"+std::to_string(i+1));
-    }
+    }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 2; ++j){
+        for (int i = 0; i < 1; ++i) {
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
                 mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-                mainInst->parameters_->nbColumn_ = (i+2)*10;
-                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
+ //               mainInst->parameters_->nbColumn_ = (i+2)*10;
+ //               mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
