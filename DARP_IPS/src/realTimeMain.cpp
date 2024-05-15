@@ -61,11 +61,11 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::string instName = instNames[0];
-    if (numEpochTests > 1){
+    /*if (numEpochTests > 1){
         instNames.clear();
         for (int i = 0; i < numEpochTests; ++i)
             instNames.push_back(instName+"_"+std::to_string(i+1));
-    }
+    }*/
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < 6; ++i) {
