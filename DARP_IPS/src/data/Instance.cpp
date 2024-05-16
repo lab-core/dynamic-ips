@@ -155,8 +155,8 @@ std::string Instance::solutionToString() {
                 }
             }
             else {
-                if (requests_[i]->getRequestId() >= nbOnboards_) {
-//                if (requests_[i]->earlyPick_ >= simulationStartTime_) {
+//                if (requests_[i]->getRequestId() >= nbOnboards_) {
+                if (requests_[i]->earlyPick_ >= simulationStartTime_) {
                     totalNumServedPartial++;
                     totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
                     totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
@@ -196,7 +196,8 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed - nbOnboards_ << std::endl;
+    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
+//    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed - nbOnboards_ << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF EMPTY VEHICLES" << " = " << nbIdle << std::endl;
@@ -610,7 +611,7 @@ std::string Instance::saveRequestsResults() {
               "DropTime, InVehicleID, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
 
     for (auto & requestObj : requests_) {
-        if (requestObj->getRequestId() >= nbOnboards_) {
+ //       if (requestObj->getRequestId() >= nbOnboards_) {
             repStr << requestObj->getRequestId() << ",";
             repStr << requestObj->nbPassengers_ << ",";
             repStr << requestObj->PickUpID_ << ",";
@@ -625,7 +626,7 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->maxTravelTime_ << ",";
             repStr << requestObj->minTravelTime_ << ",";
             repStr << requestObj->pickZoneID_ << "\n";
-        }
+ //       }
     }
     return repStr.str();
 }
