@@ -12,7 +12,7 @@
 
 using namespace std::chrono;
 float saveTime = 3600;
-bool middleSave = false;
+bool middleSave = true;
 bool savePartial = true;
 std::string instNum = "1";
 int numEpochTests = 31;
