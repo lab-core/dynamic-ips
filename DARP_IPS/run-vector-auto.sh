@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=3:10:00
+#SBATCH --time=2:10:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
 #SBATCH --array=1-744
@@ -9,14 +9,14 @@
 module load eigen
 module load gcc
 
-DIRECTORY="Instances-120_Epoch"
-MAIN_DIR="datasets/Instances-120_Epoch"
+DIRECTORY="Instances-120-in_Epoch"
+MAIN_DIR="datasets/Instances-120-in_Epoch"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
 
 i=1
-for vehicles in manhattan-vehicles
+for vehicles in sufficient_manhattan-vehicles-300
 do
   for mode in 1
   do
