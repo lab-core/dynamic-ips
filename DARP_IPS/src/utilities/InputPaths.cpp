@@ -99,7 +99,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
             char *folderPath = const_cast<char *>(instFolder.c_str());
             int check = mkdir(folderPath, 0777);
             if (check == -1){
-                instFolder = "/local1/amirelah/dynamic-ips/" + instanceFolder_;
+                instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
                 char *folderPath1 = const_cast<char *>(instFolder.c_str());
                 check = mkdir(folderPath1, 0777);
                 if (check == -1)

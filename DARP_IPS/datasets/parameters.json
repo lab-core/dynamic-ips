@@ -1,0 +1,33 @@
+{
+  "MODEL_PARAMETERS": {
+    "alphaParam": 1.5,
+    "betaParam": 240,
+    "deltaPram": 420,
+    "epochLength": 30,
+    "penaltyL": 30,
+    "committedTime": 30,
+    "nbThreads": 16,
+    "mainAlgorithm": 3,
+    "solutionMode": 1,
+    "OneIter": 0,
+    "GreedyReOptimize": 1,
+    "saveScratch": 0,
+    "vehicleReturn": 1,
+    "NumColumn": 60
+  },
+  "LABEL_SETTING_STRATEGIES": {
+    "isTruncated": 1,
+    "MaxLabel": 15,
+    "isDominanceReleased": 0,
+    "isDropPickPossible": 0,
+    "LabelingStrategy": 1,
+    "Vehicle_portion": 1,
+    "usePick": 1,
+    "nbPick": 2,
+    "sortPath": 0
+  },
+  "CPLEX_PARAMETERS": {
+    "solveTimeLimit": 300,
+    "MIPGap": 0.01
+  }
+}
