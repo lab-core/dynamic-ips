@@ -8,6 +8,7 @@
 
 module load eigen
 module load gcc
+cmake --build cmake-build-release --target all
 
 DIRECTORY="Instances-120-in_Epoch"
 MAIN_DIR="datasets/Instances-120-in_Epoch"
