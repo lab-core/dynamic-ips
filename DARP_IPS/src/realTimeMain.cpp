@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 2; ++j){
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= j+1;
-                mainInst->parameters_->isDropPickPossible_ = j;
+ //               mainInst->parameters_->isDropPickPossible_ = j;
                 mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
