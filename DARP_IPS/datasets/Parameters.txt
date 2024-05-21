@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 1
+saveScratch = 0
 vehicleReturn = 0
 
 # ISUD PARAMETERS
@@ -32,12 +32,12 @@ isTruncated = 1
 MaxLabel = 10
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-isDropPickPossible = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
-Greedy_portion = 1
+Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
 nbPick = 2

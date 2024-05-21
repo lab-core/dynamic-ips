@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= j+1;
-                mainInst->parameters_->nbColumn_ = (i+1)*10;
-                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
+                mainInst->parameters_->MaxLabel_ = i *5;
+                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
