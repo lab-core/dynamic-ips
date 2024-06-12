@@ -50,12 +50,12 @@ public:
 
     bool operator() (const Label &rhs) const;
 
-    void extend(Node *outNode);
+    void extend(Node *outNode, vector2D<float>& durationMatrix);
     // this function check the feasibility of the label before extension
     bool isExtendFeasible(Node *outNode, int maxStops, int capacity);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
 
-    PRoute labelToRoute(PVehicle &vehicle);
+    PRoute labelToRoute(PVehicle &vehicle, vector2D<float>& durationMatrix);
 
     // Display function
     std::string toString() const;

@@ -50,7 +50,7 @@ public:
     explicit InputPaths(std::string datadir);
 
     // this function defines the path to input data files
-    void initializeInputs(const std::string& instanceName);
+    void initializeInputs();
 
     // this function defines the path to outputs
     void initializeOutputs();

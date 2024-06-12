@@ -103,17 +103,17 @@ void MasterModeler::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolution
     Model_.add(objFunction_);
 }
 
-void MasterModeler::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
+void MasterModeler::solveModelLP(PInstance &pInst) {
     try {
 
         IloConversion convR = IloConversion(env_, routeVar_, ILOFLOAT);
 
         Model_.add(convR);
 
-        std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
+        /*std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
         logFile << "----------------------- LMP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        std::cout.rdbuf(logFile.rdbuf());*/
 
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
@@ -145,8 +145,8 @@ void MasterModeler::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
             vehicleObj->dual_ = vehicleDuals_[index];
         }
         convR.end();
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
+        /*std::cout.rdbuf(coutBuffer);
+        logFile.close();*/
         Cplex_.clearModel();
     }
     catch (IloException& e) {
@@ -155,8 +155,7 @@ void MasterModeler::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
     }
 }
 
-void MasterModeler::solveModelInt(PInstance &pInst, vector<PRoute> &routeSolution, InputPaths &inputPaths,
-                                  float availableTime, double preObj) {
+void MasterModeler::solveModelInt(PInstance &pInst, vector<PRoute> &routeSolution, float availableTime, double preObj) {
     try {
 
         IloConversion convR = IloConversion(env_, routeVar_, ILOINT);
@@ -165,10 +164,10 @@ void MasterModeler::solveModelInt(PInstance &pInst, vector<PRoute> &routeSolutio
 
         Cplex_ = IloCplex(Model_);
 
-        std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
+        /*std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
         logFile << "----------------------- MP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        std::cout.rdbuf(logFile.rdbuf());*/
 
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
@@ -209,8 +208,8 @@ void MasterModeler::solveModelInt(PInstance &pInst, vector<PRoute> &routeSolutio
             }
         }
         convR.end();
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
+        /*std::cout.rdbuf(coutBuffer);
+        logFile.close();*/
         Cplex_.clearModel();
     }
     catch (IloException& e) {
@@ -219,8 +218,7 @@ void MasterModeler::solveModelInt(PInstance &pInst, vector<PRoute> &routeSolutio
     }
 }
 
-void MasterModeler::solveModelLPInt(PInstance &pInst, vector<PRoute> &routeSolution, InputPaths &inputPaths,
-                                    float availableTime, double preObj) {
+void MasterModeler::solveModelLPInt(PInstance &pInst, vector<PRoute> &routeSolution, float availableTime, double preObj) {
     try {
 
         // Solve the Linear Relaxation
@@ -228,10 +226,10 @@ void MasterModeler::solveModelLPInt(PInstance &pInst, vector<PRoute> &routeSolut
 
         Model_.add(convR);
 
-        std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
+        /*std::ofstream logFile(inputPaths.output_cplexLog_, std::ofstream::app);
         logFile << "----------------------- LMP ------------------------"<< std::endl;
         std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        std::cout.rdbuf(logFile.rdbuf());*/
 
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
@@ -267,7 +265,7 @@ void MasterModeler::solveModelLPInt(PInstance &pInst, vector<PRoute> &routeSolut
         convR = IloConversion(env_, routeVar_, ILOINT);
 
         Model_.add(convR);
-        logFile << "----------------------- MP ------------------------"<< std::endl;
+//        logFile << "----------------------- MP ------------------------"<< std::endl;
 //        std::cout.rdbuf(logFile.rdbuf());
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
@@ -303,8 +301,8 @@ void MasterModeler::solveModelLPInt(PInstance &pInst, vector<PRoute> &routeSolut
         }
 
         convR.end();
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
+        /*std::cout.rdbuf(coutBuffer);
+        logFile.close();*/
 
         Cplex_.clearModel();
 

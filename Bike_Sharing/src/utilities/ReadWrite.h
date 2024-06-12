@@ -23,12 +23,13 @@ class ReadWrite {
 public:
 
     // Read duration data file
-    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
+    static void readDurations_txt(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
+
     static void readTimeMatrix(const std::string& strDurFile, vector2D<float> &durationMat);
 
     // Read the parameters datafile
     static void readParameters1(const std::string& strParamFile, PInstance &pInstance);
-    static void readParameters_json(const std::string& strParamFile, PInstance &pInstance);
+
 
     // Parsing functions
     // Read a file stream until meeting the separating character
@@ -44,6 +45,19 @@ public:
 
     static void readTasks(const std::string& strTaskFile, PInstance &pInstance);
     static void readVehicles(const std::string& strVehicleFile, PInstance &pInstance);
+    static void readParameters(const std::string& strParamFile, PInstance &pInstance);
+    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat);
+
+    static void readDurations_py(const std::string& strDurFile, vector2D<float> &durationMat);
+    static void readParameters_py(const std::string& jsonStr, PInstance &pInstance);
+    static void readTasks_py(const std::string& jsonStr, PInstance &pInstance);
+    static void readVehicles_py(const std::string& jsonStr, PInstance &pInstance);
+
+    static PInstance createInstance(const std::string& jsonStrDuration, const std::string& jsonStrParam,
+                                    const std::string& jsonStrTasks, const std::string& jsonStrVehicles);
+
+    static PInstance createInstanceFile(const std::string& strDurFile, const std::string& strParamFile,
+                                    const std::string& strTaskFile, const std::string& strVehicleFile);
 };
 
 

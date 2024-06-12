@@ -48,8 +48,26 @@ std::string Task::toString() const {
 }
 
 
+rapidjson::Value Task::toJson(rapidjson::Document::AllocatorType& allocator) const {
+    rapidjson::Value value(rapidjson::kObjectType);
 
+    value.AddMember("task_id", taskID_, allocator);
+    value.AddMember("station_id", stationID_, allocator);
+    value.AddMember("location_id", rapidjson::StringRef(locationID_.c_str()), allocator);
+    value.AddMember("location_index", locationIndex_, allocator);
+    value.AddMember("nb_transfer", nbTransfer_, allocator);
+    value.AddMember("relocate_bonus", relocateBonus_, allocator);
+    //   value.AddMember("assignedVehicleID_", assignedVehicleID_, allocator);
 
+    /*// Print the JSON string to the console
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    value.Accept(writer);
+
+    std::cout << buffer.GetString() << std::endl;*/
+
+    return value;
+}
 
 
 

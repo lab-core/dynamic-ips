@@ -14,16 +14,9 @@
 #   /opt/IBM/ILOG/CPLEX_Studio<edition>124 - UNIX
 #   ~/Applications/IBM/ILOG/CPLEX_Studio<edition>124 - Mac OS X
 #   C:\Program Files\IBM\ILOG\CPLEX_Studio<edition>124 - Windows
-if (UNIX)
-    set(CPLEX_STUDIO_DIR /opt/ibm/ILOG/CPLEX_Studio221 /opt/IBM/ILOG/CPLEX_Studio221 /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221 /home/ibm/cplex-studio/22.1)
-#    set(CPLEX_STUDIO_DIR /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221)
-    set(CPLEX_ARCH x86-64)
-    set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_linux/static_pic)
-    if (APPLE)
-        set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio221)
-        set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_osx/static_pic)
-    endif()
-endif()
+set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio2211)
+set(CPLEX_LIB_PATH_SUFFIXES lib/arm64_osx/static_pic)
+
 message("Found studio dirs: ${CPLEX_STUDIO_DIR}")
 message("Lib suffixes dirs: ${CPLEX_LIB_PATH_SUFFIXES}")
 

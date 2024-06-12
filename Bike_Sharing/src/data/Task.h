@@ -35,6 +35,9 @@ public:
 
     // Display function
     std::string toString() const;
+
+    // Conversion function to JSON
+    rapidjson::Value toJson(rapidjson::Document::AllocatorType& allocator) const;
 };
 
 

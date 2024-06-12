@@ -7,6 +7,7 @@
 
 #include "data/Graph.h"
 #include "data/Stop.h"
+#include "rapidjson/document.h"
 
 
 //---------------------------------------------------------------------------------------------
@@ -43,8 +44,11 @@ public:
 
     // these functions are used to add nodes to the routes
     void addSource(PNode &node, float departTime, int departPassengers);
-    void addNode(PNode &node);
-    void addTask(PTask &task);
+    void addNode(PNode &node, vector2D<float>& durationMatrix);
+    void addTask(PTask &task, vector2D<float>& durationMatrix);
+
+    // Conversion function to JSON
+    rapidjson::Value toJson(rapidjson::Document::AllocatorType& allocator) const;
 
 };
 

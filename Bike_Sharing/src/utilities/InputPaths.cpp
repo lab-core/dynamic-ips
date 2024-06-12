@@ -16,13 +16,13 @@ InputPaths::InputPaths(std::string  datadir) : dataDir_(std::move(datadir)){
     instanceName_ = "";
     instanceDir_ = "";
     input_durationMatrix_ = "";
-    input_durationMatrix_ = dataDir_ + "edge_time_matrix.txt";
+    input_durationMatrix_ = dataDir_ + "edge_time_matrix.json";
     input_paramFile_ = dataDir_ + "solver_parameters.json";
 }
 
-void InputPaths::initializeInputs(const std::string &instanceName) {
-    instanceName_ = instanceName;
-    instanceDir_ = dataDir_ + instanceName + "/";
+void InputPaths::initializeInputs() {
+    instanceName_ = "Test1";
+    instanceDir_ = dataDir_ + instanceName_ + "/";
 
     //initialize the file names for trip records and instance data
     input_TaskData_ = instanceDir_ + "tasks_by_location.json";

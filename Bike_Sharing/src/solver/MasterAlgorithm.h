@@ -46,7 +46,7 @@ public:
 
 
     // Constructor and Destructor
-    explicit MasterAlgorithm(InputPaths &inputPaths);
+    explicit MasterAlgorithm();
 
     virtual ~MasterAlgorithm();
 
@@ -57,16 +57,16 @@ public:
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
-    void initialization(PInstance &pInst, InputPaths &inputPaths);
+    void initialization(PInstance &pInst);
 
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
 
-    void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveMP_CG(PInstance &pInst);
 
     // These functions are used to solve master problems (CG, MP and RP)
-    void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
+    void solveMP_LP(PInstance &pInst);
 
     // Display function
     std::string toString() const;

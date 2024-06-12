@@ -16,6 +16,9 @@
 //-----------------------------------------------------------------------------
 
 class LabelingSubProblem : public SubproModeler{
+
+private:
+    vector2D<float>& durationMatrix_;
 public:
     std::vector<PLabel> labelPool_;             // pool of generated labels to re-use
     std::vector<Node*> activeNodes_;            // list of nodes with active labels
@@ -28,13 +31,14 @@ public:
     PSolverOption solverOptions_;
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
+
     // Constructor and Destructor
-    LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
+    LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions, vector2D<float>& durationMatrix);
 
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();
     // main function of the dynamic programming
-    void labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
+    void labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate, vector2D<float>& durationMatrix);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     void solveDynamic_pushing();
 

@@ -28,11 +28,14 @@
 #include <bitset>
 #include <ilcplex/ilocplex.h>
 #include "types.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h" // For pretty print
 
 using std::string;
 using std::vector;
 using std::chrono::high_resolution_clock;
-extern std::vector<std::vector<float>> durationMatrix_;
 //-----------------------------------------------------------------------------
 //  Definition of useful tools and data types
 //-----------------------------------------------------------------------------

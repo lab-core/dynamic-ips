@@ -78,9 +78,9 @@ bool Label::operator () (const Label &rhs) const {
     return reducedCost_ < rhs.reducedCost_;
 }
 
-void Label::extend(Node *outNode) {
+void Label::extend(Node *outNode, vector2D<float>& durationMatrix) {
     load_ += outNode->load_;
-    float travelTime =  durationMatrix_[pathNode_.back()->locationIndex_][outNode->locationIndex_];
+    float travelTime =  durationMatrix[pathNode_.back()->locationIndex_][outNode->locationIndex_];
     reachedTime_ = passedTime_ + travelTime;
     if (outNode->load_ < 0)
         isDropped_ = true;
@@ -136,7 +136,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     return false;
 }
 
-PRoute Label::labelToRoute(PVehicle &vehicle) {
+PRoute Label::labelToRoute(PVehicle &vehicle, vector2D<float>& durationMatrix) {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
     if (vehicle->departNode_ == nullptr)
@@ -144,7 +144,7 @@ PRoute Label::labelToRoute(PVehicle &vehicle) {
     newRoute->addSource(vehicle->departNode_, vehicle->readyTime_, vehicle->bikeLoad_);
 
     for (int i = 1; i < pathNode_.size()-1; ++i) {
-        newRoute->addTask(pathNode_[i]->relatedTask_);
+        newRoute->addTask(pathNode_[i]->relatedTask_, durationMatrix);
     }
 
     if (!newRoute->assignedTasks_.empty())

@@ -22,10 +22,10 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
 
     // adding available nodes based on the penalty
     for (int i = 0; i < pInst->tasks_.size(); i++) {
-        if (pInst->tasks_[i]->nbTransfer_ != 0 and pInst->tasks_[i]->relocateBonus_ > 0) {
+        if (pInst->tasks_[i]->nbTransfer_ != 0 && pInst->tasks_[i]->relocateBonus_ > 0) {
             subTasks_.push_back(pInst->tasks_[i]);
             subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->taskNodes_[i]));
-            subGraph_->taskNodes_.back()->travelTimeFromSource_ = durationMatrix_[(Vehicle_)->departNode_->locationIndex_
+            subGraph_->taskNodes_.back()->travelTimeFromSource_ = pInst->getDurationMatrix()[(Vehicle_)->departNode_->locationIndex_
             ][subGraph_->taskNodes_.back()->locationIndex_];
         }
     }

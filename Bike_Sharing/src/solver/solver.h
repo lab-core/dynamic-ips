@@ -10,8 +10,7 @@
 #include "solver/LabelingSubProblem.h"
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
-extern vector2D<float> durationMatrix_;
-// extern Tools::PThreadsPool pPool;
+#include "utilities/ReadWrite.h"
 
 //-----------------------------------------------------------------------------
 //  solver class
@@ -20,34 +19,20 @@ extern vector2D<float> durationMatrix_;
 
 class solver {
 public:
-    double elapsedTime_;
-    double avgEpochRuntime_;
-    double epochRuntime_;
-    double SubproEpochTime_;
-    double masterEpochTime_;
-    double isudMIPEpochTime_;
-    int nbDominated_;                           // number of labels removed via Domination Rules
-    int nbEliminated_;                          // number of labels removed via Elimination Rules
-    int nbGenerated_;                           // number of generated labels
-    int nbNegativeFound_;
-    int epoch_;
-
-    myTools::SharedVector<PLabel> labelsPool_;
-
-    std::shared_ptr<MasterAlgorithm> masterModel_;
-    PSolverOption subProOptions_;
-
+    PInstance mainInstance_;
     myTools::Timer *simulationTime_;
-    myTools::Timer *subProblemTime_;
-    myTools::Timer *preprocessTime_;
 
+    solver();
+    void createInstance(const std::string& jsonStrDuration, const std::string& jsonStrParam,
+                                    const std::string& jsonStrTasks, const std::string& jsonStrVehicles);
 
-    solver(PInstance & mainInst, InputPaths &inputPaths);
+    void createInstanceFile(const std::string& strDurFile, const std::string& strParamFile,
+                                        const std::string& strTaskFile, const std::string& strVehicleFile);
 
     virtual ~solver();
 
     // this function is to solve the epoch instance with CG using ISUD
-    void solveCG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
+    std::string solveCG();
 };
 
 

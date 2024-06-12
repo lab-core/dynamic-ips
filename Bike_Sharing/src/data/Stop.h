@@ -5,8 +5,7 @@
 #ifndef DARP_IPS_STOP_H
 #define DARP_IPS_STOP_H
 
-#include <sstream>
-#include <string>
+#include "utilities/MyTools.h"
 //-----------------------------------------------------------------------------
 //  stop class
 //  The ``Stop`` class mostly serves as a structure for storing basic
@@ -16,7 +15,7 @@
 
 class Stop {
 public:
-    int locationID_;            // location of the stop point
+    int locationIndex_;            // location of the stop point
     float arrivalTime_;         // time that vehicle is arrives at the stop
     float departTime_;          // time that vehicle departs from the stop
     int nbToTransfer_;          // number of bikes to pick up from the corresponding station
@@ -24,10 +23,13 @@ public:
 
 
     // Constructor and Destructor
-    Stop(float arrivalTime, float departTime, int nbToTransfer, int bikeLoad, int locationId);
+    Stop(float arrivalTime, float departTime, int nbToTransfer, int bikeLoad, int locationIndex);
 
     // Display function
     std::string toString() const;
+
+    // Conversion function to JSON
+    rapidjson::Value toJson() const;
 };
 
 

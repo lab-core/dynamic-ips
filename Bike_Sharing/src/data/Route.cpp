@@ -39,11 +39,11 @@ void Route::addSource(PNode &node, float departTime, int departLoad) {
     }
 }
 
-void Route::addNode(PNode &node) {
+void Route::addNode(PNode &node, vector2D<float>& durationMatrix) {
     routeSize_ ++;
 
     int load = routeStops_.back()->bikeLoad_+node->load_;
-    float reachTime = routeStops_.back()->departTime_ + durationMatrix_[routeStops_.back()->locationID_][node->locationIndex_];
+    float reachTime = routeStops_.back()->departTime_ + durationMatrix[routeStops_.back()->locationIndex_][node->locationIndex_];
     float departTime = reachTime + TimeToPark + abs(node->relatedTask_->nbTransfer_)*TimePerBike;
     routeStops_.emplace_back(std::make_shared<Stop>(reachTime, departTime, node->load_,
                                                     load, node->locationIndex_));
@@ -52,16 +52,43 @@ void Route::addNode(PNode &node) {
 
 }
 
-void Route::addTask(PTask &task) {
+void Route::addTask(PTask &task, vector2D<float>& durationMatrix) {
     routeSize_ ++;
 
     int load = routeStops_.back()->bikeLoad_+ task->nbTransfer_;
-    float reachTime = routeStops_.back()->departTime_ + durationMatrix_[routeStops_.back()->locationID_][task->locationIndex_];
+    float reachTime = routeStops_.back()->departTime_ + durationMatrix[routeStops_.back()->locationIndex_][task->locationIndex_];
     float departTime = reachTime + TimeToPark + abs(task->nbTransfer_)*TimePerBike;
     routeStops_.emplace_back(std::make_shared<Stop>(reachTime, departTime, task->nbTransfer_,
                                                     load, task->locationIndex_));
     assignedTasks_.push_back(task);
     totalBonus_ += (task->relocateBonus_);
+}
+
+rapidjson::Value Route::toJson(rapidjson::Document::AllocatorType& allocator) const {
+    rapidjson::Value value(rapidjson::kObjectType);
+
+    value.AddMember("route_id", routeID_, allocator);
+//    value.AddMember("name_", rapidjson::StringRef(name_), allocator);
+    value.AddMember("vehicle_id", vehicleID_, allocator);
+    value.AddMember("relocate_bonus", totalBonus_, allocator);
+    value.AddMember("reduced_cost", reducedCost_, allocator);
+    value.AddMember("duration", totalDuration_, allocator);
+//    value.AddMember("routeSize_", routeSize_, allocator);
+
+    rapidjson::Value assignedTasksArray(rapidjson::kArrayType);
+    for (const auto &task : assignedTasks_) {
+        assignedTasksArray.PushBack(task->toJson(allocator), allocator);
+    }
+    value.AddMember("assigned_tasks", assignedTasksArray, allocator);
+
+    /*// Print the JSON string to the console
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    value.Accept(writer);
+
+    std::cout << buffer.GetString() << std::endl;*/
+
+    return value;
 }
 
 

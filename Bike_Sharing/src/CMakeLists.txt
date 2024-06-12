@@ -2,9 +2,10 @@ add_subdirectory(data)
 add_subdirectory(utilities)
 add_subdirectory(solver)
 
+set(SOURCE_FILES
+        realTimeMain.cpp
+        CG_binding.cpp)
 
-set(SOURCE_FILES realTimeMain.cpp)
-
-# build the static library
+# build the shared library
 add_library(${DARP_IPS_LIB} SHARED ${SOURCE_FILES})
 target_link_libraries(${DARP_IPS_LIB} data utilities solver ${LIBS})

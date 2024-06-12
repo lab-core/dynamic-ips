@@ -62,13 +62,11 @@ public:
     void buildModelMP(PInstance &pInst, std::vector<PRoute> &routeSolution, int nbVehicles);
 
     // solve functions
-    void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
+    void solveModelLP(PInstance &pInst);
 
-    void solveModelInt(PInstance &pInst, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, double preObj);
+    void solveModelInt(PInstance &pInst, std::vector<PRoute> &routeSolution, float availableTime, double preObj);
 
-    void solveModelLPInt(PInstance &pInst, std::vector<PRoute> &routeSolution,
-                         InputPaths &inputPaths, float availableTime, double preObj);
+    void solveModelLPInt(PInstance &pInst, std::vector<PRoute> &routeSolution, float availableTime, double preObj);
 };
 
 // function to create IloNumArray with identical elements

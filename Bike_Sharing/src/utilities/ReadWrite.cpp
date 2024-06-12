@@ -10,7 +10,7 @@
 //  functions to read input and write output
 //-----------------------------------------------------------------------------
 
-void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations) {
+void ReadWrite::readDurations_txt(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strDurFile << " >>" << std::endl;
@@ -44,6 +44,41 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
                 file >> duration;
                 durationMat[startID][endID] = duration;
             }
+        }
+    }
+}
+
+void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float>& durationMat) {
+    FILE* fp = fopen(strDurFile.c_str(), "r");
+    if (!fp) {
+        std::cerr << "Could not open file " << strDurFile << std::endl;
+        throw std::runtime_error("File not opened properly");
+    }
+
+    char readBuffer[65536];
+    rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+
+    rapidjson::Document doc;
+    doc.ParseStream(is);
+    fclose(fp);
+
+    if (!doc.IsObject()) {
+        throw std::runtime_error("Invalid JSON format");
+    }
+
+    // Determine the number of locations
+    int nbLocations = doc.MemberCount();
+
+    durationMat.clear();
+    durationMat.resize(nbLocations, std::vector<float>(nbLocations, 0.0f));
+
+    for (auto& start : doc.GetObject()) {
+        int startID = std::stoi(start.name.GetString());
+        const auto& innerDict = start.value.GetObject();
+        for (auto& end : innerDict) {
+            int endID = std::stoi(end.name.GetString());
+            float duration = static_cast<float>(end.value.GetDouble());
+            durationMat[startID][endID] = duration;
         }
     }
 }
@@ -225,7 +260,7 @@ void ReadWrite::readParameters1(const std::string& strParamFile, PInstance &pIns
 }
 
 
-void ReadWrite::readParameters_json(const std::string& strParamFile, PInstance &pInstance) {
+void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInstance) {
     // Open the JSON file for reading
     std::ifstream file(strParamFile);
     if (!file.is_open()) {
@@ -258,7 +293,9 @@ void ReadWrite::readParameters_json(const std::string& strParamFile, PInstance &
                                                           true, true, nbColumns, isTruncated, maxLabel,
                                                           false, nbStop, static_cast<SortPaths>(sortPath),
                                                           mipGap);
+    pInstance->subProOptions_ = std::make_shared<solverOption>(pInstance->parameters_);
 }
+
 
 // Parsing functions
 // Useful for reading a file stream until meeting the separating character
@@ -364,7 +401,6 @@ void ReadWrite::readTasks(const std::string& strTaskFile, PInstance &pInstance) 
     pInstance->nbTasks_ = pInstance->tasks_.size();
 }
 
-
 void ReadWrite::readVehicles(const std::string& strVehicleFile, PInstance &pInstance) {
     // Open the file
     std::fstream file;
@@ -416,6 +452,157 @@ void ReadWrite::readVehicles(const std::string& strVehicleFile, PInstance &pInst
     pInstance->instGraph_->addNewNode(sinkNode);
     pInstance->nbVehicles_ = pInstance->vehicles_.size();
 }
+
+void ReadWrite::readDurations_py(const std::string& jsonStr, vector2D<float>& durationMat) {
+
+    // Parse the Durations JSON data
+    rapidjson::Document document;
+    document.Parse(jsonStr.c_str());
+
+    if (!document.IsObject()) {
+        throw std::runtime_error("Invalid JSON format");
+    }
+
+    // Determine the number of locations
+    int nbLocations = document.MemberCount();
+    durationMat.resize(nbLocations, std::vector<float>(nbLocations, 0.0f));
+
+    for (auto& start : document.GetObject()) {
+        int startID = std::stoi(start.name.GetString());
+        const auto& innerDict = start.value.GetObject();
+        for (auto& end : innerDict) {
+            int endID = std::stoi(end.name.GetString());
+            float duration = static_cast<float>(end.value.GetDouble());
+            durationMat[startID][endID] = duration;
+        }
+    }
+}
+void ReadWrite::readVehicles_py(const std::string& jsonStr, PInstance &pInstance) {
+    // Parse the JSON data
+    rapidjson::Document document;
+    document.Parse(jsonStr.c_str());
+
+    if (!document.IsObject()) {
+        std::cerr << "JSON is not an object\n";
+        throw std::runtime_error("JSON document is not an object.");
+    }
+
+    // Iterate over the JSON object
+    for (auto it = document.MemberBegin(); it != document.MemberEnd(); ++it) {
+        const rapidjson::Value& item = it->value;
+
+        try {
+            int vehicleId = item["vehicle_id"].GetInt();
+            std::string name = item["name"].GetString();
+            float readyTime = item["ready_time"].GetFloat();
+            float endTime = item["end_time"].GetFloat();
+            int departIndex = item["depart_index"].GetInt();
+            int capacity = item["capacity"].GetInt();
+            int bikeLoad = item["bike_load"].GetInt();
+
+            // Assuming Task constructor takes the right parameters in this order
+            PNode departNode = std::make_shared<Node>(departIndex, DEPART_NODE);
+            pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleId, name, readyTime, endTime, departIndex,
+                                                                        capacity, bikeLoad, departNode));
+
+            pInstance->instGraph_->addNewNode(departNode);
+
+        } catch (const std::exception& e) {
+            std::cerr << "Exception while creating Task: " << e.what() << '\n';
+        }
+    }
+    PNode sinkNode = std::make_shared<Node>(661, SINK_NODE);
+    pInstance->instGraph_->addNewNode(sinkNode);
+    pInstance->nbVehicles_ = pInstance->vehicles_.size();
+}
+void ReadWrite::readTasks_py(const std::string& jsonStr, PInstance &pInstance) {
+    // Parse the JSON data
+    rapidjson::Document document;
+    document.Parse(jsonStr.c_str());
+
+    if (!document.IsObject()) {
+        std::cerr << "JSON is not an object\n";
+        throw std::runtime_error("JSON document is not an object.");
+    }
+
+    // Iterate over the JSON object
+    for (auto it = document.MemberBegin(); it != document.MemberEnd(); ++it) {
+        const rapidjson::Value& item = it->value;
+
+        try {
+            int station_id = item["station_id"].GetInt();
+            std::string location_id = item["location_id"].GetString();
+            int location_index = item["location_index"].GetInt();
+            int nb_transfer = item["nb_transfer"].GetInt();
+            double relocate_bonus = item["relocate_bonus"].GetDouble();
+
+            // Assuming Task constructor takes the right parameters in this order
+            pInstance->tasks_.emplace_back(std::make_shared<Task>(station_id, location_id, location_index,
+                                                                  nb_transfer, relocate_bonus));
+            PNode taskNode = std::make_shared<Node>(location_index, pInstance->tasks_.back(), TASK_STATION);
+            pInstance->instGraph_->addNewNode(taskNode);
+
+        } catch (const std::exception& e) {
+            std::cerr << "Exception while creating Task: " << e.what() << '\n';
+        }
+    }
+    pInstance->nbTasks_ = pInstance->tasks_.size();
+}
+void ReadWrite::readParameters_py(const std::string& jsonStr, PInstance &pInstance) {
+    // Parse the JSON data
+    Document document;
+    document.Parse(jsonStr.c_str());
+
+    // Check for parsing errors
+    if (document.HasParseError()) {
+        std::cerr << "Error parsing JSON data" << std::endl;
+        throw myTools::myException("Error parsing JSON data", __LINE__);
+    }
+
+    // Extract values from the JSON document
+    int epochLength = document["epoch_length"].GetInt();
+    int nbThreads = document["nb_threads"].GetInt();
+    int mainAlgorithm = document["main_algorithm"].GetInt();
+    int nbColumns = document["nb_column"].GetInt();
+    bool isTruncated = document["is_truncated"].GetBool();
+    int maxLabel = document["max_label"].GetInt();
+    int nbStop = document["nb_stops"].GetInt();
+    int sortPath = document["sort_path"].GetInt();
+    float mipGap = document["mip_gap"].GetFloat();
+
+    // Create Parameters object and set values
+    pInstance->parameters_ = std::make_shared<Parameters>(epochLength, nbThreads,
+                                                          static_cast<MainAlgorithm>(mainAlgorithm),
+                                                          true, true, nbColumns, isTruncated, maxLabel,
+                                                          false, nbStop, static_cast<SortPaths>(sortPath),
+                                                          mipGap);
+    pInstance->subProOptions_ = std::make_shared<solverOption>(pInstance->parameters_);
+}
+
+PInstance ReadWrite::createInstance(const std::string& jsonStrDuration, const std::string& jsonStrParam,
+                          const std::string& jsonStrTasks, const std::string& jsonStrVehicles) {
+    PInstance mainInst = std::make_shared<Instance>();
+
+    readDurations_py(jsonStrDuration, mainInst->getDurationMatrix());
+    readParameters_py(jsonStrParam, mainInst);
+    readTasks_py(jsonStrTasks, mainInst);
+    readVehicles_py(jsonStrVehicles, mainInst);
+
+    return mainInst;
+}
+
+PInstance ReadWrite::createInstanceFile(const std::string& strDurFile, const std::string& strParamFile,
+                                        const std::string& strTaskFile, const std::string& strVehicleFile) {
+    PInstance mainInst = std::make_shared<Instance>();
+
+    readDurations(strDurFile, mainInst->getDurationMatrix());
+    readParameters(strParamFile, mainInst);
+    readTasks(strTaskFile, mainInst);
+    readVehicles(strVehicleFile, mainInst);
+
+    return mainInst;
+}
+
 
 
 

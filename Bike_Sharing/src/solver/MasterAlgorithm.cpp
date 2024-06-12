@@ -9,7 +9,7 @@
 //  Build and solve the Reduced problem of the ISUD
 //---------------------------------------------------------------------------------------------
 
-MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
+MasterAlgorithm::MasterAlgorithm() {
 
     MasterPro_ = std::make_shared<MasterModeler>();
     objValue_ = 0;
@@ -44,7 +44,7 @@ void MasterAlgorithm::setObjValue() {
 
 // this function create initial routes serving only one request and fill zSolution_ with available requests
 // Reduced problem is also solved to initialized dual costs
-void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
+void MasterAlgorithm::initialization(PInstance &pInst) {
     MPEpochSolveTime_ = 0;
     masterTime_->start();
 
@@ -87,7 +87,7 @@ void MasterAlgorithm::updateReducedCosts(PInstance &pInst) {
 }
 
 
-void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
+void MasterAlgorithm::solveMP_CG(PInstance &pInst) {
     masterTime_->start();
     setObjValue();
     double previousObj = objValue_;
@@ -112,8 +112,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             if (minReducedCost_ >= 0 || availableTime_ < 0)
                 break;
 
-            solveMP_LP(pInst, inputPaths);
-            MasterPro_->solveModelInt(pInst, routeSolution_, inputPaths, availableTime_, previousObj);
+            solveMP_LP(pInst);
+            MasterPro_->solveModelInt(pInst, routeSolution_, availableTime_, previousObj);
             LPIter_++;
 
             RMPCounter_++;
@@ -130,7 +130,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             availableTime_ = 2;
         // solve the model in Integer mode
         lpObjValue_ = lpObj;
-        MasterPro_->solveModelInt(pInst, routeSolution_, inputPaths, availableTime_, previousObj);
+        MasterPro_->solveModelInt(pInst, routeSolution_, availableTime_, previousObj);
         MIPIter_++;
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         setObjValue();
@@ -147,7 +147,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
 
 
-void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
+void MasterAlgorithm::solveMP_LP(PInstance &pInst) {
     MasterPro_->routesToAdd_.clear();
 
     // select routes with negative reduced costs
@@ -157,7 +157,7 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
         MPBuildTime_->start();
         MasterPro_->updateModel();
         MPBuildTime_->stop();
-        MasterPro_->solveModelLP(pInst, inputPaths);
+        MasterPro_->solveModelLP(pInst);
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         objValue_ = MasterPro_->objValue_;
     }

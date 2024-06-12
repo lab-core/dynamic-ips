@@ -4,65 +4,63 @@
 
 #include "solver.h"
 
-solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
-    elapsedTime_ = 0;
-    SubproEpochTime_ = 0;
-    epoch_ = 0;
-
-    masterModel_ = std::make_shared<MasterAlgorithm>(inputPaths);
-    subProOptions_ = std::make_shared<solverOption>(mainInst->parameters_);
-
+solver::solver() {
+    mainInstance_ = std::make_shared<Instance>();
     simulationTime_ = new myTools::Timer(); simulationTime_->init();
-    subProblemTime_ = new myTools::Timer(); subProblemTime_->init();
-    preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
-
-    masterEpochTime_ = 0;
-    isudMIPEpochTime_ = 0;
-    avgEpochRuntime_ = 0;
-    epochRuntime_ = 0;
-    nbGenerated_ = 0;
-    nbDominated_ = 0;
-    nbEliminated_ = 0;
-    nbNegativeFound_ = 0;
-    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
-
-
 }
 
 solver::~solver() {
     delete simulationTime_;
-    delete subProblemTime_;
-    delete preprocessTime_;
+}
+
+void solver::createInstance(const std::string& jsonStrDuration, const std::string& jsonStrParam,
+                                    const std::string& jsonStrTasks, const std::string& jsonStrVehicles) {
+
+    ReadWrite::readDurations_py(jsonStrDuration, mainInstance_->getDurationMatrix());
+    ReadWrite::readParameters_py(jsonStrParam, mainInstance_);
+    ReadWrite::readTasks_py(jsonStrTasks, mainInstance_);
+    ReadWrite::readVehicles_py(jsonStrVehicles, mainInstance_);
+
+    std::cout << "Instance created!!!";
+
 
 }
 
-void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
+void solver::createInstanceFile(const std::string& strDurFile, const std::string& strParamFile,
+                                        const std::string& strTaskFile, const std::string& strVehicleFile) {
+
+    ReadWrite::readDurations(strDurFile, mainInstance_->getDurationMatrix());
+    ReadWrite::readParameters(strParamFile, mainInstance_);
+    ReadWrite::readTasks(strTaskFile, mainInstance_);
+    ReadWrite::readVehicles(strVehicleFile, mainInstance_);
+}
+
+std::string solver::solveCG() {
     // define required variables
+    simulationTime_->start();
+    myTools::SharedVector<PLabel> labelsPool_;
+    labelsPool_.defineSize(mainInstance_->parameters_->nbThreads_);
+    std::shared_ptr<MasterAlgorithm> masterModel_ = std::make_shared<MasterAlgorithm>();
     double previousObj;
     int nbNegativeFound;
-    nbNegativeFound_ = 0;
-    bool isSolved = false;
     int iter = 0;
     std::stringstream changeStr;
-    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(mainInstance_->parameters_->nbThreads_);
 //    masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_);
     masterModel_->availableTime_ = LARGE_CONSTANT;
 
-    masterModel_->initialization(EpochInst, inputPaths);
-    masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
-    for (auto &vehicleObj: EpochInst->vehicles_) {
+    masterModel_->initialization(mainInstance_);
+    masterModel_->availableRoutes_.resize(mainInstance_->nbVehicles_);
+    for (auto &vehicleObj: mainInstance_->vehicles_) {
         vehicleObj->setEmptyRoute();
         masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
     }
 
     masterModel_->RMPCounter_ ++;
 
-    SubproEpochTime_ = 0;
     masterModel_->lpObjValue_ = masterModel_->objValue_;
 
     masterModel_->nbRoutes_ = 0;
-    EpochInst->selectedVehicles_.clear();
-    EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     while (true) {
         iter++;
         nbNegativeFound = 0;
@@ -74,20 +72,16 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         //***********************************************************************************//
 
         // start the subproblems timer
-        subProblemTime_->start();
         // defining subproblems
-
-        nbGenerated_ = 0;
-        nbDominated_ = 0;
-        nbEliminated_ = 0;
 
         std::vector<PLabelingSubPro> subProSolve;
 
 
         // create subproblems
 
-        for (auto &vehicleObj: mainInst->vehicles_) {
-            subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+        for (auto &vehicleObj: mainInstance_->vehicles_) {
+            subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, mainInstance_->subProOptions_,
+                                                                          mainInstance_->getDurationMatrix()));
         }
 
 
@@ -97,12 +91,12 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             Tools::Job job([&]() {
-                subProblem->initSubGraph(EpochInst);
+                subProblem->initSubGraph(mainInstance_);
                 subProblem->labelPool_ = std::move(labelsPool_.pop_data());
                 subProblem->solveDynamic();
-                subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                subProblem->SolutionToRoutes(mainInstance_->vehicles_[subProblem->Vehicle_->vehicleID_],
                                              masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
-                                             mainInst);
+                                             mainInstance_);
                 labelsPool_.push_data(std::move(subProblem->labelPool_));
             });
             pPool->run(job);
@@ -116,10 +110,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto &subProblem: subProSolve){
             masterModel_->nbRoutes_ += masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
-            nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
-            nbGenerated_ += subProblem->nbGenerated_;
-            nbEliminated_ += subProblem->nbEliminated_;
-            nbDominated_ += subProblem->nbDominated_;
         }
 
         while(true){
@@ -127,11 +117,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 break;
         }
 
-        preprocessTime_->start();
         subProSolve.clear();
-        preprocessTime_->stop();
-        subProblemTime_->stop();
-        SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
             break;
         }
@@ -144,10 +130,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             masterModel_->timeLimit_ = masterModel_->availableTime_;
 
              //solve the restricted Mater Problem
-            masterModel_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+            masterModel_->solveMP_CG(mainInstance_);
 
             // if the size of epoch is larger than 30s disable the following
-            if (simulationTime_->dSinceStart().count()/iter > (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
+            if (simulationTime_->dSinceStart().count()/iter > (mainInstance_->parameters_->epochLength_ - simulationTime_->dSinceStart().count()))
                 break;
 
         }
@@ -166,11 +152,23 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     // revert solution
     for (auto & routeObj : masterModel_->routeSolution_) {
-        EpochInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+        mainInstance_->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
     }
 
     masterModel_->setObjValue();
+    simulationTime_->stop();
+    std::cout << "Objective: " << masterModel_->objValue_ << std::endl;
+    std::cout << "simulation time: " << simulationTime_->dSinceInit().count();
 
+    // Convert the solution to a JSON string
+    rapidjson::Value solutionJson = mainInstance_->createSolutionJson();
+
+    // Print the JSON string to the console
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    solutionJson.Accept(writer);
+
+    return buffer.GetString();
 }
 
 

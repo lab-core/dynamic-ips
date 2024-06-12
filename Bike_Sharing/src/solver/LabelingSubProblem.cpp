@@ -13,8 +13,10 @@
 //-----------------------------------------------------------------------------
 
 
-LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions) :
-                                        SubproModeler(vehicle), solverOptions_(std::move(solverOptions)) {
+LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions,
+                                       vector2D<float>& durationMatrix) :
+                                        SubproModeler(vehicle), solverOptions_(std::move(solverOptions)),
+                                        durationMatrix_(durationMatrix){
     nbDominated_ = 0;
     nbEliminated_ = 0;
     nbGenerated_ = 0;
@@ -39,7 +41,7 @@ void LabelingSubProblem::initialization() {
 }
 
 
-void LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate) {
+void LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate, vector2D<float>& durationMatrix) {
     PLabel newLabel;
     if (!labelPool_.empty()){
         newLabel = std::move(labelPool_.back());
@@ -50,7 +52,7 @@ void LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Te
         newLabel = std::make_shared<Label>(*parentLabel);
     }
 
-    newLabel->extend(outNode);
+    newLabel->extend(outNode, durationMatrix);
 
     nbGenerated_++;
     if (!isLabelAdded(newLabel, outNode, Terminate))
@@ -89,7 +91,7 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Term
         outNode->activeLabels_.push_back(newLabel);
         outNode->nbActiveLabels_++;
         if (Terminate)
-            labelExtend(newLabel, &(*subGraph_->sink_), false);
+            labelExtend(newLabel, &(*subGraph_->sink_), false, durationMatrix_);
     }
     return true;
 }
@@ -126,7 +128,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                 else if ((!selectedLabel->extendCheck_.test(currentNode->locationIndex_)) &&
                                          (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_, Vehicle_->capacity_))) {
                                     nbActive = currentNode->nbActiveLabels_;
-                                    labelExtend(selectedLabel, &(*currentNode), true);
+                                    labelExtend(selectedLabel, &(*currentNode), true, durationMatrix_);
 
                                     if ((currentNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
                                         activeNodes_.push_back(&(*currentNode));
@@ -180,7 +182,7 @@ void LabelingSubProblem::solveDynamic_pushing() {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_,
                                                                 Vehicle_->capacity_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
-                                labelExtend(selectedLabel, neighbourNode, true);
+                                labelExtend(selectedLabel, neighbourNode, true, durationMatrix_);
                                 if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
                                     activeNodes_.push_back(neighbourNode);
                                 }
@@ -296,7 +298,7 @@ void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
     for (auto & labelObj : subGraph_->sink_->activeLabels_) {
-        availableRoutes.emplace_back(labelObj->labelToRoute(vehicle));
+        availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst->getDurationMatrix()));
         nbOutputs_++;
     }
     for (auto & nodeObj : subGraph_->taskNodes_){
