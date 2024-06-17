@@ -51,13 +51,23 @@ std::string Task::toString() const {
 rapidjson::Value Task::toJson(rapidjson::Document::AllocatorType& allocator) const {
     rapidjson::Value value(rapidjson::kObjectType);
 
-    value.AddMember("task_id", taskID_, allocator);
-    value.AddMember("station_id", stationID_, allocator);
+    // Convert taskID_ to rapidjson::Value
+    value.AddMember("task_id", rapidjson::Value().SetUint(taskID_), allocator);
+
+    // Convert stationID_ to rapidjson::Value
+    value.AddMember("station_id", rapidjson::Value().SetInt(stationID_), allocator);
+
+    // Convert locationID_ to rapidjson::Value
     value.AddMember("location_id", rapidjson::StringRef(locationID_.c_str()), allocator);
-    value.AddMember("location_index", locationIndex_, allocator);
-    value.AddMember("nb_transfer", nbTransfer_, allocator);
-    value.AddMember("relocate_bonus", relocateBonus_, allocator);
-    //   value.AddMember("assignedVehicleID_", assignedVehicleID_, allocator);
+
+    // Convert locationIndex_ to rapidjson::Value
+    value.AddMember("location_index", rapidjson::Value().SetInt(locationIndex_), allocator);
+
+    // Convert nbTransfer_ to rapidjson::Value
+    value.AddMember("nb_transfer", rapidjson::Value().SetInt(nbTransfer_), allocator);
+
+    // Convert relocateBonus_ to rapidjson::Value
+    value.AddMember("relocate_bonus", rapidjson::Value().SetDouble(relocateBonus_), allocator);
 
     /*// Print the JSON string to the console
     rapidjson::StringBuffer buffer;
@@ -68,7 +78,6 @@ rapidjson::Value Task::toJson(rapidjson::Document::AllocatorType& allocator) con
 
     return value;
 }
-
 
 
 

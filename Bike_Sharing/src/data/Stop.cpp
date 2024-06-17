@@ -27,11 +27,22 @@ rapidjson::Value Stop::toJson() const {
     rapidjson::Value value;
     value.SetObject();
 
-    value.AddMember("location_index_", locationIndex_, allocator);
-    value.AddMember("arrival_time", arrivalTime_, allocator);
-    value.AddMember("depart_time", departTime_, allocator);
-    value.AddMember("nb_transfer_", nbToTransfer_, allocator);
-    value.AddMember("bike_load_", bikeLoad_, allocator);
+    // Convert locationIndex_ to rapidjson::Value
+    value.AddMember("location_index_", rapidjson::Value().SetInt(locationIndex_), allocator);
+
+    // Convert arrivalTime_ to rapidjson::Value
+    value.AddMember("arrival_time", rapidjson::Value().SetFloat(arrivalTime_), allocator);
+
+    // Convert departTime_ to rapidjson::Value
+    value.AddMember("depart_time", rapidjson::Value().SetFloat(departTime_), allocator);
+
+    // Convert nbToTransfer_ to rapidjson::Value
+    value.AddMember("nb_transfer_", rapidjson::Value().SetInt(nbToTransfer_), allocator);
+
+    // Convert bikeLoad_ to rapidjson::Value
+    value.AddMember("bike_load_", rapidjson::Value().SetInt(bikeLoad_), allocator);
+
+    return value;
 
     return value;
 }

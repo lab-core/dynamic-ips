@@ -67,14 +67,22 @@ void Route::addTask(PTask &task, vector2D<float>& durationMatrix) {
 rapidjson::Value Route::toJson(rapidjson::Document::AllocatorType& allocator) const {
     rapidjson::Value value(rapidjson::kObjectType);
 
-    value.AddMember("route_id", routeID_, allocator);
-//    value.AddMember("name_", rapidjson::StringRef(name_), allocator);
-    value.AddMember("vehicle_id", vehicleID_, allocator);
-    value.AddMember("relocate_bonus", totalBonus_, allocator);
-    value.AddMember("reduced_cost", reducedCost_, allocator);
-    value.AddMember("duration", totalDuration_, allocator);
-//    value.AddMember("routeSize_", routeSize_, allocator);
+    // Convert routeID_ to rapidjson::Value
+    value.AddMember("route_id", rapidjson::Value().SetUint(routeID_), allocator);
 
+    // Convert vehicleID_ to rapidjson::Value
+    value.AddMember("vehicle_id", rapidjson::Value().SetInt(vehicleID_), allocator);
+
+    // Convert totalBonus_ to rapidjson::Value
+    value.AddMember("relocate_bonus", rapidjson::Value().SetFloat(totalBonus_), allocator);
+
+    // Convert reducedCost_ to rapidjson::Value
+    value.AddMember("reduced_cost", rapidjson::Value().SetDouble(reducedCost_), allocator);
+
+    // Convert totalDuration_ to rapidjson::Value
+    value.AddMember("duration", rapidjson::Value().SetDouble(totalDuration_), allocator);
+
+    // Convert assignedTasks_ to rapidjson::Value array
     rapidjson::Value assignedTasksArray(rapidjson::kArrayType);
     for (const auto &task : assignedTasks_) {
         assignedTasksArray.PushBack(task->toJson(allocator), allocator);
