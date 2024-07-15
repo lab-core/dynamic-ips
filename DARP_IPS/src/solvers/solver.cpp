@@ -176,11 +176,14 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             vehicleObj->vehicleIndex_ = -1;
             std::cout << vehicleObj->vehicleID_ << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
+                std::cout << "step 1" << std::endl;
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                std::cout << "step 2" << std::endl;
                 if (iter > 1)
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
+                std::cout << "step 3" << std::endl;
             }
         }
         if (!EpochInst->parameters_->constPortion_){
