@@ -78,7 +78,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
-
+    std::cout << " step1: " << std::endl;
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
 
@@ -94,7 +94,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             masterModel_->availableTime_ = LARGE_CONSTANT;
             break;
     }
-
+    std::cout << " step2: " << std::endl;
     masterModel_->initialization(EpochInst, inputPaths);
     for (auto &vehicleObj: EpochInst->vehicles_) {
         vehicleObj->vehicleIndex_ = -1;
@@ -104,7 +104,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_)
             requestObj->initialVehicleID_ = vehicleObj->vehicleID_;
     }
-
+    std::cout << " step3: " << std::endl;
     masterModel_->RMPCounter_ ++;
 
     SubproEpochTime_ = 0;
@@ -131,7 +131,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         nbGenerated_ = 0;
         nbDominated_ = 0;
         nbEliminated_ = 0;
-
+        std::cout << " step4: " << std::endl;
         std::vector<PLabelingSubPro> subProSolve;
         if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 1)|| !(EpochInst->parameters_->greedyPortion_ || EpochInst->parameters_->zonePortion_)){
             if (EpochInst->parameters_->addOneRequestColumn_ && iter == 1)
@@ -200,6 +200,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
+        std::cout << " step5: " << std::endl;
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
@@ -234,7 +235,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
         }
-
+        std::cout << " step6: " << std::endl;
         preprocessTime_->start();
         subProSolve.clear();
         preprocessTime_->stop();
