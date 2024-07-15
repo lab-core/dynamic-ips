@@ -173,14 +173,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         masterModel_->nbVehicles_ = 0;
         for (auto &vehicleObj: EpochInst->vehicles_) {
             vehicleObj->vehicleIndex_ = -1;
-            std::cout << vehicleObj->vehicleID_ << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (iter > 1)
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
-                std::cout << "master" << std::endl;
-                std::cout << masterModel_->nbVehicles_ << std::endl;
                 masterModel_->nbVehicles_++;
             }
         }
@@ -195,6 +192,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
+        std::cout << " step15: " << std::endl;
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
@@ -229,6 +227,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
         }
+        std::cout << " step6: " << std::endl;
         preprocessTime_->start();
         subProSolve.clear();
         preprocessTime_->stop();
