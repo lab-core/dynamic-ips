@@ -128,11 +128,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         nbGenerated_ = 0;
         nbDominated_ = 0;
         nbEliminated_ = 0;
-        std::cout << " step4: " << std::endl;
         std::vector<PLabelingSubPro> subProSolve;
         if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 1)|| !(EpochInst->parameters_->greedyPortion_ || EpochInst->parameters_->zonePortion_)){
-            std::cout << " step12: " << std::endl;
-
             if (EpochInst->parameters_->addOneRequestColumn_ && iter == 1)
                 subProOptions_->isTruncated_ = false;
             // select all the vehicles
@@ -175,7 +172,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 }
             }
         }
-        std::cout << " step14: " << std::endl;
+        std::cout << " step15: " << std::endl;
         // create subproblems
         masterModel_->nbVehicles_ = 0;
         for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -189,7 +186,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 masterModel_->nbVehicles_++;
             }
         }
-        std::cout << " step14: " << std::endl;
+        std::cout << " step16: " << std::endl;
         if (!EpochInst->parameters_->constPortion_){
             // the problem is solved in complete mode and not partially, reset the orders (for constraints)
             for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
@@ -201,7 +198,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
-        std::cout << " step15: " << std::endl;
+        std::cout << " step17: " << std::endl;
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
