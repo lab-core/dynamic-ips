@@ -175,7 +175,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             vehicleObj->vehicleIndex_ = -1;
             std::cout << vehicleObj->vehicleID_ << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
-                std::cout << subProOptions_->isSuccessorsLimited_ << std::endl;
+                if (subProOptions_ == nullptr)
+                    std::cout << "subProOptions_->isSuccessorsLimited_" << std::endl;
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (iter > 1)
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
