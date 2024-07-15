@@ -5,6 +5,7 @@
 #include "SubproModeler.h"
 
 SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
+    std::cout << "residam" << std::endl;
     subGraph_ = std::make_shared<Graph>();
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;

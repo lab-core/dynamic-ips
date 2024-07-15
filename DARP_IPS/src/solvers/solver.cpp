@@ -175,12 +175,17 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             vehicleObj->vehicleIndex_ = -1;
             std::cout << vehicleObj->vehicleID_ << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
-                std::cout << subProOptions_->toString() << std::endl;
-                subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                if (iter > 1)
-                    subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
-                vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
-                masterModel_->nbVehicles_++;
+                try {
+                    if (!subProOptions_) {
+                        throw std::runtime_error("subProOptions_ is nullptr");
+                    }
+                    subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
+                    if (iter > 1) {
+                        subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
+                    }
+                } catch (const std::exception &e) {
+                    std::cerr << "Exception during LabelingSubProblem construction: " << e.what() << std::endl;
+                }
             }
         }
         if (!EpochInst->parameters_->constPortion_){
