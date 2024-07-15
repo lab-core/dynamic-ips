@@ -179,6 +179,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 if (iter > 1)
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
+                std::cout << "master" << std::endl;
+                std::cout << masterModel_->nbVehicles_ << std::endl;
                 masterModel_->nbVehicles_++;
             }
         }
