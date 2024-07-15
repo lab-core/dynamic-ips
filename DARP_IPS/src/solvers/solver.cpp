@@ -141,8 +141,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
         else if (EpochInst->parameters_->greedyPortion_) {
-            std::cout << " step13: " << std::endl;
-
             subProOptions_->isTruncated_ = truncateState;
             if (!isSolved){
                 EpochInst->selectedVehicles_.clear();
@@ -163,7 +161,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             EpochInst->selectVehiclesByZone(iter);
         }
-        std::cout << " step14: " << std::endl;
         // add vehicles in previous solution
         if (EpochInst->parameters_->initialStart_ != GREEDY_START) {
             for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -178,6 +175,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto &vehicleObj: EpochInst->vehicles_) {
             vehicleObj->vehicleIndex_ = -1;
 //           masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
+            std::cout << EpochInst->selectedVehicles_.size() << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (iter > 1)
@@ -186,7 +184,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 masterModel_->nbVehicles_++;
             }
         }
-        std::cout << " step16: " << std::endl;
         if (!EpochInst->parameters_->constPortion_){
             // the problem is solved in complete mode and not partially, reset the orders (for constraints)
             for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
