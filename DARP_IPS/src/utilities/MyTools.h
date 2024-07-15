@@ -10,9 +10,7 @@
 #include <sstream>
 #include <fstream>
 #include <memory>
-#include <map>
 #include <unordered_map>
-#include <map>
 #include <string>
 #include <climits>
 #include <chrono>
@@ -160,6 +158,7 @@ const int MAX_ZONE = 350;
 
 static const int sentenceSize = 47;
 static const int ServiceTime = 30;
+extern bool solveEpoch;
 
 // Definition of useful types
 template<class T> using vector2D = std::vector<std::vector<T>>;

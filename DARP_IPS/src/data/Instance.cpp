@@ -117,10 +117,13 @@ std::string Instance::solutionToString() {
     repStr << "#PASSENGERS" <<std::endl;
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
+    int startIndex;
+    if (solveEpoch)
+        startIndex = nbOnboards_;
+    else
+        startIndex = 0;
     // print the internal nodes of the route
-    for (int i = nbOnboards_; i < nbRequests_; ++i) {
- //   for (int i = 0; i < nbRequests_; ++i) {
-
+    for (int i = startIndex; i < nbRequests_; ++i) {
         repStr << std::fixed;
         repStr << std::setprecision(2);
         repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
@@ -155,7 +158,7 @@ std::string Instance::solutionToString() {
                 }
             }
             else {
-                if (requests_[i]->getRequestId() >= nbOnboards_) {
+                if (requests_[i]->getRequestId() >= startIndex) {
  //               if (requests_[i]->earlyPick_ >= simulationStartTime_) {
                     totalNumServedPartial++;
                     totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
@@ -184,7 +187,7 @@ std::string Instance::solutionToString() {
         idleTime += vehicleObj->idleTime_;
         if (vehicleObj->solutionRoute_->routeSize_ == 1)
             nbIdle++;
-        totalStopLoad+= std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
+        totalStopLoad += std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
                                         vehicleObj->solutionRoute_->plannedPassengers_.end(),
                                         decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
         totalStops += vehicleObj->solutionRoute_->routeSize_;
@@ -196,8 +199,11 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
     repStr << "#" << std::endl;
-//    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed << std::endl;
-    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed - nbOnboards_ << std::endl;
+    repStr << std::setw(sentenceSize) << "# (P) FINAL OBJECTIVE VALUE" << " = " << penalty + totalWaitingPartial << std::endl;
+    repStr << std::setw(sentenceSize) << "# (P) TOTAL WAIT TIME" << " = " << totalWaitingPartial << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# (P) TOTAL TRIP DELAY" << " = " << totalTripDelayPartial << " (s)" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(sentenceSize) << "# NUMBER OF UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed - startIndex << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL NUMBER OF EMPTY VEHICLES" << " = " << nbIdle << std::endl;
@@ -217,7 +223,10 @@ std::string Instance::solutionToString() {
     repStr << "#" << std::endl;
     instRepStr_ << totalCustomers << ",";
 
-    if (totalCustomersPartial > 135000)
+    if (totalCustomersPartial < 1000)
+        instRepStr_ << "10000 <" << ",";
+
+    else if (totalCustomersPartial > 135000)
         instRepStr_ << "135000 <" << ",";
     else if (totalCustomersPartial >= 125000 && totalCustomersPartial <= 135000)
         instRepStr_ << "125000 - 135000" << ",";
@@ -610,8 +619,14 @@ std::string Instance::saveRequestsResults() {
     repStr << "RequestID,nbPassengers, PickupID,DropOffID,RequestTime,PickTime,"
               "DropTime, InVehicleID, VehicleID, WaitTime, TripDelay, MaxTravelTime, MinTravelTime, zoneID" << std::endl;
 
+    int startIndex;
+    if (solveEpoch)
+        startIndex = nbOnboards_;
+    else
+        startIndex = 0;
+
     for (auto & requestObj : requests_) {
-        if (requestObj->getRequestId() >= nbOnboards_) {
+        if (requestObj->getRequestId() >= startIndex) {
             repStr << requestObj->getRequestId() << ",";
             repStr << requestObj->nbPassengers_ << ",";
             repStr << requestObj->PickUpID_ << ",";
@@ -766,18 +781,20 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     }
     for (auto & requestObj: requests_) {
         if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->earlyPick_ < simulationStart) && requestObj->solVehicleID_ == LARGE_CONSTANT) {
-            nbWaiting ++;
-            myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
-            myFile << std::setw(10) << requestObj->PickUpID_;
-            myFile << std::setw(10) << requestObj->DropOffID_;
-            myFile << std::setw(10) << requestObj->earlyPick_;
-            myFile << std::setw(10) << requestObj->pickZoneID_;
-            myFile << std::setw(10) << requestObj->dropZoneID_;
-            myFile << std::setw(10) << requestObj->InitialDual_;
-            myFile << std::setw(10) << requestObj->dual_;
-            myFile << std::setw(10) << 0;
-            myFile << std::setw(10) << 0;
-            myFile << std::setw(10) << 0  << "\n";
+            if (requestObj->earlyPick_ >= simulationStart - 120) {
+                nbWaiting++;
+                myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
+                myFile << std::setw(10) << requestObj->PickUpID_;
+                myFile << std::setw(10) << requestObj->DropOffID_;
+                myFile << std::setw(10) << requestObj->earlyPick_;
+                myFile << std::setw(10) << requestObj->pickZoneID_;
+                myFile << std::setw(10) << requestObj->dropZoneID_;
+                myFile << std::setw(10) << requestObj->InitialDual_;
+                myFile << std::setw(10) << requestObj->dual_;
+                myFile << std::setw(10) << 0;
+                myFile << std::setw(10) << 0;
+                myFile << std::setw(10) << 0 << "\n";
+            }
         }
         /*else if (requestObj->earlyPick_ > simulationStart)
             nbRequests++;*/

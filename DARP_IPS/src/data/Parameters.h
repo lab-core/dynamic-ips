@@ -22,7 +22,7 @@ public:
     int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
-    bool addOneRequestColumn_{};
+    bool addOneRequestColumn_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
     bool oneIter_;                  // solve master problem one time at each iteration of the CG
     bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
@@ -85,7 +85,6 @@ public:
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 struct solverOption {
-    float maxReachTime_;
  //   int maxPickup_;
 
     bool isTruncated_;
@@ -97,9 +96,11 @@ struct solverOption {
     bool usePick_;
     int nbPick_;
     SortPaths pathSort_;
+    bool addOneRequestColumn_;
+
     // Constructor and Destructor
-    solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick, SortPaths pathSort,
-                 bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy);
+    solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick, SortPaths pathSort,
+                 bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy, bool addOneRequestColumn);
 
     explicit solverOption(PParameters &MainParams);
 

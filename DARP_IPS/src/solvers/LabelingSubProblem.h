@@ -41,7 +41,7 @@ public:
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();
     // main function of the dynamic programming
-    void labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
+    bool labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops

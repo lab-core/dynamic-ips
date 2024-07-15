@@ -97,15 +97,10 @@ bool Label::operator () (const Label &rhs) const {
     return reducedCost_ < rhs.reducedCost_;
 }
 
-void Label::extend(Node *outNode) {
+void Label::extend(Node *outNode, bool isDropPickPossible) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    if (outNode->requestTime_ > passedTime_){
-        reachedTime_ = outNode->requestTime_ + travelTime;
-    }
-    else {
-        reachedTime_ = passedTime_ + travelTime;
-    }
+    reachedTime_ = std::max(outNode->requestTime_, passedTime_) + travelTime;
     for (auto &node: openNode_) {
         travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
                                                                         passedTime_);
@@ -119,7 +114,10 @@ void Label::extend(Node *outNode) {
             }
         }
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
-        isDropped_ = true;
+        if (isDropPickPossible)
+            isDropped_ = true;
+        else if (!isDropPickPossible && numCompleted_ > 0)
+            isDropped_ = true;
     }
     else if (outNode->type_ == PICKUP){
         openNode_.push_back(outNode->pairNode_);
@@ -129,10 +127,10 @@ void Label::extend(Node *outNode) {
         numExtendCheck_++;
         openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
         reducedCost_ -= (outNode->related_Request_)->dual_;
-        if (travelTime > 0){
+        /*if (travelTime > 0){
             nbPickUp_++;
-        }
-//        nbPickUp_ ++;
+        }*/
+        nbPickUp_ ++;
         totalDelay_ += (reachedTime_ - outNode->requestTime_);
         reducedCost_ += (reachedTime_ - outNode->requestTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
@@ -144,7 +142,8 @@ void Label::extend(Node *outNode) {
 }
 
 // this function check the feasibility of the label before extension
-bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int capacity) {
+bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity) {
+    float timeToReach;
     if (outNode->type_ == PICKUP){
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
@@ -152,17 +151,15 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
+    timeToReach = std::max(outNode->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ >= maxPickUp)
             return false;
-        /*if (usePick){
-            if (nbPickUp_ >= maxPickUp)
+        if (isSuccessorLimited) {
+            float minWait = timeToReach - outNode->requestTime_;
+            if (minWait > outNode->related_Request_->penalty_)
                 return false;
         }
-        else{
-            if (nbPickMove_ >= maxPickUp && durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] != 0)
-                return false;
-        }*/
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
@@ -176,11 +173,10 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int cap
     }
     // check travel time limitation
     for (auto &nodeObj: openNode_) {
-        float travelToDrop =
-                durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_] +
-                outNode->serviceTime_ + durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
+        float timeToDrop = timeToReach - passedTime_ + outNode->serviceTime_ +
+                durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
-        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < travelToDrop)
+        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop)
             return false;
     }
 

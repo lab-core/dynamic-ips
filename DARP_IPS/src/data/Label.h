@@ -56,9 +56,9 @@ public:
 
     bool operator() (const Label &rhs) const;
 
-    void extend(Node *outNode);
+    void extend(Node *outNode, bool isDropPickPossible);
     // this function check the feasibility of the label before extension
-    bool isExtendFeasible(Node *outNode, int maxPickUp, bool usePick, int capacity);
+    bool isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
     bool isEliminated();

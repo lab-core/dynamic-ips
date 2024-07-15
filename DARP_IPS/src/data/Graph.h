@@ -36,8 +36,6 @@ public:
     double bestLabelReduceCost_;            // smallest reduced cost af active vehicles
     int nbActiveLabels_;                    // Number of active labels in labeling approach
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
-    std::vector<Node *> closeSuccessors_;   // Nodes that are exactly at the same location with the current node
-    float travelTimeFromNode_;              // is used in labeling for sorting successors_
     float travelTimeFromSource_;            // is used in labeling for sorting successors_
     int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
 
@@ -65,7 +63,7 @@ public:
     std::vector<PNode> onboards_;           // list of requests that are already picked up
     std::vector<PNode> sourceNodes_;        // list of source nodes (vehicle start nodes)
     std::vector<PNode> sinkNodes_;          // list of sink nodes (vehicle end nodes)
-    std::map<std::string,PNode> nodes_;     // map of node objects to nodeIDs
+    std::unordered_map<std::string,PNode> nodes_;     // map of node objects to nodeIDs
     std::vector<std::string> intToNodeID_;  // link of nodeIndex_ to nodeID_ used in CPLEXSubProblem / MIPSolver
 
 

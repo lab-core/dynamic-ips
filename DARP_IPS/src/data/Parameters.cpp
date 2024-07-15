@@ -142,12 +142,13 @@ std::string Parameters::toStr() const {
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 
-solverOption::solverOption(float maxReachTime, bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick,
-                           SortPaths pathSort, bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy) :
-                           maxReachTime_(maxReachTime), isTruncated_(isTruncated), nbPick_(nbPick),
-                           MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited), pathSort_(pathSort),
+solverOption::solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick,
+                           SortPaths pathSort, bool isSuccessorsLimited, bool isDropPickPossible,
+                           LabelingStrategy labelingStrategy, bool addOneRequestColumn) :
+                           isTruncated_(isTruncated), nbPick_(nbPick), MaxLabel_(maxLabel),
+                           isSuccessorsLimited_(isSuccessorsLimited), pathSort_(pathSort),
                            isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-                           LabelingStrategy_(labelingStrategy), usePick_(false) {}
+                           LabelingStrategy_(labelingStrategy), usePick_(false), addOneRequestColumn_(addOneRequestColumn) {}
 
 solverOption::~solverOption() = default;
 
@@ -167,6 +168,7 @@ solverOption::solverOption(PParameters &MainParams) {
     usePick_ = MainParams->usePick_;
     nbPick_ = MainParams->nbPick_;
     pathSort_ = MainParams->sortPath_;
+    addOneRequestColumn_ = MainParams->addOneRequestColumn_;
 }
 
 

@@ -37,7 +37,6 @@ void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolut
 }
 
 void MIPMasterProblem::updateModel(PInstance &pInst) {
-
     // add the new compatible column to the model
     for (auto routeObj : routesToAdd_) {
         ReducedProblem::addRouteVarFloat(routeObj, pInst);

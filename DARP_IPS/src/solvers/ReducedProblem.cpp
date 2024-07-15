@@ -10,7 +10,8 @@
 //---------------------------------------------------------------------------------------------
 
 // Constructor and Destructor
-ReducedProblem::ReducedProblem() : CplexModeler() {
+ReducedProblem::ReducedProblem() : CplexModeler(), previousCRstat_(env_), previousRstat_(env_),
+                                   previousZstat_(env_), previousCVstat_(env_){
 
     // defining variable
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
@@ -180,11 +181,29 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
         std::cout.rdbuf(logFile.rdbuf());
 
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+ //       Cplex_.setParam(IloCplex::Param::MIP::Strategy::NodeSelect, 1);  // Best-bound search
+        /*Cplex_.setParam(IloCplex::Param::MIP::Cuts::Cliques, 0);         // Aggressive cliques
+        Cplex_.setParam(IloCplex::Param::MIP::Cuts::Covers, 0);          // Aggressive covers
+        Cplex_.setParam(IloCplex::Param::MIP::Cuts::FlowCovers, 0);      // Aggressive flow covers
+        Cplex_.setParam(IloCplex::Param::MIP::Cuts::Gomory, 2);
+        Cplex_.setParam(IloCplex::Param::MIP::Cuts::ZeroHalfCut, 2);*/
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
-        if (pInst->parameters_->MIPGap_ > 0.0001)
+        if (pInst->parameters_->MIPGap_ > 0.00001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+        if (!routeSolutionIndex_.empty()) {
+            IloNumVarArray startVar(env_);
+            IloNumArray startVal(env_);
+            for (int r = 0; r < routeSolutionIndex_.size(); ++r) {
+                startVar.add(routeVar_[routeSolutionIndex_[r]]);
+                startVal.add(1);
+            }
+            Cplex_.addMIPStart(startVar, startVal, IloCplex::MIPStartAuto, "m1");
+            startVal.end();
+            startVar.end();
+        }
+
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -198,6 +217,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
                 // saving the result and remove out of base variables
                 zSolution.clear();
                 routeSolution.clear();
+                routeSolutionIndex_.clear();
 
                 IloNumArray zVal(env_);
                 IloNumArray routeVal(env_);
@@ -209,6 +229,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
                 for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.9) {
                         routeSolution.push_back(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(r);
                         pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }
@@ -303,7 +324,19 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         if (pInst->parameters_->MIPGap_ > 0.0001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+
+        if (!routeSolutionIndex_.empty()) {
+            IloNumVarArray startVar(env_);
+            IloNumArray startVal(env_);
+            for (int r = 0; r < routeSolutionIndex_.size(); ++r) {
+                startVar.add(routeVar_[routeSolutionIndex_[r]]);
+                startVal.add(1);
+            }
+            Cplex_.addMIPStart(startVar, startVal, IloCplex::MIPStartAuto, "m1");
+            startVal.end();
+            startVar.end();
+        }
+
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -317,6 +350,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                 // saving the result and remove out of base variables
                 zSolution.clear();
                 routeSolution.clear();
+                routeSolutionIndex_.clear();
 
                 IloNumArray zVal(env_);
                 IloNumArray routeVal(env_);
@@ -328,6 +362,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                 for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.9) {
                         routeSolution.push_back(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(r);
                         pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }

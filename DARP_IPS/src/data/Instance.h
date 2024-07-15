@@ -35,7 +35,7 @@ public:
     int nbNewRequests_;                                 // Number of requests added after each epoch
     int nbLocations_;                                   // Number of stop locations
     std::vector<PRequest> requests_;                    // List of requests
-    std::map<std::string , PRequest> nameToRequest_;
+    std::unordered_map<std::string , PRequest> nameToRequest_;
     int nbTasks_;                                       // number of tasks (rows/requests) in master problem
     PGraph instGraph_;
     PParameters parameters_;

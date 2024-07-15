@@ -19,8 +19,18 @@ public:
     IloNumVarArray routeVar_;               // route variables
     IloNumVarArray zVar_;                   // request(z) variables
 
+    IloCplex::BasisStatusArray previousCRstat_;
+    IloCplex::BasisStatusArray previousCVstat_;
+    IloCplex::BasisStatusArray previousRstat_;
+    IloCplex::BasisStatusArray previousZstat_;
+
+    IloNumArray colStat_;
+    IloNumArray rowStat_;
+
+
     double objValue_;
     double auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
+    std::vector<int> routeSolutionIndex_;
 
     std::vector<PRoute> compRoutes_;        // list of route variables in the model
 

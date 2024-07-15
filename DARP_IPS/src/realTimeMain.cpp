@@ -12,11 +12,12 @@
 
 using namespace std::chrono;
 float saveTime = 3600;
-bool middleSave = false;
+bool middleSave = true;
 bool savePartial = false;
 std::string instNum = "1";
 int numEpochTests = 31;
 int numVehicles;
+bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -68,8 +69,8 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 2; ++j){
+        for (int i = 0; i < 1; ++i) {
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -78,7 +79,8 @@ int main(int argc, char** argv) {
                 std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
                 Request::requestCount_ = 0;
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-//                mainInst->nbVehicles_ = numVehicles;
+                if (!solveEpoch)
+                    mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= j+1;
@@ -86,8 +88,8 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->isTruncated_ = false;
                 else
                     mainInst->parameters_->MaxLabel_ = i *5;*/
-                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
-                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+//                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+//                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);

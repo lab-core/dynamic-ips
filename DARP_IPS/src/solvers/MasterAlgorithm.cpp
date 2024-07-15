@@ -22,7 +22,6 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     CPTime_ = new myTools::Timer(); CPTime_->init();
     CPBuilt_ = false;
 
-
     MPBuildTime_ = new myTools::Timer(); MPBuildTime_->init();
     CPBuildTime_ = new myTools::Timer(); CPBuildTime_->init();
 
@@ -154,7 +153,7 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
 
-    if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
+    /*if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
         // adding new arrival requests to zSolutions
         for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i) {
             // creating routes with only one request
@@ -170,7 +169,7 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
                 ReducedPro_->routesToAdd_.push_back(newRoute);
             }
         }
-    }
+    }*/
 
     // set the duals of un-served requests based on penalties
     if (pInst->parameters_->initialDual_ == PENALTIES){
@@ -984,7 +983,7 @@ std::string MasterAlgorithm::toString() const {
     repStr << "# NUMBER OF UN-SERVED REQUESTS                 = " << zSolution_.size() << std::endl;
     repStr << "#" << std::endl;
 
-    repStr << "# TIME SPENT ON ISUD IMPROVEMENT              = " << masterTime_->dSinceStart().count() << " (s)" << std::endl;
+    repStr << "# TIME SPENT ON MP IMPROVEMENT              = " << masterTime_->dSinceStart().count() << " (s)" << std::endl;
     repStr << "# TIME SPENT ON RP IMPROVEMENT                = " << RPTime_->dSinceStart().count() << " (s)" << std::endl;
     repStr << "# TIME SPENT ON CP IMPROVEMENT                = " << CPTime_->dSinceStart().count() << " (s)" << std::endl;
     repStr << "# TIME SPENT ON ZOOM ISUD                     = " << ZOOMTime_->dSinceStart().count() << " (s)" << std::endl;
@@ -995,9 +994,9 @@ std::string MasterAlgorithm::toStringTimersTotal() const {
     std::stringstream repStr;
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "#" << std::endl;
-    repStr << "# -------------------   TOTAL ISUD RUN TIMES   -------------------" << std::endl;
+    repStr << "# -------------------   TOTAL MP RUN TIMES   -------------------" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ISUD IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
@@ -1009,9 +1008,9 @@ std::string MasterAlgorithm::toStringTimersAvg(int epoch) const {
     std::stringstream repStr;
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "#" << std::endl;
-    repStr << "# -------------   AVERAGE ISUD RUN TIMES PER EPOCH   -------------" << std::endl;
+    repStr << "# -------------   AVERAGE MP RUN TIMES PER EPOCH   -------------" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ISUD IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() / epoch << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() / epoch << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count()/epoch << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() / epoch << " (s)" << std::endl;
