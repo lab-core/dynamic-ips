@@ -202,8 +202,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && iter > 1 && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3))
-                break;
+            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
+                if ((EpochInst->parameters_->addOneRequestColumn_ && iter > 2)||
+                    (!EpochInst->parameters_->addOneRequestColumn_ && iter > 1))
+                    break;
+            }
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
                 subProblem->labelPool_ = std::move(labelsPool_.pop_data());
@@ -279,8 +282,13 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     masterModel_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
             }
-            if ((EpochInst->parameters_->solutionMode_ == ANYTIME)||(mainInst->parameters_->oneIter_))
+            if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                 break;
+            if (mainInst->parameters_->oneIter_) {
+                if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2) ||
+                    (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1))
+                    break;
+            }
         }
         if (previousObj == masterModel_->objValue_) {
             std::cout << "No changes in Objective" << std::endl;
