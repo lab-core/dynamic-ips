@@ -78,7 +78,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
-    std::cout << " step1: " << std::endl;
     if (EpochInst->parameters_->initialStart_ == GREEDY_START)
         GreedyModel_->GreedySolver(EpochInst);
 
@@ -94,7 +93,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             masterModel_->availableTime_ = LARGE_CONSTANT;
             break;
     }
-    std::cout << " step2: " << std::endl;
     masterModel_->initialization(EpochInst, inputPaths);
     for (auto &vehicleObj: EpochInst->vehicles_) {
         vehicleObj->vehicleIndex_ = -1;
@@ -104,7 +102,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_)
             requestObj->initialVehicleID_ = vehicleObj->vehicleID_;
     }
-    std::cout << " step3: " << std::endl;
     masterModel_->RMPCounter_ ++;
 
     SubproEpochTime_ = 0;
@@ -134,6 +131,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         std::cout << " step4: " << std::endl;
         std::vector<PLabelingSubPro> subProSolve;
         if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 1)|| !(EpochInst->parameters_->greedyPortion_ || EpochInst->parameters_->zonePortion_)){
+            std::cout << " step12: " << std::endl;
+
             if (EpochInst->parameters_->addOneRequestColumn_ && iter == 1)
                 subProOptions_->isTruncated_ = false;
             // select all the vehicles
@@ -144,8 +143,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
 
-
         else if (EpochInst->parameters_->greedyPortion_) {
+            std::cout << " step13: " << std::endl;
+
             subProOptions_->isTruncated_ = truncateState;
             if (!isSolved){
                 EpochInst->selectedVehicles_.clear();
@@ -166,7 +166,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             EpochInst->selectVehiclesByZone(iter);
         }
-
+        std::cout << " step14: " << std::endl;
         // add vehicles in previous solution
         if (EpochInst->parameters_->initialStart_ != GREEDY_START) {
             for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -175,6 +175,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 }
             }
         }
+        std::cout << " step14: " << std::endl;
         // create subproblems
         masterModel_->nbVehicles_ = 0;
         for (auto &vehicleObj: EpochInst->vehicles_) {
@@ -188,7 +189,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 masterModel_->nbVehicles_++;
             }
         }
-
+        std::cout << " step14: " << std::endl;
         if (!EpochInst->parameters_->constPortion_){
             // the problem is solved in complete mode and not partially, reset the orders (for constraints)
             for (int v = 0; v < EpochInst->vehicles_.size(); v++) {
@@ -200,7 +201,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
-        std::cout << " step5: " << std::endl;
+        std::cout << " step15: " << std::endl;
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
