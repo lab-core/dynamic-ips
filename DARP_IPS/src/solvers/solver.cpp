@@ -169,21 +169,18 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 }
             }
         }
-        std::cout << " step15: " << std::endl;
         // create subproblems
         masterModel_->nbVehicles_ = 0;
         for (auto &vehicleObj: EpochInst->vehicles_) {
             vehicleObj->vehicleIndex_ = -1;
             std::cout << vehicleObj->vehicleID_ << std::endl;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
-                std::cout << "step 1" << std::endl;
+                std::cout << subProOptions_->isSuccessorsLimited_ << std::endl;
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                std::cout << "step 2" << std::endl;
                 if (iter > 1)
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
-                std::cout << "step 3" << std::endl;
             }
         }
         if (!EpochInst->parameters_->constPortion_){
@@ -197,7 +194,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
-        std::cout << " step17: " << std::endl;
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
@@ -232,7 +228,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
         }
-        std::cout << " step6: " << std::endl;
         preprocessTime_->start();
         subProSolve.clear();
         preprocessTime_->stop();

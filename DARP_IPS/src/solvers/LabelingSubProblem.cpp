@@ -15,7 +15,6 @@
 
 LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions) :
                                         SubproModeler(vehicle), solverOptions_(solverOptions) {
-    std::cout << "here" << std::endl;
     nbDominated_ = 0;
     nbEliminated_ = 0;
     nbGenerated_ = 0;
