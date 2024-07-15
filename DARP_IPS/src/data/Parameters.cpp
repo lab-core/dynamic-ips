@@ -179,6 +179,26 @@ bool solverOption::areHeuristicsDisabled() const {
         return true;
 }
 
+// Display function
+std::string solverOption::toString() const {
+    std::stringstream repStr;
+    repStr << "# MODEL PARAMETERS" << std::endl;
+    repStr << "#" << std::endl;
+    int setwLength = 30;
+    repStr << std::left << std::fixed << std::setprecision(1) << std::boolalpha;
+    repStr << std::setw(setwLength) << "# add columns with one request" << " = " << addOneRequestColumn_ << std::endl;
+    repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
+    repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
+    repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
+    repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
+    repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
+    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
+    repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
+    repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
+
+    return repStr.str();
+
+}
 
 std::string boolToString(bool value) {
     return value ? "True" : "False";

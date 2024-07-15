@@ -107,6 +107,9 @@ struct solverOption {
     virtual ~solverOption();
     void disableHeuristics();
     bool areHeuristicsDisabled() const;
+
+    // Display function
+    std::string toString() const;
 };
 
 std::string boolToString(bool value);
