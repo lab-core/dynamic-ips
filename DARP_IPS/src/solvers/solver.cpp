@@ -244,8 +244,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                                                      simulationTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2)||
                 (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1)){
-                    if (masterModel_->availableTime_ < 4)
-                        masterModel_->availableTime_ = 4;
+                    if (masterModel_->availableTime_ < 7)
+                        masterModel_->availableTime_ = 7;
                 }
                 else if (masterModel_->availableTime_ <= 0){
                     std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
@@ -255,8 +255,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
 
-            if (iter <= 2 && masterModel_->availableTime_ < 4)
-                masterModel_->availableTime_ = 4;
+            if (iter <= 2 && masterModel_->availableTime_ < 7)
+                masterModel_->availableTime_ = 7;
 
 
             masterModel_->timeLimit_ = masterModel_->availableTime_;

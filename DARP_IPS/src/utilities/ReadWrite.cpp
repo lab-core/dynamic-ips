@@ -329,6 +329,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
     }
 
     string title;
+    pInstance->nbWaiting_ = 0;
 
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
@@ -337,7 +338,6 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
             for (int r = 0; r < nbRequest; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
-//                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, vehicleID = -1, pickPosition = -1, dropPosition = -1;
                 int dropZoneID = -1;
                 float earlyPick = -1, deltaTime = -1, lDual = -1, iDual = -1;
@@ -355,30 +355,28 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> dropPosition;
 
                 // the starting time of the instance is 16pm
-                //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 deltaTime = static_cast<float>(ServiceTime);
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
-                                                                            nbPassengers, deltaTime, pickZoneID, dropZoneID));
-                pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
-                std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
-                std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
-                PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
-                PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
-                pickNode->zoneID_ = pickZoneID;
-                dropNode->zoneID_ = dropZoneID;
-                pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
-                //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
-                pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
-                /*if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
-                    pInstance->requests_.back()->dual_ = lDual;
-                    pInstance->requests_.back()->InitialDual_ = lDual;
-                }
-                else{*/
+                if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
+                    pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+                                                                                nbPassengers, deltaTime, pickZoneID,
+                                                                                dropZoneID));
+                    pInstance->nameToRequest_.insert(
+                            std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
+                                                             pInstance->requests_.back()));
+                    std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+                    std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                    PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
+                    PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
+                    pickNode->zoneID_ = pickZoneID;
+                    dropNode->zoneID_ = dropZoneID;
+                    pInstance->instGraph_->addRequestToMainGraph(pickNode, dropNode);
+                    pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
                     pInstance->requests_.back()->dual_ = iDual;
                     pInstance->requests_.back()->InitialDual_ = iDual;
- //               }
-                routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
-                routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
+                    routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
+                    routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
+                    pInstance->nbWaiting_++;
+                }
             }
         }
     }
@@ -651,18 +649,20 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool
         ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
     if (pInstance->nbWaiting_ > 0) {
         ReadWrite::readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
-        for (int v = 0; v < pInstance->nbVehicles_; ++v) {
-            if (routeNodes[v].size()>1){
-                PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);
-                newRoute->addSource(pInstance->vehicles_[v]->departNode_, pInstance->vehicles_[v]->departTime_,
-                                                                  pInstance->vehicles_[v]->numPassengers_);
-                for (int i = 1; i < routeNodes[v].size(); ++i) {
-                    if (routeNodes[v][i] != nullptr)
-                        newRoute->addNode(routeNodes[v][i]);
-                    else
-                        newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+        if (!solveEpoch) {
+            for (int v = 0; v < pInstance->nbVehicles_; ++v) {
+                if (routeNodes[v].size() > 1) {
+                    PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);
+                    newRoute->addSource(pInstance->vehicles_[v]->departNode_, pInstance->vehicles_[v]->departTime_,
+                                        pInstance->vehicles_[v]->numPassengers_);
+                    for (int i = 1; i < routeNodes[v].size(); ++i) {
+                        if (routeNodes[v][i] != nullptr)
+                            newRoute->addNode(routeNodes[v][i]);
+                        else
+                            newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+                    }
+                    pInstance->vehicles_[v]->setCurrentRoute(newRoute);
                 }
-                pInstance->vehicles_[v]->setCurrentRoute(newRoute);
             }
         }
     }
