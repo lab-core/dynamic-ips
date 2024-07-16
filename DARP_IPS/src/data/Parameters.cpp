@@ -11,7 +11,7 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       bool oneIter, bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart,
+                       bool oneIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, warmStart initialStart,
                        int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom, int nbColumn,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,

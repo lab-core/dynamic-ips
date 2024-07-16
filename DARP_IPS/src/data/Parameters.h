@@ -26,7 +26,7 @@ public:
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
     bool oneIter_;                  // solve master problem one time at each iteration of the CG
     bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
-    bool saveScratch_;              // save the results in scratch place of the server
+    int saveScratch_;              // save the results in scratch place of the server
     bool savePartial_;              // calculate the avg. wait time after one hour
     bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
 
@@ -66,7 +66,7 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
-               bool greedyReOptimize, bool saveScratch, bool vehicleReturn, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
+               bool greedyReOptimize, int saveScratch, bool vehicleReturn, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
                bool useMultiStage, float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,

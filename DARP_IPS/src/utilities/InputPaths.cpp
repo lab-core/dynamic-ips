@@ -92,16 +92,17 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
 void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch,
                                    int nbVehicles) {
     // create directory for results
-    if (saveScratch) {
-        std::string instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
+    if (saveScratch > 0) {
+        std::string instFolder = "";
+        if (saveScratch == 1)
+            instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
+        else
+            instFolder = "/home/elamib/scratch/dynamic-ips/" + instanceFolder_;
         struct stat buffer{};
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
             char *folderPath = const_cast<char *>(instFolder.c_str());
             int check = mkdir(folderPath, 0777);
             if (check == -1){
-                instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
-                char *folderPath1 = const_cast<char *>(instFolder.c_str());
-                check = mkdir(folderPath1, 0777);
                 if (check == -1)
                     throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
             }

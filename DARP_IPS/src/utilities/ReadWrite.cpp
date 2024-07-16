@@ -449,9 +449,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, saveScratch = false, vehicleReturn = false, zonePortion = false;
+    bool greedyReOptimize = false, vehicleReturn = false, zonePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1;
+    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
 
     bool addOneRequestColumn = false;
     float mipGap = -1;
