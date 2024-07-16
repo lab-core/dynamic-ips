@@ -638,7 +638,7 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
 }
 
 // function that open all input files and update main instance data
-void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, bool saveScratch) {
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch) {
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
     if (pInstance->nbOnboards_ > 0){

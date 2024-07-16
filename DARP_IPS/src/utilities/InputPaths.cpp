@@ -89,7 +89,7 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
 
-void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, bool saveScratch,
+void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
                                    int nbVehicles) {
     // create directory for results
     if (saveScratch > 0) {
