@@ -3,7 +3,6 @@
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
 #SBATCH --array=1-720
-#SBATCH --output=/dev/null
 
 
 module load eigen
@@ -31,8 +30,8 @@ do
         do
           if [ $SLURM_ARRAY_TASK_ID -eq $i ]
             then
-              bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode
-#             bin/realtime_DARP $DIRECTORY $instance $num_vehicles $algorithm $mode > "/scratch/amirelah/dynamic-ips/${DIRECTORY}_${instance}_${num_vehicles}_${algorithm}_${mode}.txt" 2>&1
+#              bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode
+             bin/realtime_DARP $vehicles $DIRECTORY $instance $num_vehicles $algorithm $mode > "/scratch/amirelah/dynamic-ips/${vehicles}_${DIRECTORY}_${instance}_${num_vehicles}_${algorithm}_${mode}.txt" 2>&1
             fi
             (( i = $i + 1 ))
         done
