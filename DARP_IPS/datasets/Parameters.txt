@@ -6,7 +6,7 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 8
+nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 addOneRequestColumn = 0
@@ -40,7 +40,7 @@ constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
-nbPick = 1
+nbPick = 2
 sortPath = 1
 sortColumn = 1
 
