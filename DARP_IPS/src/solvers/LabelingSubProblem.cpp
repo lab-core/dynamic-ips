@@ -668,7 +668,7 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
-//    std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
+ //   std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
 //    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_  << std::endl;
 //    subproTime_->stop();
 }
