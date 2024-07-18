@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --time=6:10:00
+#SBATCH --time=1:10:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
-#SBATCH --array=1-720
+#SBATCH --array=1-270
 #SBATCH --output=/dev/null
 
 
@@ -10,8 +10,8 @@ module load eigen
 module load gcc
 cmake --build cmake-build-release --target all
 
-DIRECTORY="Instances-120_Small"
-MAIN_DIR="datasets/Instances-120_Small"
+DIRECTORY="Instances_12-14_Small"
+MAIN_DIR="datasets/Instances_12-14_Small"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
