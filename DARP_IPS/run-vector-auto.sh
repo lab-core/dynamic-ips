@@ -4,7 +4,6 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --array=1-270
 #SBATCH --output=/dev/null
-#SBATCH --account=def-legraina
 #SBATCH --mail-type=END
 #SBATCH --mail-user=elahe.amiri66@gmail.com
 
