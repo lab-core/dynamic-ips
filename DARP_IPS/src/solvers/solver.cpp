@@ -887,7 +887,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             nbReceivedRequest += EpochInst->nbRequests_;
         else
             nbReceivedRequest += EpochInst->nbNewRequests_;
-        //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
+        std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbRequests_ << std::endl;
         // saving the status in the middle of running
         if ((static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
             inputPaths.makeInstanceOutput(std::to_string(instance_count));

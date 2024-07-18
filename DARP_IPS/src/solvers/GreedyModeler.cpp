@@ -22,11 +22,15 @@ GreedyModeler::~GreedyModeler() {
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
-//    PInst->selectedVehicles_.clear();
+    if (PInst->parameters_->mainAlgorithm_ == GREEDY) {
+        PInst->selectedVehicles_.clear();
+        PInst->selectedVehicles_.resize(PInst->nbVehicles_, 0);
+    }
+
     for (auto & vehicleObj : PInst->vehicles_) {
         greedyRouteList_.emplace_back(std::make_shared<GreedyRoute>(vehicleObj, PInst, greedyLabelPool_, PInst->parameters_->greedyReOptimize_));
     }
-//    PInst->selectedVehicles_.resize(PInst->nbVehicles_,0);
+
     if (positionList_.empty()){
         for (int i = 0; i < PInst->nbVehicles_; ++i)
             positionList_.emplace_back(std::make_shared<insertPosition>());
