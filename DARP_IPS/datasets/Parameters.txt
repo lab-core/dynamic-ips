@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 0
+saveScratch = 1
 vehicleReturn = 1
 
 # ISUD PARAMETERS
@@ -39,7 +39,7 @@ subproblemAlgorithm = 1
 constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
-usePick = 1
+usePick = 4
 nbPick = 1
 sortPath = 1
 sortColumn = 1
