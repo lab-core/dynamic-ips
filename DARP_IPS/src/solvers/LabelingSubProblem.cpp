@@ -669,7 +669,8 @@ void LabelingSubProblem::solveDynamic() {
             nbNegativeColumns_ ++;
     }
     std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
-    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_  << std::endl;
+    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
+    std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;
 //    subproTime_->stop();
 }
 

@@ -285,10 +285,10 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                 tiLim = 3;*/
         }
 
-        if (pInst->parameters_->solutionMode_ != ANYTIME) {
+        /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
             (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
             (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
-        }
+        }*/
         while (restartAlgorithm) {
             isCPImproved = true;
             restartAlgorithm = true;
@@ -317,10 +317,10 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                                                               ReducedPro_->auxObjValue_);
                 RMPCounter_++;
                 // save duals
-                if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
                     (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "LRP");
                     (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "LRP");
-                }
+                }*/
                 if (previousObj > objValue_) {
                     previousObj = objValue_;
                 } else
@@ -376,10 +376,10 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                     CompPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
                     CPIter_++;
                     // save duals
-                    if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                    /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
                         (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "CP");
                         (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "CP");
-                    }
+                    }*/
 
                     CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                     setObjValue();
@@ -399,10 +399,10 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                                                         ReducedPro_->auxObjValue_);
                             RMPCounter_++;
 
-                            if (pInst->parameters_->solutionMode_ != ANYTIME) {
+                            /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
                                 (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "zoom");
                                 (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "zoom");
-                            }
+                            }*/
                             ZOOMTime_->stop();
                             if (previousObj > objValue_) {
                                 previousObj = objValue_;
