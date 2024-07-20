@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->isTruncated_ = false;
                 else
                     mainInst->parameters_->MaxLabel_ = i *5;*/
-                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
-                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+ //               mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+ //               mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
