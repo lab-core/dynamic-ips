@@ -31,7 +31,7 @@ NumColumn = 50
 isTruncated = 0
 MaxLabel = 10
 isDominanceReleased = 0
-isSuccessorsLimited = 0
+isSuccessorsLimited = 1
 isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
@@ -40,7 +40,7 @@ constPortion = 0
 Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
-nbPick = 2
+nbPick = 3
 sortPath = 1
 sortColumn = 1
 
