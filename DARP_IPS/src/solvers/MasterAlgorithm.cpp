@@ -35,6 +35,7 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     SPIters_ = 0;
     ZoomIter_ = 0;
     CPSuccess_ = 0;
+    CGSuccess_ = 0;
     CPFails_ = 0;
     nbRoutes_ = 0;
     nbCoveredTasks_ = 0;

@@ -13,11 +13,11 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false ;
+bool savePartial = true ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = true;
+bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 2; ++j){
+        for (int i = 0; i < 1; ++i) {
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->isTruncated_ = false;
                 else
                     mainInst->parameters_->MaxLabel_ = i *5;*/
-                mainInst->parameters_->nbColumn_ = (i + 5) *5;
-                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
+//                mainInst->parameters_->nbColumn_ = (i + 5) *5;
+//                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
                 /*if (i == 0)
                     mainInst->parameters_->isDropPickPossible_ = true;
                 else
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
                                "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
                                "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
                                "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
-                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails, CGSuccess";
                     finalInstanceStream << "\n" << vehicleFolder << ",";
                     finalInstanceStream << mainInst->instRepStr_.str();
                     finalInstanceStream.close();

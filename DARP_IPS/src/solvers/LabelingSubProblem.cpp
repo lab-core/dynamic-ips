@@ -668,9 +668,9 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
-    std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
-    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
-    std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;
+ //   std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
+//    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
+//    std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;
 //    subproTime_->stop();
 }
 

@@ -54,6 +54,7 @@ public:
     int ZoomIter_;                  // number of Zoom iteration
     int CPSuccess_;                 // number of time CP succeed in finding integer
     int CPFails_;                   // number of time CP fails in finding integer
+    int CGSuccess_;                 // number of time that CG where able to converge
     double objValue_;               // objective value during MP iterations
     double lpObjValue_;             // linear objective value
     double totalWaitTime_;          // total waiting time without penalties

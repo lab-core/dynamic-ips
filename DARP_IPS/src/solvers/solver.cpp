@@ -232,6 +232,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (nbNegativeFound == 0) {
+            masterModel_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
             break;
         }
@@ -244,8 +245,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                                                      simulationTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2)||
                 (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1)){
-                    if (masterModel_->availableTime_ < 8)
-                        masterModel_->availableTime_ = 8;
+                    if (masterModel_->availableTime_ < 4)
+                        masterModel_->availableTime_ = 4;
                 }
                 else if (masterModel_->availableTime_ <= 0){
                     std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
@@ -255,8 +256,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
 
-            if (iter <= 2 && masterModel_->availableTime_ < 8)
-                masterModel_->availableTime_ = 8;
+            if (iter <= 2 && masterModel_->availableTime_ < 4)
+                masterModel_->availableTime_ = 4;
 
 
             masterModel_->timeLimit_ = masterModel_->availableTime_;
@@ -282,6 +283,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
         if (previousObj == masterModel_->objValue_) {
+            masterModel_->CGSuccess_++;
             std::cout << "No changes in Objective" << std::endl;
             break;
         }
@@ -1053,6 +1055,7 @@ std::string solver::toString(PInstance & mainInst) const {
     mainInst->instRepStr_ << GreedyModel_->greedyTime_->dSinceInit().count()/TotalTime << ",";
     mainInst->instRepStr_ << masterModel_->CPSuccess_ << ",";
     mainInst->instRepStr_ << masterModel_->CPFails_ << ",";
+    mainInst->instRepStr_ << masterModel_->CGSuccess_ << ",";
     return repStr.str();
 }
 
