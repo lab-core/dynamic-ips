@@ -120,7 +120,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         iter++;
         nbNegativeFound = 0;
         previousObj = masterModel_->objValue_;
-        masterModel_->SPIters_++;
 
 
         //***********************************************************************************//
@@ -197,7 +196,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // initializing and solving subproblems
         /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
-        masterModel_->SPIter_++;
+
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter > 2)||
@@ -245,6 +244,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
             break;
         }
+        masterModel_->SPIters_++;
+        masterModel_->SPIter_++;
+        
         if (nbNegativeFound == 0) {
             masterModel_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
