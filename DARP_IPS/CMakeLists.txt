@@ -4,15 +4,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# Set compiler paths based on the operating system
-if(APPLE)
-    set(CMAKE_CXX_COMPILER /usr/bin/g++)
-    set(CMAKE_C_COMPILER /usr/bin/gcc)
-else()
-    set(CMAKE_CXX_COMPILER /home/x86_64-unknown-linux_al9-gnu/gcc-14.1.0/bin/g++)
-    set(CMAKE_C_COMPILER /home/x86_64-unknown-linux_al9-gnu/gcc-14.1.0/bin/gcc)
-endif()
-
 
 # this code is to solve the following warning
 # CMake Warning (dev) at The package name passed to `find_package_handle_standard_args`
