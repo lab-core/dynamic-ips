@@ -14,8 +14,9 @@
 #   /opt/IBM/ILOG/CPLEX_Studio<edition>124 - UNIX
 #   ~/Applications/IBM/ILOG/CPLEX_Studio<edition>124 - Mac OS X
 #   C:\Program Files\IBM\ILOG\CPLEX_Studio<edition>124 - Windows
+#     set(CPLEX_STUDIO_DIR /opt/ibm/ILOG/CPLEX_Studio221 /opt/IBM/ILOG/CPLEX_Studio221 /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221 /home/ibm/cplex-studio/22.1)
 if (UNIX)
-    set(CPLEX_STUDIO_DIR /opt/ibm/ILOG/CPLEX_Studio221 /opt/IBM/ILOG/CPLEX_Studio221 /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221 /home/ibm/cplex-studio/22.1)
+    set(CPLEX_STUDIO_DIR /home/ibm/cplex-studio/22.1)
 #    set(CPLEX_STUDIO_DIR /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221)
     set(CPLEX_ARCH x86-64)
     set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_linux/static_pic)

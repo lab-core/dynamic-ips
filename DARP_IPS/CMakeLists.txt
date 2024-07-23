@@ -5,13 +5,6 @@ set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 
-# this code is to solve the following warning
-# CMake Warning (dev) at The package name passed to `find_package_handle_standard_args`
-# (CPLEX CONCERT) does not match the name of the calling package (CPLEX).
-# This can lead to problems in calling code that expects `find_package` result variables (e.g., `_FOUND`)
-# to follow a certain pattern. Call Stack (most recent call first):
-# This warning is for project developers.  Use -Wno-dev to suppress it.
-
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if (COMPILER_SUPPORTS_CXX11)
