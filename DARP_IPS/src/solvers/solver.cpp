@@ -112,6 +112,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     while (true) {
+        /*if (iter == 1) {
+            EpochInst->parameters_->isTruncated_ = false;
+            truncateState = false;
+        }*/
         iter++;
         nbNegativeFound = 0;
         previousObj = masterModel_->objValue_;
