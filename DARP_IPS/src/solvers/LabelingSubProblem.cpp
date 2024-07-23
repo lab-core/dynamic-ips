@@ -183,7 +183,10 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Term
     if (outNode->type_ == SINK){
         newLabel->status_ = TERMINATED;
 //        newLabel->createTime_ = subproTime_->dSinceInit().count();
+        if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_ - Vehicle_->dual_)
+            Vehicle_->bestReducedCost_ = newLabel->reducedCost_ - Vehicle_->dual_;
         outNode->activeLabels_.push_back(std::move(newLabel));
+
     }
     else{
         if (Terminate && newLabel->openNode_.empty()) {
@@ -642,6 +645,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 //***************************************************************************************//
 
 void LabelingSubProblem::solveDynamic() {
+    Vehicle_->bestReducedCost_ = INFINITY;
  //   subproTime_->start();
     if ((solverOptions_->LabelingStrategy_ == PUSHING)||(subRequests_.empty())){
         if (solverOptions_->isDropPickPossible_)
@@ -668,9 +672,10 @@ void LabelingSubProblem::solveDynamic() {
         if (labelObj->reducedCost_ - (Vehicle_)->dual_ < 0)
             nbNegativeColumns_ ++;
     }
- //   std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
-//    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
-//    std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;
+    /*std::cout << "Best reduced cost: " << Vehicle_->bestReducedCost_ << std::endl;
+    std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
+    std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
+    std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;*/
 //    subproTime_->stop();
 }
 
