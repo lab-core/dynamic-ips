@@ -249,10 +249,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                                                      simulationTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2)||
                 (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1)){
-                    if (masterModel_->availableTime_ < 4)
-                        masterModel_->availableTime_ = 4;
+                    if (masterModel_->availableTime_ < 6)
+                        masterModel_->availableTime_ = 6;
                 }
-                else if (masterModel_->availableTime_ <= 0){
+                else if (masterModel_->availableTime_ <= 2){
                     std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
                     break;
                 }
@@ -260,8 +260,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
 
-            if (iter <= 2 && masterModel_->availableTime_ < 4)
-                masterModel_->availableTime_ = 4;
+            if (iter <= 2 && masterModel_->availableTime_ < 6)
+                masterModel_->availableTime_ = 6;
 
 
             masterModel_->timeLimit_ = masterModel_->availableTime_;
@@ -278,12 +278,16 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     masterModel_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
             }
-            if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                break;
+            /*if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                break;*/
             if (mainInst->parameters_->oneIter_) {
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2) ||
                     (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1))
                     break;
+            }
+            else {
+               if (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count() < 4)
+                   break;
             }
         }
         if (previousObj == masterModel_->objValue_) {
@@ -447,7 +451,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
         masterModel_->SPIter_++;
         for (auto &subProblem: subProSolve){
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && iter > 1 && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3))
+            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && iter > 1 && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 5))
                 break;
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -499,8 +503,8 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
                 masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
                         simulationTime_->dSinceStart().count());
-                if (iter == 1 && masterModel_->availableTime_ < 3)
-                    masterModel_->availableTime_ = 3;
+                if (iter == 1 && masterModel_->availableTime_ < 4)
+                    masterModel_->availableTime_ = 4;
             }
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
