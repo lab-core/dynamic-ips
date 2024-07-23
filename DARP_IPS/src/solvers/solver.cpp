@@ -75,6 +75,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     nbNegativeFound_ = 0;
     bool isSolved = false;
     int iter = 0;
+    bool subProBreak = false;
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
@@ -200,8 +201,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto &subProblem: subProSolve){
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter > 2)||
-                    (!EpochInst->parameters_->addOneRequestColumn_ && iter > 1))
+                    (!EpochInst->parameters_->addOneRequestColumn_ && iter > 1)){
+                    subProBreak = true;
                     break;
+                }
+
             }
             Tools::Job job([&]() {
                 subProblem->initSubGraph(EpochInst);
@@ -222,6 +226,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 break;
         }
 
+
+
         for (auto &subProblem: subProSolve){
             masterModel_->nbRoutes_ += masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
@@ -235,15 +241,22 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         preprocessTime_->stop();
         subProblemTime_->stop();
         SubproEpochTime_ += subProblemTime_->dSinceStart().count();
+        if (subProBreak) {
+            std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
+            break;
+        }
         if (nbNegativeFound == 0) {
             masterModel_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
             break;
         }
         else {
-            if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                masterModel_->availableTime_ = (int)(EpochInst->parameters_->committedTime_ -
-                                                     simulationTime_->dSinceStart().count());
+            if (EpochInst->parameters_->solutionMode_ == ANYTIME) {
+                masterModel_->availableTime_ = (int) (EpochInst->parameters_->committedTime_ -
+                                                      simulationTime_->dSinceStart().count());
+                if (masterModel_->availableTime_ < 6)
+                    masterModel_->availableTime_ = 6;
+            }
             else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
                 masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
                                                      simulationTime_->dSinceStart().count());
@@ -259,9 +272,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
             else
                 masterModel_->availableTime_ = LARGE_CONSTANT;
-
-            if (iter <= 2 && masterModel_->availableTime_ < 6)
-                masterModel_->availableTime_ = 6;
 
 
             masterModel_->timeLimit_ = masterModel_->availableTime_;
