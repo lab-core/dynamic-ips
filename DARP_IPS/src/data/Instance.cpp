@@ -228,9 +228,9 @@ std::string Instance::solutionToString() {
 
     else if (totalCustomersPartial > 135000)
         instRepStr_ << "135000 <" << ",";
-    else if (totalCustomersPartial >= 125000 && totalCustomersPartial <= 135000)
+    else if (totalCustomersPartial >= 120000 && totalCustomersPartial <= 135000)
         instRepStr_ << "125000 - 135000" << ",";
-    else if (totalCustomersPartial >= 70000 && totalCustomersPartial < 125000)
+    else if (totalCustomersPartial >= 70000 && totalCustomersPartial < 120000)
         instRepStr_ << "< 125000" << ",";
     else if (totalCustomersPartial >= 50000 && totalCustomersPartial < 70000)
         instRepStr_ << "< 50000 <" << ",";
