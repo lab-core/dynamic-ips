@@ -11,10 +11,10 @@ InitialDual = 0
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
-OneIter = 0
-GreedyReOptimize = 0
+OneIter = 1
+GreedyReOptimize = 1
 saveScratch = 1
-vehicleReturn = 0
+vehicleReturn = 1
 
 # ISUD PARAMETERS
 #
