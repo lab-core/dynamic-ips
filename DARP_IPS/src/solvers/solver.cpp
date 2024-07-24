@@ -264,8 +264,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                                                      simulationTime_->dSinceStart().count());
                 if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 2)||
                 (!EpochInst->parameters_->addOneRequestColumn_ && iter == 1)){
-                    if (masterModel_->availableTime_ < 6)
-                        masterModel_->availableTime_ = 6;
+                    if (masterModel_->availableTime_ < 9)
+                        masterModel_->availableTime_ = 9;
                 }
                 else if (masterModel_->availableTime_ <= 2){
                     std::cout << "available time: " << masterModel_->availableTime_ << std::endl;

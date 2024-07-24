@@ -13,11 +13,11 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = true ;
+bool savePartial = false ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = false;
+bool solveEpoch = true;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     std::string instName = instNames[0];
     /*if (numEpochTests > 1){
         instNames.clear();
-        for (int i = 23; i < numEpochTests; ++i)
+        for (int i = 0; i < numEpochTests; ++i)
             instNames.push_back(instName+"_"+std::to_string(i+1));
     }*/
 
