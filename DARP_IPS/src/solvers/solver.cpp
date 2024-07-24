@@ -119,8 +119,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             truncateState = false;
         }*/
 
-        if (EpochInst->nbRequests_ >= 550) {
-            subProOptions_->MaxLabel_ = 10;
+        if (EpochInst->nbRequests_ >= 500) {
+            subProOptions_->MaxLabel_ = 5;
         }
 
         iter++;
