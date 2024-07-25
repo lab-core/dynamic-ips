@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=2G
+#SBATCH --mem=16G
 #SBATCH --time=0:20:00
 #SBATCH --array=1-48
 #SBATCH --output=/dev/null
@@ -15,9 +15,9 @@ for vehicles in manhattan-vehicles
 do
   for mode in 2
   do
-    for algorithm in 0
+    for algorithm in 2
     do
-      for directory in Instances_5h
+      for directory in Instances-120
       do
         for instance in 20160109_11-300m 20150706_11-300m 20160316_11-300m
 #        for instance in 20150828_12-120m 20151130_12-120m 20160222_12-120m
