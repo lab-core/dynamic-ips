@@ -13,11 +13,11 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false ;
+bool savePartial = true ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = true;
+bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < 2; ++j){
+        for (int i = 0; i < 1; ++i) {
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -90,14 +90,14 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->MaxLabel_ = i *5;*/
 //                mainInst->parameters_->nbColumn_ = (i + 5) *5;
 //                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
-                if (i == 0)
+                /*if (i == 0)
                     mainInst->parameters_->oneIter_ = true;
                 else
                     mainInst->parameters_->oneIter_ = false;
                 if (j == 0)
                     mainInst->parameters_->isSuccessorsLimited_ = true;
                 else
-                    mainInst->parameters_->isSuccessorsLimited_ = false;
+                    mainInst->parameters_->isSuccessorsLimited_ = false;*/
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
