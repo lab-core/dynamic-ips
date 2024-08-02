@@ -44,6 +44,7 @@ public:
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
     double createTime_;                             // the time that label is created
     double labelScore_;                             // it is calculated based on reducedCost_/nbPickUp_
+    double lambdaScore_;
 
     // Constructor and Destructor
     Label(Vehicle *vehicle, PNode &source);

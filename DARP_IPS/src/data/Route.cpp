@@ -25,6 +25,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     mpAdded_ = false;
     cpAdded_ = false;
     score_ = 0;
+    lambda_ = 0;
     createTime_ = 0;
     totalLength_ = 0;
 }

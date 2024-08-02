@@ -248,10 +248,14 @@ void MasterAlgorithm::updateReducedCosts(PInstance &pInst) {
             }
             if (minReducedCost_ > routeObj->reducedCost_)
                 minReducedCost_ = routeObj->reducedCost_;
-            if (!routeObj->routeRequests_.empty())
-                routeObj->score_ = routeObj->reducedCost_/routeObj->routeRequests_.size();
-            else
+            if (!routeObj->routeRequests_.empty()) {
+                routeObj->score_ = routeObj->reducedCost_ / routeObj->routeRequests_.size();
+                routeObj->lambda_ = routeObj->totalDelay_ / (routeObj->totalDelay_ - routeObj->reducedCost_ + 0.0001);
+            }
+            else {
                 routeObj->score_ = 0;
+                routeObj->lambda_ = 0;
+            }
         }
         vehicleObj->bestReducedCost_ = minReducedCost_;
     }
@@ -1026,6 +1030,12 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
                              availableRoutes_[vehicleObj->vehicleID_].end(),
                              [](const PRoute &lhs, const PRoute &rhs) { return lhs->score_ < rhs->score_; });
         }
+        else if (pInst->parameters_->sortColumn_ == CLAMBDA){
+            std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
+                             availableRoutes_[vehicleObj->vehicleID_].end(),
+                             [](const PRoute &lhs, const PRoute &rhs) { return lhs->lambda_ < rhs->lambda_; });
+        }
+
         else {
             std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                              availableRoutes_[vehicleObj->vehicleID_].end(),

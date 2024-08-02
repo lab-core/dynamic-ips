@@ -843,6 +843,12 @@ void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector
                              return lhs->reducedCost_ < rhs->reducedCost_;
                          });
     }
+    if (solverOptions_->pathSort_ == LAMBDA) {
+        std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
+                         [](const PLabel &lhs, const PLabel &rhs) {
+                             return lhs->lambdaScore_ < rhs->lambdaScore_;
+                         });
+    }
     else {
         std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
             return lhs->labelScore_ < rhs->labelScore_;});

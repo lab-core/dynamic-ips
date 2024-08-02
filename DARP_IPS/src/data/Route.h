@@ -38,6 +38,7 @@ public:
     bool mpAdded_;                              // is the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // is the route has already been added to the CP model
     double score_;                              // equals to the reduced cost/number of pickups(or tasks)
+    double lambda_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
