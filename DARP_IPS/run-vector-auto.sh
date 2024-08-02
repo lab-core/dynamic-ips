@@ -21,7 +21,7 @@ INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
 i=1
 for vehicles in sufficient_manhattan-vehicles-300
 do
-  for mode in 2 1
+  for mode in 1
   do
     for algorithm in 2
     do
