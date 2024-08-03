@@ -15,6 +15,7 @@ OneIter = 1
 GreedyReOptimize = 1
 saveScratch = 1
 vehicleReturn = 0
+timeWindows = 0
 
 # ISUD PARAMETERS
 #
@@ -29,9 +30,9 @@ NumColumn = 50
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 5
+MaxLabel = 15
 isDominanceReleased = 0
-isSuccessorsLimited = 0
+isSuccessorsLimited = 1
 isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
@@ -41,7 +42,7 @@ Greedy_portion = 0
 Zone_portion = 0
 usePick = 1
 nbPick = 2
-sortPath = 2
+sortPath = 0
 sortColumn = 1
 
 # CPLEX PARAMETERS

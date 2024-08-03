@@ -10,7 +10,6 @@
 #include "data/Vehicle.h"
 #include "data/Request.h"
 #include "data/Graph.h"
-#include "data/TravelTime.h"
 #include "utilities/InputPaths.h"
 
 //-----------------------------------------------------------------------------
@@ -30,6 +29,7 @@ public:
     std::vector<PZone> zones_;
 
     int nbRequests_;                                    // Number of requests
+    int nbRejected_;
     int nbOnboards_;                                    // Number of initial onboard requests
     int nbWaiting_;                                     // Number of requests at the initial state
     int nbNewRequests_;                                 // Number of requests added after each epoch

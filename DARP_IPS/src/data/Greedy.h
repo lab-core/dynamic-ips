@@ -14,14 +14,14 @@
 //---------------------------------------------------------------------------------------------
 class StopLabel {
 public:
-    PNode currentNode_;
-    PStopLabel parent_;
-    PStopLabel child_;
-    PStopLabel pair_;
-    float reachTime_;
-    float leaveTime_;
-    int nbPassengers_;
-    float travelResource_;
+    PNode currentNode_;        // Pointer to the current node
+    PStopLabel parent_;        // Pointer to the parent stop label
+    PStopLabel child_;         // Pointer to the child stop label
+    PStopLabel pair_;          // Pointer to the paired stop label
+    float reachTime_;          // Time when this stop is reached
+    float leaveTime_;          // Time when this stop is left
+    int nbPassengers_;         // Number of passengers at this stop
+    float travelResource_;     // Resource used for travel (e.g., distance, fuel)
 
     // Constructor
     StopLabel(PNode currentNode, float reachTime, float departTime, int nbPassengers);

@@ -26,6 +26,7 @@ public:
     vector2D<PRoute> availableRoutes_;
  //   vector2D<int> subProResults_;
     int nbRoutes_;
+    int nbColumnsAdded_;
     int nbVehicles_;
     float availableTime_;           // time left from availableTime_ to solve master problem
     int timeLimit_;                 // total available time to solve master problem

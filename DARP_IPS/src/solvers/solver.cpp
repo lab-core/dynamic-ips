@@ -30,17 +30,19 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
 
     nbGenerated_ = 0;
     nbDominated_ = 0;
-    nbEliminated_ = 0;
+    nbUnreachableDTrip_ = 0;
+    nbUnreachableDelay_ = 0;
     nbNegativeFound_ = 0;
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
 
     // this Stream define runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-    (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNodes,EpochRuntime,ElapsedTime, MP_Runtime, "
-                              "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime, "
-                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime, "
-                              "GreedyTime,#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,nbNegative,GreedyObj,"
+    (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
+                              "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
+                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime,"
+                              "GreedyTime,#SP Iter,totalColumn,#LGenerated,#LDominated,"
+                              "#LUnreachableTrip, #LUnreachableDelay,nbNegative,#ColumnsAdded,GreedyObj,"
                               "Objective,LinearObjective,waitTime" << std::endl;
 
 
@@ -112,6 +114,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     EpochInst->updateTaskIndexLabeling();
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
+    nbGenerated_ = 0;
+    nbDominated_ = 0;
+    nbUnreachableDelay_ = 0;
+    nbUnreachableDTrip_ = 0;
 
     while (true) {
         /*if (iter == 1) {
@@ -135,9 +141,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         subProblemTime_->start();
         // defining subproblems
 
-        nbGenerated_ = 0;
-        nbDominated_ = 0;
-        nbEliminated_ = 0;
         std::vector<PLabelingSubPro> subProSolve;
         if ((EpochInst->parameters_->addOneRequestColumn_ && iter == 1)|| !(EpochInst->parameters_->greedyPortion_ || EpochInst->parameters_->zonePortion_)){
             if (EpochInst->parameters_->addOneRequestColumn_ && iter == 1)
@@ -238,8 +241,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
-            nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
+            nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
+            nbUnreachableDelay_ += subProblem->nbUnreachableDelay_;
         }
         preprocessTime_->start();
         subProSolve.clear();
@@ -369,6 +373,11 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
     EpochInst->updateTaskIndexLabeling();
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
+    nbGenerated_ = 0;
+    nbDominated_ = 0;
+    nbUnreachableDTrip_ = 0;
+    nbUnreachableDelay_ = 0;
+
     while (true) {
         iter++;
         nbNegativeFound = 0;
@@ -382,10 +391,6 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
         // start the subproblems timer
         subProblemTime_->start();
         // defining subproblems
-
-        nbGenerated_ = 0;
-        nbDominated_ = 0;
-        nbEliminated_ = 0;
 
         std::vector<PLabelingSubPro> subProSolve;
 
@@ -495,8 +500,9 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
-            nbEliminated_ += subProblem->nbEliminated_;
             nbDominated_ += subProblem->nbDominated_;
+            nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
+            nbUnreachableDelay_ += subProblem->nbUnreachableDelay_;
         }
         /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
             GreedyModel_->GreedySolver(EpochInst, masterModel_->availableRoutes_, EpochInst->nbRequests_);*/
@@ -666,7 +672,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         EpochInst->resetInstance();
         // reading the data received in previous epoch
         EpochInst->buildPartialData(mainInst, masterModel_->zSolution_ , elapsedTime_, nbReceivedRequest);
-        EpochInst->updatePenalties(elapsedTime_);
+        if (EpochInst->parameters_->timeWindow_ == 0)
+            EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
      //   std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << nbReceivedRequest << std::endl;
 
@@ -684,7 +691,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         if (EpochInst->nbNewRequests_ == 0 && masterModel_->zSolution_.empty()) {
  //           std::cout << "next event" << std::endl;
             simulationTime_->stop();
-            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
+            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
  //           preprocessTime_->stop();
  //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
             epoch_++;
@@ -728,7 +735,7 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
         nextEpoch:
         simulationTime_->start();
 
-        elapsedTime_ = mainInst->requests_[nbReceivedRequest]->earlyPick_ - mainInst->simulationStartTime_;
+        elapsedTime_ = mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_;
         std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
         std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
@@ -749,7 +756,8 @@ void solver::anyTimeSolverEvent(PInstance &mainInst, InputPaths &inputPaths) {
         EpochInst->resetInstance();
         // reading the data received in previous epoch
         EpochInst->buildPartialData(mainInst, masterModel_->zSolution_ , elapsedTime_, nbReceivedRequest);
-        EpochInst->updatePenalties(elapsedTime_);
+        if (EpochInst->parameters_->timeWindow_ == 0)
+            EpochInst->updatePenalties(elapsedTime_);
         nbReceivedRequest += EpochInst->nbNewRequests_;
 
         if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
@@ -801,8 +809,8 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
     for (auto &vehicleObj: mainInst->vehicles_){
         vehicleObj->currentRoute_->createColumn();
     }
-
-    StaticInst->updatePenalties(0);
+    if (StaticInst->parameters_->timeWindow_ == 0)
+        StaticInst->updatePenalties(0);
 
 //    preprocessTime_->stop();
     switch(StaticInst->parameters_->mainAlgorithm_) {
@@ -910,7 +918,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         for (auto &vehicleObj: mainInst->vehicles_){
             vehicleObj->currentRoute_->createColumn();
         }
-        EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
+        if (EpochInst->parameters_->timeWindow_ == 0)
+            EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
         if (epoch_ == 0 && mainInst->nbOnboards_ > 0)
             nbReceivedRequest += EpochInst->nbRequests_;
         else
@@ -1013,8 +1022,10 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << masterModel_->nbRoutes_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
-    repStr << nbEliminated_ << ",";
+    repStr << nbUnreachableDTrip_ << ",";
+    repStr << nbUnreachableDelay_ << ",";
     repStr << nbNegativeFound_ << ",";
+    repStr << masterModel_->nbColumnsAdded_ << ",";
     repStr << masterModel_->GreedyObjValue_ << ",";
     repStr << masterModel_->objValue_ << ",";
     repStr << masterModel_->lpObjValue_ << ",";

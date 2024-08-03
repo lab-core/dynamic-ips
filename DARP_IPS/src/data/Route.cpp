@@ -52,8 +52,8 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
 void Route::addNode(PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_)
-        plannedDepartTime_.back() = node->requestTime_;
+    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->related_Request_->requestTime_)
+        plannedDepartTime_.back() = node->related_Request_->requestTime_;
     float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     plannedReachTime_.push_back(reachTime);
     plannedDepartTime_.push_back(reachTime + node->serviceTime_);
@@ -61,7 +61,7 @@ void Route::addNode(PNode &node) {
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
+        totalDelay_ += (reachTime - node->readyTime_);
     }
 }
 
@@ -73,7 +73,7 @@ void Route::addNode(PNode &node, float reachTime, float departTime) {
     plannedDepartTime_.push_back(departTime);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
+        totalDelay_ += (reachTime - node->readyTime_);
     }
     routeNodes_.push_back(node);
 }
@@ -99,7 +99,7 @@ void Route::removeNode(int nodeIndex) {
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
-            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
+            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->readyTime_);
         }
 
     }

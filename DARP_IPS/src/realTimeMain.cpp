@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 7; ++i) {
+        for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -82,13 +82,17 @@ int main(int argc, char** argv) {
                 if (!solveEpoch)
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+                if (i == 0)
+                    mainInst->parameters_->isSuccessorsLimited_ = true;
+                else
+                    mainInst->parameters_->isSuccessorsLimited_ = false;
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= i+2;
                 /*if (i == 0)
                     mainInst->parameters_->isTruncated_ = false;
                 else
                     mainInst->parameters_->MaxLabel_ = i *5;*/
-                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+//                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
 //                mainInst->parameters_->sortColumn_ = static_cast<SortColumns>(j);
                 /*if (i == 0)
                     mainInst->parameters_->oneIter_ = true;
@@ -136,6 +140,13 @@ int main(int argc, char** argv) {
                 for (auto &vehicleObj: mainInst->vehicles_)
                     vehicleObj->solutionRoute_->testRoute(vehicleObj);
                 if (!middleSave) {
+                    if (mainInst->parameters_->timeWindow_ > 0){
+                        for (auto &reqestObj: mainInst->requests_){
+                            if (reqestObj->requestStatus_ != COMPLETED) {
+                                reqestObj->requestStatus_ = REJECTED;
+                            }
+                        }
+                    }
 
                     std::cout << std::endl << std::endl;
 
@@ -155,8 +166,8 @@ int main(int argc, char** argv) {
                     requestResultsStream.close();
                     Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
                     finalInstanceStream
-                            << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
-                               "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
+                            << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,customer Group,"
+                               "#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,#(Lim)Rejected Req,"
                                "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
                                "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
                                "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"

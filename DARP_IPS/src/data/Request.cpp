@@ -13,8 +13,8 @@
 unsigned int Request::requestCount_ = 0;
 
 // Constructor and Destructor
-Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime) :
-        requestID_(requestCount_++), PickUpID_(pickUpID),
+Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime) :
+        requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime){
     allocVehicleID_ = LARGE_CONSTANT;
     initialVehicleID_ = LARGE_CONSTANT;
@@ -34,8 +34,8 @@ Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers,
     taskIncIndex_ = -1;
     taskIndexLabel_ = -1;
 }
-Request::Request(int pickUpID, int dropOffID, float earlyPick, int nbPassengers, float deltaTime, int pickZoneID, int dropZoneID) :
-        requestID_(requestCount_++), PickUpID_(pickUpID),
+Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime, int pickZoneID, int dropZoneID) :
+        requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
         pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
     allocVehicleID_ = LARGE_CONSTANT;

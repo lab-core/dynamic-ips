@@ -91,7 +91,7 @@ enum SortPaths {L_SCORE = 0, RD_COST = 1, LAMBDA = 2};
 enum SortColumns {C_SCORE = 0, CRD_COSTS = 1, CLAMBDA = 2};
 enum VarSign { POSITIVE, NEGATIVE };
 enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
-enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2};
+enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2, REJECTED = 3};
 static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
 

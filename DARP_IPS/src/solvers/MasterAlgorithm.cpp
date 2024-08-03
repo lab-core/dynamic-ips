@@ -38,6 +38,7 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     CGSuccess_ = 0;
     CPFails_ = 0;
     nbRoutes_ = 0;
+    nbColumnsAdded_ = 0;
     nbCoveredTasks_ = 0;
     cpIncDegree_ = 2;
     GreedyObjValue_ = 0;
@@ -102,7 +103,7 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
     ReducedPro_ = std::make_shared<ReducedProblem>();
     MasterPro_ = std::make_shared<MIPMasterProblem>();
     ReducedPro_->routesToAdd_.clear();
-
+    nbColumnsAdded_ = 0;
     RMPCounter_ = 0;
     SPIter_ = 0;
     CPBuilt_ = false;
@@ -1068,6 +1069,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
             if (numAdded > pInst->parameters_->nbColumn_)
                 break;
         }
+        nbColumnsAdded_ += numAdded;
     }
 }
 

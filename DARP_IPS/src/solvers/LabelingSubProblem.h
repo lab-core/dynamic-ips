@@ -20,7 +20,8 @@ public:
     std::vector<PLabel> labelPool_;             // pool of generated labels to re-use
     std::vector<Node*> activeNodes_;            // list of nodes with active labels
     int nbDominated_;                           // number of labels removed via Domination Rules
-    int nbEliminated_;                          // number of labels removed via Elimination Rules
+    int nbUnreachableDelay_;                  // number of labels detected as Unreachable by soft time window
+    int nbUnreachableDTrip_;                    // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
     int nbOutputs_;                             // total number of generated routes
     int maxPickup_;                             // number of pickups that are allowed in each path
@@ -50,8 +51,6 @@ public:
     void solveDynamic_pulling();
     void solveDynamic_pullingWave();
     void solveDynamic();
-    // this function is for reconstructing the routes generated in previous epoch
-    void reconstructLabels(std::vector<PRoute> &availableRoutes);
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
@@ -59,7 +58,6 @@ public:
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;
-    void restProblem();
 
     void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
 };

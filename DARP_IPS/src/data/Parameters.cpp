@@ -11,8 +11,9 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       bool oneIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, warmStart initialStart,
-                       int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom, int nbColumn,
+                       bool oneIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
+                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
+                       bool useMultiStage, float minImp, bool useZoom, int nbColumn,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, bool constPortion, bool greedyPortion, bool zonePortion,
@@ -29,7 +30,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         constPortion_(constPortion), greedyPortion_(greedyPortion), zonePortion_(zonePortion), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
         populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
-        MIPGap_(MIPGap) {
+        MIPGap_(MIPGap), timeWindow_(timeWindow) {
     savePartial_ = false;
 }
 
@@ -59,6 +60,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
     repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
+    repStr << std::setw(setwLength) << "# Waiting time window " << " = " << timeWindow_ << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -127,6 +129,7 @@ std::string Parameters::toStr() const {
     repStr << MaxLabel_ << ",";
     repStr << boolToString(isDominanceReleased_) << ",";
     repStr << boolToString(isDropPickPossible_) << ",";
+    repStr << boolToString(isSuccessorsLimited_) << ",";
     repStr << LabelingStrategyName[LabelingStrategy_] << ",";
     repStr << boolToString(greedyPortion_) << ",";
     repStr << boolToString(zonePortion_) << ",";
