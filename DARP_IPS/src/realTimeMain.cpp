@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
                 if (i == 0)
-                    mainInst->parameters_->greedyPortion_ = true;
+                    mainInst->parameters_->isSuccessorsLimited_ = true;
                 else
-                    mainInst->parameters_->greedyPortion_ = false;
+                    mainInst->parameters_->isSuccessorsLimited_ = false;
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= i+2;
                 /*if (i == 0)
