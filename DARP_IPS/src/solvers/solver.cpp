@@ -192,6 +192,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     subProSolve.back()->maxPickup_ = subProOptions_->nbPick_;
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
+                subProSolve.back()->initSubGraph(EpochInst);
             }
         }
         if (!EpochInst->parameters_->constPortion_){
@@ -203,20 +204,21 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
         // initializing and solving subproblems
-        /*std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
-            return lhs->subGraph_->nbNodes_ > rhs->subGraph_->nbNodes_;});*/
+        std::stable_sort(subProSolve.begin(), subProSolve.end(),[](const PLabelingSubPro &lhs, const PLabelingSubPro &rhs){
+            return lhs->subRequests_.size() > rhs->subRequests_.size();});
 
-        for (auto &subProblem: subProSolve){
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC && (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)){
-                if ((EpochInst->parameters_->addOneRequestColumn_ && iter > 2)||
-                    (!EpochInst->parameters_->addOneRequestColumn_ && iter > 1)){
+        for (auto &subProblem : subProSolve) {
+            if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
+                (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 3)) {
+                if ((EpochInst->parameters_->addOneRequestColumn_ && iter > 2) ||
+                    (!EpochInst->parameters_->addOneRequestColumn_ && iter > 1)) {
                     subProBreak = true;
                     break;
                 }
-
             }
+
             Tools::Job job([&]() {
-                subProblem->initSubGraph(EpochInst);
+  //              subProblem->initSubGraph(EpochInst);
                 subProblem->labelPool_ = std::move(labelsPool_.pop_data());
                 if (!subProblem->subRequests_.empty()) {
                     subProblem->solveDynamic();
@@ -229,10 +231,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             pPool->run(job);
         }
         //      pPool->wait();
-        while(true){
-            if (!pPool->wait())
-                break;
-        }
+        pPool->wait();
 
 
 
