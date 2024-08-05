@@ -148,11 +148,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (!isSolved){
                 EpochInst->selectedVehicles_.clear();
                 EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
+                bool state = EpochInst->parameters_->greedyReOptimize_;
+                EpochInst->parameters_->greedyReOptimize_ = true;
+                GreedyModel_->GreedyAssignment(EpochInst, iter);
+                EpochInst->parameters_->greedyReOptimize_ = state;
             }
-            bool state = EpochInst->parameters_->greedyReOptimize_;
-            EpochInst->parameters_->greedyReOptimize_ = true;
-            GreedyModel_->GreedyAssignment(EpochInst, iter);
-            EpochInst->parameters_->greedyReOptimize_ = state;
             isSolved = true;
         }
         else if (EpochInst->parameters_->onePortion_) {
