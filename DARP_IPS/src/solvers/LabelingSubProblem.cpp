@@ -20,10 +20,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverO
     nbUnreachableDTrip_ = 0;
     nbUnreachableDelay_ = 0;
     nbOutputs_ = 0;
-    if (solverOptions_->addOneRequestColumn_)
-        maxPickup_ = 1;
-    else
-        maxPickup_ = solverOptions_->nbPick_;
+    maxPickup_ = solverOptions_->nbPick_;
  //   subproTime_ = new myTools::Timer(); subproTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
@@ -156,27 +153,25 @@ bool LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Te
 }
 
 bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate) {
-    if (maxPickup_ > 1) {
-        // check the dominance state of the new label
-        for (auto &labelObj: outNode->activeLabels_) {
-            if (newLabel->isDominated(labelObj, this->solverOptions_)) {
-                newLabel->status_ = DOMINATED;
-                labelPool_.push_back(std::move(newLabel));
-                return false;
-            }
+    // check the dominance state of the new label
+    for (auto &labelObj: outNode->activeLabels_) {
+        if (newLabel->isDominated(labelObj, this->solverOptions_)) {
+            newLabel->status_ = DOMINATED;
+            labelPool_.push_back(std::move(newLabel));
+            return false;
         }
-        // remove previous dominated labels
-        for (int i = outNode->activeLabels_.size() - 1; i >= 0; i--) {
-            if (outNode->activeLabels_[i]->isDominated(newLabel, this->solverOptions_)) {
-                if (outNode->activeLabels_[i]->status_ == ACTIVE) {
-                    outNode->nbActiveLabels_--;
-                    //               this->nbActivated_--;
-                }
-                outNode->activeLabels_[i]->status_ = DOMINATED;
-                labelPool_.push_back(std::move(outNode->activeLabels_[i]));
-                outNode->activeLabels_.erase(outNode->activeLabels_.begin() + i);
-                this->nbDominated_++;
+    }
+    // remove previous dominated labels
+    for (int i = outNode->activeLabels_.size() - 1; i >= 0; i--) {
+        if (outNode->activeLabels_[i]->isDominated(newLabel, this->solverOptions_)) {
+            if (outNode->activeLabels_[i]->status_ == ACTIVE) {
+                outNode->nbActiveLabels_--;
+                //               this->nbActivated_--;
             }
+            outNode->activeLabels_[i]->status_ = DOMINATED;
+            labelPool_.push_back(std::move(outNode->activeLabels_[i]));
+            outNode->activeLabels_.erase(outNode->activeLabels_.begin() + i);
+            this->nbDominated_++;
         }
     }
     if (outNode->bestLabelReduceCost_ > newLabel->reducedCost_)

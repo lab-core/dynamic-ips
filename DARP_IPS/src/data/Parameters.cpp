@@ -16,7 +16,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool useMultiStage, float minImp, bool useZoom, int nbColumn,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, bool constPortion, bool greedyPortion, bool zonePortion,
+                       subproblemAlgorithm subAlgorithm, bool constPortion, bool greedyPortion, bool onePortion,
                        bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
@@ -27,7 +27,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        constPortion_(constPortion), greedyPortion_(greedyPortion), zonePortion_(zonePortion), usePick_(usePick), nbPick_(nbPick),
+        constPortion_(constPortion), greedyPortion_(greedyPortion), onePortion_(onePortion), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
         populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
         MIPGap_(MIPGap), timeWindow_(timeWindow) {
@@ -86,7 +86,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of constraints for MP " << " = " << constPortion_ << std::endl;
     repStr << std::setw(setwLength) << "# use greedy for vehicle portion " << " = " << greedyPortion_ << std::endl;
-    repStr << std::setw(setwLength) << "# use zones for vehicle portion " << " = " << zonePortion_ << std::endl;
+    repStr << std::setw(setwLength) << "# use zones for vehicle portion " << " = " << onePortion_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
@@ -132,7 +132,7 @@ std::string Parameters::toStr() const {
     repStr << boolToString(isSuccessorsLimited_) << ",";
     repStr << LabelingStrategyName[LabelingStrategy_] << ",";
     repStr << boolToString(greedyPortion_) << ",";
-    repStr << boolToString(zonePortion_) << ",";
+    repStr << boolToString(onePortion_) << ",";
     repStr << nbPick_ << ",";
     repStr << SortPathsName[sortPath_] << ",";
     repStr << SortColumnsName[sortColumn_] << ",";

@@ -111,9 +111,17 @@ std::string Instance::solutionToString() {
 
     std::stringstream repStr;
 
-    instRepStr_ << name_ << "," << "R" << nbRequests_ - nbOnboards_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
-    instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
-    instRepStr_ << nbVehicles_ << "," << nbRequests_ - nbOnboards_ << "," << nbOnboards_ << ",";
+    if (!solveEpoch){
+        instRepStr_ << name_ << "," << "R" << nbRequests_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
+        instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
+        instRepStr_ << nbVehicles_ << "," << nbRequests_ << "," << nbOnboards_ << ",";
+    }
+    else {
+        instRepStr_ << name_ << "," << "R" << nbWaiting_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
+        instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
+        instRepStr_ << nbVehicles_ << "," << nbWaiting_ << "," << nbRequests_ - nbWaiting_ << ",";
+    }
+
 
     // print table header
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
@@ -128,7 +136,7 @@ std::string Instance::solutionToString() {
 
     int startIndex;
     if (solveEpoch)
-        startIndex = nbOnboards_;
+        startIndex = nbRequests_ - nbWaiting_;
     else
         startIndex = 0;
     // print the internal nodes of the route
@@ -654,7 +662,7 @@ std::string Instance::saveRequestsResults() {
 
     int startIndex;
     if (solveEpoch)
-        startIndex = nbOnboards_;
+        startIndex = nbRequests_ - nbWaiting_;
     else
         startIndex = 0;
 

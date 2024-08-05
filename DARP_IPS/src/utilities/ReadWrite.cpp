@@ -462,7 +462,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, vehicleReturn = false, zonePortion = false;
+    bool greedyReOptimize = false, vehicleReturn = false, onePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
     float timeWindows = -1;
@@ -572,8 +572,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Greedy_portion "))
             file >> greedyPortion;
 
-        else if (strEndWith(title, "Zone_portion "))
-            file >> zonePortion;
+        else if (strEndWith(title, "One_portion "))
+            file >> onePortion;
 
         else if (strEndWith(title, "usePick "))
             file >> usePick;
@@ -611,7 +611,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          constPortion, greedyPortion, zonePortion, usePick, nbPick,
+                                                          constPortion, greedyPortion, onePortion, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
