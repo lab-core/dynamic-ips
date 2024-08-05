@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -83,17 +83,10 @@ int main(int argc, char** argv) {
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
                 if (i == 1) {
-                    mainInst->parameters_->greedyPortion_ = true;
-                    mainInst->parameters_->onePortion_ = false;
-                }
-                else if (i == 2)
-                {
-                    mainInst->parameters_->greedyPortion_ = false;
-                    mainInst->parameters_->onePortion_ = true;
+                    mainInst->parameters_->isSuccessorsLimited_ = true;
                 }
                 else {
-                    mainInst->parameters_->greedyPortion_ = false;
-                    mainInst->parameters_->onePortion_ = false;
+                    mainInst->parameters_->isSuccessorsLimited_ = false;
                 }
 //                mainInst->parameters_->vehicleReturn_= j;
 //                mainInst->parameters_->nbPick_= i+2;
