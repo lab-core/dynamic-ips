@@ -6,14 +6,14 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 8
+nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 1
-saveScratch = 1
+saveScratch = 2
 vehicleReturn = 0
 timeWindows = 0
 
