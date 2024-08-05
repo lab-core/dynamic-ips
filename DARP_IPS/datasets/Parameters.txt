@@ -29,8 +29,8 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
-MaxLabel = 5
+isTruncated = 0
+MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
 isDropPickPossible = 0
@@ -42,7 +42,7 @@ Greedy_portion = 0
 One_portion = 0
 usePick = 1
 nbPick = 2
-sortPath = 0
+sortPath = 1
 sortColumn = 1
 
 # CPLEX PARAMETERS
