@@ -146,7 +146,7 @@ bool LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Te
             nbDominated_++;
     }
     else {
-//        nbUnreachableDTrip_++;
+        nbUnreachableDTrip_++;
         return false;
     }
     return true;
