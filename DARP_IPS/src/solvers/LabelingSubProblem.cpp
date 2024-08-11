@@ -55,12 +55,12 @@ void LabelingSubProblem::initialization() {
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
     initialNodeID_ = subGraph_->sourceNodes_[0]->nodeID_;
-    initialLabel->openRequests_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(), 0);
+ //   initialLabel->openRequests_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(), 0);
     initialLabel->travelResources_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(),0);
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&(*nodeObj));
-        initialLabel->openRequests_[nodeObj->related_Request_->taskIndexLabel_] = 1;
+        initialLabel->openRequests_.set(nodeObj->related_Request_->taskIndexLabel_, true);
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (Vehicle_)->departTime_ +
                 nodeObj->pairNode_->departTime_;
 

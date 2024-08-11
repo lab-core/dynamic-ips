@@ -13,8 +13,8 @@ module load eigen
 module load gcc
 cmake --build cmake-build-release --target all
 
-DIRECTORY="Instances_12-14_Small"
-MAIN_DIR="datasets/Instances_12-14_Small"
+DIRECTORY="Instances_12-14_Big"
+MAIN_DIR="datasets/Instances_12-14_Big"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))

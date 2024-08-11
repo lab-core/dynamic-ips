@@ -804,8 +804,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
 
         setAvailableTime();
-        if (availableTime_ < 1)
-            availableTime_ = 2;
+        if (availableTime_ < 6)
+            availableTime_ = 6;
         // solve the model in Integer mode
         lpObjValue_ = lpObj;
         MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);

@@ -30,7 +30,7 @@ public:
     std::vector<Node*> openNode_;                   // it makes sure that all the picked requests are dropped
     std::bitset<MAX_BIT_SIZE> completeRequests_;    // keep track of completed tasks
     int numCompleted_;                              //
-    std::vector<int> openRequests_;                 // used to check feasibility and domination
+    std::bitset<MAX_BIT_SIZE> openRequests_;                 // used to check feasibility and domination
     std::vector<Node*> pathNode_;                   // order of nodes in the path
 
     double reducedCost_;

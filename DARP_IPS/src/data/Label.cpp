@@ -21,7 +21,7 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     totalDelay_ = 0;
     status_ = ACTIVE;
     openNode_.clear();
-    openRequests_.clear();
+    openRequests_.reset();
 
     completeRequests_.reset();
     extendCheck_.reset();
@@ -122,7 +122,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
                 break;
             }
         }
-        openRequests_[outNode->related_Request_->taskIndexLabel_] = 0;
+        openRequests_.set(outNode->related_Request_->taskIndexLabel_, false);
         if (isDropPickPossible)
             isDropped_ = true;
         else if (!isDropPickPossible && numCompleted_ > 0)
@@ -134,7 +134,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         numCompleted_++;
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
-        openRequests_[outNode->related_Request_->taskIndexLabel_] = 1;
+        openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
         reducedCost_ -= (outNode->related_Request_)->dual_;
         if (travelTime > 0){
             nbPickUp_++;
@@ -188,7 +188,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
             return false;
     }
     if (outNode->type_ == DROPOFF) {
-        if (openRequests_[outNode->related_Request_->taskIndexLabel_] == 0)
+        if (!openRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
     if (outNode->type_ == SINK) {
@@ -241,16 +241,11 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                if (this->openRequests_ == otherLabel->openRequests_) {
-                    if (solverOption->isDominanceReleased_) {
-                        if (this->numCompleted_ > otherLabel->numCompleted_)
-                            return true;
-                    } else {
-                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                            return true;
-                        }
+ //               if (otherLabel->openRequests_ == this->openRequests_) {
+                if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
+                    if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
+                        return true;
                     }
-
                 }
             }
         }
