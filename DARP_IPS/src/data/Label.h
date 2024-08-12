@@ -70,6 +70,7 @@ public:
 
 //    PRoute labelToRoute(PVehicle &vehicle);
     PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
+
     // Display function
     std::string toString() const;
 
