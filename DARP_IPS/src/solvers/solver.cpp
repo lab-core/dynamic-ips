@@ -534,10 +534,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     if (EpochInst->parameters_->initialDual_ == ONE_LABELING ||
                         EpochInst->parameters_->initialDual_ == ONE_REQUEST || EpochInst->parameters_->onePortion_){
                         if (iter == 2)
-                            masterModel_->availableTime_ = 6;
+                            masterModel_->availableTime_ = 10;
                     }
                     else if (iter == 1)
-                        masterModel_->availableTime_ = 6;
+                        masterModel_->availableTime_ = 10;
                     else {
                         std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
                         break;
