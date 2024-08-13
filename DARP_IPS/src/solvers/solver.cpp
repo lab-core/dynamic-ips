@@ -336,17 +336,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         GreedyModel_->GreedySolver(EpochInst);
 
     // Set available time
-    switch (EpochInst->parameters_->solutionMode_) {
-        case ANYTIME:
-            masterModel_->availableTime_ = static_cast<int>(EpochInst->parameters_->committedTime_);
-            break;
-        case DYNAMIC:
-            masterModel_->availableTime_ = static_cast<int>(EpochInst->parameters_->epochLength_);
-            break;
-        case STATIC:
-            masterModel_->availableTime_ = LARGE_CONSTANT;
-            break;
-    }
+    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+
     masterModel_->initialization(EpochInst, inputPaths);
     for (auto &vehicleObj: EpochInst->vehicles_) {
         vehicleObj->vehicleIndex_ = -1;
@@ -521,31 +512,25 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             break;
         }
         else {
-            if (EpochInst->parameters_->solutionMode_ == ANYTIME) {
-                masterModel_->availableTime_ = (int) (EpochInst->parameters_->committedTime_ -
-                                                      simulationTime_->dSinceStart().count());
-                if (masterModel_->availableTime_ < 6)
-                    masterModel_->availableTime_ = 6;
-            }
-            else if (EpochInst->parameters_->solutionMode_ == DYNAMIC) {
-                masterModel_->availableTime_ = (int)(EpochInst->parameters_->epochLength_ -
-                                                     simulationTime_->dSinceStart().count());
-                if (masterModel_->availableTime_ < 6){
-                    if (EpochInst->parameters_->initialDual_ == ONE_LABELING ||
-                        EpochInst->parameters_->initialDual_ == ONE_REQUEST || EpochInst->parameters_->onePortion_){
-                        if (iter == 2)
-                            masterModel_->availableTime_ = 10;
-                    }
-                    else if (iter == 1)
+            // Update available time
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+            if (masterModel_->availableTime_ < 6){
+                if (iter == 1)
+                    masterModel_->availableTime_ = 10;
+                else if (EpochInst->parameters_->initialDual_ == ONE_LABELING ||
+                    EpochInst->parameters_->initialDual_ == ONE_REQUEST || EpochInst->parameters_->onePortion_){
+                    if (iter == 2)
                         masterModel_->availableTime_ = 10;
                     else {
                         std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
                         break;
                     }
                 }
+                else {
+                    std::cout << "available time: " << masterModel_->availableTime_ << std::endl;
+                    break;
+                }
             }
-            else
-                masterModel_->availableTime_ = LARGE_CONSTANT;
 
 
             masterModel_->timeLimit_ = masterModel_->availableTime_;
@@ -573,8 +558,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 if (mainInst->parameters_->oneIter_ && iter == 1)
                     break;
             }
+            // Update available time
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
 
-            if (EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count() < 4)
+            if (masterModel_->availableTime_ < 4)
                 break;
         }
         if (previousObj == masterModel_->objValue_) {

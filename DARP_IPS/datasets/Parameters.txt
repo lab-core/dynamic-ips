@@ -11,15 +11,15 @@ InitialDual = 3
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
-OneIter = 1
+OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 2
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
 # ISUD PARAMETERS
 #
-warmStart = 2
+warmStart = 1
 MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
@@ -33,7 +33,7 @@ isTruncated = 0
 MaxLabel = 30
 isDominanceReleased = 0
 isSuccessorsLimited = 1
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1

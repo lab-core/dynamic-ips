@@ -122,6 +122,7 @@ public:
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
     std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime,
                                  double auxObj) const;
+    void setAvailableTime(PInstance &pInst, double elapsedTime);
 };
 
 
