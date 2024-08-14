@@ -6,14 +6,14 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 16
+nbThreads = 10
 InitialDual = 3
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
-OneIter = 0
+OneIter = 1
 GreedyReOptimize = 1
-saveScratch = 2
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
@@ -29,17 +29,17 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
-MaxLabel = 30
+isTruncated = 1
+MaxLabel = 10
 isDominanceReleased = 0
 isSuccessorsLimited = 1
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Greedy_portion = 0
-One_portion = 0
+One_portion = 1
 usePick = 1
 nbPick = 2
 sortPath = 0

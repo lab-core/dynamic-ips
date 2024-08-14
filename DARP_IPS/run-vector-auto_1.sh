@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=64G
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=12G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-9
+#SBATCH --array=1-10
 #SBATCH --output=/dev/null
 
 module load eigen
@@ -31,7 +31,7 @@ do
         done
 
         # Second group of instances with num_vehicles=1100
-        for instance in 20160316_12-120m 20151110_12-120m 20160512_12-120m
+        for instance in 20160316_12-120m 20151110_12-120m 20160512_12-120m 20151008_12-120m
         do
           num_vehicles=1100
           if [ $SLURM_ARRAY_TASK_ID -eq $i ]

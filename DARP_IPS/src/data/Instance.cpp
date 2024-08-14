@@ -823,7 +823,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     }
     for (auto & requestObj: requests_) {
         if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->requestTime_ < simulationStart) && requestObj->solVehicleID_ == LARGE_CONSTANT) {
-            if (requestObj->requestTime_ >= simulationStart - 120) {
+  //          if (requestObj->requestTime_ >= simulationStart - 120) {
                 nbWaiting++;
                 myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
                 myFile << std::setw(10) << requestObj->PickUpID_;
@@ -836,7 +836,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
                 myFile << std::setw(10) << 0;
                 myFile << std::setw(10) << 0;
                 myFile << std::setw(10) << 0 << "\n";
-            }
+ //           }
         }
         /*else if (requestObj->earlyPick_ > simulationStart)
             nbRequests++;*/
