@@ -38,7 +38,7 @@ public:
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
     float travelTimeFromSource_;            // is used in labeling for sorting successors_
     int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
-    std::vector<PLabel> activeLabels_;
+    std::vector<PLabel> activeLabels_;      // list of active labels of the node (non-extended labels)
 
     // Constructor and Destructor
     Node(string nodeId, const PRequest &relatedRequest, NodeType type);
