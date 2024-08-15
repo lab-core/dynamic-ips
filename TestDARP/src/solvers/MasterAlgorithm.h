@@ -24,8 +24,9 @@ public:
     PReducedProblem ReducedPro_;
     PMasterPro MasterPro_;
     vector2D<PRoute> availableRoutes_;
- //   vector2D<int> subProResults_;
+    //   vector2D<int> subProResults_;
     int nbRoutes_;
+    int nbColumnsAdded_;
     int nbVehicles_;
     float availableTime_;           // time left from availableTime_ to solve master problem
     int timeLimit_;                 // total available time to solve master problem
@@ -54,6 +55,7 @@ public:
     int ZoomIter_;                  // number of Zoom iteration
     int CPSuccess_;                 // number of time CP succeed in finding integer
     int CPFails_;                   // number of time CP fails in finding integer
+    int CGSuccess_;                 // number of time that CG where able to converge
     double objValue_;               // objective value during MP iterations
     double lpObjValue_;             // linear objective value
     double totalWaitTime_;          // total waiting time without penalties
@@ -120,6 +122,7 @@ public:
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
     std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime,
                                  double auxObj) const;
+    void setAvailableTime(PInstance &pInst, double elapsedTime);
 };
 
 

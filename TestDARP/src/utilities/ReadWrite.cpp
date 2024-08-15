@@ -40,27 +40,27 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
         if (strEndWith(title, "INSTANCE "))
             file >> name;
 
-        // read simulation start time
+            // read simulation start time
         else if (strEndWith(title, "SIMULATION_START "))
             file >> simulationStart;
 
-        // read number of vehicles
+            // read number of vehicles
         else if (strEndWith(title, "NUM_VEHICLES "))
             file >> nbVehicles;
 
-        // read number of onboards
+            // read number of onboards
         else if (strEndWith(title, "NUM_ONBOARDS "))
             file >> nbOnboards;
 
-        // read number of requests remained from previous epochs
+            // read number of requests remained from previous epochs
         else if (strEndWith(title, "NUM_RECEIVED "))
             file >> nbReceived;
 
-        // read number of requests
+            // read number of requests
         else if (strEndWith(title, "NUM_REQUESTS "))
             file >> nbRequests;
 
-        // read number of stop locations
+            // read number of stop locations
         else if (strEndWith(title, "NUM_LOCATIONS "))
             file >> nbLocations;
 
@@ -176,8 +176,8 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                     pInstance->vehicles_.back()->InitialDual_ = lDual;
                 }
                 else {*/
-                    pInstance->vehicles_.back()->dual_ = iDual;
-                    pInstance->vehicles_.back()->InitialDual_ = iDual;
+                pInstance->vehicles_.back()->dual_ = iDual;
+                pInstance->vehicles_.back()->InitialDual_ = iDual;
 //                }
                 routeNodes[v].resize(routeSize);
             }
@@ -204,14 +204,14 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
     string title;
 
     while (file.good()) {
- //       readUntilChar(file, '\n', title);
+        //       readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
 
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1, vehicleID = -1, pickZoneID = -1, dropZoneID = -1, position = -1;
- //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
+                //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
                 float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1, deltaTime = -1;
 
                 file >> nbPassengers;
@@ -226,9 +226,9 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> position;
 
                 // the starting time of the instance is 16pm
- //               deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                //               deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 deltaTime = static_cast<float>(ServiceTime);
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                             nbPassengers, deltaTime, pickZoneID, dropZoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
@@ -295,9 +295,9 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> dropZoneID;
 
                 // the starting time of the instance is 16pm
-        //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 deltaTime = static_cast<float>(ServiceTime);
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                             nbPassengers, deltaTime, pickZoneID, dropZoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
@@ -307,8 +307,15 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 pickNode->zoneID_ = pickZoneID;
                 dropNode->zoneID_ = dropZoneID;
                 pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
-        //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
-                pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
+                //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
+
+                if (pInstance->parameters_->timeWindow_ > 0)
+                    pInstance->requests_.back()->penalty_ = pInstance->parameters_->timeWindow_;
+                else
+                    pInstance->requests_.back()->setPenalty(0, pInstance->parameters_,
+                                                            pInstance->simulationStartTime_);
+                pInstance->requests_.back()->latestPickup_ = pInstance->requests_.back()->earlyPick_ +
+                                                             pInstance->requests_.back()->penalty_;
             }
         }
     }
@@ -356,8 +363,8 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(ServiceTime);
-                if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
-                    pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+   //             if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
+                    pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                                 nbPassengers, deltaTime, pickZoneID,
                                                                                 dropZoneID));
                     pInstance->nameToRequest_.insert(
@@ -370,13 +377,19 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                     pickNode->zoneID_ = pickZoneID;
                     dropNode->zoneID_ = dropZoneID;
                     pInstance->instGraph_->addRequestToMainGraph(pickNode, dropNode);
-                    pInstance->requests_.back()->setPenalty(0, pInstance->parameters_, pInstance->simulationStartTime_);
+                    if (pInstance->parameters_->timeWindow_ > 0)
+                        pInstance->requests_.back()->penalty_ = pInstance->parameters_->timeWindow_;
+                    else
+                        pInstance->requests_.back()->setPenalty(0, pInstance->parameters_,
+                                                                pInstance->simulationStartTime_);
+                    pInstance->requests_.back()->latestPickup_ = pInstance->requests_.back()->earlyPick_ +
+                                                                 pInstance->requests_.back()->penalty_;
                     pInstance->requests_.back()->dual_ = iDual;
                     pInstance->requests_.back()->InitialDual_ = iDual;
                     routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
                     routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
                     pInstance->nbWaiting_++;
-                }
+ //               }
             }
         }
     }
@@ -408,7 +421,7 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
     string title;
 
     while (file.good()) {
- //       readUntilChar(file, '\n', title);
+        //       readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "DURATION_INFO")) {
 
@@ -449,9 +462,10 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, vehicleReturn = false, zonePortion = false;
+    bool greedyReOptimize = false, vehicleReturn = false, onePortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
+    float timeWindows = -1;
 
     bool addOneRequestColumn = false;
     float mipGap = -1;
@@ -504,6 +518,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "vehicleReturn "))
             file >> vehicleReturn;
 
+        else if (strEndWith(title, "timeWindows "))
+            file >> timeWindows;
+
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
 
@@ -555,8 +572,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Greedy_portion "))
             file >> greedyPortion;
 
-        else if (strEndWith(title, "Zone_portion "))
-            file >> zonePortion;
+        else if (strEndWith(title, "One_portion "))
+            file >> onePortion;
 
         else if (strEndWith(title, "usePick "))
             file >> usePick;
@@ -586,7 +603,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
-                                                          greedyReOptimize, saveScratch, vehicleReturn,
+                                                          greedyReOptimize, saveScratch, vehicleReturn, timeWindows,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, nbColumns, isTruncated, maxLabel, isSuccessorsLimited,
@@ -594,7 +611,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          constPortion, greedyPortion, zonePortion, usePick, nbPick,
+                                                          constPortion, greedyPortion, onePortion, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
@@ -649,7 +666,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
         ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
     if (pInstance->nbWaiting_ > 0) {
         ReadWrite::readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
-        if (!solveEpoch) {
+ //       if (!solveEpoch) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
                 if (routeNodes[v].size() > 1) {
                     PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);
@@ -664,7 +681,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                     pInstance->vehicles_[v]->setCurrentRoute(newRoute);
                 }
             }
-        }
+//        }
     }
 
     if (!solveEpoch) {
@@ -690,7 +707,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
+                        "isSuccessorsLimited,LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();

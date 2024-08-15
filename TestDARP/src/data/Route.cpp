@@ -25,6 +25,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     mpAdded_ = false;
     cpAdded_ = false;
     score_ = 0;
+    lambda_ = 0;
     createTime_ = 0;
     totalLength_ = 0;
 }
@@ -51,8 +52,8 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
 void Route::addNode(PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->requestTime_)
-        plannedDepartTime_.back() = node->requestTime_;
+    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->related_Request_->requestTime_)
+        plannedDepartTime_.back() = node->related_Request_->requestTime_;
     float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
     plannedReachTime_.push_back(reachTime);
     plannedDepartTime_.push_back(reachTime + node->serviceTime_);
@@ -60,7 +61,7 @@ void Route::addNode(PNode &node) {
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
+        totalDelay_ += (reachTime - node->readyTime_);
     }
 }
 
@@ -72,7 +73,7 @@ void Route::addNode(PNode &node, float reachTime, float departTime) {
     plannedDepartTime_.push_back(departTime);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->requestTime_);
+        totalDelay_ += (reachTime - node->readyTime_);
     }
     routeNodes_.push_back(node);
 }
@@ -98,7 +99,7 @@ void Route::removeNode(int nodeIndex) {
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
-            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->requestTime_);
+            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->readyTime_);
         }
 
     }
@@ -210,11 +211,11 @@ void Route::testRoute(PVehicle & vehicle) {
                 throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
- /*//       if (mainAlgorithm != GREEDY){
-//            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
-            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back()))
-                testRoute->plannedReachTime_.back() = routeNodes_[i]->departureTime_;
-//        }*/
+        /*//       if (mainAlgorithm != GREEDY){
+       //            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
+                   if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back()))
+                       testRoute->plannedReachTime_.back() = routeNodes_[i]->departureTime_;
+       //        }*/
 
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
@@ -225,10 +226,10 @@ void Route::testRoute(PVehicle & vehicle) {
         // checking trip delay constraint
         if (testRoute->routeNodes_.back()->initialType_ == DROPOFF){
             float travelTime = testRoute->routeNodes_.back()->related_Request_->dropTime_ -
-                    testRoute->routeNodes_.back()->pairNode_->departTime_;
+                               testRoute->routeNodes_.back()->pairNode_->departTime_;
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
-                testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
+                          testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
                 throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
@@ -284,21 +285,3 @@ void Route::createColumn() {
     if (incVehicleToOrder.count(VehicleID_)>0)
         fullPattern_(incVehicleToOrder[VehicleID_],0) = 1;
 }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

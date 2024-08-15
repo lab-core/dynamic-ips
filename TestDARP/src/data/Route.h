@@ -38,6 +38,7 @@ public:
     bool mpAdded_;                              // is the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // is the route has already been added to the CP model
     double score_;                              // equals to the reduced cost/number of pickups(or tasks)
+    double lambda_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
@@ -68,7 +69,7 @@ public:
 
     bool equal (Route const &routeObj) {
         if ((this->totalDelay_ == routeObj.totalDelay_)&& (this->routeSize_ == routeObj.routeSize_) &&
-                (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))
+            (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))
             return true;
         else
             return false;
@@ -80,9 +81,9 @@ inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
     std::cout << "comparing";
     return (
             ((lhs->totalDelay_ == rhs->totalDelay_) && (lhs->routeSize_ == rhs->routeSize_)&&
-                    (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&
-                    (lhs->vehicleID_ == rhs->vehicleID_ ))
-            );
+             (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&
+             (lhs->vehicleID_ == rhs->vehicleID_ ))
+    );
 }
 
 #endif //ROUTE_H

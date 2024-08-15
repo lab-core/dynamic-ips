@@ -32,14 +32,12 @@ public:
     int nbPassengers_;                      // number of passengers to pick up or drop off
     float serviceTime_;                     // time to perform pick up or drop off
     NodeStatus nodeStatus_;                 // status of the node: no action, planned, completed
-    float requestTime_;                     // earliest possible pick up time for the request (request time)
+    float readyTime_;                     // earliest possible pick up time for the request (request time)
     double bestLabelReduceCost_;            // smallest reduced cost af active vehicles
     int nbActiveLabels_;                    // Number of active labels in labeling approach
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
     float travelTimeFromSource_;            // is used in labeling for sorting successors_
     int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
-
-
     std::vector<PLabel> activeLabels_;
 
     // Constructor and Destructor

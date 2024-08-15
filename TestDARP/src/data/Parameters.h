@@ -29,6 +29,7 @@ public:
     int saveScratch_;              // save the results in scratch place of the server
     bool savePartial_;              // calculate the avg. wait time after one hour
     bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
+    float timeWindow_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -51,7 +52,7 @@ public:
     subproblemAlgorithm subAlgorithm_;
     bool constPortion_;
     bool greedyPortion_{};
-    bool zonePortion_{};
+    bool onePortion_{};
     bool usePick_;
     int nbPick_;
     SortPaths sortPath_;
@@ -66,11 +67,12 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
-               bool greedyReOptimize, int saveScratch, bool vehicleReturn, warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-               bool useMultiStage, float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
+               bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
+               int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
+               int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
-               bool greedyPortion, bool zonePortion, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
+               bool greedyPortion, bool onePortion, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();
@@ -85,7 +87,7 @@ public:
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 struct solverOption {
- //   int maxPickup_;
+    //   int maxPickup_;
 
     bool isTruncated_;
     bool isDominanceReleased_;

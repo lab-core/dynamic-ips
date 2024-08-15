@@ -100,7 +100,7 @@ bool Label::operator () (const Label &rhs) const {
 void Label::extend(Node *outNode, bool isDropPickPossible) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    reachedTime_ = std::max(outNode->requestTime_, passedTime_) + travelTime;
+    reachedTime_ = std::max(outNode->readyTime_, passedTime_) + travelTime;
     for (auto &node: openNode_) {
         travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
                                                                         passedTime_);
@@ -131,8 +131,8 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
             nbPickUp_++;
         }
 //        nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->requestTime_);
-        reducedCost_ += (reachedTime_ - outNode->requestTime_);
+        totalDelay_ += (reachedTime_ - outNode->readyTime_);
+        reducedCost_ += (reachedTime_ - outNode->readyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
     }
@@ -151,12 +151,12 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
     // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
-    timeToReach = std::max(outNode->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+    timeToReach = std::max(outNode->readyTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ >= maxPickUp)
             return false;
         if (isSuccessorLimited) {
-            float minWait = timeToReach - outNode->requestTime_;
+            float minWait = timeToReach - outNode->readyTime_;
             if (minWait > outNode->related_Request_->penalty_)
                 return false;
         }

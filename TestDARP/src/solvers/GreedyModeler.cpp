@@ -90,22 +90,22 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
                     GRoute->idle_ = false;
                     // if a vehicle is idle before arrival of a request, its departure time should be after the request time
                     // after arrival of each request, the vehicle positions should be updated
-                    if (GRoute->departureTime_ < PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_) {
+                    if (GRoute->departureTime_ < PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_) {
                         while ((GRoute->PCurrentStop_->child_ != nullptr) && (GRoute->departureTime_ <
-                                                                              PInst->requests_[i]->earlyPick_ +
+                                                                              PInst->requests_[i]->requestTime_ +
                                                                               PInst->parameters_->committedTime_)) {
                             GRoute->PCurrentStop_ = GRoute->PCurrentStop_->child_;
                             GRoute->departureTime_ = GRoute->PCurrentStop_->leaveTime_;
                         }
                         // if we are at the end of the route
                         if (GRoute->departureTime_ <
-                            PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_) {
+                            PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_) {
                             //                       GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ - GRoute->departureTime_;
                             GRoute->departureTime_ =
-                                    PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
+                                    PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_;
                             GRoute->PLastStop_->leaveTime_ =
-                                    PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_;
-                            GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ -
+                                    PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_;
+                            GRoute->idleTime_ += PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_ -
                                                  GRoute->departureTime_;
                             GRoute->idle_ = true;
                         }
@@ -195,7 +195,3 @@ void GreedySolver_noShare(PInstance &PInst) {
         }
     }
 }
-
-
-
-
