@@ -108,7 +108,10 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
     SPIter_ = 0;
     CPBuilt_ = false;
 
+
+    nbVehicles_ = 0;
     for (auto &vehicleObj: pInst->vehicles_) {
+            vehicleObj->vehicleIndex_ = nbVehicles_;
         if (vehicleObj->departTime_ != vehicleObj->emptyRoute_->plannedDepartTime_[0]) {
             if (vehicleObj->currentRoute_->routeSize_ == 1)
                 vehicleObj->emptyRoute_ = vehicleObj->currentRoute_;
@@ -117,17 +120,23 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
                 vehicleObj->setEmptyRoute(pInst);
             }
         }
+        nbVehicles_++;
         ReducedPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
     }
 
     // create a feasible integer solution at the start of epoch or simulation
     if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
-        for (auto &requestObj : pInst->requests_)
+        for (auto &requestObj : pInst->requests_) {
             zSolution_.push_back(requestObj);
+            requestObj->dual_ = requestObj->penalty_;
+            requestObj->InitialDual_ = requestObj->penalty_;
+        }
         routeSolution_.clear();
         for (auto &vehicleObj: pInst->vehicles_) {
             routeSolution_.push_back(vehicleObj->emptyRoute_);
         }
+        for (auto &vehicleObj: pInst->vehicles_)
+            vehicleObj->dual_ = 0;
         setObjValue();
     }
     else if (pInst->parameters_->initialStart_ == PRE_SOLUTION){
@@ -137,69 +146,49 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
             }
         }
         for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i){
-            if (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT)
+            if (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                 zSolution_.push_back(pInst->requests_[i]);
+                pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
+                pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->penalty_;
+            }
         }
         setObjValue();
     }
     else if (pInst->parameters_->initialStart_ == GREEDY_START){
-        routeSolution_.clear();
-        zSolution_.clear();
-        // it has been solved before in solver
-        for (auto &vehicleObj: pInst->vehicles_) {
-            //    ReducedPro_->routesToAdd_.push_back(vehicleObj->currentRoute_);
-            routeSolution_.push_back(vehicleObj->currentRoute_);
-        }
+        MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        objValue_ = MasterPro_->objValue_;
         setObjValue();
         GreedyObjValue_ = objValue_;
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
 
-    /*if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)){
-        // adding new arrival requests to zSolutions
-        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i) {
-            // creating routes with only one request
-            for (int v = 0; v < pInst->nbVehicles_; ++v) {
-                // creating an empty route
-                PRoute newRoute = std::make_shared<Route>(pInst->vehicles_[v]->vehicleID_);
-
-                newRoute->addSource(pInst->vehicles_[v]->departNode_,pInst->vehicles_[v]->departTime_,
-                                    pInst->vehicles_[v]->numPassengers_);
-                newRoute->addNode(pInst->instGraph_->pickNodes_[i]);
-                newRoute->addNode(pInst->instGraph_->dropNodes_[i]);
-                availableRoutes_[pInst->vehicles_[v]->vehicleID_].push_back(newRoute);
-                ReducedPro_->routesToAdd_.push_back(newRoute);
-            }
+    // build the model
+    if (pInst->parameters_->mainAlgorithm_ == MP_ISUD) {
+        ReducedPro_->routesToAdd_.clear();
+        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
         }
-    }*/
-
-    // set the duals of un-served requests based on penalties
-    if (pInst->parameters_->initialDual_ == PENALTIES){
-        for (auto &requestObj: pInst->requests_)
-            requestObj->dual_ = requestObj->penalty_;
-        for (auto &vehicleObj: pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-
-    } else {
-        for (auto &requestObj: zSolution_)
-            requestObj->dual_ = requestObj->penalty_;
-    }
-    for (auto &requestObj: zSolution_)
-        requestObj->InitialDual_ = requestObj->penalty_;
-
-    /*RPTime_->start();
-
-    if ((pInst->parameters_->addOneRequestColumn_)&&(pInst->nbOnboards_ == 0)) {
         MPBuildTime_->start();
         ReducedPro_->buildModel(pInst, routeSolution_, nbVehicles_);
         MPBuildTime_->stop();
-        ReducedPro_->solveModelLPInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                     (int)availableTime_, objValue_);
-        setObjValue();
+        // set duals based on greedy
+        if (pInst->parameters_->initialStart_ == GREEDY_START)
+            ReducedPro_->solveModelLP(pInst, inputPaths);
+    }
+    else {
+        ReducedPro_->routesToAdd_.clear();
+        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+        }
+        MPBuildTime_->start();
+        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
+        MPBuildTime_->stop();
+        // set duals based on greedy
+        if (pInst->parameters_->initialStart_ == GREEDY_START)
+            MasterPro_->solveModelLP(pInst, inputPaths);
     }
 
 
-    RPTime_->stop();*/
     masterTime_->stop();
 }
 
@@ -282,14 +271,6 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                 vehicleObj->dual_ = vehicleObj->InitialDual_;
         }
 
-        if (RMPCounter_ == 1) {
-            MPBuildTime_->start();
-            ReducedPro_->routesToAdd_.clear();
-            ReducedPro_->buildModel(pInst,  routeSolution_, nbVehicles_);
-            MPBuildTime_->stop();
-/*            if (availableTime_ < 1 && pInst->parameters_->solutionMode_ != ANYTIME)
-                tiLim = 3;*/
-        }
 
         /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
             (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
@@ -680,12 +661,6 @@ void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &input
         for(auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = vehicleObj->InitialDual_;
     }
-    if (RMPCounter_ == 1) {
-        MPBuildTime_->start();
-        MasterPro_->routesToAdd_.clear();
-        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
-        MPBuildTime_->stop();
-    }
 
     // save initial duals
     if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -760,12 +735,6 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         for(auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = vehicleObj->InitialDual_;
     }
-    if (RMPCounter_ == 1) {
-        MPBuildTime_->start();
-        MasterPro_->routesToAdd_.clear();
-        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
-        MPBuildTime_->stop();
-    }
 
     // save initial duals
     /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -830,13 +799,6 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
     masterTime_->start();
     setObjValue();
     double previousObj = objValue_;
-
-    if (RMPCounter_ == 1) {
-        MPBuildTime_->start();
-        MasterPro_->routesToAdd_.clear();
-        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
-        MPBuildTime_->stop();
-    }
 
     // save initial duals
     /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -953,6 +915,7 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
         objValue_ = MasterPro_->objValue_;
     }
 }
+
 
 void MasterAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     MasterPro_->routesToAdd_.clear();

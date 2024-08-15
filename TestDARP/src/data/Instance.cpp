@@ -923,3 +923,7 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
     }
     return repStr.str();
 }
+
+void Instance::selectSubProVehicles() {
+
+}

@@ -461,8 +461,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
-    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, greedyPortion = false, usePick = false;
-    bool greedyReOptimize = false, vehicleReturn = false, onePortion = false;
+    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, vehiclePortion = false, usePick = false;
+    bool greedyReOptimize = false, vehicleReturn = false, dynamicPricing = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
     float timeWindows = -1;
@@ -569,11 +569,11 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "constPortion "))
             file >> constPortion;
 
-        else if (strEndWith(title, "Greedy_portion "))
-            file >> greedyPortion;
+        else if (strEndWith(title, "Vehicle_portion "))
+            file >> vehiclePortion;
 
-        else if (strEndWith(title, "One_portion "))
-            file >> onePortion;
+        else if (strEndWith(title, "Dynamic_Pricing "))
+            file >> dynamicPricing;
 
         else if (strEndWith(title, "usePick "))
             file >> usePick;
@@ -611,7 +611,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          constPortion, greedyPortion, onePortion, usePick, nbPick,
+                                                          constPortion, vehiclePortion, dynamicPricing, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
@@ -707,7 +707,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "isSuccessorsLimited,LabelingStrategy,Greedy_portion,Zone_portion,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
+                        "isSuccessorsLimited,LabelingStrategy,Vehicle_portion,Dynamic_Pricing,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();

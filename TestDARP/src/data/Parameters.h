@@ -51,8 +51,8 @@ public:
     LabelingStrategy LabelingStrategy_;
     subproblemAlgorithm subAlgorithm_;
     bool constPortion_;
-    bool greedyPortion_{};
-    bool onePortion_{};
+    bool vehiclePortion_{};
+    bool dynamicPricing_{};
     bool usePick_;
     int nbPick_;
     SortPaths sortPath_;
@@ -72,7 +72,7 @@ public:
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
                bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
-               bool greedyPortion, bool onePortion, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
+               bool vehiclePortion, bool dynamicPricing, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();
