@@ -17,6 +17,7 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     pathNode_.push_back(&(*source));
     reducedCost_ = 0;
     labelScore_ = 0;
+    lambdaScore_ = 0;
     totalDelay_ = 0;
     status_ = ACTIVE;
     openNode_.clear();
@@ -45,6 +46,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     pathNode_ = label.pathNode_;
     reducedCost_ = label.reducedCost_;
     labelScore_ = label.labelScore_;
+    lambdaScore_ = label.lambdaScore_;
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
@@ -70,7 +72,7 @@ void Label::copyLabel(const Label &label) {
     pathNode_ = label.pathNode_;
     reducedCost_ = label.reducedCost_;
     labelScore_ = label.labelScore_;
-
+    lambdaScore_ = label.lambdaScore_;
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
@@ -135,6 +137,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         reducedCost_ += (reachedTime_ - outNode->readyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
+        lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
     }
 
     passedTime_ = reachedTime_ + outNode->serviceTime_;
@@ -232,10 +235,14 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     }
     if (newRoute->routeRequests_.empty() && !pInst->vehicles_[newRoute->vehicleID_]->onboards_.empty())
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
-    if (!newRoute->routeRequests_.empty())
-        newRoute->score_ = reducedCost_/newRoute->routeRequests_.size();
-    else
+    if (!newRoute->routeRequests_.empty()) {
+        newRoute->score_ = reducedCost_ / newRoute->routeRequests_.size();
+        newRoute->lambda_ = newRoute->totalDelay_/(newRoute->totalDelay_ - reducedCost_ + 0.0001);
+    }
+    else {
         newRoute->score_ = 0;
+        newRoute->lambda_ = 0;
+    }
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
