@@ -82,14 +82,31 @@ int main(int argc, char** argv) {
                 if (!solveEpoch)
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+
+                /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
+
+                /*if (i == 1) {
+                    mainInst->parameters_->initialDual_ = ONE_REQUEST;
+                }
+                else {
+                    mainInst->parameters_->initialDual_ = ONE_LABELING;
+                }*/
 //                mainInst->parameters_->vehicleReturn_= j;
-//                mainInst->parameters_->nbPick_= i+2;
+//                mainInst->parameters_->nbPick_= i+1;
                 /*if (i == 0)
                     mainInst->parameters_->isTruncated_ = false;
                 else
                     mainInst->parameters_->MaxLabel_ = i *5;*/
-//                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
- //               mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+
+                /*if (i == 0)
+                    mainInst->parameters_->oneIter_ = true;
+                else
+                    mainInst->parameters_->oneIter_ = false;
+                if (j == 0)
+                    mainInst->parameters_->isSuccessorsLimited_ = true;
+                else
+                    mainInst->parameters_->isSuccessorsLimited_ = false;*/
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
@@ -128,6 +145,13 @@ int main(int argc, char** argv) {
                 for (auto &vehicleObj: mainInst->vehicles_)
                     vehicleObj->solutionRoute_->testRoute(vehicleObj);
                 if (!middleSave) {
+                    if (mainInst->parameters_->timeWindow_ > 0){
+                        for (auto &reqestObj: mainInst->requests_){
+                            if (reqestObj->requestStatus_ != COMPLETED) {
+                                reqestObj->requestStatus_ = REJECTED;
+                            }
+                        }
+                    }
 
                     std::cout << std::endl << std::endl;
 
@@ -147,12 +171,12 @@ int main(int argc, char** argv) {
                     requestResultsStream.close();
                     Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
                     finalInstanceStream
-                            << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#customers,customer Group,"
-                               "#served Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,"
+                            << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,customer Group,"
+                               "#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,#(Lim)Rejected Req,"
                                "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
                                "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
                                "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
-                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails";
+                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails, CGSuccess";
                     finalInstanceStream << "\n" << vehicleFolder << ",";
                     finalInstanceStream << mainInst->instRepStr_.str();
                     finalInstanceStream.close();

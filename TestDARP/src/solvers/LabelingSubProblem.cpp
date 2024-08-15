@@ -20,10 +20,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverO
     nbUnreachableDTrip_ = 0;
     nbUnreachableDelay_ = 0;
     nbOutputs_ = 0;
-    if (solverOptions_->addOneRequestColumn_)
-        maxPickup_ = 1;
-    else
-        maxPickup_ = solverOptions_->nbPick_;
+    maxPickup_ = solverOptions_->nbPick_;
     //   subproTime_ = new myTools::Timer(); subproTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
@@ -103,10 +100,12 @@ void LabelingSubProblem::initialization() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_) {
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            if (labelExtend(selectedLabel, neighbourNode, true)) {
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeDropNodes.push_back(neighbourNode);
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                    if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                        activeDropNodes.push_back(neighbourNode);
+                                    }
                                 }
                             }
                         }
@@ -229,10 +228,12 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                 if (!selectedLabel->isDropExtend_) {
                                     if (!selectedLabel->openNode_.empty()) {
                                         for (auto &onboardNode: selectedLabel->openNode_) {
-                                            nbActive = onboardNode->nbActiveLabels_;
-                                            if (labelExtend(selectedLabel, onboardNode, true)) {
-                                                if ((onboardNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                                    activeNodes_.push_back(onboardNode);
+                                            if (selectedLabel->isTravelTimeFeasible(onboardNode, nbUnreachableDTrip_)) {
+                                                nbActive = onboardNode->nbActiveLabels_;
+                                                if (labelExtend(selectedLabel, onboardNode, true)) {
+                                                    if ((onboardNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                                        activeNodes_.push_back(onboardNode);
+                                                    }
                                                 }
                                             }
                                         }
@@ -360,10 +361,12 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                 // drop onboards
                 if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
-                        nbActive = neighbourNode->nbActiveLabels_;
-                        if (labelExtend(selectedLabel, neighbourNode, true)) {
-                            if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                activeNodes_.push_back(neighbourNode);
+                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            nbActive = neighbourNode->nbActiveLabels_;
+                            if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(neighbourNode);
+                                }
                             }
                         }
                     }
@@ -392,10 +395,12 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            if (labelExtend(selectedLabel, neighbourNode, true)) {
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                    if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                        activeNodes_.push_back(neighbourNode);
+                                    }
                                 }
                             }
                             /*if (!(*neighbourNode)->activeLabels_.empty())
@@ -438,10 +443,12 @@ void LabelingSubProblem::solveDynamic_pushing() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_) {
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            if (labelExtend(selectedLabel, neighbourNode, true)) {
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                    if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                        activeNodes_.push_back(neighbourNode);
+                                    }
                                 }
                             }
                         }
@@ -500,13 +507,14 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
                     // drop onboards and terminate to sink if empty
                     if (!selectedLabel->openNode_.empty()){
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            if (labelExtend(selectedLabel, neighbourNode, true)){
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                    if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                        activeNodes_.push_back(neighbourNode);
+                                    }
                                 }
                             }
-
                         }
                     }
                     if (!selectedLabel->isDropped_) {
@@ -593,10 +601,12 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                 // drop onboards
                 if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
-                        nbActive = (neighbourNode)->nbActiveLabels_;
-                        if (labelExtend(selectedLabel, neighbourNode, true)){
-                            if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                activeNodes_.push_back(neighbourNode);
+                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            nbActive = (neighbourNode)->nbActiveLabels_;
+                            if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                    activeNodes_.push_back(neighbourNode);
+                                }
                             }
                         }
                     }
@@ -623,10 +633,12 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            nbActive = neighbourNode->nbActiveLabels_;
-                            if (labelExtend(selectedLabel, neighbourNode, true)){
-                                if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                                    activeNodes_.push_back(neighbourNode);
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                                nbActive = neighbourNode->nbActiveLabels_;
+                                if (labelExtend(selectedLabel, neighbourNode, true)) {
+                                    if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                                        activeNodes_.push_back(neighbourNode);
+                                    }
                                 }
                             }
                         }

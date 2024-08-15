@@ -254,9 +254,10 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
 bool Label::areDropsUnreachable() {
-//    return false;
+    return false;
     for (auto & nodeObj: openNode_) {
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {
+            std::cout << "Hi";
             return true;
         }
     }
