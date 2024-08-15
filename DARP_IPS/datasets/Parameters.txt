@@ -6,14 +6,14 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 10
-InitialDual = 3
+nbThreads = 16
+InitialDual = 0
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
-GreedyReOptimize = 1
-saveScratch = 0
+GreedyReOptimize = 0
+saveScratch = 2
 vehicleReturn = 0
 timeWindows = 0
 
@@ -29,20 +29,20 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
-MaxLabel = 10
+isTruncated = 0
+MaxLabel = 40
 isDominanceReleased = 0
-isSuccessorsLimited = 1
-isDropPickPossible = 0
+isSuccessorsLimited = 0
+isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
-Greedy_portion = 0
-One_portion = 1
+Vehicle_portion = 0
+Dynamic_Pricing = 0
 usePick = 1
 nbPick = 2
-sortPath = 0
+sortPath = 1
 sortColumn = 1
 
 # CPLEX PARAMETERS
