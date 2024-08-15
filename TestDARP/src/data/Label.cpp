@@ -25,10 +25,11 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
 
     completeRequests_.reset();
     extendCheck_.reset();
+    unreachableDelay_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     nbPickUp_ = 0;
- //   nbPickMove_ = 0;
+    //   nbPickMove_ = 0;
     isDropped_ = false;
     isDropExtend_ = false;
     createTime_ = 0;
@@ -52,12 +53,13 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
+    unreachableDelay_ = label.unreachableDelay_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 
     nbPickUp_ = label.nbPickUp_;
- //   nbPickMove_ = label.nbPickMove_;
+    //   nbPickMove_ = label.nbPickMove_;
 
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
@@ -78,12 +80,13 @@ void Label::copyLabel(const Label &label) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
+    unreachableDelay_ = label.unreachableDelay_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
 
     nbPickUp_ = label.nbPickUp_;
- //   nbPickMove_ = label.nbPickMove_;
+    //   nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
 }
@@ -102,7 +105,11 @@ bool Label::operator () (const Label &rhs) const {
 void Label::extend(Node *outNode, bool isDropPickPossible) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    reachedTime_ = std::max(outNode->readyTime_, passedTime_) + travelTime;
+    if (outNode->type_ == PICKUP)
+        reachedTime_ = std::max(outNode->related_Request_->requestTime_, passedTime_) + travelTime;
+    else
+        reachedTime_ = passedTime_ + travelTime;
+
     for (auto &node: openNode_) {
         travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
                                                                         passedTime_);
@@ -145,23 +152,37 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
 }
 
 // this function check the feasibility of the label before extension
-bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity) {
+bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity,
+                             int &nbUnreachableDelay, int &nbUnreachableDTrip) {
+    if (extendCheck_.test(outNode->related_Request_->taskIndexLabel_))
+        return false;
     float timeToReach;
     if (outNode->type_ == PICKUP){
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
     }
+    // check the arrival time window
+    if (unreachableDelay_.test(outNode->related_Request_->taskIndexLabel_)){
+        nbUnreachableDelay ++;
+        return false;
+    }
     // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
-    timeToReach = std::max(outNode->readyTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+    if (outNode->type_ == PICKUP)
+        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+    else
+        timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ >= maxPickUp)
             return false;
         if (isSuccessorLimited) {
-            float minWait = timeToReach - outNode->readyTime_;
-            if (minWait > outNode->related_Request_->penalty_)
+            if (timeToReach > outNode->related_Request_->latestPickup_) {
+                unreachableDelay_.set(outNode->related_Request_->taskIndexLabel_, true);
+                nbUnreachableDelay ++;
                 return false;
+            }
         }
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
@@ -175,17 +196,43 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
             return false;
     }
     // check travel time limitation
-    for (auto &nodeObj: openNode_) {
+    if (!isTravelTimeFeasible(outNode, nbUnreachableDTrip))
+        return false;
+    /*for (auto &nodeObj: openNode_) {
         float timeToDrop = timeToReach - passedTime_ + outNode->serviceTime_ +
                 durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
-        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop)
+        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop) {
+            nbUnreachableDTrip ++;
             return false;
-    }
+        }
+    }*/
 
     return true;
 }
 
+bool Label::isTravelTimeFeasible(Node *outNode, int &nbUnreachableDTrip) {
+    float timeToReach;
+    if (outNode->type_ == PICKUP)
+        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+    else
+        timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+
+
+    // check travel time limitation
+    for (auto &nodeObj: openNode_) {
+        if (nodeObj->nodeID_ != outNode->nodeID_) {
+            float timeToDrop = timeToReach - passedTime_ + outNode->serviceTime_ +
+                               durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
+
+            if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop) {
+                nbUnreachableDTrip++;
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (pathNode_.back() != otherLabel->pathNode_.back())
@@ -194,16 +241,11 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                //               if (otherLabel->openRequests_ == this->openRequests_) {
                 if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
-                    if (solverOption->isDominanceReleased_) {
-                        if (this->numCompleted_ > otherLabel->numCompleted_)
-                            return true;
-                    } else {
-                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                            return true;
-                        }
+                    if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
+                        return true;
                     }
-
                 }
             }
         }
@@ -211,11 +253,12 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
-bool Label::isEliminated() {
-
+bool Label::areDropsUnreachable() {
+//    return false;
     for (auto & nodeObj: openNode_) {
-        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_])
+        if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {
             return true;
+        }
     }
     return false;
 }
@@ -284,8 +327,3 @@ std::string Label::toString() const {
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
-
-
-
-
-

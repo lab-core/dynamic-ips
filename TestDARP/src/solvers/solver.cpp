@@ -225,7 +225,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
-            nbUnreachableDTrip_ += subProblem->nbEliminated_;
+            nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
             nbDominated_ += subProblem->nbDominated_;
         }
         preprocessTime_->start();
@@ -469,7 +469,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
-            nbUnreachableDTrip_ += subProblem->nbEliminated_;
+            nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
             nbDominated_ += subProblem->nbDominated_;
         }
         /*if (EpochInst->parameters_->initialStart_ != GREEDY_START)
