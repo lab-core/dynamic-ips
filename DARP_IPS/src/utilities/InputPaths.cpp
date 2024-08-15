@@ -188,12 +188,3 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }
-
-
-
-
-
-
-
-
-

@@ -11,9 +11,9 @@ vector2D<float> durationMatrix_;
 // Constructor and Destructor
 Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
                    std::vector<PVehicle> &vehicles, int nbRequests, int nbLocations, PGraph &mainGraph) : name_(name),
-                   simulationStartTime_(simulationStart), nbVehicles_(nbVehicles), nbOnboards_(nbOnboards),
-                   nbWaiting_(nbReceived), vehicles_(vehicles), nbRequests_(nbRequests), nbLocations_(nbLocations),
-                   instGraph_(mainGraph) {
+                                                                                                          simulationStartTime_(simulationStart), nbVehicles_(nbVehicles), nbOnboards_(nbOnboards),
+                                                                                                          nbWaiting_(nbReceived), vehicles_(vehicles), nbRequests_(nbRequests), nbLocations_(nbLocations),
+                                                                                                          instGraph_(mainGraph) {
     nbNewRequests_ = nbRequests;
     std::cout << "Instance created!"<< std::endl;
     requests_.reserve(nbRequests + nbOnboards);
@@ -157,7 +157,7 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
             if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
- //               myTools::throwException("Trip delay Validation");
+                //               myTools::throwException("Trip delay Validation");
             }
             if (travelTime - requests_[i]->minTravelTime_ < -0.1){
                 std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
@@ -176,7 +176,7 @@ std::string Instance::solutionToString() {
             }
             else {
                 if (requests_[i]->getRequestId() >= startIndex) {
- //               if (requests_[i]->earlyPick_ >= simulationStartTime_) {
+                    //               if (requests_[i]->earlyPick_ >= simulationStartTime_) {
                     totalNumServedPartial++;
                     totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
                     totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
@@ -218,8 +218,8 @@ std::string Instance::solutionToString() {
         if (vehicleObj->solutionRoute_->routeSize_ == 1)
             nbIdle++;
         totalStopLoad += std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
-                                        vehicleObj->solutionRoute_->plannedPassengers_.end(),
-                                        decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
+                                         vehicleObj->solutionRoute_->plannedPassengers_.end(),
+                                         decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
         totalStops += vehicleObj->solutionRoute_->routeSize_;
     }
     repStr << std::left << std::fixed << std::setprecision(2);
@@ -438,7 +438,7 @@ void Instance::addRequest(PRequest &request) {
 //    request->setPenaltyEpoch(epoch , parameters, simulationStart);
 //    request->setPenaltyEpoch(epoch - request->readEpoch_, parameters, simulationStart);
     nameToRequest_[request->name_] = request;
- //   updateRequestOrder();
+    //   updateRequestOrder();
 }
 
 
@@ -823,20 +823,20 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     }
     for (auto & requestObj: requests_) {
         if ((requestObj->requestStatus_ == NO_ACTION)&&(requestObj->requestTime_ < simulationStart) && requestObj->solVehicleID_ == LARGE_CONSTANT) {
-  //          if (requestObj->requestTime_ >= simulationStart - 120) {
-                nbWaiting++;
-                myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
-                myFile << std::setw(10) << requestObj->PickUpID_;
-                myFile << std::setw(10) << requestObj->DropOffID_;
-                myFile << std::setw(10) << requestObj->earlyPick_;
-                myFile << std::setw(10) << requestObj->pickZoneID_;
-                myFile << std::setw(10) << requestObj->dropZoneID_;
-                myFile << std::setw(10) << requestObj->InitialDual_;
-                myFile << std::setw(10) << requestObj->dual_;
-                myFile << std::setw(10) << 0;
-                myFile << std::setw(10) << 0;
-                myFile << std::setw(10) << 0 << "\n";
- //           }
+            //          if (requestObj->requestTime_ >= simulationStart - 120) {
+            nbWaiting++;
+            myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
+            myFile << std::setw(10) << requestObj->PickUpID_;
+            myFile << std::setw(10) << requestObj->DropOffID_;
+            myFile << std::setw(10) << requestObj->earlyPick_;
+            myFile << std::setw(10) << requestObj->pickZoneID_;
+            myFile << std::setw(10) << requestObj->dropZoneID_;
+            myFile << std::setw(10) << requestObj->InitialDual_;
+            myFile << std::setw(10) << requestObj->dual_;
+            myFile << std::setw(10) << 0;
+            myFile << std::setw(10) << 0;
+            myFile << std::setw(10) << 0 << "\n";
+            //           }
         }
         /*else if (requestObj->earlyPick_ > simulationStart)
             nbRequests++;*/
@@ -924,35 +924,6 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
     return repStr.str();
 }
 
+void Instance::selectSubProVehicles() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

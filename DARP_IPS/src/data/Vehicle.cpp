@@ -103,7 +103,7 @@ void Vehicle::updateState(int epoch, int &epochLength, float simulationStart, bo
     if (currentRoute_->routeSize_ > 1) {
         // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
         if (departTime_ < simulationStart + static_cast<float>((epoch+1) * epochLength) ||
-        currentRoute_->plannedReachTime_[1] == departTime_) {
+            currentRoute_->plannedReachTime_[1] == departTime_) {
             onboards_.clear();
             int breakIndex = 0;
             for (int i = 1; i < currentRoute_->routeSize_; ++i) {

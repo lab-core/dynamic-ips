@@ -37,35 +37,16 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
     // adding available nodes based on the penalty
     for (int i = 0; i < pInst->requests_.size(); i++) {
         if (pInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            int unReachable = 0;
-            float reachTime = (Vehicle_)->departTime_ + durationMatrix_[(Vehicle_)->departNode_->locationID_]
-                            [pInst->instGraph_->pickNodes_[i]->locationID_];
-            if (reachTime <= pInst->requests_[i]->latestPickup_) {
-                // check if it is reachable from at least one onboard
-                if (!subGraph_->onboards_.empty()){
-                    float remainedTravelTime_ = subGraph_->onboards_[0]->related_Request_->maxTravelTime_ - (Vehicle_)->departTime_ +
-                            subGraph_->onboards_[0]->pairNode_->departTime_;
-                    float timeToDrop = reachTime + pInst->requests_[i]->serviceTime_ +
-                                       durationMatrix_[pInst->instGraph_->pickNodes_[i]->locationID_][subGraph_->onboards_[0]->locationID_];
-                    if (timeToDrop - (Vehicle_)->departTime_ > remainedTravelTime_) {
-                        float reachTimeAfterDrop =
-                                durationMatrix_[(Vehicle_)->departNode_->locationID_][subGraph_->onboards_[0]->locationID_]
-                                + (Vehicle_)->departTime_ + subGraph_->onboards_[0]->serviceTime_ +
-                                durationMatrix_[subGraph_->onboards_[0]->locationID_][pInst->instGraph_->pickNodes_[i]->locationID_];
-                        if (reachTimeAfterDrop > pInst->requests_[i]->latestPickup_) {
-                            unReachable++;
-                        }
-                    }
-                }
-  //              if (reachTime <= pInst->requests_[i]->latestPickup_) {
-                if (unReachable == 0) {
-                    subRequests_.push_back(pInst->requests_[i]);
-                    subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->pickNodes_[i]));
-                    subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]));
-                    subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
-                    subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
-                    Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
-                }
+            float minWait = (Vehicle_)->departTime_ +
+                            durationMatrix_[(Vehicle_)->departNode_->locationID_]
+                            [pInst->instGraph_->pickNodes_[i]->locationID_]- pInst->requests_[i]->earlyPick_;
+            if (minWait <= pInst->requests_[i]->penalty_) {
+                subRequests_.push_back(pInst->requests_[i]);
+                subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->pickNodes_[i]));
+                subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]));
+                subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
+                subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
+                Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
             }
         }
     }

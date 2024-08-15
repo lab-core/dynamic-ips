@@ -211,11 +211,11 @@ void Route::testRoute(PVehicle & vehicle) {
                 throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
- /*//       if (mainAlgorithm != GREEDY){
-//            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
-            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back()))
-                testRoute->plannedReachTime_.back() = routeNodes_[i]->departureTime_;
-//        }*/
+        /*//       if (mainAlgorithm != GREEDY){
+       //            if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back())&&(i != routeSize_-1))
+                   if ((routeNodes_[i]->departureTime_ != testRoute->plannedReachTime_.back()))
+                       testRoute->plannedReachTime_.back() = routeNodes_[i]->departureTime_;
+       //        }*/
 
         // checking capacity constraints
         if (testRoute->plannedPassengers_.back() > vehicle->capacity_){
@@ -226,10 +226,10 @@ void Route::testRoute(PVehicle & vehicle) {
         // checking trip delay constraint
         if (testRoute->routeNodes_.back()->initialType_ == DROPOFF){
             float travelTime = testRoute->routeNodes_.back()->related_Request_->dropTime_ -
-                    testRoute->routeNodes_.back()->pairNode_->departTime_;
+                               testRoute->routeNodes_.back()->pairNode_->departTime_;
             if (travelTime > testRoute->routeNodes_.back()->related_Request_->maxTravelTime_ + 0.1){
                 std::cout << "Trip delay constraint violated for request : " <<
-                testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
+                          testRoute->routeNodes_.back()->related_Request_->getRequestId() << std::endl;
                 throw myTools::myException("Route-Validation", __FILE__,__LINE__);
             }
         }
@@ -285,21 +285,3 @@ void Route::createColumn() {
     if (incVehicleToOrder.count(VehicleID_)>0)
         fullPattern_(incVehicleToOrder[VehicleID_],0) = 1;
 }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

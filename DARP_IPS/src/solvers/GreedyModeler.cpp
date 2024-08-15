@@ -22,10 +22,10 @@ GreedyModeler::~GreedyModeler() {
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
-    if (PInst->parameters_->mainAlgorithm_ == GREEDY) {
+   // if (PInst->parameters_->mainAlgorithm_ == GREEDY) {
         PInst->selectedVehicles_.clear();
         PInst->selectedVehicles_.resize(PInst->nbVehicles_, 0);
-    }
+   // }
 
     for (auto & vehicleObj : PInst->vehicles_) {
         greedyRouteList_.emplace_back(std::make_shared<GreedyRoute>(vehicleObj, PInst, greedyLabelPool_, PInst->parameters_->greedyReOptimize_));
@@ -195,7 +195,3 @@ void GreedySolver_noShare(PInstance &PInst) {
         }
     }
 }
-
-
-
-

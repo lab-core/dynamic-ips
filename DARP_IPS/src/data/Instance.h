@@ -102,6 +102,7 @@ public:
 
     std::string saveReqDuals(int epoch, int isudIter, const string& model);
     std::string saveVehDuals(int epoch, int isudIter, const string& model);
+    void selectSubProVehicles();
 };
 
 

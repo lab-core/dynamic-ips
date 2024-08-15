@@ -37,7 +37,7 @@ public:
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
- //   int nbPickMove_;                               // this value if for the times that vehicle change location in pickups
+    //   int nbPickMove_;                               // this value if for the times that vehicle change location in pickups
     std::bitset<MAX_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
     std::bitset<MAX_BIT_SIZE> unreachableDelay_;    // nodes that are unreachable due to the penalty
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels

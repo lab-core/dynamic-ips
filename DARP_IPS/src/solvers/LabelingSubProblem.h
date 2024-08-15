@@ -27,7 +27,7 @@ public:
     int maxPickup_;                             // number of pickups that are allowed in each path
 
     PSolverOption solverOptions_;
- //   myTools::Timer *subproTime_;                // timer for labeling algorithm
+    //   myTools::Timer *subproTime_;                // timer for labeling algorithm
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor

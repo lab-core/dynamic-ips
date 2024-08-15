@@ -29,7 +29,7 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     nbPickUp_ = 0;
- //   nbPickMove_ = 0;
+    //   nbPickMove_ = 0;
     isDropped_ = false;
     isDropExtend_ = false;
     createTime_ = 0;
@@ -59,7 +59,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     numExtendCheck_ = label.numCompleted_;
 
     nbPickUp_ = label.nbPickUp_;
- //   nbPickMove_ = label.nbPickMove_;
+    //   nbPickMove_ = label.nbPickMove_;
 
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
@@ -86,7 +86,7 @@ void Label::copyLabel(const Label &label) {
     numExtendCheck_ = label.numCompleted_;
 
     nbPickUp_ = label.nbPickUp_;
- //   nbPickMove_ = label.nbPickMove_;
+    //   nbPickMove_ = label.nbPickMove_;
     isDropped_ = label.isDropped_;
     isDropExtend_ = false;
 }
@@ -241,7 +241,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
- //               if (otherLabel->openRequests_ == this->openRequests_) {
+                //               if (otherLabel->openRequests_ == this->openRequests_) {
                 if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
                     if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
                         return true;
@@ -254,10 +254,10 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
 bool Label::areDropsUnreachable() {
-//    return false;
+    return false;
     for (auto & nodeObj: openNode_) {
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {
-            std::cout << "Drops Unreachable!!!" << std::endl;
+            std::cout << "Hi";
             return true;
         }
     }
@@ -328,8 +328,3 @@ std::string Label::toString() const {
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
 }
-
-
-
-
-

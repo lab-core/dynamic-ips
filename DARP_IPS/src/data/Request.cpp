@@ -86,15 +86,3 @@ std::string Request::toString() const {
     repStr << "#" << std::endl;
     return repStr.str();
 }
-
-
-
-
-
-
-
-
-
-
-
-

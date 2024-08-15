@@ -14,18 +14,18 @@
 
 
 LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions) :
-                                        SubproModeler(vehicle), solverOptions_(solverOptions) {
+        SubproModeler(vehicle), solverOptions_(solverOptions) {
     nbGenerated_ = 0;
     nbDominated_ = 0;
     nbUnreachableDTrip_ = 0;
     nbUnreachableDelay_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
- //   subproTime_ = new myTools::Timer(); subproTime_->init();
+    //   subproTime_ = new myTools::Timer(); subproTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
 
- //   delete subproTime_;
+    //   delete subproTime_;
 }
 
 void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
@@ -55,14 +55,14 @@ void LabelingSubProblem::initialization() {
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
     initialNodeID_ = subGraph_->sourceNodes_[0]->nodeID_;
- //   initialLabel->openRequests_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(), 0);
+    //   initialLabel->openRequests_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(), 0);
     initialLabel->travelResources_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(),0);
     // update travel resource for the initial label based on the onboards
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&(*nodeObj));
         initialLabel->openRequests_.set(nodeObj->related_Request_->taskIndexLabel_, true);
         float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (Vehicle_)->departTime_ +
-                nodeObj->pairNode_->departTime_;
+                             nodeObj->pairNode_->departTime_;
 
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
@@ -254,7 +254,7 @@ void LabelingSubProblem::solveDynamic_pulling() {
                                         break;
                                     }
                                 }
-                                // pull all labels to the current node
+                                    // pull all labels to the current node
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->isSuccessorsLimited_,
                                                                          Vehicle_->capacity_, nbUnreachableDelay_,
@@ -325,7 +325,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
                                         break;
                                     }
                                 }
-                                // pull all labels to the current node
+                                    // pull all labels to the current node
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode),maxPickup_,
                                                                          solverOptions_->isSuccessorsLimited_,
                                                                          Vehicle_->capacity_, nbUnreachableDelay_,
@@ -663,7 +663,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 
 void LabelingSubProblem::solveDynamic() {
     Vehicle_->bestReducedCost_ = INFINITY;
- //   subproTime_->start();
+    //   subproTime_->start();
     if ((solverOptions_->LabelingStrategy_ == PUSHING)||(subRequests_.empty())){
         if (solverOptions_->isDropPickPossible_)
             this->solveDynamic_pushing();
@@ -765,7 +765,7 @@ void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector
                              return lhs->reducedCost_ < rhs->reducedCost_;
                          });
     }
-    if (solverOptions_->pathSort_ == LAMBDA) {
+    else if (solverOptions_->pathSort_ == LAMBDA) {
         std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
                          [](const PLabel &lhs, const PLabel &rhs) {
                              return lhs->lambdaScore_ < rhs->lambdaScore_;
