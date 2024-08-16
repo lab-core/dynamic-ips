@@ -7,7 +7,7 @@ epochLength = 30
 penaltyL = 30
 committedTime = 30
 nbThreads = 16
-InitialDual = 0
+InitialDual = 1
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
@@ -19,7 +19,7 @@ timeWindows = 0
 
 # ISUD PARAMETERS
 #
-warmStart = 1
+warmStart = 2
 MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
@@ -29,7 +29,7 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
+isTruncated = 1
 MaxLabel = 40
 isDominanceReleased = 0
 isSuccessorsLimited = 1
@@ -39,7 +39,7 @@ LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Vehicle_portion = 0
-Dynamic_Pricing = 1
+Dynamic_Pricing = 0
 usePick = 1
 nbPick = 2
 sortPath = 1
