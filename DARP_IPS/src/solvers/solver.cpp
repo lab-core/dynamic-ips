@@ -162,7 +162,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->dynamicPricing_)
-                    subProSolve.back()->maxPickup_ = iter;
+                    subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;
                 masterModel_->nbVehicles_++;
                 subProSolve.back()->initSubGraph(EpochInst);
