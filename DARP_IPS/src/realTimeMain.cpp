@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 1; ++j){
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -86,12 +86,19 @@ int main(int argc, char** argv) {
                 /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                 mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
 
-                /*if (i == 1) {
-                    mainInst->parameters_->initialDual_ = ONE_REQUEST;
+                if (i == 1) {
+                    mainInst->parameters_->dynamicPricing_ = true;
                 }
                 else {
-                    mainInst->parameters_->initialDual_ = ONE_LABELING;
-                }*/
+                    mainInst->parameters_->dynamicPricing_ = false;
+                }
+
+                if (j == 1) {
+                    mainInst->parameters_->isDropPickPossible_ = true;
+                }
+                else {
+                    mainInst->parameters_->isDropPickPossible_ = false;
+                }
 //                mainInst->parameters_->vehicleReturn_= j;
  //               mainInst->parameters_->nbPick_= i+1;
                 /*if (i == 0)
