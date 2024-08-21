@@ -363,7 +363,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(ServiceTime);
-   //             if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
+                if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
                     pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                                 nbPassengers, deltaTime, pickZoneID,
                                                                                 dropZoneID));
@@ -386,10 +386,12 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                                                                  pInstance->requests_.back()->penalty_;
                     pInstance->requests_.back()->dual_ = iDual;
                     pInstance->requests_.back()->InitialDual_ = iDual;
-                    routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
-                    routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
+                    if (pickPosition != 0) {
+                        routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
+                        routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
+                    }
                     pInstance->nbWaiting_++;
- //               }
+                }
             }
         }
     }
@@ -676,8 +678,10 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         if (routeNodes[v][i] != nullptr)
                             newRoute->addNode(routeNodes[v][i]);
                         else
-                            newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+                            continue;
+ //                           newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     }
+                    newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     pInstance->vehicles_[v]->setCurrentRoute(newRoute);
                 }
             }

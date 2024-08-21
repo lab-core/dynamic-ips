@@ -215,8 +215,8 @@ void LabelingSubProblem::solveDynamic_pulling() {
         while (!activeNodes_.empty()) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
-                std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
-                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});
+                /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
+                    return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
                 for (int j = activeNodes_.size()-1; j >= 0; j--) {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
                         activeNodes_.erase(activeNodes_.begin() + j);
@@ -289,14 +289,6 @@ void LabelingSubProblem::solveDynamic_pulling() {
         } else
             break;
     }
-    // sort final labels based on reduced cost
-    /*sinkNode_->activeLabels_.clear();
-    for (int i = sinkNode_->generatedLabel_.size()-1; i >= 0; i--){
-        for (auto &labelObj: sinkNode_->generatedLabel_[i]) {
-            if (!labelObj->haveDominatedParent())
-                sinkNode_->activeLabels_.push_back(labelObj);
-        }
-    }*/
 }
 void LabelingSubProblem::solveDynamic_pullingWave() {
     // create initial label
