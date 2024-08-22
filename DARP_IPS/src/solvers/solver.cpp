@@ -614,7 +614,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             /*inputPaths.makeInstanceOutput("2");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
                                     static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);*/
-            saveTime += 30;
+            saveTime += 60;
             /*if (instance_count >= 30)
                 break;*/
             instance_count ++;

@@ -363,7 +363,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
 
                 // the starting time of the instance is 16pm
                 deltaTime = static_cast<float>(ServiceTime);
-                if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 150) {
+  //              if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 300) {
                     pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                                 nbPassengers, deltaTime, pickZoneID,
                                                                                 dropZoneID));
@@ -391,7 +391,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                         routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
                     }
                     pInstance->nbWaiting_++;
-                }
+ //               }
             }
         }
     }
