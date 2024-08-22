@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 0
-saveScratch = 1
+saveScratch = 2
 vehicleReturn = 0
 timeWindows = 0
 
@@ -29,7 +29,7 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 1
+isTruncated = 0
 MaxLabel = 40
 isDominanceReleased = 0
 isSuccessorsLimited = 1
