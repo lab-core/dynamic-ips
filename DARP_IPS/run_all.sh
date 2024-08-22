@@ -1,0 +1,32 @@
+#!/bin/bash
+
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_1 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_11 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_14 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_15 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_16 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_17 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_19 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_2 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_20 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_21 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_22 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_23 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_26 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_3 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_39 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_4 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_46 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_47 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_48 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_49 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_5 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_50 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_51 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_52 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_53 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_54 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_55 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_56 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_59 1500 2 1
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances_12-14_Last 20150828_12-120m_60 1500 2 1

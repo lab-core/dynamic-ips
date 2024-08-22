@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 0
-saveScratch = 2
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
