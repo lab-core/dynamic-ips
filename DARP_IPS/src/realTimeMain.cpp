@@ -94,10 +94,10 @@ int main(int argc, char** argv) {
                 }*/
 
                 if (i == 1) {
-                    mainInst->parameters_->isDropPickPossible_ = true;
+                    mainInst->parameters_->isSuccessorsLimited_ = true;
                 }
                 else {
-                    mainInst->parameters_->isDropPickPossible_ = false;
+                    mainInst->parameters_->isSuccessorsLimited_ = false;
                 }
 //                mainInst->parameters_->vehicleReturn_= j;
  //               mainInst->parameters_->nbPick_= i+1;

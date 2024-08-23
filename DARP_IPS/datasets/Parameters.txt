@@ -19,7 +19,7 @@ timeWindows = 0
 
 # ISUD PARAMETERS
 #
-warmStart = 2
+warmStart = 1
 MIP_maxIncDegree = 2
 CP_IncDegree = 10
 useMultiStage = 0
