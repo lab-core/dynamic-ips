@@ -85,8 +85,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# portion of constraints for MP " << " = " << constPortion_ << std::endl;
-    repStr << std::setw(setwLength) << "# use greedy for vehicle portion " << " = " << vehiclePortion_ << std::endl;
-    repStr << std::setw(setwLength) << "# use zones for vehicle portion " << " = " << dynamicPricing_ << std::endl;
+    repStr << std::setw(setwLength) << "# solve for vehicle portion " << " = " << vehiclePortion_ << std::endl;
+    repStr << std::setw(setwLength) << "# use Dynamic Pricing " << " = " << dynamicPricing_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
