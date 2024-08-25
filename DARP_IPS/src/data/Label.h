@@ -74,6 +74,8 @@ public:
     // Display function
     std::string toString() const;
 
+    bool compareTravelTimes(const PLabel &otherLabel) const;
+
 };
 
 inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNode_.size() < rhs->pathNode_.size()); }

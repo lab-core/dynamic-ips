@@ -238,23 +238,24 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);
 
-    if (this->passedTime_ >= otherLabel->passedTime_) {
+ //   if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
                 //               if (otherLabel->openRequests_ == this->openRequests_) {
                 if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
                     if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                        return true;
+  //                      if (this->compareTravelTimes(otherLabel))
+                            return true;
                     }
                 }
             }
         }
-    }
+ //   }
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
 bool Label::areDropsUnreachable() {
-    return false;
+ //   return false;
     for (auto & nodeObj: openNode_) {
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {
             std::cout << "Hi";
@@ -327,4 +328,14 @@ std::string Label::toString() const {
     repStr << std::endl;
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
+}
+
+bool Label::compareTravelTimes(const PLabel &otherLabel) const {
+    // Compare each element
+    for (size_t i = 0; i < travelResources_.size(); ++i) {
+        if (travelResources_[i] > otherLabel->travelResources_[i]) {
+            return false;
+        }
+    }
+    return true;
 }
