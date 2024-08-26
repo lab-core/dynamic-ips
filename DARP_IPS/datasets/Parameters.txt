@@ -39,9 +39,9 @@ LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Vehicle_portion = 0
-Dynamic_Pricing = 1
+Dynamic_Pricing = 0
 usePick = 1
-nbPick = 4
+nbPick = 2
 sortPath = 1
 sortColumn = 1
 
