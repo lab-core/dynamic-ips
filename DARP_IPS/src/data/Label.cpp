@@ -238,7 +238,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);
 
- //   if (this->passedTime_ >= otherLabel->passedTime_) {
+    if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
                 //               if (otherLabel->openRequests_ == this->openRequests_) {
@@ -250,7 +250,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 }
             }
         }
- //   }
+    }
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
