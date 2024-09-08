@@ -13,11 +13,11 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = false ;
+bool savePartial = true ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = true;
+bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 1; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->isSuccessorsLimited_ = false;
                 }*/
 //                mainInst->parameters_->vehicleReturn_= j;
-                mainInst->parameters_->nbPick_= i+1;
+//                mainInst->parameters_->nbPick_= i+1;
                 /*if (i == 0)
                     mainInst->parameters_->isTruncated_ = false;
                 else
