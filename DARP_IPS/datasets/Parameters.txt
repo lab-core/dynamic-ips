@@ -30,7 +30,7 @@ NumColumn = 50
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 15
+MaxLabel = 10
 isDominanceReleased = 0
 isSuccessorsLimited = 1
 isDropPickPossible = 0
@@ -42,7 +42,7 @@ Vehicle_portion = 0
 Dynamic_Pricing = 1
 usePick = 1
 nbPick = 4
-sortPath = 1
+sortPath = 0
 sortColumn = 1
 
 # CPLEX PARAMETERS
