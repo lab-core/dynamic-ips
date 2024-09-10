@@ -43,14 +43,18 @@ public:
     void initialization();
     // main function of the dynamic programming
     bool labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
+    bool labelExtendPick(PLabel &parentLabel, Node *outNode);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     void solveDynamic_pushing();
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     void solveDynamic_pushingDrop();
     void solveDynamic_pushingWave();
+    void solveDynamic_pulling1();
     void solveDynamic_pulling();
     void solveDynamic_pullingWave();
+    void solveDynamic_pullingWave1();
     void solveDynamic();
+    void removeDominated(Node *node, std::vector<PLabel> & labelPool);
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
