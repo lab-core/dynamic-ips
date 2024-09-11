@@ -69,7 +69,7 @@ solver::~solver() {
 //    delete pLogSolutionChange_;
 }
 void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
-    std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
+ //   std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
@@ -117,6 +117,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     nbUnreachableDTrip_ = 0;
 
     while (true) {
+        // Set available time
+        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
         iter++;
         nbNegativeFound = 0;
         previousObj = masterModel_->objValue_;
@@ -163,6 +165,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->dynamicPricing_) {
                     subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
+                    if (EpochInst->nbRequests_ >= 400)
+                        subProSolve.back()->solverOptions_->MaxLabel_ = 5;
                     if (iter >= 3){
                         subProSolve.back()->solverOptions_->isTruncated_ = false;
                     }
@@ -190,7 +194,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         for (auto &subProblem: subProSolve) {
 
             if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
-                (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 5)) {
+                (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 7)) {
                 if (iter > 1) {
                     subProBreak = true;
                     break;
@@ -238,12 +242,15 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (nbNegativeFound == 0) {
             masterModel_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
-            break;
+            if (iter >= 3){
+                break;
+            }
+            continue;
         }
         else {
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
-            if (masterModel_->availableTime_ < 5){
+            if (masterModel_->availableTime_ < 7){
                 if (iter == 1)
                     masterModel_->availableTime_ = 10;
                 else {
@@ -270,7 +277,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
 
-            if (masterModel_->availableTime_ < 5)
+            if (masterModel_->availableTime_ < 7)
                 break;
 
             if (mainInst->parameters_->oneIter_){
@@ -280,6 +287,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         if (previousObj == masterModel_->objValue_) {
             masterModel_->CGSuccess_++;
+            std::cout << "No changes in Objective" << std::endl;
+            if (iter >= 3){
+                break;
+            }
             std::cout << "No changes in Objective" << std::endl;
             break;
         }

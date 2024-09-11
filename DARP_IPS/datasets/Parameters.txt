@@ -13,7 +13,7 @@ addOneRequestColumn = 0
 solutionMode = 2
 OneIter = 0
 GreedyReOptimize = 0
-saveScratch = 1
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
@@ -38,7 +38,7 @@ SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
-Vehicle_portion = 0
+Vehicle_portion = 1
 Dynamic_Pricing = 1
 usePick = 1
 nbPick = 4
