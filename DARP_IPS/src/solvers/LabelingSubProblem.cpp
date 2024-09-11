@@ -606,9 +606,9 @@ void LabelingSubProblem::solveDynamic_pullingWave1() {
             activeNodes_.pop_back();
 
             // decrease the number of active labels if truncated strategy is used
-            /*if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
+            if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
                 truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
-            }*/
+            }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
                     PLabel selectedLabel = currentNode->activeLabels_[j];
