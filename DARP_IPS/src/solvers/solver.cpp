@@ -47,8 +47,8 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
-    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,maxPick,nbGenerated,nbEliminated, "
-                                     "nbDominated,nbRoutes,solveTime,ConvertRouteTime" << std::endl;
+    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,maxPick,#LGenerated,#LDominated, "
+                                     "#LEliminated, #LUnreachableDelay,nbRoutes,solveTime" << std::endl;
 
     /*pLogSolutionChange_ = new Tools::LogOutput(inputPaths.getOutputSolutionChange());
     (*pLogSolutionChange_) << "Epoch,#SubProblems,#Requests,#NewArrival,#PreScheduled, #ReScheduled, "
@@ -87,8 +87,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
 
     EpochInst->updateTaskIndexLabeling();
+    subProOptions_->isTruncated_ = EpochInst->parameters_->isTruncated_;
+    masterModel_->initializationCG(EpochInst, inputPaths);
 
-    masterModel_->initialization(EpochInst, inputPaths);
     for (auto &vehicleObj: EpochInst->vehicles_) {
         vehicleObj->vehicleIndex_ = -1;
         masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -100,6 +101,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     // define required variables
     double previousObj;
+    bool truncateState = subProOptions_->isTruncated_;
     int nbNegativeFound;
     nbNegativeFound_ = 0;
     int iter = 0;
@@ -190,22 +192,29 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                          });*/
 
         for (auto &subProblem: subProSolve) {
-
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
+            if (subProBreak)
+                break;
+            /*if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
                 (masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 7)) {
                 if (iter > 1) {
                     subProBreak = true;
                     break;
                 }
-            }
+            }*/
 
             Tools::Job job([&]() {
                 subProblem->labelPool_ = std::move(labelsPool_.pop_data());
                 if (!subProblem->subRequests_.empty()) {
-                    subProblem->solveDynamic();
-                    subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
-                                                 masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
-                                                 mainInst);
+                    if (subProblem->solveDynamic(masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() - 3)) {
+                        subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                                     masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
+                                                     mainInst);
+                    }
+                    else {
+                        subProblem->CollectLabels();
+                        subProBreak = true;
+                    }
+
                 }
                 labelsPool_.push_data(std::move(subProblem->labelPool_));
             });
@@ -222,6 +231,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbDominated_ += subProblem->nbDominated_;
             nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
             nbUnreachableDelay_ += subProblem->nbUnreachableDelay_;
+ //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
         }
         preprocessTime_->start();
         subProSolve.clear();
@@ -245,7 +255,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else {
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
-            if (masterModel_->availableTime_ < 7){
+            if (masterModel_->availableTime_ < 5){
                 if (iter == 1)
                     masterModel_->availableTime_ = 10;
                 else {
@@ -272,8 +282,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
 
-            if (masterModel_->availableTime_ < 7)
-                break;
+            /*if (masterModel_->availableTime_ < 7)
+                break;*/
 
             if (mainInst->parameters_->oneIter_){
                 if ((mainInst->parameters_->dynamicPricing_ && iter == 2)||(!mainInst->parameters_->dynamicPricing_ && iter == 1))
@@ -295,6 +305,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
 
     masterModel_->setObjValue();
+    masterModel_->MasterPro_.reset();
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -621,7 +632,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             /*inputPaths.makeInstanceOutput("2");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
                                     static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),3600*5);*/
-            saveTime += 60;
+            saveTime += 30;
             /*if (instance_count >= 30)
                 break;*/
             instance_count ++;

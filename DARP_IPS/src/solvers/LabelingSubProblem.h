@@ -27,7 +27,7 @@ public:
     int maxPickup_;                             // number of pickups that are allowed in each path
 
     PSolverOption solverOptions_;
-    //   myTools::Timer *subproTime_;                // timer for labeling algorithm
+    myTools::Timer *subproTime_;                // timer for labeling algorithm
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
@@ -45,19 +45,20 @@ public:
     bool labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
     bool labelExtendPick(PLabel &parentLabel, Node *outNode);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
-    void solveDynamic_pushing();
+    bool solveDynamic_pushing(float availableTime);
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
-    void solveDynamic_pushingDrop();
+    bool solveDynamic_pushingDrop(float availableTime);
     void solveDynamic_pushingWave();
-    void solveDynamic_pulling1();
+    bool solveDynamic_pulling1(float availableTime);
     void solveDynamic_pulling();
     void solveDynamic_pullingWave();
-    void solveDynamic_pullingWave1();
-    void solveDynamic();
+    bool solveDynamic_pullingWave1(float availableTime);
+    bool solveDynamic(float availableTime);
     void removeDominated(Node *node, std::vector<PLabel> & labelPool);
 
     // function to convert solution to routes and save them in vehicle object
     void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
+    void CollectLabels();
     void solutionSummery(std::vector<int> &subProResults);
     // Display function
     std::string toString() const;

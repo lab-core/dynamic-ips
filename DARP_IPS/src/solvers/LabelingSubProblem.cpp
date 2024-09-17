@@ -21,11 +21,11 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverO
     nbUnreachableDelay_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
-    //   subproTime_ = new myTools::Timer(); subproTime_->init();
+    subproTime_ = new myTools::Timer(); subproTime_->init();
 }
 LabelingSubProblem::~LabelingSubProblem() {
 
-    //   delete subproTime_;
+    delete subproTime_;
 }
 
 void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
@@ -230,14 +230,14 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Term
     return true;
 }
 
-void LabelingSubProblem::solveDynamic_pulling1() {
+bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
     // create initial label
     int nbActive;
     while(true) {
         // create initial label
         initialization();
 
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
                 /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
@@ -320,6 +320,10 @@ void LabelingSubProblem::solveDynamic_pulling1() {
         } else
             break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
 
 void LabelingSubProblem::solveDynamic_pulling() {
@@ -524,13 +528,13 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
     }
 }
 
-void LabelingSubProblem::solveDynamic_pullingWave1() {
+bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
     // create initial label
     int nbActive;
     while(true) {
         // create initial label
         initialization();
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
                 /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
@@ -577,7 +581,7 @@ void LabelingSubProblem::solveDynamic_pullingWave1() {
         PNode initialNode = subGraph_->nodes_[initialNodeID_];
         std::vector<PNode> nodeList = subGraph_->pickNodes_;
         nodeList.push_back(initialNode);
-        while (!nodeList.empty()){
+        while (!nodeList.empty() && subproTime_->dSinceStart().count() <= availableTime){
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
             for (auto & selectedLabel: currentNode->activeLabels_){
@@ -599,7 +603,7 @@ void LabelingSubProblem::solveDynamic_pullingWave1() {
             }
         }
 
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty()&& subproTime_->dSinceStart().count() <= availableTime) {
 
             // select a node to extend active labels
             Node *currentNode = activeNodes_.back();
@@ -637,18 +641,22 @@ void LabelingSubProblem::solveDynamic_pullingWave1() {
         }
         break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
 
 //***************************************************************************************//
 //                           P U S H I N G  S T R A T E G Y
 //***************************************************************************************//
-void LabelingSubProblem::solveDynamic_pushing() {
+bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
     int nbActive;
     while(true) {
         // create initial label
         initialization();
 
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
                 return lhs->travelTimeFromSource_ < rhs->travelTimeFromSource_;});
 
@@ -702,14 +710,18 @@ void LabelingSubProblem::solveDynamic_pushing() {
         }
         break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
 
-void LabelingSubProblem::solveDynamic_pushingDrop() {
+bool LabelingSubProblem::solveDynamic_pushingDrop(float availableTime) {
     int nbActive;
     while(true) {
         // create initial label
         initialization();
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
                 return lhs->nbActiveLabels_ < rhs->nbActiveLabels_;});
 
@@ -771,6 +783,10 @@ void LabelingSubProblem::solveDynamic_pushingDrop() {
         } else
             break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
 
 void LabelingSubProblem::solveDynamic_pushingWave() {
@@ -886,22 +902,38 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 //                           P U L L I N G  S T R A T E G Y
 //***************************************************************************************//
 
-void LabelingSubProblem::solveDynamic() {
+bool LabelingSubProblem::solveDynamic(float availableTime) {
     Vehicle_->bestReducedCost_ = INFINITY;
-    //   subproTime_->start();
+    subproTime_->start();
     if ((solverOptions_->LabelingStrategy_ == PUSHING)||(subRequests_.empty())){
-        if (solverOptions_->isDropPickPossible_)
-            this->solveDynamic_pushing();
-        else
+        if (solverOptions_->isDropPickPossible_) {
+            if (!this->solveDynamic_pushing(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
+        }
+        else {
 //            this->solveDynamic_pushingWave();
-            this->solveDynamic_pushingDrop();
+            if (!this->solveDynamic_pushingDrop(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
+        }
     }
 
     else if (solverOptions_->LabelingStrategy_ == PULLING){
-        if (solverOptions_->isDropPickPossible_)
-            this->solveDynamic_pulling1();
-        else
-            this->solveDynamic_pullingWave1();
+        if (solverOptions_->isDropPickPossible_) {
+            if (!this->solveDynamic_pulling1(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
+        }
+        else {
+            if (!this->solveDynamic_pullingWave1(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
+        }
     }
 
 
@@ -918,7 +950,8 @@ void LabelingSubProblem::solveDynamic() {
     std::cout << "vehicle: " << Vehicle_->vehicleID_ << " : " << "nb Generated: " << nbGenerated_;
     std::cout << " - nb Dominated: " << nbDominated_ << " - nb Negative: " << nbNegativeColumns_ ;
     std::cout << " - nb final: " << subGraph_->sinkNodes_[0]->activeLabels_.size() << std::endl;*/
-//    subproTime_->stop();
+    subproTime_->stop();
+    return true;
 }
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
@@ -927,6 +960,13 @@ void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &ava
         availableRoutes.back()->createColumn();
         nbOutputs_++;
     }
+    for (auto & nodeObj : subGraph_->nodes_){
+        for (auto & labelObj : nodeObj.second->activeLabels_)
+            labelPool_.push_back(std::move(labelObj));
+    }
+}
+
+void LabelingSubProblem::CollectLabels() {
     for (auto & nodeObj : subGraph_->nodes_){
         for (auto & labelObj : nodeObj.second->activeLabels_)
             labelPool_.push_back(std::move(labelObj));
@@ -977,9 +1017,11 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << maxPickup_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
-//    repStr << nbOutputs_ << ",";
-    repStr << nbOutputs_ << "\n";
-    /*repStr << subproTime_->dSinceInit().count();*/
+    repStr << nbUnreachableDTrip_ << ",";
+    repStr << nbUnreachableDelay_ << ",";
+    repStr << nbOutputs_ << ",";
+ //   repStr << nbOutputs_ << "\n";
+    repStr << subproTime_->dSinceStart().count() << "\n";
     return repStr.str();
 }
 

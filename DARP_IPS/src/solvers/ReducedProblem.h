@@ -19,11 +19,6 @@ public:
     IloNumVarArray routeVar_;               // route variables
     IloNumVarArray zVar_;                   // request(z) variables
 
-    IloCplex::BasisStatusArray previousCRstat_;
-    IloCplex::BasisStatusArray previousCVstat_;
-    IloCplex::BasisStatusArray previousRstat_;
-    IloCplex::BasisStatusArray previousZstat_;
-
     IloNumArray colStat_;
     IloNumArray rowStat_;
 

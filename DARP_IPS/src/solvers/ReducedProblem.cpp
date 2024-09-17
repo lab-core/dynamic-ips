@@ -10,8 +10,7 @@
 //---------------------------------------------------------------------------------------------
 
 // Constructor and Destructor
-ReducedProblem::ReducedProblem() : CplexModeler(), previousCRstat_(env_), previousRstat_(env_),
-                                   previousZstat_(env_), previousCVstat_(env_){
+ReducedProblem::ReducedProblem() : CplexModeler(){
 
     // defining variable
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOINT);
@@ -553,7 +552,6 @@ void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolut
     }
 
 }
-
 
 
 

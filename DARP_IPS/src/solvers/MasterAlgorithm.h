@@ -73,8 +73,8 @@ public:
     myTools::Timer *ZOOMTime_;
 
     Tools::LogOutput* pLogIsudResultsStream_;
-    Tools::LogOutput* pLogIterReqDualStream_;
-    Tools::LogOutput* pLogIterVehDualStream_;
+ //   Tools::LogOutput* pLogIterReqDualStream_;
+ //   Tools::LogOutput* pLogIterVehDualStream_;
 
     // Constructor and Destructor
     explicit MasterAlgorithm(InputPaths &inputPaths);
@@ -89,6 +89,7 @@ public:
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
     void initialization(PInstance &pInst, InputPaths &inputPaths);
+    void initializationCG(PInstance &pInst, InputPaths &inputPaths);
 
     // these function update the incompatibility degree of availableRoutes
     void calcIncompatibilityBit(PRoute &route, PInstance &pInst);
