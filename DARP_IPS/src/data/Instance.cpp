@@ -48,12 +48,14 @@ void Instance::resetInstance() {
     nbRequests_ = 0;
     nbNewRequests_ = 0;
     nbWaiting_ = 0;
+
 //    instGraph_ = std::make_shared<Graph>();
 
     requests_.clear();
     nameToRequest_.clear();
     nbTasks_ = 0;
     instGraph_->nodes_.clear();
+    instGraph_->nbNodes_ = 0;
     instGraph_->intToNodeID_.clear();
     instGraph_->pickNodes_.clear();
     instGraph_->dropNodes_.clear();
@@ -114,7 +116,7 @@ std::string Instance::solutionToString() {
     if (!solveEpoch){
         instRepStr_ << name_ << "," << "R" << nbRequests_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
         instRepStr_ << solutionModeName[parameters_->solutionMode_] << ",";
-        instRepStr_ << nbVehicles_ << "," << nbRequests_ << "," << nbOnboards_ << ",";
+        instRepStr_ << nbVehicles_ << "," << nbRequests_ << "," << 0 << ",";
     }
     else {
         instRepStr_ << name_ << "," << "R" << nbWaiting_ << "," << mainAlgorithmName[parameters_->mainAlgorithm_] << ",";
@@ -672,10 +674,10 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->nbPassengers_ << ",";
             repStr << requestObj->PickUpID_ << ",";
             repStr << requestObj->DropOffID_ << ",";
-            repStr << requestObj->latestPickup_ << ",";
             repStr << requestObj->earlyPick_ << ",";
             repStr << requestObj->pickTime_ << ",";
             repStr << requestObj->dropTime_ << ",";
+            repStr << requestObj->latestPickup_ << ",";
             repStr << requestObj->initialVehicleID_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
             repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
