@@ -830,9 +830,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         while (true) {
             updateReducedCosts(pInst);
             setAvailableTime();
-            if (minReducedCost_ >= 0 || availableTime_ < 0)
+            if (minReducedCost_ >= 0 || availableTime_ <= 1)
                 break;
-
             solveMP_LP(pInst, inputPaths);
             LPIter_++;
             (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
@@ -850,13 +849,12 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
                 break;
         }
 
-
         setAvailableTime();
-        if (availableTime_ < 6)
-            availableTime_ = 6;
+
+        if (availableTime_ < 0.1)
+            availableTime_ = 0.1;
         // solve the model in Integer mode
         lpObjValue_ = lpObj;
-        std::cout << " Master Pro time before IP: " << masterTime_->dSinceStart().count() << std::endl;
         MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
         MIPIter_++;
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();

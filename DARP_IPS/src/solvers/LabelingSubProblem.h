@@ -50,8 +50,8 @@ public:
     bool solveDynamic_pushingDrop(float availableTime);
     void solveDynamic_pushingWave();
     bool solveDynamic_pulling1(float availableTime);
-    void solveDynamic_pulling();
-    void solveDynamic_pullingWave();
+    bool solveDynamic_pulling(float availableTime);
+    bool solveDynamic_pullingWave(float availableTime);
     bool solveDynamic_pullingWave1(float availableTime);
     bool solveDynamic(float availableTime);
     void removeDominated(Node *node, std::vector<PLabel> & labelPool);

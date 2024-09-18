@@ -237,7 +237,7 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
         // create initial label
         initialization();
 
-        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() < availableTime) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
                 /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
@@ -307,6 +307,7 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
                 else if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
                     truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, labelPool_);
                 }
+
             }
         }
         break;
@@ -326,14 +327,14 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
         return true;
 }
 
-void LabelingSubProblem::solveDynamic_pulling() {
+bool LabelingSubProblem::solveDynamic_pulling(float availableTime) {
     // create initial label
     int nbActive;
     while(true) {
         // create initial label
         initialization();
 
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
                 /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
@@ -411,14 +412,18 @@ void LabelingSubProblem::solveDynamic_pulling() {
         } else
             break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
-void LabelingSubProblem::solveDynamic_pullingWave() {
+bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
     // create initial label
     int nbActive;
     while(true) {
         // create initial label
         initialization();
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
             // select a node to pull other labels to it
             for (auto &currentNode: subGraph_->pickNodes_) {
                 std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
@@ -488,7 +493,7 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
             }
         }
 
-        while (!activeNodes_.empty()) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() <= availableTime) {
 
             // select a node to extend active labels
             Node *currentNode = activeNodes_.back();
@@ -526,6 +531,10 @@ void LabelingSubProblem::solveDynamic_pullingWave() {
         }
         break;
     }
+    if (!activeNodes_.empty())
+        return false;
+    else
+        return true;
 }
 
 bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
@@ -539,6 +548,8 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
             for (auto &currentNode: subGraph_->pickNodes_) {
                 /*std::stable_sort(activeNodes_.begin(),activeNodes_.end(),[](const Node *lhs, const Node *rhs){
                     return lhs->travelTimeFromSource_ > rhs->travelTimeFromSource_;});*/
+                if (subproTime_->dSinceStart().count() > availableTime)
+                    return false;
                 nbActive = currentNode->nbActiveLabels_;
                 for (int j = activeNodes_.size()-1; j >= 0; j--) {
                     if (activeNodes_[j]->nbActiveLabels_ == 0)
@@ -578,10 +589,12 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                 }
             }
         }
+        if (!activeNodes_.empty())
+            return false;
         PNode initialNode = subGraph_->nodes_[initialNodeID_];
         std::vector<PNode> nodeList = subGraph_->pickNodes_;
         nodeList.push_back(initialNode);
-        while (!nodeList.empty() && subproTime_->dSinceStart().count() <= availableTime){
+        while (!nodeList.empty() && subproTime_->dSinceStart().count() < availableTime){
             PNode currentNode = nodeList.back();
             nodeList.pop_back();
             for (auto & selectedLabel: currentNode->activeLabels_){
@@ -602,8 +615,10 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                 }
             }
         }
+        if (!nodeList.empty())
+            return false;
 
-        while (!activeNodes_.empty()&& subproTime_->dSinceStart().count() <= availableTime) {
+        while (!activeNodes_.empty() && subproTime_->dSinceStart().count() < availableTime) {
 
             // select a node to extend active labels
             Node *currentNode = activeNodes_.back();

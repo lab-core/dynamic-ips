@@ -334,6 +334,10 @@ namespace myTools {
         void getSize(){
             std::cout << shared_vector[0].size() << std::endl;
         }
+
+        void clear() {
+            shared_vector.clear();  // Clears the internal vector
+        }
     };
 
 
