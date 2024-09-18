@@ -284,7 +284,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
-            std::cout << "available time after: " << masterModel_->availableTime_ << std::endl;
 
             if (masterModel_->availableTime_ < 3)
                 break;
