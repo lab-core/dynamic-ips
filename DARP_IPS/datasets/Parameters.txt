@@ -11,10 +11,10 @@ InitialDual = 0
 mainAlgorithm = 0
 addOneRequestColumn = 0
 solutionMode = 2
-OneIter = 0
+OneIter = 1
 GreedyReOptimize = 0
-saveScratch = 1
-vehicleReturn = 0
+saveScratch = 2
+vehicleReturn = 1
 timeWindows = 0
 
 # ISUD PARAMETERS
@@ -38,7 +38,7 @@ SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
-Vehicle_portion = 0
+Vehicle_portion = 1
 Dynamic_Pricing = 1
 usePick = 1
 nbPick = 4
