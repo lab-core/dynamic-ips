@@ -233,7 +233,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbDominated_ += subProblem->nbDominated_;
             nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
             nbUnreachableDelay_ += subProblem->nbUnreachableDelay_;
-            (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+ //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
         }
         preprocessTime_->start();
         subProSolve.clear();
@@ -569,7 +569,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
     // define required variables
-    bool MIP_Stop = true;
+    bool MIP_Stop = false;
     int nbReceivedRequest;
     epoch_ = 0;
     int instance_count = 1;
