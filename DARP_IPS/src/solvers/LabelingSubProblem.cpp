@@ -32,9 +32,19 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList) {
     for (auto & nodeObj: nodeList){
         if (nodeObj->type_ != SINK){
             nodeObj->successors_.clear();
+            nodeObj->nonSuccessors_.reset();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_ && pickNodeObj->nodeStatus_ != COMMITTED) {
-                    nodeObj->successors_.push_back(&(*pickNodeObj));
+                    if (nodeObj->type_ != SOURCE){
+                        float minWait = (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
+                                durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] - pickNodeObj->readyTime_;
+                        if (minWait > pickNodeObj->related_Request_->penalty_)
+                            nodeObj->nonSuccessors_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
+                        else
+                            nodeObj->successors_.push_back(&(*pickNodeObj));
+                    }
+                    else
+                        nodeObj->successors_.push_back(&(*pickNodeObj));
                 }
             }
         }
@@ -47,10 +57,12 @@ void LabelingSubProblem::initialization() {
     bool extendToOnboard = false;
     sortSuccessors(subGraph_->sourceNodes_);
     sortSuccessors(subGraph_->pickNodes_);
-    if (solverOptions_->isDropPickPossible_) {
+    sortSuccessors(subGraph_->dropNodes_);
+    sortSuccessors(subGraph_->onboards_);
+    /*if (solverOptions_->isDropPickPossible_) {
         sortSuccessors(subGraph_->dropNodes_);
         sortSuccessors(subGraph_->onboards_);
-    }
+    }*/
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);

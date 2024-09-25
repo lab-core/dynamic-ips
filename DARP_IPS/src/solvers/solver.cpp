@@ -167,10 +167,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->dynamicPricing_) {
                     subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
-                    subProSolve.back()->solverOptions_->MaxLabel_ = iter * 5;
+                    /*subProSolve.back()->solverOptions_->MaxLabel_ = iter * 5;
                     if (iter >= 4){
                         subProSolve.back()->solverOptions_->isTruncated_ = false;
-                    }
+                    }*/
 
                 }
                 vehicleObj->vehicleIndex_ = masterModel_->nbVehicles_;

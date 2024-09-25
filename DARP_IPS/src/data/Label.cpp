@@ -145,6 +145,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
+        unreachableDelay_ = unreachableDelay_ | outNode->nonSuccessors_;
     }
 
     passedTime_ = reachedTime_ + outNode->serviceTime_;
@@ -169,14 +170,11 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
     // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
-    if (outNode->type_ == PICKUP)
-        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    else
-        timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
 
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ >= maxPickUp)
             return false;
+        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
         if (isSuccessorLimited) {
             if (timeToReach > outNode->related_Request_->latestPickup_) {
                 unreachableDelay_.set(outNode->related_Request_->taskIndexLabel_, true);
@@ -187,6 +185,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
+    else
+        timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == DROPOFF) {
         if (!openRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
