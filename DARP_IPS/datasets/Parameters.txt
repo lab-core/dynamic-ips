@@ -14,7 +14,7 @@ solutionMode = 2
 OneIter = 0
 GreedyReOptimize = 0
 saveScratch = 2
-vehicleReturn = 1
+vehicleReturn = 0
 timeWindows = 0
 
 # ISUD PARAMETERS
@@ -30,7 +30,7 @@ NumColumn = 50
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 1
-MaxLabel = 15
+MaxLabel = 10
 isDominanceReleased = 0
 isSuccessorsLimited = 1
 isDropPickPossible = 0
