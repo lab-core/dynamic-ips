@@ -88,7 +88,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     EpochInst->updateTaskIndexLabeling();
     subProOptions_->isTruncated_ = EpochInst->parameters_->isTruncated_;
-    masterModel_->initializationCG(EpochInst, inputPaths);
+    if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD)
+        masterModel_->initializationISUD(EpochInst, inputPaths);
+    else
+        masterModel_->initializationCG(EpochInst, inputPaths);
 
     for (auto &vehicleObj: EpochInst->vehicles_) {
         vehicleObj->vehicleIndex_ = -1;
@@ -308,6 +311,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
     masterModel_->setObjValue();
     masterModel_->MasterPro_.reset();
+    masterModel_->CompPro_.reset();
+    masterModel_->ReducedPro_.reset();
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;

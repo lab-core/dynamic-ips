@@ -1,21 +1,34 @@
 cmake_minimum_required(VERSION 2.8.12.2)
 project(DARP_IPS)
+
+# Dynamically detect and set architecture for macOS
+if (APPLE)
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+        set(CMAKE_OSX_ARCHITECTURES "arm64")
+    else()
+        set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    endif()
+endif()
+
+# Ensure the CMake module path includes the directory with FindCPLEX.cmake
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-
+# Check C++11 support
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if (COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DIL_STD")
-else ()
-    message(STATUS "Fatal Error: Your compiler doesn't support c++11, please install it!")
-endif ()
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+    message(FATAL_ERROR "Your compiler doesn't support C++11, please install an updated compiler.")
+endif()
+
+# Suppress developer warnings if not defined
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 endif()
+
 ######## Cplex Dependency
 find_package(CPLEX REQUIRED)
 if(CPLEX_FOUND)

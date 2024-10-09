@@ -88,7 +88,7 @@ void MasterAlgorithm::setObjValue() {
 
 // this function create initial routes serving only one request and fill zSolution_ with available requests
 // Reduced problem is also solved to initialized dual costs
-void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
+void MasterAlgorithm::initializationISUD(PInstance &pInst, InputPaths &inputPaths) {
     MPEpochSolveTime_ = 0;
     CPEpochSolveTime_ = 0;
     cpIncDegree_ = 2;
@@ -96,12 +96,8 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
     masterTime_->start();
 
     // Building models
-    CompPro_.reset();
-    ReducedPro_.reset();
-    MasterPro_.reset();
     CompPro_ = std::make_shared<ComplementPro>();
     ReducedPro_ = std::make_shared<ReducedProblem>();
-    MasterPro_ = std::make_shared<MIPMasterProblem>();
     ReducedPro_->routesToAdd_.clear();
     nbColumnsAdded_ = 0;
     RMPCounter_ = 0;
@@ -155,39 +151,23 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths) {
         setObjValue();
     }
     else if (pInst->parameters_->initialStart_ == GREEDY_START){
-        MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
-        objValue_ = MasterPro_->objValue_;
+        MPEpochSolveTime_ += ReducedPro_->solveTime_->dSinceStart().count();
+        objValue_ = ReducedPro_->objValue_;
         setObjValue();
         GreedyObjValue_ = objValue_;
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
 
-    // build the model
-    if (pInst->parameters_->mainAlgorithm_ == MP_ISUD) {
-        ReducedPro_->routesToAdd_.clear();
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-        }
-        MPBuildTime_->start();
-        ReducedPro_->buildModel(pInst, routeSolution_, nbVehicles_);
-        MPBuildTime_->stop();
-        // set duals based on greedy
-        if (pInst->parameters_->initialStart_ == GREEDY_START)
-            ReducedPro_->solveModelLP(pInst, inputPaths);
+    for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
     }
-    else {
-        ReducedPro_->routesToAdd_.clear();
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-        }
-        MPBuildTime_->start();
-        MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
-        MPBuildTime_->stop();
-        // set duals based on greedy
-        if (pInst->parameters_->initialStart_ == GREEDY_START)
-            MasterPro_->solveModelLP(pInst, inputPaths);
-    }
+    MPBuildTime_->start();
+    ReducedPro_->buildModel(pInst, routeSolution_, nbVehicles_);
+    MPBuildTime_->stop();
 
+    // set duals based on greedy
+    if (pInst->parameters_->initialStart_ == GREEDY_START)
+        ReducedPro_->solveModelLP(pInst, inputPaths);
 
     masterTime_->stop();
 }
@@ -199,6 +179,8 @@ void MasterAlgorithm::initializationCG(PInstance &pInst, InputPaths &inputPaths)
 
     // Building models
     MasterPro_ = std::make_shared<MIPMasterProblem>();
+    // build the model
+    MasterPro_->routesToAdd_.clear();
     nbColumnsAdded_ = 0;
     RMPCounter_ = 0;
     SPIter_ = 0;
@@ -256,8 +238,7 @@ void MasterAlgorithm::initializationCG(PInstance &pInst, InputPaths &inputPaths)
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
 
-    // build the model
-    MasterPro_->routesToAdd_.clear();
+
     for (int v = 0; v < pInst->nbVehicles_; ++v) {
         MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
     }

@@ -15,18 +15,46 @@
 #   ~/Applications/IBM/ILOG/CPLEX_Studio<edition>124 - Mac OS X
 #   C:\Program Files\IBM\ILOG\CPLEX_Studio<edition>124 - Windows
 #     set(CPLEX_STUDIO_DIR /opt/ibm/ILOG/CPLEX_Studio221 /opt/IBM/ILOG/CPLEX_Studio221 /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221 /home/ibm/cplex-studio/22.1)
+
+
 if (UNIX)
-    set(CPLEX_STUDIO_DIR /home/ibm/cplex-studio/22.1)
-#    set(CPLEX_STUDIO_DIR /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221)
-    set(CPLEX_ARCH x86-64)
-    set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_linux/static_pic)
+    # Determine if the system is macOS or Linux and set the architecture accordingly
     if (APPLE)
-        set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio221)
+        if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+            set(CPLEX_ARCH arm64)
+            set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio2211)
+        else()
+            set(CPLEX_ARCH x86-64)
+            set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio221)
+        endif()
         set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_osx/static_pic)
+    else()
+        # Default for Linux systems
+        set(CPLEX_ARCH x86-64)
+        # Check which CPLEX directory exists and set it accordingly.
+        if (EXISTS "/home/elamib/Documents/ibm/ILOG/CPLEX_Studio2211")
+            set(CPLEX_STUDIO_DIR "/home/elamib/Documents/ibm/ILOG/CPLEX_Studio2211")
+        elseif (EXISTS "/home/ibm/cplex-studio/22.1.1")
+            set(CPLEX_STUDIO_DIR "/home/ibm/cplex-studio/22.1.1")
+        else()
+            message(FATAL_ERROR "No valid CPLEX installation found on Linux system.")
+        endif()
+        set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_linux/static_pic)
     endif()
 endif()
-message("Found studio dirs: ${CPLEX_STUDIO_DIR}")
-message("Lib suffixes dirs: ${CPLEX_LIB_PATH_SUFFIXES}")
+
+# Clear previous search paths to prevent fallback to older directories.
+unset(CPLEX_INCLUDE_DIR CACHE)
+unset(CPLEX_CONCERT_INCLUDE_DIR CACHE)
+unset(CPLEX_CP_INCLUDE_DIR CACHE)
+unset(CPLEX_LIBRARY CACHE)
+unset(CPLEX_CONCERT_LIBRARY CACHE)
+unset(CPLEX_ILOCPLEX_LIBRARY CACHE)
+unset(CPLEX_CP_LIBRARY CACHE)
+
+message("Detected platform: ${CMAKE_SYSTEM_NAME}, Processor: ${CMAKE_SYSTEM_PROCESSOR}")
+message("CPLEX Studio directories: ${CPLEX_STUDIO_DIR}")
+message("Library path suffixes: ${CPLEX_LIB_PATH_SUFFIXES}")
 
 find_package(Threads)
 
@@ -34,46 +62,38 @@ find_package(Threads)
 set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
 set(CPLEX_CONCERT_DIR ${CPLEX_STUDIO_DIR}/concert)
 set(CPLEX_CP_DIR ${CPLEX_STUDIO_DIR}/cpoptimizer)
-message("cplex dirs: ${CPLEX_DIR}")
-message("cplex concert dirs: ${CPLEX_CONCERT_DIR}")
-message("cplex cp optimizer dir : ${CPLEX_CP_DIR}")
+message("CPLEX directories: ${CPLEX_DIR}")
+message("Concert directories: ${CPLEX_CONCERT_DIR}")
+message("CP Optimizer directories: ${CPLEX_CP_DIR}")
 
 # Find the include directories.
 find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h PATHS ${CPLEX_DIR}/include)
-find_path(CPLEX_CONCERT_INCLUDE_DIR ilconcert/ilosys.h
-        PATHS ${CPLEX_CONCERT_DIR}/include)
+find_path(CPLEX_CONCERT_INCLUDE_DIR ilconcert/ilosys.h PATHS ${CPLEX_CONCERT_DIR}/include)
 find_path(CPLEX_CP_INCLUDE_DIR ilcp/cp.h PATHS ${CPLEX_CP_DIR}/include)
 
-message("cplex include dirs: ${CPLEX_INCLUDE_DIR}")
-message("cplex concert include dirs: ${CPLEX_CONCERT_INCLUDE_DIR}")
-message("cplex cp optimizer include dir : ${CPLEX_CP_INCLUDE_DIR}")
+message("CPLEX include directories: ${CPLEX_INCLUDE_DIR}")
+message("Concert include directories: ${CPLEX_CONCERT_INCLUDE_DIR}")
+message("CP Optimizer include directories: ${CPLEX_CP_INCLUDE_DIR}")
 
 # ----------------------------------------------------------------------------
 # CPLEX
 # Find the CPLEX library.
-find_library(CPLEX_LIBRARY NAMES cplex
-        PATHS ${CPLEX_DIR} PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
+find_library(CPLEX_LIBRARY NAMES cplex PATHS ${CPLEX_DIR} PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
 set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
-message("cplex library: ${CPLEX_LIBRARY}")
-message("cplex library debug: ${CPLEX_LIBRARY_DEBUG}")
+message("CPLEX library: ${CPLEX_LIBRARY}")
+message("CPLEX debug library: ${CPLEX_LIBRARY_DEBUG}")
 
 # ----------------------------------------------------------------------------
 # Concert
 
 macro(find_cplex_library var name paths)
-    find_library(${var} NAMES ${name}
-            PATHS ${paths} PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
-    if (UNIX)
-        set(${var}_DEBUG ${${var}})
-    else ()
-        find_library(${var}_DEBUG NAMES ${name}
-                PATHS ${paths} PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES_DEBUG})
-    endif ()
+    find_library(${var} NAMES ${name} PATHS ${paths} PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
+    set(${var}_DEBUG ${${var}})
 endmacro()
 
 # Find the Concert library.
 find_cplex_library(CPLEX_CONCERT_LIBRARY concert ${CPLEX_CONCERT_DIR})
-message("cplex concert library : ${CPLEX_CONCERT_LIBRARY}")
+message("Concert library: ${CPLEX_CONCERT_LIBRARY}")
 
 # ----------------------------------------------------------------------------
 # IloCplex - depends on CPLEX and Concert
@@ -87,19 +107,18 @@ endif ()
 
 # Find the IloCplex include directory - normally the same as the one for CPLEX
 # but check if ilocplex.h is there anyway.
-find_path(CPLEX_ILOCPLEX_INCLUDE_DIR ilcplex/ilocplex.h
-        PATHS ${CPLEX_INCLUDE_DIR})
+find_path(CPLEX_ILOCPLEX_INCLUDE_DIR ilcplex/ilocplex.h PATHS ${CPLEX_INCLUDE_DIR})
 
 # Find the IloCplex library.
 find_cplex_library(CPLEX_ILOCPLEX_LIBRARY ilocplex ${CPLEX_DIR})
-message("cplex Ilocplex library : ${CPLEX_ILOCPLEX_LIBRARY}")
+message("IloCplex library: ${CPLEX_ILOCPLEX_LIBRARY}")
 
 # ----------------------------------------------------------------------------
 # CP Optimizer - depends on Concert
 
 # Find the CP Optimizer library.
 find_cplex_library(CPLEX_CP_LIBRARY cp ${CPLEX_CP_DIR})
-message("cplex cp library : ${CPLEX_CP_LIBRARY}")
+message("CP Optimizer library: ${CPLEX_CP_LIBRARY}")
 
 set(CPLEX_COMPILER_FLAGS "-DIL_STD" CACHE STRING "Cplex Compiler Flags")
 
