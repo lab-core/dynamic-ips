@@ -30,8 +30,8 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
 
     nbGenerated_ = 0;
     nbDominated_ = 0;
-    nbUnreachableDTrip_ = 0;
-    nbUnreachableDelay_ = 0;
+    nbEliminated_ = 0;
+    nbPrunedPath_ = 0;
     nbNegativeFound_ = 0;
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
@@ -42,7 +42,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
                               "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
                               "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime,"
                               "GreedyTime,#SP Iter,totalColumn,#LGenerated,#LDominated,"
-                              "#LEliminated, #LUnreachableDelay,nbNegative,#ColumnsAdded,GreedyObj,"
+                              "#LEliminated, #nbPrunedPath,nbNegative,#ColumnsAdded,GreedyObj,"
                               "Objective,LinearObjective,waitTime" << std::endl;
 
 
@@ -118,8 +118,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     nbGenerated_ = 0;
     nbDominated_ = 0;
-    nbUnreachableDelay_ = 0;
-    nbUnreachableDTrip_ = 0;
+    nbPrunedPath_ = 0;
+    nbEliminated_ = 0;
 
     while (true) {
         // Set available time
@@ -234,8 +234,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbNegativeFound_ = nbNegativeFound_ + subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
             nbDominated_ += subProblem->nbDominated_;
-            nbUnreachableDTrip_ += subProblem->nbUnreachableDTrip_;
-            nbUnreachableDelay_ += subProblem->nbUnreachableDelay_;
+            nbEliminated_ += subProblem->nbEliminated_;
+            nbPrunedPath_ += subProblem->nbPrunedPath_;
  //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
         }
         preprocessTime_->start();
@@ -731,8 +731,8 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << masterModel_->nbRoutes_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
-    repStr << nbUnreachableDTrip_ << ",";
-    repStr << nbUnreachableDelay_ << ",";
+    repStr << nbEliminated_ << ",";
+    repStr << nbPrunedPath_ << ",";
     repStr << nbNegativeFound_ << ",";
     repStr << masterModel_->nbColumnsAdded_ << ",";
     repStr << masterModel_->GreedyObjValue_ << ",";

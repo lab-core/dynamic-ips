@@ -25,7 +25,7 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
 
     completeRequests_.reset();
     extendCheck_.reset();
-    unreachableDelay_.reset();
+    prunedDirections_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     nbPickUp_ = 0;
@@ -53,7 +53,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
-    unreachableDelay_ = label.unreachableDelay_;
+    prunedDirections_ = label.prunedDirections_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
@@ -80,7 +80,7 @@ void Label::copyLabel(const Label &label) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
-    unreachableDelay_ = label.unreachableDelay_;
+    prunedDirections_ = label.prunedDirections_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
@@ -145,7 +145,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
-        unreachableDelay_ = unreachableDelay_ | outNode->nonSuccessors_;
+        prunedDirections_ = prunedDirections_ | outNode->nonSuccessors_;
     }
 
     passedTime_ = reachedTime_ + outNode->serviceTime_;
@@ -154,7 +154,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
 
 // this function check the feasibility of the label before extension
 bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity,
-                             int &nbUnreachableDelay, int &nbUnreachableDTrip) {
+                             int &nbPrunedPath, int &nbEliminated) {
     if (extendCheck_.test(outNode->related_Request_->taskIndexLabel_))
         return false;
     float timeToReach;
@@ -163,8 +163,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
         numExtendCheck_++;
     }
     // check the arrival time window
-    if (unreachableDelay_.test(outNode->related_Request_->taskIndexLabel_)){
-        nbUnreachableDelay ++;
+    if (prunedDirections_.test(outNode->related_Request_->taskIndexLabel_)){
+        nbPrunedPath ++;
         return false;
     }
     // check tha capacity of vehicle
@@ -177,8 +177,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
         timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
         if (isSuccessorLimited) {
             if (timeToReach > outNode->related_Request_->latestPickup_) {
-                unreachableDelay_.set(outNode->related_Request_->taskIndexLabel_, true);
-                nbUnreachableDelay ++;
+                prunedDirections_.set(outNode->related_Request_->taskIndexLabel_, true);
+                nbPrunedPath ++;
                 return false;
             }
         }
@@ -196,14 +196,14 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
             return false;
     }
     // check travel time limitation
-    if (!isTravelTimeFeasible(outNode, nbUnreachableDTrip))
+    if (!isTravelTimeFeasible(outNode, nbEliminated))
         return false;
     /*for (auto &nodeObj: openNode_) {
         float timeToDrop = timeToReach - passedTime_ + outNode->serviceTime_ +
                 durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop) {
-            nbUnreachableDTrip ++;
+            nbEliminated ++;
             return false;
         }
     }*/
@@ -211,7 +211,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimit
     return true;
 }
 
-bool Label::isTravelTimeFeasible(Node *outNode, int &nbUnreachableDTrip) {
+bool Label::isTravelTimeFeasible(Node *outNode, int &nbEliminated) {
     float timeToReach;
     if (outNode->type_ == PICKUP)
         timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
@@ -226,7 +226,7 @@ bool Label::isTravelTimeFeasible(Node *outNode, int &nbUnreachableDTrip) {
                                durationMatrix_[outNode->locationID_][(nodeObj)->locationID_];
 
             if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < timeToDrop) {
-                nbUnreachableDTrip++;
+                nbEliminated++;
                 return false;
             }
         }
@@ -254,7 +254,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     return false;
 }
 // this function examine the label to be sure that it leads to a route with negative reduced cost
-bool Label::areDropsUnreachable() {
+bool Label::isEliminated() {
  //   return false;
     for (auto & nodeObj: openNode_) {
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {

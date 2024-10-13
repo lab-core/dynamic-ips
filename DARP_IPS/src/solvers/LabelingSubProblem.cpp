@@ -17,8 +17,8 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverO
         SubproModeler(vehicle), solverOptions_(solverOptions) {
     nbGenerated_ = 0;
     nbDominated_ = 0;
-    nbUnreachableDTrip_ = 0;
-    nbUnreachableDelay_ = 0;
+    nbEliminated_ = 0;
+    nbPrunedPath_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
     subproTime_ = new myTools::Timer(); subproTime_->init();
@@ -112,7 +112,7 @@ void LabelingSubProblem::initialization() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_) {
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -153,12 +153,12 @@ bool LabelingSubProblem::labelExtend(PLabel &parentLabel, Node *outNode, bool Te
 
     newLabel->extend(outNode, solverOptions_->isDropPickPossible_);
     nbGenerated_++;
-    if (!newLabel->areDropsUnreachable()) {
+    if (!newLabel->isEliminated()) {
         if (!isLabelAdded(newLabel, outNode, Terminate))
             nbDominated_++;
     }
     else {
-        nbUnreachableDTrip_++;
+        nbEliminated_++;
         return false;
     }
     return true;
@@ -177,14 +177,14 @@ bool LabelingSubProblem::labelExtendPick(PLabel &parentLabel, Node *outNode) {
 
     newLabel->extend(outNode, solverOptions_->isDropPickPossible_);
     nbGenerated_++;
-    if (!newLabel->areDropsUnreachable()) {
+    if (!newLabel->isEliminated()) {
         if (outNode->bestLabelReduceCost_ > newLabel->reducedCost_)
             outNode->bestLabelReduceCost_ = newLabel->reducedCost_;
         outNode->activeLabels_.push_back(newLabel);
         outNode->nbActiveLabels_++;
     }
     else {
-        nbUnreachableDTrip_++;
+        nbEliminated_++;
         return false;
     }
     return true;
@@ -267,7 +267,7 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
                                     // push to drop onboards
                                     if (!selectedLabel->openNode_.empty()) {
                                         for (auto &onboardNode: selectedLabel->openNode_) {
-                                            if (selectedLabel->isTravelTimeFeasible(onboardNode, nbUnreachableDTrip_)) {
+                                            if (selectedLabel->isTravelTimeFeasible(onboardNode, nbEliminated_)) {
                                                 int nbActiveDrop = onboardNode->nbActiveLabels_;
                                                 if (labelExtend(selectedLabel, onboardNode, true)) {
                                                     if ((onboardNode->nbActiveLabels_ == 1) && (nbActiveDrop == 0)) {
@@ -292,9 +292,9 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
 
                                 // pull all labels to the current node
                                 if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
-                                                                         solverOptions_->isSuccessorsLimited_,
-                                                                         Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                         nbUnreachableDTrip_)) {
+                                                                    solverOptions_->isSuccessorsLimited_,
+                                                                    Vehicle_->capacity_, nbPrunedPath_,
+                                                                    nbEliminated_)) {
                                     labelExtendPick(selectedLabel, &(*currentNode));
                                 }
                                 if (selectedLabel->numExtendCheck_ == subGraph_->pickNodes_.size() ||
@@ -363,7 +363,7 @@ bool LabelingSubProblem::solveDynamic_pulling(float availableTime) {
                                 if (!selectedLabel->isDropExtend_) {
                                     if (!selectedLabel->openNode_.empty()) {
                                         for (auto &onboardNode: selectedLabel->openNode_) {
-                                            if (selectedLabel->isTravelTimeFeasible(onboardNode, nbUnreachableDTrip_)) {
+                                            if (selectedLabel->isTravelTimeFeasible(onboardNode, nbEliminated_)) {
                                                 nbActive = onboardNode->nbActiveLabels_;
                                                 if (labelExtend(selectedLabel, onboardNode, true)) {
                                                     if ((onboardNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -392,8 +392,8 @@ bool LabelingSubProblem::solveDynamic_pulling(float availableTime) {
                                     // pull all labels to the current node
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->isSuccessorsLimited_,
-                                                                         Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                         nbUnreachableDTrip_)) {
+                                                                         Vehicle_->capacity_, nbPrunedPath_,
+                                                                         nbEliminated_)) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, &(*currentNode), true)) {
 
@@ -457,10 +457,10 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
                                     }
                                 }
                                     // pull all labels to the current node
-                                else if (selectedLabel->isExtendFeasible(&(*currentNode),maxPickup_,
+                                else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->isSuccessorsLimited_,
-                                                                         Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                         nbUnreachableDTrip_)) {
+                                                                         Vehicle_->capacity_, nbPrunedPath_,
+                                                                         nbEliminated_)) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, &(*currentNode), true)) {
 
@@ -492,7 +492,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
                 // drop onboards
                 if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
-                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                             nbActive = neighbourNode->nbActiveLabels_;
                             if (labelExtend(selectedLabel, neighbourNode, true)) {
                                 if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -526,7 +526,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -580,10 +580,10 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                                     }
                                 }
                                     // pull all labels to the current node
-                                else if (selectedLabel->isExtendFeasible(&(*currentNode),maxPickup_,
+                                else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->isSuccessorsLimited_,
-                                                                         Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                         nbUnreachableDTrip_)) {
+                                                                         Vehicle_->capacity_, nbPrunedPath_,
+                                                                         nbEliminated_)) {
                                     labelExtendPick(selectedLabel, &(*currentNode));
                                 }
                             }
@@ -615,7 +615,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                 // drop onboards
                 if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
-                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                             nbActive = neighbourNode->nbActiveLabels_;
                             if (labelExtend(selectedLabel, neighbourNode, true)) {
                                 if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -651,7 +651,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -703,7 +703,7 @@ bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_) {
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -720,8 +720,8 @@ bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
                     if (selectedLabel->load_ < Vehicle_->capacity_) {
                         for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->isSuccessorsLimited_,
-                                                                Vehicle_->capacity_,nbUnreachableDelay_,
-                                                                nbUnreachableDTrip_)) {
+                                                                Vehicle_->capacity_, nbPrunedPath_,
+                                                                nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)){
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -771,7 +771,7 @@ bool LabelingSubProblem::solveDynamic_pushingDrop(float availableTime) {
                     // drop onboards and terminate to sink if empty
                     if (!selectedLabel->openNode_.empty()){
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -786,8 +786,8 @@ bool LabelingSubProblem::solveDynamic_pushingDrop(float availableTime) {
                         if (selectedLabel->load_ < Vehicle_->capacity_) {
                             for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                                 if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->isSuccessorsLimited_,
-                                                                    Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                    nbUnreachableDTrip_)) {
+                                                                    Vehicle_->capacity_, nbPrunedPath_,
+                                                                    nbEliminated_)) {
                                     nbActive = (neighbourNode)->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, (neighbourNode), false)) {
                                         if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -843,8 +843,8 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     if (selectedLabel->load_ < Vehicle_->capacity_) {
                         for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->isSuccessorsLimited_,
-                                                                Vehicle_->capacity_, nbUnreachableDelay_,
-                                                                nbUnreachableDTrip_)) {
+                                                                Vehicle_->capacity_, nbPrunedPath_,
+                                                                nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, (neighbourNode), true)){
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -869,7 +869,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                 // drop onboards
                 if (!selectedLabel->openNode_.empty()) {
                     for (auto &neighbourNode: selectedLabel->openNode_){
-                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                        if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                             nbActive = (neighbourNode)->nbActiveLabels_;
                             if (labelExtend(selectedLabel, neighbourNode, true)) {
                                 if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -901,7 +901,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                     // drop onboards
                     if (!selectedLabel->openNode_.empty()) {
                         for (auto &neighbourNode: selectedLabel->openNode_){
-                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbUnreachableDTrip_)) {
+                            if (selectedLabel->isTravelTimeFeasible(neighbourNode, nbEliminated_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)) {
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -1044,8 +1044,8 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << maxPickup_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
-    repStr << nbUnreachableDTrip_ << ",";
-    repStr << nbUnreachableDelay_ << ",";
+    repStr << nbEliminated_ << ",";
+    repStr << nbPrunedPath_ << ",";
     repStr << nbOutputs_ << ",";
  //   repStr << nbOutputs_ << "\n";
     repStr << subproTime_->dSinceStart().count() << "\n";

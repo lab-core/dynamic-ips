@@ -20,8 +20,8 @@ public:
     std::vector<PLabel> labelPool_;             // pool of generated labels to re-use
     std::vector<Node*> activeNodes_;            // list of nodes with active labels
     int nbDominated_;                           // number of labels removed via Domination Rules
-    int nbUnreachableDelay_;                  // number of labels detected as Unreachable by soft time window
-    int nbUnreachableDTrip_;                    // number of labels detected as Unreachable due to travel time
+    int nbPrunedPath_;                          // number of labels detected as non-promising by soft time window
+    int nbEliminated_;                    // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
     int nbOutputs_;                             // total number of generated routes
     int maxPickup_;                             // number of pickups that are allowed in each path

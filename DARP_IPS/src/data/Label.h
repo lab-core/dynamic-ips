@@ -40,7 +40,7 @@ public:
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
     //   int nbPickMove_;                               // this value if for the times that vehicle change location in pickups
     std::bitset<MAX_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
-    std::bitset<MAX_BIT_SIZE> unreachableDelay_;    // nodes that are unreachable due to the penalty
+    std::bitset<MAX_BIT_SIZE> prunedDirections_;    // nodes that are unreachable due to the penalty
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
@@ -61,13 +61,13 @@ public:
 
     void extend(Node *outNode, bool isDropPickPossible);
     // this function check the feasibility of the label before extension
-    bool isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity, int &nbUnreachableDelay,
-                          int &nbUnreachableDTrip);
+    bool isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity, int &nbPrunedPath,
+                          int &nbEliminated);
 
-    bool isTravelTimeFeasible(Node *outNode, int &nbUnreachableDTrip);
+    bool isTravelTimeFeasible(Node *outNode, int &nbEliminated);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
     // this function examine the label to be sure that it leads to a route with negative reduced cost
-    bool areDropsUnreachable();
+    bool isEliminated();
 
 //    PRoute labelToRoute(PVehicle &vehicle);
     PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
