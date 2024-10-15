@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 1; ++i) {
+        for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -86,12 +86,21 @@ int main(int argc, char** argv) {
  //               mainInst->parameters_->MaxLabel_ = (i + 1) *5;
  //               mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
 
-                /*if (i == 1) {
-                    mainInst->parameters_->dynamicPricing_ = true;
+                if (i == 0) {
+                    mainInst->parameters_->pruneNodes_ = true;
+                    mainInst->parameters_->pruneArcs_ = false;
+                    mainInst->parameters_->discardSuboptimalPath_ = false;
+                }
+                else if (i == 1) {
+                    mainInst->parameters_->pruneNodes_ = true;
+                    mainInst->parameters_->pruneArcs_ = true;
+                    mainInst->parameters_->discardSuboptimalPath_ = false;
                 }
                 else {
-                    mainInst->parameters_->dynamicPricing_ = false;
-                }*/
+                    mainInst->parameters_->pruneNodes_ = true;
+                    mainInst->parameters_->pruneArcs_ = true;
+                    mainInst->parameters_->discardSuboptimalPath_ = true;
+                }
 
                 /*if (i == 1) {
                     mainInst->parameters_->isSuccessorsLimited_ = true;

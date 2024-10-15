@@ -12,7 +12,7 @@ mainAlgorithm = 0
 solutionMode = 2
 OneIter = 1
 GreedyReOptimize = 1
-saveScratch = 2
+saveScratch = 1
 vehicleReturn = 0
 timeWindows = 0
 
@@ -30,7 +30,7 @@ NumColumn = 50
 #
 isTruncated = 0
 MaxLabel = 15
-isDominanceReleased = 0
+isDominanceReleased = 1
 isSuccessorsLimited = 1
 pruneNodes = 0
 pruneArcs = 0
