@@ -145,9 +145,8 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
-        prunedDirections_ = prunedDirections_ | outNode->nonSuccessors_;
     }
-
+    prunedDirections_ = prunedDirections_ | outNode->nonSuccessors_;
     passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }
@@ -244,7 +243,9 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 //               if (otherLabel->openRequests_ == this->openRequests_) {
                 if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
                     if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-   //                     if (this->haveLessTravelResource(otherLabel))
+                        if (solverOption->isDominanceReleased_)
+                            return true;
+                        else if (this->haveLessTravelResource(otherLabel))
                             return true;
                     }
                 }

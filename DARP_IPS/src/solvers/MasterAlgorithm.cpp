@@ -1091,16 +1091,20 @@ void MasterAlgorithm::setAvailableTime() {
     availableTime_ = (int)(timeLimit_ - masterTime_->dSinceStart().count());
 }
 
-void MasterAlgorithm::setAvailableTime(PInstance &pInst, double elapsedTime) {
-    switch (pInst->parameters_->solutionMode_) {
-        case ANYTIME:
-            availableTime_ = static_cast<int>(pInst->parameters_->committedTime_ - elapsedTime);
-            break;
-        case DYNAMIC:
-            availableTime_ = static_cast<int>(pInst->parameters_->epochLength_- elapsedTime);
-            break;
-        case STATIC:
-            availableTime_ = LARGE_CONSTANT;
-            break;
+void MasterAlgorithm::setAvailableTime(PInstance &pInst, double elapsedTime, int iteration) {
+    if (iteration > 1) {
+        switch (pInst->parameters_->solutionMode_) {
+            case ANYTIME:
+                availableTime_ = static_cast<int>(pInst->parameters_->committedTime_ - elapsedTime);
+                break;
+            case DYNAMIC:
+                availableTime_ = static_cast<int>(pInst->parameters_->epochLength_ - elapsedTime);
+                break;
+            case STATIC:
+                availableTime_ = LARGE_CONSTANT;
+                break;
+        }
     }
+    else
+        availableTime_ = LARGE_CONSTANT;
 }

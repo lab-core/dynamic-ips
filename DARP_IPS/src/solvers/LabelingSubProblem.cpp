@@ -35,19 +35,15 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool puned
             nodeObj->nonSuccessors_.reset();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_ && pickNodeObj->nodeStatus_ != COMMITTED) {
-                    if (nodeObj->type_ != SOURCE){
-                        if (punedArcs) {
-                            float minWait =
-                                    (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
-                                    durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] -
-                                    pickNodeObj->readyTime_;
-                            if (minWait > pickNodeObj->related_Request_->penalty_)
-                                nodeObj->nonSuccessors_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
-                        }
-                        nodeObj->successors_.push_back(&(*pickNodeObj));
+                    if (punedArcs) {
+                        float minWait =
+                                (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
+                                durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] -
+                                pickNodeObj->readyTime_;
+                        if (minWait > pickNodeObj->related_Request_->penalty_)
+                            nodeObj->nonSuccessors_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
                     }
-                    else
-                        nodeObj->successors_.push_back(&(*pickNodeObj));
+                    nodeObj->successors_.push_back(&(*pickNodeObj));
                 }
             }
         }
@@ -58,9 +54,9 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool puned
 // reset that active lists of the nodes, create the first label at the source, add onboards
 void LabelingSubProblem::initialization() {
     bool extendToOnboard = false;
-    sortSuccessors(subGraph_->sourceNodes_, solverOptions_->pruneArcs_);
+    sortSuccessors(subGraph_->sourceNodes_, false);
     sortSuccessors(subGraph_->pickNodes_, solverOptions_->pruneArcs_);
-    sortSuccessors(subGraph_->dropNodes_, solverOptions_->pruneArcs_);
+    sortSuccessors(subGraph_->dropNodes_, false);
     sortSuccessors(subGraph_->onboards_, solverOptions_->pruneArcs_);
     /*if (solverOptions_->isDropPickPossible_) {
         sortSuccessors(subGraph_->dropNodes_);

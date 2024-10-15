@@ -718,7 +718,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "isSuccessorsLimited,LabelingStrategy,Vehicle_portion,Dynamic_Pricing,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
+                        "isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,Vehicle_portion,Dynamic_Pricing,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();

@@ -92,7 +92,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
     // Set available time
-    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
     EpochInst->updateTaskIndexLabeling();
     masterModel_->initialization(EpochInst, inputPaths, GreedyModel_);
 
@@ -123,8 +123,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     while (true) {
         // Set available time
-        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
         iter++;
+        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         nbNegativeFound = 0;
         previousObj = masterModel_->objValue_;
 
@@ -210,7 +210,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
         else {
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
             if (masterModel_->availableTime_ <= 5){
                 break;
             }
@@ -231,7 +231,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
 
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
 
             if (masterModel_->availableTime_ <= 5)
                 break;
@@ -244,7 +244,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
     }  // end of CG while
-    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
     masterModel_->timeLimit_ = masterModel_->availableTime_;
     masterModel_->setObjValue();
     if (EpochInst->parameters_->mainAlgorithm_ == MP_CG)
@@ -273,7 +273,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
     // Set available time
-    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
     EpochInst->updateTaskIndexLabeling();
     masterModel_->initialization(EpochInst, inputPaths, GreedyModel_);
 
@@ -304,8 +304,8 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
 
     while (true) {
         // Set available time
-        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
         iter++;
+        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         nbNegativeFound = 0;
         previousObj = masterModel_->objValue_;
 
@@ -391,7 +391,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
         }
         else {
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
             if (masterModel_->availableTime_ < 3){
                 if (iter == 1)
                     masterModel_->availableTime_ = 10;
@@ -417,7 +417,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             }
 
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count());
+            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
 
             if (masterModel_->availableTime_ < 3)
                 break;
