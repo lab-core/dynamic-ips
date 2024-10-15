@@ -215,7 +215,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 break;
             }
 
-            masterModel_->timeLimit_ = masterModel_->availableTime_-5;
+            masterModel_->timeLimit_ = masterModel_->availableTime_-3;
 
             //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
