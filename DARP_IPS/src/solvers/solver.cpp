@@ -262,8 +262,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     else
         masterModel_->MasterPro_.reset();
 
-    /*labelsPool_.clear();
-    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);*/
+    labelsPool_.clear();
+    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -790,7 +790,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
         //       preprocessTime_->stop();
         if (MIP_Stop) {
-            if (epoch_ == 50) {
+            if (epoch_ == 150) {
                 EpochInst->parameters_->mainAlgorithm_ = MP_CG;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
