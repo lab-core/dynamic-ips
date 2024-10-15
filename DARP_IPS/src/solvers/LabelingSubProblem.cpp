@@ -13,8 +13,8 @@
 //-----------------------------------------------------------------------------
 
 
-LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions) :
-        SubproModeler(vehicle), solverOptions_(solverOptions) {
+LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions) :
+        SubproModeler(vehicle), solverOptions_(std::move(solverOptions)) {
     nbGenerated_ = 0;
     nbDominated_ = 0;
     nbEliminated_ = 0;

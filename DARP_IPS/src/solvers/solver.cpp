@@ -790,7 +790,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         }
         //       preprocessTime_->stop();
         if (MIP_Stop) {
-            if (epoch_ == 180) {
+            if (epoch_ == 50) {
                 EpochInst->parameters_->mainAlgorithm_ = MP_CG;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;

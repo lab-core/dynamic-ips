@@ -31,7 +31,7 @@ public:
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
-    LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions);
+    LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
 
     ~LabelingSubProblem() override;
 
