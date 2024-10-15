@@ -117,7 +117,6 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
-
         solveTime_->start();
         Cplex_.solve();
         solveTime_->stop();

@@ -16,13 +16,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Check C++11 support
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if (COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-    message(FATAL_ERROR "Your compiler doesn't support C++11, please install an updated compiler.")
-endif()
 
 # Suppress developer warnings if not defined
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
@@ -66,7 +59,7 @@ set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
 ######## Compiler message
-#set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 message(STATUS "System: ${CMAKE_SYSTEM}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")

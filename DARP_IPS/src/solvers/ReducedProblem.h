@@ -19,9 +19,6 @@ public:
     IloNumVarArray routeVar_;               // route variables
     IloNumVarArray zVar_;                   // request(z) variables
 
-    IloNumArray colStat_;
-    IloNumArray rowStat_;
-
 
     double objValue_;
     double auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP

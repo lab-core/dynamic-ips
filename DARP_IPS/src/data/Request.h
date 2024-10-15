@@ -43,7 +43,6 @@ public:
     int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement
     int taskIndex_;                     // request index (row) in master model
     int taskIndexLabel_;                // request index in sub problems graph
-    int taskIncIndex_;                  // used before for eigen library to calculate inc degree
     int pickZoneID_;
     int dropZoneID_;
 

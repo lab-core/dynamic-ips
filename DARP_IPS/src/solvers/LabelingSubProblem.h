@@ -37,7 +37,7 @@ public:
 
 
     // this function sort the list of nodes based of their dual values
-    void sortSuccessors(std::vector<PNode> &nodeList);
+    void sortSuccessors(std::vector<PNode> &nodeList, bool punedArcs);
 
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();
@@ -65,6 +65,7 @@ public:
     std::string toStringOut(int epoch) const;
 
     void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
+    void extendToDropOnboards(PLabel &selectedLabel);
 };
 
 

@@ -14,11 +14,12 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool oneIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
                        bool useMultiStage, float minImp, bool useZoom, int nbColumn,
-                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool isDominanceReleased,
+                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+                       bool discardSuboptimalPath, bool isDominanceReleased,
                        bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
                        subproblemAlgorithm subAlgorithm, bool constPortion, bool vehiclePortion, bool dynamicPricing,
                        bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
-                       int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap):
+                       int populateTimeLimit, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
@@ -29,8 +30,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
         constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), addOneRequestColumn_(addOneRequestColumn), solutionMode_(solutionMode),
-        MIPGap_(MIPGap), timeWindow_(timeWindow) {
+        populateTimeLimit_(populateTimeLimit), solutionMode_(solutionMode),discardSuboptimalPath_(discardSuboptimalPath),
+        MIPGap_(MIPGap), timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs){
     savePartial_ = false;
 }
 
@@ -54,7 +55,6 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# number of threads " << " = " << nbThreads_ << std::endl;
     repStr << std::setw(setwLength) << "# initial dual solution " << " = " << InitialDualName[initialDual_] << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
-    repStr << std::setw(setwLength) << "# add columns with one request" << " = " << addOneRequestColumn_ << std::endl;
     repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
     repStr << std::setw(setwLength) << "# One iter per epoch " << " = " << oneIter_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
@@ -80,6 +80,9 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
+    repStr << std::setw(setwLength) << "# Prune Nodes from graph " << " = " << pruneNodes_ << std::endl;
+    repStr << std::setw(setwLength) << "# Prune Arcs from graph " << " = " << pruneArcs_ << std::endl;
+    repStr << std::setw(setwLength) << "# Remove suboptimal labels " << " = " << discardSuboptimalPath_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveMode_] << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
@@ -130,6 +133,9 @@ std::string Parameters::toStr() const {
     repStr << boolToString(isDominanceReleased_) << ",";
     repStr << boolToString(isDropPickPossible_) << ",";
     repStr << boolToString(isSuccessorsLimited_) << ",";
+    repStr << boolToString(pruneNodes_) << ",";
+    repStr << boolToString(pruneArcs_) << ",";
+    repStr << boolToString(discardSuboptimalPath_) << ",";
     repStr << LabelingStrategyName[LabelingStrategy_] << ",";
     repStr << boolToString(vehiclePortion_) << ",";
     repStr << boolToString(dynamicPricing_) << ",";
@@ -146,12 +152,14 @@ std::string Parameters::toStr() const {
 //-----------------------------------------------------------------------------
 
 solverOption::solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick,
-                           SortPaths pathSort, bool isSuccessorsLimited, bool isDropPickPossible,
-                           LabelingStrategy labelingStrategy, bool addOneRequestColumn) :
+                           SortPaths pathSort, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+                           bool discardSuboptimalPath, bool isDropPickPossible,
+                           LabelingStrategy labelingStrategy) :
         isTruncated_(isTruncated), nbPick_(nbPick), MaxLabel_(maxLabel),
-        isSuccessorsLimited_(isSuccessorsLimited), pathSort_(pathSort),
+        isSuccessorsLimited_(isSuccessorsLimited), discardSuboptimalPath_(discardSuboptimalPath),
+        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), pathSort_(pathSort),
         isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        LabelingStrategy_(labelingStrategy), usePick_(false), addOneRequestColumn_(addOneRequestColumn) {}
+        LabelingStrategy_(labelingStrategy), usePick_(false) {}
 
 solverOption::~solverOption() = default;
 
@@ -171,7 +179,9 @@ solverOption::solverOption(PParameters &MainParams) {
     usePick_ = MainParams->usePick_;
     nbPick_ = MainParams->nbPick_;
     pathSort_ = MainParams->sortPath_;
-    addOneRequestColumn_ = MainParams->addOneRequestColumn_;
+    pruneNodes_ = MainParams->pruneNodes_;
+    pruneArcs_ = MainParams->pruneArcs_;
+    discardSuboptimalPath_ = MainParams->discardSuboptimalPath_;
 }
 
 
@@ -189,11 +199,13 @@ std::string solverOption::toString() const {
     repStr << "#" << std::endl;
     int setwLength = 30;
     repStr << std::left << std::fixed << std::setprecision(1) << std::boolalpha;
-    repStr << std::setw(setwLength) << "# add columns with one request" << " = " << addOneRequestColumn_ << std::endl;
     repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
+    repStr << std::setw(setwLength) << "# Prune Nodes from graph " << " = " << pruneNodes_ << std::endl;
+    repStr << std::setw(setwLength) << "# Prune Arcs from graph " << " = " << pruneArcs_ << std::endl;
+    repStr << std::setw(setwLength) << "# Remove suboptimal labels " << " = " << discardSuboptimalPath_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;

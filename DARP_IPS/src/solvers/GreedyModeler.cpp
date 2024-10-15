@@ -64,7 +64,7 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
 
 void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
     greedyAssignTime_->start();
-    if ((select == 1 && !PInst->parameters_->addOneRequestColumn_)||(select == 2 && PInst->parameters_->addOneRequestColumn_)) {
+    if (select == 1) {
         for (auto & greedySol : greedyRouteList_) {
             greedySol.reset();
         }

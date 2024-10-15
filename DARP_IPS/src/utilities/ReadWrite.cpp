@@ -459,17 +459,16 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     string title;
 
-    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, constPortion = -1;
+    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1;
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
-    bool isTruncated = false, isSuccessorsLimited = false, isDominanceReleased = false, oneIter = false;
+    bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
+    bool discardSuboptimalPath = false, isDominanceReleased = false, oneIter = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, vehiclePortion = false, usePick = false;
-    bool greedyReOptimize = false, vehicleReturn = false, dynamicPricing = false;
+    bool greedyReOptimize = false, vehicleReturn = false, dynamicPricing = false, constPortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
     float timeWindows = -1;
-
-    bool addOneRequestColumn = false;
     float mipGap = -1;
 
     while (file.good()) {
@@ -502,8 +501,6 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "mainAlgorithm "))
             file >> mainAlgorithm;
 
-        else if (strEndWith(title, "addOneRequestColumn "))
-            file >> addOneRequestColumn;
 
         else if (strEndWith(title, "solutionMode "))
             file >> solutionMode;
@@ -555,6 +552,15 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "isSuccessorsLimited "))
             file >> isSuccessorsLimited;
+
+        else if (strEndWith(title, "pruneNodes "))
+            file >> pruneNodes;
+
+        else if (strEndWith(title, "pruneArcs "))
+            file >> pruneArcs;
+
+        else if (strEndWith(title, "discardSuboptimalPath "))
+            file >> discardSuboptimalPath;
 
         else if (strEndWith(title, "isDropPickPossible "))
             file >> isPickDropPossible;
@@ -609,6 +615,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, nbColumns, isTruncated, maxLabel, isSuccessorsLimited,
+                                                          pruneNodes, pruneArcs, discardSuboptimalPath,
                                                           isDominanceReleased, isPickDropPossible,
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
@@ -616,7 +623,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           constPortion, vehiclePortion, dynamicPricing, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
-                                                          bigM, solveTimeLimit, populateTimeLimit, addOneRequestColumn,
+                                                          bigM, solveTimeLimit, populateTimeLimit,
                                                           static_cast<SolutionMode>(solutionMode), mipGap);
 }
 

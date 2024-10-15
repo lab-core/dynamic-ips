@@ -36,18 +36,30 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
 
     // adding available nodes based on the penalty
     for (int i = 0; i < pInst->requests_.size(); i++) {
-        if (pInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            float minWait = (Vehicle_)->departTime_ +
-                            durationMatrix_[(Vehicle_)->departNode_->locationID_]
-                            [pInst->instGraph_->pickNodes_[i]->locationID_]- pInst->requests_[i]->earlyPick_;
-            if (minWait <= pInst->requests_[i]->penalty_) {
-                subRequests_.push_back(pInst->requests_[i]);
-                subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->pickNodes_[i]));
-                subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]));
-                subGraph_->pickNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->pickNodes_.back()->locationID_];
-                subGraph_->dropNodes_.back()->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][subGraph_->dropNodes_.back()->locationID_];
-                Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
-            }
+        if (pInst->requests_[i]->requestStatus_ != NO_ACTION) continue;
+
+        bool addRequest = true;
+        if (pInst->parameters_->pruneNodes_) {
+            float minWait = Vehicle_->departTime_ +
+                            durationMatrix_[Vehicle_->departNode_->locationID_]
+                            [pInst->instGraph_->pickNodes_[i]->locationID_] -
+                            pInst->requests_[i]->earlyPick_;
+
+            addRequest = (minWait <= pInst->requests_[i]->penalty_);
+        }
+
+        if (addRequest) {
+            subRequests_.push_back(pInst->requests_[i]);
+            auto pickNode = std::make_shared<Node>(pInst->instGraph_->pickNodes_[i]);
+            auto dropNode = std::make_shared<Node>(pInst->instGraph_->dropNodes_[i]);
+
+            subGraph_->addNewNode(pickNode);
+            subGraph_->addNewNode(dropNode);
+
+            pickNode->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][pickNode->locationID_];
+            dropNode->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][dropNode->locationID_];
+
+            Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
         }
     }
 

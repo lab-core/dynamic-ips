@@ -31,7 +31,6 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     InitialDual_ = 0;
     minTravelTime_ = 0;
     taskIndex_ = -1;
-    taskIncIndex_ = -1;
     taskIndexLabel_ = -1;
 }
 Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime, int pickZoneID, int dropZoneID) :
@@ -53,7 +52,6 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     InitialDual_ = 0;
     minTravelTime_ = 0;
     taskIndex_ = -1;
-    taskIncIndex_ = -1;
     taskIndexLabel_ = -1;
 }
 

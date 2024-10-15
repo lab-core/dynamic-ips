@@ -22,7 +22,6 @@ public:
     int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
-    bool addOneRequestColumn_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
     bool oneIter_;                  // solve master problem one time at each iteration of the CG
     bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
@@ -46,6 +45,9 @@ public:
     int MaxLabel_{};
     bool isDominanceReleased_{};
     bool isSuccessorsLimited_{};
+    bool pruneNodes_{};
+    bool pruneArcs_{};
+    bool discardSuboptimalPath_{};
     bool isDropPickPossible_{};
     SubProSolveMode SubproSolveMode_;
     LabelingStrategy LabelingStrategy_;
@@ -69,11 +71,11 @@ public:
                float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
                bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
-               int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited,
-               bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
+               int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+               bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
-               int solveTimeLimit, int populateTimeLimit, bool addOneRequestColumn, SolutionMode solutionMode, float MIPGap);
+               int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();
 
@@ -92,17 +94,20 @@ struct solverOption {
     bool isTruncated_;
     bool isDominanceReleased_;
     bool isSuccessorsLimited_;
+    bool pruneNodes_;
+    bool pruneArcs_;
+    bool discardSuboptimalPath_;
     bool isDropPickPossible_;
     LabelingStrategy LabelingStrategy_;
     int MaxLabel_;
     bool usePick_;
     int nbPick_;
     SortPaths pathSort_;
-    bool addOneRequestColumn_;
 
     // Constructor and Destructor
     solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick, SortPaths pathSort,
-                 bool isSuccessorsLimited, bool isDropPickPossible, LabelingStrategy labelingStrategy, bool addOneRequestColumn);
+                 bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+                 bool discardSuboptimalPath, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
     explicit solverOption(PParameters &MainParams);
 

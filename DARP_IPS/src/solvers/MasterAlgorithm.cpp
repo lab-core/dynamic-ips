@@ -86,105 +86,7 @@ void MasterAlgorithm::setObjValue() {
     }
 }
 
-// this function create initial routes serving only one request and fill zSolution_ with available requests
-// Reduced problem is also solved to initialized dual costs
-void MasterAlgorithm::initializationISUD(PInstance &pInst, InputPaths &inputPaths) {
-    MPEpochSolveTime_ = 0;
-    CPEpochSolveTime_ = 0;
-    cpIncDegree_ = 2;
-    maxIncDegree_ = pInst->parameters_->CP_IncDegree_;
-    masterTime_->start();
-
-    // Building models
-    CompPro_ = std::make_shared<ComplementPro>();
-    ReducedPro_ = std::make_shared<ReducedProblem>();
-    ReducedPro_->routesToAdd_.clear();
-    nbColumnsAdded_ = 0;
-    RMPCounter_ = 0;
-    SPIter_ = 0;
-    CPBuilt_ = false;
-
-
-    nbVehicles_ = 0;
-    for (auto &vehicleObj: pInst->vehicles_) {
-            vehicleObj->vehicleIndex_ = nbVehicles_;
-        if (vehicleObj->departTime_ != vehicleObj->emptyRoute_->plannedDepartTime_[0]) {
-            if (vehicleObj->currentRoute_->routeSize_ == 1)
-                vehicleObj->emptyRoute_ = vehicleObj->currentRoute_;
-            else {
-                // define new empty route and remove the old one
-                vehicleObj->setEmptyRoute(pInst);
-            }
-        }
-        nbVehicles_++;
-        ReducedPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
-    }
-
-    // create a feasible integer solution at the start of epoch or simulation
-    if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
-        for (auto &requestObj : pInst->requests_) {
-            zSolution_.push_back(requestObj);
-            requestObj->dual_ = requestObj->penalty_;
-            requestObj->InitialDual_ = requestObj->penalty_;
-        }
-        routeSolution_.clear();
-        for (auto &vehicleObj: pInst->vehicles_) {
-            routeSolution_.push_back(vehicleObj->emptyRoute_);
-        }
-        for (auto &vehicleObj: pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-        setObjValue();
-    }
-    else if (pInst->parameters_->initialStart_ == PRE_SOLUTION){
-        if (routeSolution_.empty()){
-            for (auto &vehicleObj: pInst->vehicles_) {
-                routeSolution_.push_back(vehicleObj->currentRoute_);
-            }
-        }
-        for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i){
-            if (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                zSolution_.push_back(pInst->requests_[i]);
-                pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
-                pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->penalty_;
-            }
-        }
-        setObjValue();
-    }
-    else if (pInst->parameters_->initialStart_ == GREEDY_START){
-        MPEpochSolveTime_ += ReducedPro_->solveTime_->dSinceStart().count();
-        objValue_ = ReducedPro_->objValue_;
-        setObjValue();
-        GreedyObjValue_ = objValue_;
-        std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
-    }
-
-    for (int v = 0; v < pInst->nbVehicles_; ++v) {
-        ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-    }
-    MPBuildTime_->start();
-    ReducedPro_->buildModel(pInst, routeSolution_, nbVehicles_);
-    MPBuildTime_->stop();
-
-    // set duals based on greedy
-    if (pInst->parameters_->initialStart_ == GREEDY_START)
-        ReducedPro_->solveModelLP(pInst, inputPaths);
-
-    masterTime_->stop();
-}
-
-void MasterAlgorithm::initializationCG(PInstance &pInst, InputPaths &inputPaths) {
-    MPEpochSolveTime_ = 0;
-    CPEpochSolveTime_ = 0;
-    masterTime_->start();
-
-    // Building models
-    MasterPro_ = std::make_shared<MIPMasterProblem>();
-    // build the model
-    MasterPro_->routesToAdd_.clear();
-    nbColumnsAdded_ = 0;
-    RMPCounter_ = 0;
-    SPIter_ = 0;
-
+void MasterAlgorithm::initializeVehicles(PInstance &pInst){
     nbVehicles_ = 0;
     for (auto &vehicleObj: pInst->vehicles_) {
         vehicleObj->vehicleIndex_ = nbVehicles_;
@@ -192,15 +94,14 @@ void MasterAlgorithm::initializationCG(PInstance &pInst, InputPaths &inputPaths)
             if (vehicleObj->currentRoute_->routeSize_ == 1)
                 vehicleObj->emptyRoute_ = vehicleObj->currentRoute_;
             else {
-                // define new empty route and remove the old one
                 vehicleObj->setEmptyRoute(pInst);
             }
         }
         nbVehicles_++;
-        MasterPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
     }
+}
 
-    // create a feasible integer solution at the start of epoch or simulation
+void MasterAlgorithm::createInitialSolution(PInstance &pInst, PGreedyModeler &GreedyModel){
     if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
         for (auto &requestObj : pInst->requests_) {
             zSolution_.push_back(requestObj);
@@ -230,18 +131,59 @@ void MasterAlgorithm::initializationCG(PInstance &pInst, InputPaths &inputPaths)
         }
         setObjValue();
     }
+
     else if (pInst->parameters_->initialStart_ == GREEDY_START){
-        MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
-        objValue_ = MasterPro_->objValue_;
+        pInst->parameters_->greedyReOptimize_ = false;
+        GreedyModel->GreedySolver(pInst);
+        routeSolution_.clear();
+        zSolution_.clear();
+        for (auto &vehicleObj: pInst->vehicles_) {
+            routeSolution_.push_back(vehicleObj->currentRoute_);
+        }
         setObjValue();
         GreedyObjValue_ = objValue_;
         std::cout << "Objective value of Greedy Warm start: " << GreedyObjValue_ << std::endl;
     }
+}
 
+// this function create initial routes serving only one request and fill zSolution_ with available requests
+// Reduced problem is also solved to initialized dual costs
+void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths, PGreedyModeler &GreedyModel) {
+    MPEpochSolveTime_ = 0;
+    CPEpochSolveTime_ = 0;
+    masterTime_->start();
+    cpIncDegree_ = 2;
+    maxIncDegree_ = pInst->parameters_->CP_IncDegree_;
+    nbColumnsAdded_ = 0;
+    RMPCounter_ = 0;
+    SPIter_ = 0;
+    CPBuilt_ = false;
 
-    for (int v = 0; v < pInst->nbVehicles_; ++v) {
-        MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+    initializeVehicles(pInst);
+    // create a feasible integer solution at the start of epoch or simulation
+    createInitialSolution(pInst, GreedyModel);
+
+    if (pInst->parameters_->mainAlgorithm_ == MP_ISUD){
+        // Building models
+        CompPro_ = std::make_shared<ComplementPro>();
+        ReducedPro_ = std::make_shared<ReducedProblem>();
+        ReducedPro_->routesToAdd_.clear();
+
+        for (auto & vehicleObj : pInst->vehicles_) {
+            ReducedPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+        }
     }
+    else {
+        // build the model
+        MasterPro_ = std::make_shared<MIPMasterProblem>();
+        MasterPro_->routesToAdd_.clear();
+
+        for (auto & vehicleObj : pInst->vehicles_) {
+            MasterPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+        }
+    }
+
+
     MPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
@@ -789,12 +731,12 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
 
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
-    if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (RMPCounter_ == 1)){
+    /*if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (RMPCounter_ == 1)){
         for(auto & requestObj: pInst->requests_)
             requestObj->dual_ = requestObj->InitialDual_;
         for(auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = vehicleObj->InitialDual_;
-    }
+    }*/
 
     // save initial duals
     /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -856,7 +798,6 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
 void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime) {
     masterTime_->start();
-    setObjValue();
     double previousObj = objValue_;
 
     // save initial duals
@@ -874,7 +815,7 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
         while (true) {
             updateReducedCosts(pInst);
             setAvailableTime();
-            if (minReducedCost_ >= 0 || availableTime_ < 0)
+            if (minReducedCost_ >= 0 || availableTime_ <= 1)
                 break;
 
             solveMP_LP(pInst, inputPaths);
@@ -884,7 +825,7 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
 
             RMPCounter_++;
             // save duals
-            if (lpObj > objValue_) {
+            if ((lpObj - objValue_ > 0.01)) {
                 lpObj = objValue_;
             } else
                 break;
@@ -901,13 +842,12 @@ void MasterAlgorithm::solveRMP(PInstance &pInst, int epoch, InputPaths &inputPat
     //                                     MASTER PROBLEM
     /************************************************************************************************/
     setAvailableTime();
-    if (availableTime_ > 1) {
-        double lpObj = previousObj;
+    if (availableTime_ > 0) {
         // solve RP with MIP solver
         if (availableTime_ < 1)
             availableTime_ = 2;
         // solve the model in Integer mode
-        lpObjValue_ = lpObj;
+        lpObjValue_ = objValue_;
         MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
         MIPIter_++;
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
@@ -939,11 +879,11 @@ void MasterAlgorithm::solveRP_LPINT(PInstance &pInst, int compDegree, InputPaths
     }
 
     if (!ReducedPro_->routesToAdd_.empty()){
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
             if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->mpAdded_ &&
                 !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty())
                 ReducedPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-        }
+        }*/
         MPBuildTime_->start();
         ReducedPro_->updateModel(pInst, CompPro_->fractionalZ_);
         MPBuildTime_->stop();
@@ -961,11 +901,11 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths) {
     updateRoutesToAdd(NR, pInst);
 
     if (!MasterPro_->routesToAdd_.empty()){
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
             if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->mpAdded_&&
                 !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty())
                 MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
-        }
+        }*/
         MPBuildTime_->start();
         MasterPro_->updateModel(pInst);
         MPBuildTime_->stop();
@@ -983,12 +923,12 @@ void MasterAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
     updateRoutesToAdd(NR, pInst);
 
     if (!MasterPro_->routesToAdd_.empty()){
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
             if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->mpAdded_ &&
                 pInst->vehicles_[v]->emptyRoute_->routeSize_ != pInst->vehicles_[v]->currentRoute_->routeSize_) {
                 MasterPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
             }
-        }
+        }*/
         MPBuildTime_->start();
         MasterPro_->updateModel(pInst);
         MPBuildTime_->stop();

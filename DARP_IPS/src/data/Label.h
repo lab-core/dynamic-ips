@@ -61,7 +61,7 @@ public:
 
     void extend(Node *outNode, bool isDropPickPossible);
     // this function check the feasibility of the label before extension
-    bool isExtendFeasible(Node *outNode, int maxPickUp, bool isSuccessorLimited, int capacity, int &nbPrunedPath,
+    bool isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
                           int &nbEliminated);
 
     bool isTravelTimeFeasible(Node *outNode, int &nbEliminated);
@@ -75,7 +75,7 @@ public:
     // Display function
     std::string toString() const;
 
-    bool compareTravelTimes(const PLabel &otherLabel) const;
+    bool haveLessTravelResource(const PLabel &otherLabel) const;
 
 };
 

@@ -22,7 +22,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     score_ = INFINITY;
     idleTime_ = 0;
     startTime_ = 0;
-    vehicleIndex_ = -1;
+    vehicleIndex_ = vehicleId;
 }
 
 Vehicle::~Vehicle() = default;

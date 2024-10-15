@@ -88,8 +88,9 @@ public:
 
     // this function create initial routes serving only one request and fill zSolution_ with available requests
     // Reduced problem is also solved to initialized dual costs
-    void initializationISUD(PInstance &pInst, InputPaths &inputPaths);
-    void initializationCG(PInstance &pInst, InputPaths &inputPaths);
+    void initializeVehicles(PInstance &pInst);
+    void createInitialSolution(PInstance &pInst, PGreedyModeler &GreedyModel);
+    void initialization(PInstance &pInst, InputPaths &inputPaths, PGreedyModeler &GreedyModel);
 
     // these function update the incompatibility degree of availableRoutes
     void calcIncompatibilityBit(PRoute &route, PInstance &pInst);
