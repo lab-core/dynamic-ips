@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -82,13 +82,6 @@ int main(int argc, char** argv) {
                 if (!solveEpoch)
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
-                if (i == 1) {
-                    mainInst->parameters_->pruneArcs_ = true;
-                }
-                else if (i == 2) {
-                    mainInst->parameters_->pruneArcs_ = true;
-                    mainInst->parameters_->discardSuboptimalPath_ = true;
-                }
 
                 /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                 mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
@@ -113,8 +106,8 @@ int main(int argc, char** argv) {
                 }*/
 
  //               mainInst->parameters_->nbPick_= i+1;
-                /*if (i == 1)
-                    mainInst->parameters_->isDropPickPossible_ = false;*/
+                if (i == 1)
+                    mainInst->parameters_->isDropPickPossible_ = false;
 
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
