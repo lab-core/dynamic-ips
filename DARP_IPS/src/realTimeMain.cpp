@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 3; ++j){
+        for (int i = 0; i < 5; ++i) {
+            for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -83,24 +83,27 @@ int main(int argc, char** argv) {
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
 
-                mainInst->parameters_->MaxLabel_ = (i + 1) *5;
-                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+  //              mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+  //              mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
 
-                /*if (i == 0) {
-                    mainInst->parameters_->pruneNodes_ = true;
-                    mainInst->parameters_->pruneArcs_ = false;
-                    mainInst->parameters_->discardSuboptimalPath_ = false;
+                if (i == 1) {
+                    mainInst->parameters_->isDominanceReleased_ = true;
                 }
-                else if (i == 1) {
+                else if (i == 2) {
+                    mainInst->parameters_->isDominanceReleased_ = true;
+                    mainInst->parameters_->pruneNodes_ = true;
+                }
+                else if (i == 3) {
+                    mainInst->parameters_->isDominanceReleased_ = true;
                     mainInst->parameters_->pruneNodes_ = true;
                     mainInst->parameters_->pruneArcs_ = true;
-                    mainInst->parameters_->discardSuboptimalPath_ = false;
                 }
-                else {
+                else if (i == 4){
+                    mainInst->parameters_->isDominanceReleased_ = true;
                     mainInst->parameters_->pruneNodes_ = true;
                     mainInst->parameters_->pruneArcs_ = true;
                     mainInst->parameters_->discardSuboptimalPath_ = true;
-                }*/
+                }
 
                 /*if (i == 1) {
                     mainInst->parameters_->isSuccessorsLimited_ = true;
