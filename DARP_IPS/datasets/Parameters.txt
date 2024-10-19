@@ -10,9 +10,9 @@ nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 solutionMode = 2
-OneIter = 0
+OneIter = 1
 GreedyReOptimize = 1
-saveScratch = 1
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
@@ -30,11 +30,11 @@ NumColumn = 50
 #
 isTruncated = 0
 MaxLabel = 40
-isDominanceReleased = 0
+isDominanceReleased = 1
 isSuccessorsLimited = 1
-pruneNodes = 1
-pruneArcs = 1
-discardSuboptimalPath = 1
+pruneNodes = 0
+pruneArcs = 0
+discardSuboptimalPath = 0
 isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1
@@ -43,7 +43,7 @@ constPortion = 0
 Vehicle_portion = 0
 Dynamic_Pricing = 0
 usePick = 1
-nbPick = 4
+nbPick = 2
 sortPath = 1
 sortColumn = 1
 
