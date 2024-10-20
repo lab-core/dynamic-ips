@@ -190,7 +190,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
         if (pInst->parameters_->MIPGap_ > 0.00001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
-        if (!routeSolutionIndex_.empty()) {
+        /*if (!routeSolutionIndex_.empty()) {
             IloNumVarArray startVar(env_);
             IloNumArray startVal(env_);
             for (int r = 0; r < routeSolutionIndex_.size(); ++r) {
@@ -200,7 +200,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
             Cplex_.addMIPStart(startVar, startVal, IloCplex::MIPStartAuto, "m1");
             startVal.end();
             startVar.end();
-        }
+        }*/
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -323,7 +323,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
-        if (!routeSolutionIndex_.empty()) {
+        /*if (!routeSolutionIndex_.empty()) {
             IloNumVarArray startVar(env_);
             IloNumArray startVal(env_);
             for (int r = 0; r < routeSolutionIndex_.size(); ++r) {
@@ -333,7 +333,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
             Cplex_.addMIPStart(startVar, startVal, IloCplex::MIPStartAuto, "m1");
             startVal.end();
             startVar.end();
-        }
+        }*/
 
         solveTime_->start();
         if (!Cplex_.solve()) {
