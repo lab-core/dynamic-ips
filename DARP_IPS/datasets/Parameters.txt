@@ -12,7 +12,7 @@ mainAlgorithm = 0
 solutionMode = 2
 OneIter = 0
 GreedyReOptimize = 1
-saveScratch = 1
+saveScratch = 0
 vehicleReturn = 0
 timeWindows = 0
 
@@ -28,23 +28,23 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
-MaxLabel = 40
-isDominanceReleased = 0
+isTruncated = 1
+MaxLabel = 15
+isDominanceReleased = 1
 isSuccessorsLimited = 1
 pruneNodes = 1
 pruneArcs = 1
 discardSuboptimalPath = 1
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Vehicle_portion = 0
-Dynamic_Pricing = 0
+Dynamic_Pricing = 1
 usePick = 1
 nbPick = 4
-sortPath = 1
+sortPath = 0
 sortColumn = 1
 
 # CPLEX PARAMETERS
