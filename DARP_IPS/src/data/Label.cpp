@@ -65,6 +65,33 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     isDropExtend_ = false;
     createTime_ = 0;
 }
+void Label::copyLabel(Vehicle *vehicle, PNode &source) {
+    status_ = ACTIVE;
+    load_ = vehicle->numPassengers_;
+    passedTime_ = vehicle->departTime_;
+    reachedTime_ = vehicle->departTime_;
+    travelResources_.clear();
+    pathNode_.clear();
+    pathNode_.push_back(&(*source));
+    reducedCost_ = 0;
+    labelScore_ = 0;
+    lambdaScore_ = 0;
+    totalDelay_ = 0;
+    openNode_.clear();
+    openRequests_.reset();
+
+    completeRequests_.reset();
+    extendCheck_.reset();
+    prunedDirections_.reset();
+    this->numCompleted_ = 0;
+    numExtendCheck_ = 0;
+    nbPickUp_ = 0;
+    //   nbPickMove_ = 0;
+    isDropped_ = false;
+    isDropExtend_ = false;
+    createTime_ = 0;
+}
+
 void Label::copyLabel(const Label &label) {
     status_ = ACTIVE;
     load_ = label.load_;
@@ -106,7 +133,8 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == PICKUP)
-        reachedTime_ = std::max(outNode->related_Request_->requestTime_, passedTime_ + travelTime);
+        reachedTime_ = std::max(outNode->related_Request_->earlyPick_,
+                                reachedTime_ = std::max(outNode->related_Request_->requestTime_, passedTime_) + travelTime);
     else
         reachedTime_ = passedTime_ + travelTime;
 
@@ -173,7 +201,9 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
     if (outNode->type_ == PICKUP) {
         if (nbPickUp_ >= maxPickUp)
             return false;
-        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
+
+        timeToReach = std::max(outNode->related_Request_->earlyPick_,
+                               std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
         if (discardSuboptimalPath) {
             if (timeToReach > outNode->related_Request_->latestPickup_) {
                 prunedDirections_.set(outNode->related_Request_->taskIndexLabel_, true);
@@ -213,7 +243,8 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
 bool Label::isTravelTimeFeasible(Node *outNode, int &nbEliminated) {
     float timeToReach;
     if (outNode->type_ == PICKUP)
-        timeToReach = std::max(outNode->related_Request_->requestTime_, passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
+        timeToReach = std::max(outNode->related_Request_->earlyPick_,
+                               std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
     else
         timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
 

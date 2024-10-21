@@ -141,6 +141,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
         // create subproblems
         for (auto &vehicleObj: EpochInst->vehicles_) {
+            vehicleObj->bestReducedCost_ = INFINITY;
             if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->dynamicPricing_)
@@ -166,7 +167,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                                                      masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
                                                      mainInst);
                     } else {
-//                        subProblem->CollectLabels();
+                        subProblem->CollectLabels();
                         subProBreak = true;
                     }
                 }
@@ -178,7 +179,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (!pPool->wait())
                 break;
         }
-
 
         for (auto &subProblem: subProSolve) {
             masterModel_->nbRoutes_ += masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
@@ -241,12 +241,16 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     break;
             }
         }
+        if (simulationTime_->dSinceStart().count() >= 27)
+            break;
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
     }  // end of CG while
     masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
     masterModel_->timeLimit_ = masterModel_->availableTime_;
     masterModel_->setObjValue();
+    if (masterModel_->timeLimit_ < 3)
+        masterModel_->timeLimit_ = 3;
     if (EpochInst->parameters_->mainAlgorithm_ == MP_CG)
         masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
 
@@ -262,8 +266,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     else
         masterModel_->MasterPro_.reset();
 
-    labelsPool_.clear();
-    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
+    /*labelsPool_.clear();
+    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);*/
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 

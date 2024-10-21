@@ -52,6 +52,7 @@ public:
     Label(Vehicle *vehicle, PNode &source);
     Label(const Label &label);
     void copyLabel(const Label &label);
+    void copyLabel(Vehicle *vehicle, PNode &source);
 
     virtual ~Label();
     // Getters and Setters
