@@ -102,7 +102,7 @@ void LabelingSubProblem::initialization() {
     if (!initialLabel->openNode_.empty())
         extendToOnboard = true;
     initialLabel->pathNode_.back()->activeLabels_.push_back(std::move(initialLabel));
-    if (extendToOnboard) {
+    /*if (extendToOnboard) {
         vector<Node *> activeDropNodes = activeNodes_;
         int nbActive;
         while (!activeDropNodes.empty()) {
@@ -140,7 +140,8 @@ void LabelingSubProblem::initialization() {
                 activeNodes_.push_back(dropNode);
             }
         }
-    }
+    }*/
+
 }
 
 

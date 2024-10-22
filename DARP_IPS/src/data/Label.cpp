@@ -151,10 +151,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
             }
         }
         openRequests_.set(outNode->related_Request_->taskIndexLabel_, false);
-        if (isDropPickPossible)
-            isDropped_ = true;
-        else if (pathNode_.back()->type_ != SOURCE)
-            isDropped_ = true;
+        isDropped_ = true;
     }
     else if (outNode->type_ == PICKUP){
         openNode_.push_back(outNode->pairNode_);
