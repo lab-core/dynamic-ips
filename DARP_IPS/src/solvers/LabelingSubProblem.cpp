@@ -224,8 +224,10 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Term
     if (outNode->type_ == SINK){
         newLabel->status_ = TERMINATED;
 //        newLabel->createTime_ = subproTime_->dSinceInit().count();
-        if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_ - Vehicle_->dual_)
-            Vehicle_->bestReducedCost_ = newLabel->reducedCost_ - Vehicle_->dual_;
+        if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_)
+            Vehicle_->bestReducedCost_ = newLabel->reducedCost_;
+        /*if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_ - Vehicle_->dual_)
+            Vehicle_->bestReducedCost_ = newLabel->reducedCost_ - Vehicle_->dual_;*/
         outNode->activeLabels_.push_back(std::move(newLabel));
 
     }
@@ -849,6 +851,7 @@ bool LabelingSubProblem::solveDynamic(float availableTime) {
 
 void LabelingSubProblem::SolutionToRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst) {
     nbNegativeColumns_ = 0;
+    availableRoutes.clear();
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst));
         availableRoutes.back()->createColumn();
@@ -897,7 +900,7 @@ std::string LabelingSubProblem::toString() const {
     repStr << "# In total, " << nbGenerated_ << " labels were generated." << std::endl;
     repStr << "# " << nbDominated_ << " labels were removed via Domination " << std::endl;
     if (!subGraph_->sinkNodes_[0]->activeLabels_.empty())
-        repStr << "# best objective value = " << subGraph_->sinkNodes_[0]->bestLabelReduceCost_ - (Vehicle_)->dual_ << std::endl;
+        repStr << "# best objective value = " << subGraph_->sinkNodes_[0]->bestLabelReduceCost_ << std::endl;
     repStr << "# The solution pool contains = " << subGraph_->sinkNodes_[0]->activeLabels_.size() << " solutions." << std::endl;
 
     repStr << "# The solution pool contains = " << nbNegativeColumns_ << " solutions with negative reduced cost." << std::endl;
