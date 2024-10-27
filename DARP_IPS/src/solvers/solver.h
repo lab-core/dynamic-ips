@@ -37,6 +37,7 @@ public:
     double isudMIPEpochTime_;
     int nbDominated_;                           // number of labels removed via Domination Rules
     int nbGenerated_;                           // number of generated labels
+    int nbPrunedArcs_;
     int nbPrunedPath_;                  // number of labels detected as Unreachable by soft time window
     int nbEliminated_ ;                    // number of labels detected as Unreachable due to travel time
     int nbNegativeFound_;

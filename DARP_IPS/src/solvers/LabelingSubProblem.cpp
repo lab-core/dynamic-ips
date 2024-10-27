@@ -13,12 +13,13 @@
 //-----------------------------------------------------------------------------
 
 
-LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions) :
-        SubproModeler(vehicle), solverOptions_(std::move(solverOptions)) {
+LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions) :
+        SubproModeler(vehicle), solverOptions_(solverOptions) {
     nbGenerated_ = 0;
     nbDominated_ = 0;
     nbEliminated_ = 0;
     nbPrunedPath_ = 0;
+    nbPrunedArcs_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
     subproTime_ = new myTools::Timer(); subproTime_->init();
@@ -28,20 +29,20 @@ LabelingSubProblem::~LabelingSubProblem() {
     delete subproTime_;
 }
 
-void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool punedArcs) {
+void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool prunedArcs) {
     for (auto & nodeObj: nodeList){
         if (nodeObj->type_ != SINK){
             nodeObj->successors_.clear();
-            nodeObj->nonSuccessors_.reset();
+            nodeObj->prunedArces_.reset();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_ && pickNodeObj->nodeStatus_ != COMMITTED) {
-                    if (punedArcs) {
+                    if (prunedArcs) {
                         float minWait =
                                 (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
                                 durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] -
                                 pickNodeObj->readyTime_;
                         if (minWait > pickNodeObj->related_Request_->penalty_)
-                            nodeObj->nonSuccessors_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
+                            nodeObj->prunedArces_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
                     }
                     nodeObj->successors_.push_back(&(*pickNodeObj));
                 }
@@ -56,7 +57,7 @@ void LabelingSubProblem::initialization() {
     bool extendToOnboard = false;
     sortSuccessors(subGraph_->sourceNodes_, false);
     sortSuccessors(subGraph_->pickNodes_, solverOptions_->pruneArcs_);
-    sortSuccessors(subGraph_->dropNodes_, false);
+    sortSuccessors(subGraph_->dropNodes_, solverOptions_->pruneArcs_);
     sortSuccessors(subGraph_->onboards_, solverOptions_->pruneArcs_);
     /*if (solverOptions_->isDropPickPossible_) {
         sortSuccessors(subGraph_->dropNodes_);
@@ -224,10 +225,8 @@ bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Term
     if (outNode->type_ == SINK){
         newLabel->status_ = TERMINATED;
 //        newLabel->createTime_ = subproTime_->dSinceInit().count();
-        if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_)
-            Vehicle_->bestReducedCost_ = newLabel->reducedCost_;
-        /*if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_ - Vehicle_->dual_)
-            Vehicle_->bestReducedCost_ = newLabel->reducedCost_ - Vehicle_->dual_;*/
+        if (Vehicle_->bestReducedCost_ > newLabel->reducedCost_ - Vehicle_->dual_)
+            Vehicle_->bestReducedCost_ = newLabel->reducedCost_ - Vehicle_->dual_;
         outNode->activeLabels_.push_back(std::move(newLabel));
 
     }
@@ -286,7 +285,7 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
                                 if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                     solverOptions_->discardSuboptimalPath_,
                                                                     Vehicle_->capacity_, nbPrunedPath_,
-                                                                    nbEliminated_)) {
+                                                                    nbEliminated_, nbPrunedArcs_)) {
                                     labelExtendPick(selectedLabel, &(*currentNode));
                                 }
                                 if (selectedLabel->numExtendCheck_ == subGraph_->pickNodes_.size() ||
@@ -360,7 +359,7 @@ bool LabelingSubProblem::solveDynamic_pulling(float availableTime) {
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->discardSuboptimalPath_,
                                                                          Vehicle_->capacity_, nbPrunedPath_,
-                                                                         nbEliminated_)) {
+                                                                         nbEliminated_, nbPrunedArcs_)) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, &(*currentNode), true)) {
 
@@ -418,7 +417,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->discardSuboptimalPath_,
                                                                          Vehicle_->capacity_, nbPrunedPath_,
-                                                                         nbEliminated_)) {
+                                                                         nbEliminated_, nbPrunedArcs_)) {
                                     nbActive = currentNode->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, &(*currentNode), true)) {
 
@@ -519,7 +518,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
                                 else if (selectedLabel->isExtendFeasible(&(*currentNode), maxPickup_,
                                                                          solverOptions_->discardSuboptimalPath_,
                                                                          Vehicle_->capacity_, nbPrunedPath_,
-                                                                         nbEliminated_)) {
+                                                                         nbEliminated_, nbPrunedArcs_)) {
                                     labelExtendPick(selectedLabel, &(*currentNode));
                                 }
                             }
@@ -622,7 +621,7 @@ bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
                         for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->discardSuboptimalPath_,
                                                                 Vehicle_->capacity_, nbPrunedPath_,
-                                                                nbEliminated_)) {
+                                                                nbEliminated_, nbPrunedArcs_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, neighbourNode, true)){
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -677,7 +676,7 @@ bool LabelingSubProblem::solveDynamic_pushingDrop(float availableTime) {
                             for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                                 if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->discardSuboptimalPath_,
                                                                     Vehicle_->capacity_, nbPrunedPath_,
-                                                                    nbEliminated_)) {
+                                                                    nbEliminated_, nbPrunedArcs_)) {
                                     nbActive = (neighbourNode)->nbActiveLabels_;
                                     if (labelExtend(selectedLabel, (neighbourNode), false)) {
                                         if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -734,7 +733,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
                         for (auto &neighbourNode: selectedLabel->pathNode_.back()->successors_) {
                             if (selectedLabel->isExtendFeasible(neighbourNode, maxPickup_, solverOptions_->discardSuboptimalPath_,
                                                                 Vehicle_->capacity_, nbPrunedPath_,
-                                                                nbEliminated_)) {
+                                                                nbEliminated_, nbPrunedArcs_)) {
                                 nbActive = neighbourNode->nbActiveLabels_;
                                 if (labelExtend(selectedLabel, (neighbourNode), true)){
                                     if ((neighbourNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
@@ -900,7 +899,7 @@ std::string LabelingSubProblem::toString() const {
     repStr << "# In total, " << nbGenerated_ << " labels were generated." << std::endl;
     repStr << "# " << nbDominated_ << " labels were removed via Domination " << std::endl;
     if (!subGraph_->sinkNodes_[0]->activeLabels_.empty())
-        repStr << "# best objective value = " << subGraph_->sinkNodes_[0]->bestLabelReduceCost_ << std::endl;
+        repStr << "# best objective value = " << subGraph_->sinkNodes_[0]->bestLabelReduceCost_ - (Vehicle_)->dual_ << std::endl;
     repStr << "# The solution pool contains = " << subGraph_->sinkNodes_[0]->activeLabels_.size() << " solutions." << std::endl;
 
     repStr << "# The solution pool contains = " << nbNegativeColumns_ << " solutions with negative reduced cost." << std::endl;

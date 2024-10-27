@@ -63,7 +63,7 @@ public:
     void extend(Node *outNode, bool isDropPickPossible);
     // this function check the feasibility of the label before extension
     bool isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
-                          int &nbEliminated);
+                          int &nbEliminated, int &nbPrunedArcs);
 
     bool isTravelTimeFeasible(Node *outNode, int &nbEliminated);
     bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;

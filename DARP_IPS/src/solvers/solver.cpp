@@ -31,6 +31,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     nbGenerated_ = 0;
     nbDominated_ = 0;
     nbEliminated_ = 0;
+    nbPrunedArcs_ = 0;
     nbPrunedPath_ = 0;
     nbNegativeFound_ = 0;
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
@@ -42,7 +43,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
                               "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
                               "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime,"
                               "GreedyTime,#SP Iter,totalColumn,#LGenerated,#LDominated,"
-                              "#LEliminated, #nbPrunedPath,nbNegative,#ColumnsAdded,GreedyObj,"
+                              "#LEliminated,#nbPrunedArcs, #nbPrunedPath,nbNegative,#ColumnsAdded,GreedyObj,"
                               "Objective,LinearObjective,waitTime" << std::endl;
 
 
@@ -118,6 +119,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     nbNegativeFound_ = 0;
     nbGenerated_ = 0;
     nbDominated_ = 0;
+    nbPrunedArcs_ = 0;
     nbPrunedPath_ = 0;
     nbEliminated_ = 0;
 
@@ -188,6 +190,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             nbDominated_ += subProblem->nbDominated_;
             nbEliminated_ += subProblem->nbEliminated_;
             nbPrunedPath_ += subProblem->nbPrunedPath_;
+            nbPrunedArcs_ += subProblem->nbPrunedArcs_;
             //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
         }
         preprocessTime_->start();
@@ -304,6 +307,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
     nbGenerated_ = 0;
     nbDominated_ = 0;
     nbPrunedPath_ = 0;
+    nbPrunedArcs_ = 0;
     nbEliminated_ = 0;
 
     while (true) {
@@ -373,6 +377,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             nbDominated_ += subProblem->nbDominated_;
             nbEliminated_ += subProblem->nbEliminated_;
             nbPrunedPath_ += subProblem->nbPrunedPath_;
+            nbPrunedArcs_ += subProblem->nbPrunedArcs_;
             //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
         }
         preprocessTime_->start();
@@ -868,6 +873,7 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
     repStr << nbEliminated_ << ",";
+    repStr << nbPrunedArcs_ << ",";
     repStr << nbPrunedPath_ << ",";
     repStr << nbNegativeFound_ << ",";
     repStr << masterModel_->nbColumnsAdded_ << ",";

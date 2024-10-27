@@ -171,14 +171,14 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         labelScore_ = reducedCost_ / nbPickUp_;
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
     }
-    prunedDirections_ = prunedDirections_ | outNode->nonSuccessors_;
+ //   prunedDirections_ = prunedDirections_ | outNode->prunedArces_;
     passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }
 
 // this function check the feasibility of the label before extension
 bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity,
-                             int &nbPrunedPath, int &nbEliminated) {
+                             int &nbPrunedPath, int &nbEliminated, int &nbPrunedArcs) {
     if (extendCheck_.test(outNode->related_Request_->taskIndexLabel_))
         return false;
     float timeToReach;
@@ -186,6 +186,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
     }
+
     // check the arrival time window
     if (prunedDirections_.test(outNode->related_Request_->taskIndexLabel_)){
         nbPrunedPath ++;
@@ -199,6 +200,11 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
         if (nbPickUp_ >= maxPickUp)
             return false;
 
+        if (pathNode_.back()->prunedArces_.test(outNode->related_Request_->taskIndexLabel_)) {
+            nbPrunedArcs++;
+            return false;
+        }
+
         timeToReach = std::max(outNode->related_Request_->earlyPick_,
                                std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
         if (discardSuboptimalPath) {
@@ -211,8 +217,6 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
         if (completeRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;
     }
-    else
-        timeToReach = passedTime_ + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == DROPOFF) {
         if (!openRequests_.test(outNode->related_Request_->taskIndexLabel_))
             return false;

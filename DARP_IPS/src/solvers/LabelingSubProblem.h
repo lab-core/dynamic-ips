@@ -21,7 +21,8 @@ public:
     std::vector<Node*> activeNodes_;            // list of nodes with active labels
     int nbDominated_;                           // number of labels removed via Domination Rules
     int nbPrunedPath_;                          // number of labels detected as non-promising by soft time window
-    int nbEliminated_;                    // number of labels detected as Unreachable due to travel time
+    int nbPrunedArcs_;
+    int nbEliminated_;                          // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
     int nbOutputs_;                             // total number of generated routes
     int maxPickup_;                             // number of pickups that are allowed in each path
@@ -31,13 +32,13 @@ public:
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
-    LabelingSubProblem(PVehicle &vehicle, PSolverOption solverOptions);
+    LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions);
 
     ~LabelingSubProblem() override;
 
 
     // this function sort the list of nodes based of their dual values
-    void sortSuccessors(std::vector<PNode> &nodeList, bool punedArcs);
+    void sortSuccessors(std::vector<PNode> &nodeList, bool prunedArcs);
 
     // reset that active lists of the nodes, create the first label at the source, add onboards
     void initialization();
