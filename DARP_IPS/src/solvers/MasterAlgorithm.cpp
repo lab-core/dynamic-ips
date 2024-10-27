@@ -832,10 +832,10 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
                 break;
 
             // save duals
-            if ((lpObj - objValue_ > 0.01)) {
+            /*if ((lpObj - objValue_ > 0.01)) {
                 lpObj = objValue_;
             } else
-                break;
+                break;*/
         }
     }
     masterTime_->stop();
