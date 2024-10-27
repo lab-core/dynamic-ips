@@ -13,11 +13,11 @@
 using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
-bool savePartial = true ;
+bool savePartial = false ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = false;
+bool solveEpoch = true;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -86,24 +86,18 @@ int main(int argc, char** argv) {
                 /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                 mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
 
-                /*if (i == 1) {
-                    mainInst->parameters_->isDominanceReleased_ = true;
-                }
-                else if (i == 2) {
-                    mainInst->parameters_->isDominanceReleased_ = true;
+                if (i == 1) {
                     mainInst->parameters_->pruneNodes_ = true;
                 }
-                else if (i == 3) {
-                    mainInst->parameters_->isDominanceReleased_ = true;
+                else if (i == 2) {
                     mainInst->parameters_->pruneNodes_ = true;
                     mainInst->parameters_->pruneArcs_ = true;
                 }
-                else if (i == 4){
-                    mainInst->parameters_->isDominanceReleased_ = true;
+                else if (i == 3) {
                     mainInst->parameters_->pruneNodes_ = true;
                     mainInst->parameters_->pruneArcs_ = true;
                     mainInst->parameters_->discardSuboptimalPath_ = true;
-                }*/
+                }
                 /*if (i < 4)
                     mainInst->parameters_->nbPick_= i+1;
                 if (i == 4) {

@@ -238,7 +238,7 @@ void MasterAlgorithm::updateReducedCosts(PInstance &pInst) {
                     routeObj->reducedCost_ -= nodeObj->related_Request_->dual_;
                 }
             }
-            if (minReducedCost_ > routeObj->reducedCost_)
+            if (minReducedCost_ > routeObj->reducedCost_ && (!routeObj->mpAdded_ && !routeObj->cpAdded_))
                 minReducedCost_ = routeObj->reducedCost_;
             if (!routeObj->routeRequests_.empty()) {
                 routeObj->score_ = routeObj->reducedCost_ / routeObj->routeRequests_.size();
@@ -813,10 +813,12 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
         double lpObj = previousObj;
         // solve RP with MIP solver
         while (true) {
-            updateReducedCosts(pInst);
+            //          updateReducedCosts(pInst);
             setAvailableTime();
-            if (minReducedCost_ >= 0 || availableTime_ <= 1)
+            if (availableTime_ <= 1)
                 break;
+            /*if (minReducedCost_ >= 0 || availableTime_ <= 1)
+                break;*/
 
             solveMP_LP(pInst, inputPaths);
             LPIter_++;
@@ -824,6 +826,11 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
                                                           masterTime_->dSinceStart().count(), subProTime, 0.0);
 
             RMPCounter_++;
+
+            updateReducedCosts(pInst);
+            if (minReducedCost_ >= -0.1)
+                break;
+
             // save duals
             if ((lpObj - objValue_ > 0.01)) {
                 lpObj = objValue_;
@@ -1016,13 +1023,13 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
                     }
                     break;
                 case RP:
-                    if (!routeObj->mpAdded_ && (routeObj->incompatibilityDegree_ < 2) && routeObj->reducedCost_ < 0) {
+                    if (!routeObj->mpAdded_ && (routeObj->incompatibilityDegree_ < 2) && routeObj->reducedCost_ < -0.1) {
                         ReducedPro_->routesToAdd_.push_back(routeObj);
                         numAdded++;
                     }
                     break;
                 default: // CG and MIP:
-                    if (!routeObj->mpAdded_ && routeObj->reducedCost_ < 0) {
+                    if (!routeObj->mpAdded_ && routeObj->reducedCost_ < -0.1) {
                         MasterPro_->routesToAdd_.push_back(routeObj);
                         numAdded++;
                     }
