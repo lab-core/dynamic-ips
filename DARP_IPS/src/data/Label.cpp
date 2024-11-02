@@ -25,7 +25,7 @@ Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
 
     completeRequests_.reset();
     extendCheck_.reset();
-    prunedDirections_.reset();
+//    prunedDirections_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     nbPickUp_ = 0;
@@ -53,7 +53,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
-    prunedDirections_ = label.prunedDirections_;
+//    prunedDirections_ = label.prunedDirections_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
@@ -82,7 +82,7 @@ void Label::copyLabel(Vehicle *vehicle, PNode &source) {
 
     completeRequests_.reset();
     extendCheck_.reset();
-    prunedDirections_.reset();
+//    prunedDirections_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
     nbPickUp_ = 0;
@@ -107,7 +107,7 @@ void Label::copyLabel(const Label &label) {
     openRequests_ = label.openRequests_;
 
     completeRequests_ = label.completeRequests_;
-    prunedDirections_ = label.prunedDirections_;
+ //   prunedDirections_ = label.prunedDirections_;
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;
@@ -188,10 +188,10 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
     }
 
     // check the arrival time window
-    if (prunedDirections_.test(outNode->related_Request_->taskIndexLabel_)){
+    /*if (prunedDirections_.test(outNode->related_Request_->taskIndexLabel_)){
         nbPrunedPath ++;
         return false;
-    }
+    }*/
     // check tha capacity of vehicle
     if ((load_ + outNode->nbPassengers_) > capacity)
         return false;
@@ -209,7 +209,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
                                std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
         if (discardSuboptimalPath) {
             if (timeToReach > outNode->related_Request_->latestPickup_) {
-                prunedDirections_.set(outNode->related_Request_->taskIndexLabel_, true);
+ //               prunedDirections_.set(outNode->related_Request_->taskIndexLabel_, true);
                 nbPrunedPath ++;
                 return false;
             }

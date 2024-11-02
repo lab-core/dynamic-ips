@@ -67,8 +67,8 @@ void Request::setMinTravelTime(float minTravelTime) {
 
 void Request::setMaxTravelTime(float &alphaParam, float &betaParam) {
     maxTravelTime_ = std::max(alphaParam * minTravelTime_, betaParam + minTravelTime_);
-    if (minTravelTime_ == 0)
-        maxTravelTime_ = 0;
+    /*if (minTravelTime_ == 0)
+        maxTravelTime_ = 0;*/
 }
 
 // This function update penalties based on elapsed time for any time framework

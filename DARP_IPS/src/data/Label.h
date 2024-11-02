@@ -40,7 +40,7 @@ public:
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
     //   int nbPickMove_;                               // this value if for the times that vehicle change location in pickups
     std::bitset<MAX_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
-    std::bitset<MAX_BIT_SIZE> prunedDirections_;    // nodes that are unreachable due to the penalty
+ //   std::bitset<MAX_BIT_SIZE> prunedDirections_;    // nodes that are unreachable due to the penalty
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
