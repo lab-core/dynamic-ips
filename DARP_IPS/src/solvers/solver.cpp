@@ -269,8 +269,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     else
         masterModel_->MasterPro_.reset();
 
-    /*labelsPool_.clear();
-    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);*/
+    if (epoch_ == 120) {
+        labelsPool_.clear();
+        labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
+    }
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
