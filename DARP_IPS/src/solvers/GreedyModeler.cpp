@@ -46,9 +46,10 @@ void GreedyModeler::solutionToRoute(PInstance &PInst) {
             PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ += greedySol->idleTime_;
             PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute(true);
         }
-        else
+        else {
             PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute(false);
-        greedySol->resetGreedyRoute(greedyLabelPool_);
+            greedySol->resetGreedyRoute(greedyLabelPool_);
+        }
         greedySol.reset();
     }
     greedyRouteList_.clear();
@@ -84,7 +85,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+            if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->allocVehicleID_ == LARGE_CONSTANT) {
                 possibleDelay.clear();
                 for (auto &GRoute: greedyRouteList_) {
                     GRoute->idle_ = false;

@@ -43,7 +43,7 @@ public:
 
     // this function adds routeVar to the model
     void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void addAuxVar(PInstance &pInst, double cost, int nbVehicles);
+    void addAuxVar(PInstance &pInst, float cost, int nbVehicles);
 
     // this function build the model at each iteration
     void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
@@ -54,7 +54,7 @@ public:
 
     // this function use auxiliary variable
     void buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                               int nbVehicles, double preObj);
+                               int nbVehicles, float preObj);
 
     // this function update the model and variables
     void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);

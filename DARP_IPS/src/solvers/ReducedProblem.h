@@ -20,8 +20,8 @@ public:
     IloNumVarArray zVar_;                   // request(z) variables
 
 
-    double objValue_;
-    double auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
+    float objValue_;
+    float auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
     std::vector<int> routeSolutionIndex_;
 
     std::vector<PRoute> compRoutes_;        // list of route variables in the model
@@ -51,13 +51,13 @@ public:
     void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
 
     void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, double preObj);
+                       InputPaths &inputPaths, float availableTime, float preObj);
     void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                         InputPaths &inputPaths, float availableTime, double preObj);
+                         InputPaths &inputPaths, float availableTime, float preObj);
 
 
     void solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, double preObj);
+                          InputPaths &inputPaths, float availableTime, float preObj);
 
     // Display function
     std::string toString() const override;

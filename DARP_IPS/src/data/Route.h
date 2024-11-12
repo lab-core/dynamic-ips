@@ -28,17 +28,17 @@ public:
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<float> plannedDepartTime_;      // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
-    double reducedCost_;
+    float reducedCost_;
     int incompatibilityDegree_;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
-    double createTime_;                         // time that route is created through solving sub problems
+    float createTime_;                         // time that route is created through solving sub problems
     float totalLength_;
     std::bitset<MAX_BIT_SIZE> column_;
     bool isCompatible_;                         // return false if the corresponding column is compatible
     bool mpAdded_;                              // is the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // is the route has already been added to the CP model
-    double score_;                              // equals to the reduced cost/number of pickups(or tasks)
-    double lambda_;
+    float score_;                              // equals to the reduced cost/number of pickups(or tasks)
+    float lambda_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);

@@ -211,7 +211,6 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1, vehicleID = -1, pickZoneID = -1, dropZoneID = -1, position = -1;
-                //               double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1;
                 float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1, deltaTime = -1;
 
                 file >> nbPassengers;
@@ -283,7 +282,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
             for (int r = 0; r < nbRequest; ++r) {
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
-//                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, dropZoneID = -1;
                 float earlyPick = -1, deltaTime = -1;
 
@@ -649,7 +647,6 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
             pInstance->nbZones_ = 0;
             while (!file.eof()) {
                 // attributes for reading trip requests file
-//                double pickUpLatitude = -1, pickUpLongitude = -1, dropOffLatitude = -1, dropOffLongitude = -1,
                 int zoneID = -1, centerLocationID = -1;
 
                 file >> zoneID;
@@ -688,7 +685,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                             continue;
  //                           newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     }
-                    newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+//                    newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     pInstance->vehicles_[v]->setCurrentRoute(newRoute);
                 }
             }

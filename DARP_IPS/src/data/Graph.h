@@ -33,7 +33,7 @@ public:
     float serviceTime_;                     // time to perform pick up or drop off
     NodeStatus nodeStatus_;                 // status of the node: no action, planned, completed
     float readyTime_;                     // earliest possible pick up time for the request (request time)
-    double bestLabelReduceCost_;            // smallest reduced cost af active vehicles
+    float bestLabelReduceCost_;            // smallest reduced cost af active vehicles
     int nbActiveLabels_;                    // Number of active labels in labeling approach
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
     std::bitset<MAX_BIT_SIZE> prunedArces_;

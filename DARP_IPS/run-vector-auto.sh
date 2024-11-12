@@ -2,7 +2,7 @@
 #SBATCH --time=2:10:00
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=16
-#SBATCH --array=1-24
+#SBATCH --array=1-48
 #SBATCH --output=/dev/null
 
 
@@ -21,7 +21,7 @@ for vehicles in manhattan-vehicles
 do
   for mode in 1
   do
-    for algorithm in 2
+    for algorithm in 2 3
     do
       for instance_path in "${INSTANCES[@]}";
       do

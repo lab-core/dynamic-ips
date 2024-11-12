@@ -105,7 +105,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     }
 
     // define required variables
-    double previousObj;
+    float previousObj;
     int nbNegativeFound;
 
     int iter = 0;
@@ -217,9 +217,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (masterModel_->availableTime_ <= 5){
                 break;
             }
-
-            masterModel_->timeLimit_ = masterModel_->availableTime_-3;
-
+            if (EpochInst->parameters_->mainAlgorithm_ == MP_CG)
+                masterModel_->timeLimit_ = masterModel_->availableTime_-5;
+            else
+                masterModel_->timeLimit_ = masterModel_->availableTime_;
             //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
                 case MP_CG:
@@ -236,7 +237,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
 
-            if (simulationTime_->dSinceStart().count() >= 27)
+            if (simulationTime_->dSinceStart().count() >= 25)
                 break;
 
             if (mainInst->parameters_->oneIter_){
@@ -244,8 +245,14 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     break;
             }
         }
-        if (simulationTime_->dSinceStart().count() >= 27)
+        if (simulationTime_->dSinceStart().count() >= 25)
             break;
+
+        if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
+            masterModel_->CGSuccess_++;
+            std::cout << "No changes in Objective" << std::endl;
+            break;
+        }
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
     }  // end of CG while
@@ -258,8 +265,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
 
     for (auto & routeObj : masterModel_->routeSolution_) {
-        for (auto & requestObj : routeObj->routeRequests_)
+        for (auto & requestObj : routeObj->routeRequests_) {
             requestObj->allocVehicleID_ = routeObj->vehicleID_;
+        }
     }
     masterModel_->setObjValue();
     if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD){
@@ -294,7 +302,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
     }
 
     // define required variables
-    double previousObj;
+    float previousObj;
     int nbNegativeFound;
 
     int iter = 0;
@@ -735,6 +743,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
     //while (nbReceivedRequest < mainInst->nbRequests_){
     while ((!solveEpoch && (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty())) ||
            (solveEpoch && nbReceivedRequest < mainInst->nbRequests_)) {
+        if (epoch_ > 100)
+            break;
         nextEpoch:
         // start simulation timer
         simulationTime_->start();

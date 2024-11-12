@@ -162,7 +162,7 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
 }
 
 void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                   InputPaths &inputPaths, float availableTime, double preObj) {
+                                   InputPaths &inputPaths, float availableTime, float preObj) {
     try {
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);
@@ -257,7 +257,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
 }
 
 void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                     InputPaths &inputPaths, float availableTime, double preObj) {
+                                     InputPaths &inputPaths, float availableTime, float preObj) {
     try {
 
         // Solve the Linear Relaxation
@@ -319,7 +319,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         Model_.add(convR);
         logFile << "----------------------- MP ------------------------"<< std::endl;
 //        std::cout.rdbuf(logFile.rdbuf());
-        if (pInst->parameters_->MIPGap_ > 0.0001)
+        if (pInst->parameters_->MIPGap_ > 0.00001)
             Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
@@ -381,9 +381,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         convZ.end();
         std::cout.rdbuf(coutBuffer);
         logFile.close();
-
         Cplex_.clearModel();
-
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
@@ -409,7 +407,7 @@ void ReducedProblem::restartRP() {
 }
 
 void ReducedProblem::solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                      InputPaths &inputPaths, float availableTime, double preObj) {
+                                      InputPaths &inputPaths, float availableTime, float preObj) {
     try {
 
         IloConversion convZ = IloConversion(env_, zVar_, ILOINT);

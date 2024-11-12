@@ -98,8 +98,8 @@ std::string Instance::solutionToString() {
     int totalNumServed = 0;             // total requests served considering initial onboards
     int totalNumServedPartial = 0;      // total requests served after one hour starting from scratch
 
-    double penalty = 0;                 // total penalty of un-served
-    double penaltyPartial = 0;          // total penalty of un-served
+    float penalty = 0;                 // total penalty of un-served
+    float penaltyPartial = 0;          // total penalty of un-served
 
     int NumRejectdPartial = 0;
     int NumRejectd = 0;
@@ -308,7 +308,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
         }
     }
 
-    if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
+ //   if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
         // add unperformed requests
         for (auto &vehicleObj: mainInst->vehicles_) {
             if (vehicleObj->currentRoute_->routeSize_ > 1) {
@@ -335,7 +335,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                 }
             }
         }
-    }
+  //  }
 
     // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
@@ -928,4 +928,9 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
 
 void Instance::selectSubProVehicles() {
 
+}
+
+void Instance::resetAssignedVehicles() {
+    for (auto & requestObj : requests_)
+        requestObj->solVehicleID_ = LARGE_CONSTANT;
 }

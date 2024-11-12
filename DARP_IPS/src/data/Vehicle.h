@@ -28,9 +28,9 @@ public:
     PRoute currentRoute_;                   // current vehicle plan
     PRoute solutionRoute_;                  // actual vehicle plan (performed plan)
     PRoute emptyRoute_;                     // empty route which may contain drop of points
-    double dual_;
-    double InitialDual_;                    // when in parameters we use penalties as duals we save previous duals in it
-    double bestReducedCost_;                // best reduce cost of the routes generated after solving its subproblem
+    float dual_;
+    float InitialDual_;                    // when in parameters we use penalties as duals we save previous duals in it
+    float bestReducedCost_;                // best reduce cost of the routes generated after solving its subproblem
     float idleTime_;                        // idle time of the vehicle
     float score_;                           // calculated based on earliest possible pickup (for selection vehicle portion)
     bool idle_;

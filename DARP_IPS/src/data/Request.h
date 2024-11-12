@@ -36,8 +36,8 @@ public:
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
-    double dual_;
-    double InitialDual_;                // when in parameters we use penalties as duals we save previous duals in it
+    float dual_;
+    float InitialDual_;                // when in parameters we use penalties as duals we save previous duals in it
     int allocVehicleID_;                // the vehicle that serve the request
     int initialVehicleID_;              // this is saved to calculate displacement at the end of each epoch
     int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement

@@ -60,7 +60,7 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSi
     }
 }
 
-void ComplementPro::addAuxVar(PInstance &pInst, double cost, int nbVehicles) {
+void ComplementPro::addAuxVar(PInstance &pInst, float cost, int nbVehicles) {
 
     IloNumArray columnVar(env_, nbRequestTask_);
     for (auto & requestObj : pInst->requests_)
@@ -97,19 +97,14 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
         }
     }
 
-    // adding z columns
+    // adding solution z columns
     for (auto & zSol: zSolution) {
         addZVar(zSolVar_, zSol, NEGATIVE);
     }
+
+    // adding z columns out of basis
     for (int i = 0; i < pInst->nbRequests_; ++i) {
-        int flagAdd =0;
-        for (auto & zSol: zSolution) {
-            if (pInst->requests_[i] == zSol) {
-                flagAdd = 1;
-                break;
-            }
-        }
-        if (flagAdd == 0)
+        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
     }
     for (int v = 0; v < pInst->nbVehicles_; ++v) {
@@ -138,13 +133,13 @@ void ComplementPro::repairModel(PInstance &pInst, vector<PRequest> &zSolution, v
         }
     }
 
-    // adding z columns
+    // adding solution z columns
     for (auto & zSol: zSolution) {
         addZVar(zSolVar_, zSol, NEGATIVE);
     }
 }
 void ComplementPro::buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                                          int nbVehicles, double preObj) {
+                                          int nbVehicles, float preObj) {
     // model initialization (defining empty set of constraints and adding objective)
     initializeCPModel(pInst, nbVehicles);
 
@@ -541,12 +536,11 @@ bool ComplementPro::isColumnDisjointBit(vector<PRequest> &zResults, vector<PRout
     int counts = 0;
     int veh = 0;
     for (auto & requestObj : zResults) {
-        std::bitset<MAX_BIT_SIZE>  zCol;
         unions.set(requestObj->taskIndex_, true);
         counts ++;
     }
     for (auto & routeObj : routeResults) {
-        unions = unions|routeObj->column_;
+        unions |= routeObj->column_;
         counts += routeObj->column_.count();
         vehicles.set(routeObj->vehicleID_, true);
         veh ++;

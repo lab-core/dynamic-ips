@@ -42,8 +42,8 @@ public:
     int cpIncDegree_;
 
     int nbCoveredTasks_;
-    double maxReducedCost_;      // max threshold for the reduced costs selection in CP
-    double minReducedCost_;
+    float maxReducedCost_;      // max threshold for the reduced costs selection in CP
+    float minReducedCost_;
 
     int RMPCounter_;            // iteration of solving Master Problem in each epoch
     int SPIter_;                    // number of sub problem iteration
@@ -56,12 +56,12 @@ public:
     int CPSuccess_;                 // number of time CP succeed in finding integer
     int CPFails_;                   // number of time CP fails in finding integer
     int CGSuccess_;                 // number of time that CG where able to converge
-    double objValue_;               // objective value during MP iterations
-    double lpObjValue_;             // linear objective value
-    double totalWaitTime_;          // total waiting time without penalties
-    double GreedyObjValue_;         // objective value of Greedy method
-    double MPEpochSolveTime_;       // save the total time used to solve MP models (RP, CG and MIP)
-    double CPEpochSolveTime_;       // save the total time used to solve CP models
+    float objValue_;               // objective value during MP iterations
+    float lpObjValue_;             // linear objective value
+    float totalWaitTime_;          // total waiting time without penalties
+    float GreedyObjValue_;         // objective value of Greedy method
+    float MPEpochSolveTime_;       // save the total time used to solve MP models (RP, CG and MIP)
+    float CPEpochSolveTime_;       // save the total time used to solve CP models
     bool CPBuilt_;                  // check whether CP model is built or not (one time during each iteration CP is built)
 
     myTools::Timer *masterTime_;
@@ -99,12 +99,17 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(PInstance &pInst);
 
-    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveISUD_improved(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
-    void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, double subProTime);
+    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveISUD_improved(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+
+    void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float &previousObj, float subProTime);
+
+    void setCurrentRoutes(PInstance &pInst);
+
 
     // These functions are used to solve master problems (CG, MP and RP)
     void solveRP_LPINT(PInstance &pInst, int compDegree, InputPaths &inputPaths);
@@ -122,9 +127,9 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, double subProTime,
-                                 double auxObj) const;
-    void setAvailableTime(PInstance &pInst, double elapsedTime, int iteration);
+    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, float subProTime,
+                                 float auxObj) const;
+    void setAvailableTime(PInstance &pInst, float elapsedTime, int iteration);
 };
 
 

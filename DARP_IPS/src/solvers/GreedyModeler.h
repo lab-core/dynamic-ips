@@ -23,7 +23,7 @@ public:
 //    std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
     std::vector<PStopLabel> greedyLabelPool_;               // pool of greedy labels to re-use
     std::vector<PInsertPosition> positionList_;
-    double objValue_;
+    float objValue_;
 
     //Constructor
     GreedyModeler();

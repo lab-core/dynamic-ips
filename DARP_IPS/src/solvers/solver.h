@@ -23,18 +23,18 @@ extern vector2D<float> durationMatrix_;
 
 class solver {
 public:
-    double elapsedTime_;
-    double avgEpochRuntime_;
-    double epochRuntime_;
-    double SubproEpochTime_;
-    double masterEpochTime_;
-    double RPEpochTime_;
-    double CPEpochTime_;
-    double RPEpochBuildTime_;
-    double CPEpochBuildTime_;
-    double GreedyTime_;
-    double AssignTime_;
-    double isudMIPEpochTime_;
+    float elapsedTime_;
+    float avgEpochRuntime_;
+    float epochRuntime_;
+    float SubproEpochTime_;
+    float masterEpochTime_;
+    float RPEpochTime_;
+    float CPEpochTime_;
+    float RPEpochBuildTime_;
+    float CPEpochBuildTime_;
+    float GreedyTime_;
+    float AssignTime_;
+    float isudMIPEpochTime_;
     int nbDominated_;                           // number of labels removed via Domination Rules
     int nbGenerated_;                           // number of generated labels
     int nbPrunedArcs_;

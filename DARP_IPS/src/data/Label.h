@@ -34,7 +34,7 @@ public:
     std::bitset<MAX_BIT_SIZE> openRequests_;                 // used to check feasibility and domination
     std::vector<Node*> pathNode_;                   // order of nodes in the path
 
-    double reducedCost_;
+    float reducedCost_;
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
@@ -44,9 +44,9 @@ public:
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
-    double createTime_;                             // the time that label is created
-    double labelScore_;                             // it is calculated based on reducedCost_/nbPickUp_
-    double lambdaScore_;
+    float createTime_;                             // the time that label is created
+    float labelScore_;                             // it is calculated based on reducedCost_/nbPickUp_
+    float lambdaScore_;
 
     // Constructor and Destructor
     Label(Vehicle *vehicle, PNode &source);

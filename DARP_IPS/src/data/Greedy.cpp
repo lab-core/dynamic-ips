@@ -405,6 +405,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
                 newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
             }
         }
+        newRoute->routeNodes_.back()->related_Request_->allocVehicleID_ = newRoute->vehicleID_;
         currentLabel = currentLabel->child_;
     }
 
