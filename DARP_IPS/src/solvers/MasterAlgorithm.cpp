@@ -1163,7 +1163,6 @@ void MasterAlgorithm::setAvailableTime(PInstance &pInst, float elapsedTime, int 
                 availableTime_ = LARGE_CONSTANT;
                 break;
         }
-        availableTime_ = LARGE_CONSTANT;
     }
     else
         availableTime_ = LARGE_CONSTANT;
