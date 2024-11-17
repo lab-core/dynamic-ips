@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }*/
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 1; ++i) {
+        for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 1; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
@@ -104,7 +104,8 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->nbPick_= 4;
                     mainInst->parameters_->dynamicPricing_ = true;
                 }*/
-
+                if (i == 1)
+                    mainInst->parameters_->vehicleReturn_ = true;
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
