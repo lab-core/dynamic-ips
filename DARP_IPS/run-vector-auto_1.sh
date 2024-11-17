@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
-#SBATCH --time=4:40:00
+#SBATCH --time=2:20:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
@@ -12,9 +12,9 @@ i=1
 for vehicles in sufficient_manhattan-vehicles-300
 #for vehicles in manhattan-vehicles
 do
-  for mode in 1
+  for mode in 2
   do
-    for algorithm in 2
+    for algorithm in 6 3
     do
       for directory in Instances_12-14
       do
