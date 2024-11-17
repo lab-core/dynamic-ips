@@ -1,9 +1,8 @@
 #!/bin/bash
-#SBATCH --time=2:10:00
-#SBATCH --account=def-legraina
+#SBATCH --time=0:10:00
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=16
-#SBATCH --array=1-48
+#SBATCH --array=1-720
 #SBATCH --output=/dev/null
 
 
@@ -11,8 +10,8 @@ module load eigen
 module load gcc
 cmake --build cmake-build-release --target all
 
-DIRECTORY="Instances-120"
-MAIN_DIR="datasets/Instances-120"
+DIRECTORY="Instances_12-14_Last"
+MAIN_DIR="datasets/Instances_12-14_Last"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find ./$MAIN_DIR -mindepth 1 -maxdepth 1 -type d -print | sort))
@@ -22,7 +21,7 @@ for vehicles in sufficient_manhattan-vehicles-300
 do
   for mode in 1
   do
-    for algorithm in 2 3
+    for algorithm in 6
     do
       for instance_path in "${INSTANCES[@]}";
       do
