@@ -23,7 +23,7 @@ public:
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
-    bool oneIter_;                  // solve master problem one time at each iteration of the CG
+    int numIter_;                  // solve master problem one time at each iteration of the CG
     bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
     int saveScratch_;              // save the results in scratch place of the server
     bool savePartial_;              // calculate the avg. wait time after one hour
@@ -68,7 +68,7 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, bool oneIter,
+               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
                bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,

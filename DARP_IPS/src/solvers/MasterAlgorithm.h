@@ -57,12 +57,15 @@ public:
     int CPFails_;                   // number of time CP fails in finding integer
     int CGSuccess_;                 // number of time that CG where able to converge
     float objValue_;               // objective value during MP iterations
+    float previousObj_;
     float lpObjValue_;             // linear objective value
     float totalWaitTime_;          // total waiting time without penalties
     float GreedyObjValue_;         // objective value of Greedy method
     float MPEpochSolveTime_;       // save the total time used to solve MP models (RP, CG and MIP)
     float CPEpochSolveTime_;       // save the total time used to solve CP models
     bool CPBuilt_;                  // check whether CP model is built or not (one time during each iteration CP is built)
+    float epochTime_;               // time passed inside one epoch
+    float vehicleChange_;
 
     myTools::Timer *masterTime_;
     myTools::Timer *RPTime_;
@@ -106,7 +109,7 @@ public:
     void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-    void solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float &previousObj, float subProTime);
+    void solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float subProTime);
 
     void setCurrentRoutes(PInstance &pInst);
 
@@ -127,8 +130,8 @@ public:
 
     // function to save the reduced costs and incompatibility degree of the created routes
     void save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, int isudIter);
-    std::string save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime, float subProTime,
-                                 float auxObj) const;
+    std::string save_MPResults(int epoch, const std::string& model, int nbColumns, float reachTime, float subProTime,
+                               float auxObj) const;
     void setAvailableTime(PInstance &pInst, float elapsedTime, int iteration);
 };
 

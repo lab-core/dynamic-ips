@@ -73,14 +73,12 @@ solver::~solver() {
 void solver::selectVehiclesForSubproblem(PInstance &EpochInst, int iter){
     if (!EpochInst->parameters_->vehiclePortion_ || iter == 1) {
         // The subproblems are solved for all the vehicles
-        EpochInst->selectedVehicles_.clear();
-        EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, iter);
+        EpochInst->selectedVehicles_.assign(EpochInst->nbVehicles_, iter);
     }
     else if (iter == 2){
         // The subproblems are solved for the vehicles who have already some requests from the pre-iteration
-        EpochInst->selectedVehicles_.clear();
-        EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
-        for (auto &vehicleObj: EpochInst->vehicles_) {
+        EpochInst->selectedVehicles_.assign(EpochInst->nbVehicles_, 0);
+        for (const auto &vehicleObj : EpochInst->vehicles_) {
             if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                 EpochInst->selectedVehicles_[vehicleObj->vehicleID_] = iter;
             }
@@ -217,14 +215,18 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (masterModel_->availableTime_ <= 5){
                 break;
             }
-            if (EpochInst->parameters_->mainAlgorithm_ == MP_CG)
+            if (EpochInst->parameters_->mainAlgorithm_ == RT_CG)
                 masterModel_->timeLimit_ = masterModel_->availableTime_-5;
             else
                 masterModel_->timeLimit_ = masterModel_->availableTime_;
             //solve the restricted Mater Problem
+            masterModel_->epochTime_ += subProblemTime_->dSinceStart().count();
             switch(EpochInst->parameters_->mainAlgorithm_) {
-                case MP_CG:
+                case RT_CG:
                     masterModel_->solveRLMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                    break;
+                case A_CG:
+                    masterModel_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
                 case MP_MIP:
                     masterModel_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
@@ -240,9 +242,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (simulationTime_->dSinceStart().count() >= 25)
                 break;
 
-            if (mainInst->parameters_->oneIter_){
-                if ((mainInst->parameters_->dynamicPricing_ && iter == 2)||(!mainInst->parameters_->dynamicPricing_ && iter == 1))
-                    break;
+            if (mainInst->parameters_->numIter_ == iter){
+                break;
             }
         }
         if (simulationTime_->dSinceStart().count() >= 25)
@@ -261,7 +262,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     masterModel_->setObjValue();
     if (masterModel_->timeLimit_ < 3)
         masterModel_->timeLimit_ = 3;
-    if (EpochInst->parameters_->mainAlgorithm_ == MP_CG)
+    if (EpochInst->parameters_->mainAlgorithm_ == RT_CG)
         masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
 
     for (auto & routeObj : masterModel_->routeSolution_) {
@@ -277,10 +278,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     else
         masterModel_->MasterPro_.reset();
 
-    if (epoch_ == 120) {
+    /*if (epoch_ == 120) {
         labelsPool_.clear();
         labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
-    }
+    }*/
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -424,7 +425,7 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
 
             //solve the restricted Mater Problem
             switch(EpochInst->parameters_->mainAlgorithm_) {
-                case MP_CG:
+                case RT_CG:
                     masterModel_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
                 case MP_MIP:
@@ -441,9 +442,8 @@ void solver::solveCG_Epoch1(PInstance &EpochInst, PInstance & mainInst, InputPat
             if (simulationTime_->dSinceStart().count() >= 27)
                 break;
 
-            if (mainInst->parameters_->oneIter_){
-                if ((mainInst->parameters_->dynamicPricing_ && iter == 2)||(!mainInst->parameters_->dynamicPricing_ && iter == 1))
-                    break;
+            if (mainInst->parameters_->numIter_ == iter){
+                break;
             }
         }
         if (previousObj == masterModel_->objValue_) {
@@ -810,7 +810,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         //       preprocessTime_->stop();
         if (MIP_Stop) {
             if (epoch_ == 150) {
-                EpochInst->parameters_->mainAlgorithm_ = MP_CG;
+                EpochInst->parameters_->mainAlgorithm_ = RT_CG;
                 for (auto &requestObj: EpochInst->requests_)
                     requestObj->dual_ = requestObj->penalty_;
                 for (auto &vehicleObj: EpochInst->vehicles_)
@@ -818,7 +818,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             }
             /*if (epoch_ == 4) {
                 EpochInst->parameters_->mainAlgorithm_ = MP_ISUD;
-                EpochInst->parameters_->oneIter_ = false;
+                EpochInst->parameters_->numIter_ = false;
  //               EpochInst->parameters_->greedyReOptimize_ = true;
 //                EpochInst->parameters_->useZoom_ = true;
             }*/

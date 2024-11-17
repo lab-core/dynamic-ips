@@ -41,6 +41,7 @@ public:
     PParameters parameters_;
     std::stringstream instRepStr_;                      // save all the results as one record
     std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
+    std::vector<int> firstSelectedVehicles_;
 
 
     // Constructor and Destructor

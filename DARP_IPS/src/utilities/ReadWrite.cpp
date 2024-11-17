@@ -171,7 +171,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pI
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             pInstance->instGraph_->sinkNodes_.back()));
-/*                if (pInstance->parameters_->mainAlgorithm_ == MP_CG) {
+/*                if (pInstance->parameters_->mainAlgorithm_ == RT_CG) {
                     pInstance->vehicles_.back()->dual_ = lDual;
                     pInstance->vehicles_.back()->InitialDual_ = lDual;
                 }
@@ -461,11 +461,11 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
-    bool discardSuboptimalPath = false, isDominanceReleased = false, oneIter = false;
+    bool discardSuboptimalPath = false, isDominanceReleased = false;
     bool isPickDropPossible = false, useZoom = false, useMultiStage = false, vehiclePortion = false, usePick = false;
     bool greedyReOptimize = false, vehicleReturn = false, dynamicPricing = false, constPortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1;
+    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1, numIter = -1;;
     float timeWindows = -1;
     float mipGap = -1;
 
@@ -503,8 +503,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "solutionMode "))
             file >> solutionMode;
 
-        else if (strEndWith(title, "OneIter "))
-            file >> oneIter;
+        else if (strEndWith(title, "NumIter "))
+            file >> numIter;
 
         else if (strEndWith(title, "GreedyReOptimize "))
             file >> greedyReOptimize;
@@ -608,7 +608,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
-                                                          static_cast<MainAlgorithm>(mainAlgorithm), oneIter,
+                                                          static_cast<MainAlgorithm>(mainAlgorithm), numIter,
                                                           greedyReOptimize, saveScratch, vehicleReturn, timeWindows,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
@@ -713,7 +713,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
-                        "mainAlgorithm,solutionMode,OneIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
+                        "mainAlgorithm,solutionMode,NumIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
                         "isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,Vehicle_portion,Dynamic_Pricing,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 

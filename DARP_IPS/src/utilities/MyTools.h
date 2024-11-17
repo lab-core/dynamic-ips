@@ -79,7 +79,7 @@ typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
 enum SubProSolveMode {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
 enum LabelingStrategy { PUSHING = 0, PULLING = 1};
 enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
-enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, MP_CG = 2, MP_ISUD = 3, MP_MIP = 4, MP_CP = 5};
+enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, RT_CG = 2, MP_ISUD = 3, MP_MIP = 4, MP_CP = 5, A_CG = 6};
 enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2, IP_SOLUTION = 3};
 enum InitialDual {LAST_CP = 0, PENALTIES = 1};
@@ -116,10 +116,11 @@ static const std::vector<std::string> subAlgorithmName = {
 static const std::vector<std::string> mainAlgorithmName = {
         "GREEDY",
         "MIP_CPLEX",
-        "MP_CG",
+        "RT_CG",
         "MP_ISUD",
         "MP_MIP",
-        "MP_CP"};
+        "MP_CP",
+        "A_CG"};
 
 static const std::vector<std::string> warmStartName = {
         "GREEDY_START",

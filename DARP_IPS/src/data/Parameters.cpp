@@ -11,7 +11,7 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       bool oneIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
+                       int numIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
                        bool useMultiStage, float minImp, bool useZoom, int nbColumn,
                        bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
@@ -22,7 +22,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
-        mainAlgorithm_(mainAlgorithm), oneIter_(oneIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
+        mainAlgorithm_(mainAlgorithm), numIter_(numIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
         vehicleReturn_(vehicleReturn), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
         CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn),
         isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
@@ -30,7 +30,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
         constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), solutionMode_(solutionMode),discardSuboptimalPath_(discardSuboptimalPath),
+        populateTimeLimit_(populateTimeLimit), solutionMode_(solutionMode), discardSuboptimalPath_(discardSuboptimalPath),
         MIPGap_(MIPGap), timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs){
     savePartial_ = false;
 }
@@ -56,7 +56,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# initial dual solution " << " = " << InitialDualName[initialDual_] << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
     repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
-    repStr << std::setw(setwLength) << "# One iter per epoch " << " = " << oneIter_ << std::endl;
+    repStr << std::setw(setwLength) << "# Number of iter per epoch " << " = " << numIter_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
     repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
@@ -120,7 +120,7 @@ std::string Parameters::toStr() const {
     repStr << warmStartName[initialStart_] << ",";
     repStr << mainAlgorithmName[mainAlgorithm_] << ",";
     repStr << solutionModeName[solutionMode_] << ",";
-    repStr << boolToString(oneIter_) << ",";
+    repStr << numIter_ << ",";
     repStr << boolToString(greedyReOptimize_) << ",";
     repStr << boolToString(vehicleReturn_) << ",";
     repStr << MIP_maxIncDegree_ << ",";

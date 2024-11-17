@@ -15,6 +15,7 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     ReducedPro_ = std::make_shared<ReducedProblem>();
     MasterPro_ = std::make_shared<MIPMasterProblem>();
     objValue_ = 0;
+    previousObj_ =0;
     lpObjValue_ = 0;
     totalWaitTime_ = 0;
     masterTime_ = new myTools::Timer(); masterTime_->init();
@@ -45,9 +46,12 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     maxIncDegree_ = 0;
     minReducedCost_ = INFINITY;
     maxReducedCost_ = INFINITY;
+    epochTime_ = 0;
+    vehicleChange_ = 0;
 
     pLogIsudResultsStream_ = new Tools::LogOutput(inputPaths.getOutputEpochResults());
-    (*pLogIsudResultsStream_) << "Epoch,MPIter,subProIter,TotalGenColumns,nbColumns,Model,ObjectiveValue,MPTimeAcc.,SubProTime,AuxObj" << std::endl;
+    (*pLogIsudResultsStream_) << "Epoch,MPIter,subProIter,TotalGenColumns,nbColumns,Model,ObjectiveValue,"
+                                 "preObjective,RelativeImprove,MPTimeAcc.,SubProTime,IterTime,vehicleChange,AuxObj" << std::endl;
 
     /*pLogIterReqDualStream_ = new Tools::LogOutput(inputPaths.getOutputReqDuals());
     (*pLogIterReqDualStream_) << "Epoch,ISUDIter,RequestID,Dual,Model,Penalty," << std::endl;
@@ -297,7 +301,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
     try {
         masterTime_->start();
         setObjValue();
-        float previousObj = objValue_;
+        previousObj_ = objValue_;
         bool restartAlgorithm = true;
         bool isCPImproved;
         int CPCounter;
@@ -312,7 +316,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
             /************************************************************************************************/
             //      SOLVE REDUCED PROBLEM
             /************************************************************************************************/
-            solveRP(pInst, inputPaths, epoch, previousObj, subProTime);
+            solveRP(pInst, inputPaths, epoch, subProTime);
 
             /************************************************************************************************/
             //                                     COMPLEMENTARY PROBLEM
@@ -343,7 +347,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
 
             while (isCPImproved) {
                 isCPImproved = false;
-                previousObj = objValue_;
+                previousObj_ = objValue_;
                 updateReducedCosts(pInst);
                 updateIncDegreesBit(pInst);
                 CompPro_->routesToAdd_.clear();
@@ -369,8 +373,8 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
 
                     CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                     setObjValue();
-                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
-                                                                  masterTime_->dSinceStart().count(), subProTime, 0.0);
+                    (*pLogIsudResultsStream_) << save_MPResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
+                                                                masterTime_->dSinceStart().count(), subProTime, 0.0);
 
                     if (CompPro_->status_ == FRACTIONAL) {
                         CPFails_++;
@@ -380,9 +384,10 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                             solveRP_LPINT(pInst, 1, inputPaths);
                             ZoomIter_++;
                             (*pLogIsudResultsStream_)
-                                    << save_ISUDResults(epoch, "ZOOM", (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
-                                                        masterTime_->dSinceStart().count(), subProTime,
-                                                        ReducedPro_->auxObjValue_);
+                                    << save_MPResults(epoch, "ZOOM",
+                                                      (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
+                                                      masterTime_->dSinceStart().count(), subProTime,
+                                                      ReducedPro_->auxObjValue_);
                             RMPCounter_++;
 
                             /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -390,8 +395,8 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                                 (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "zoom");
                             }*/
                             ZOOMTime_->stop();
-                            if (previousObj > objValue_) {
-                                previousObj = objValue_;
+                            if (previousObj_ > objValue_) {
+                                previousObj_ = objValue_;
                             }
                             else {
                           //      restartAlgorithm = false;
@@ -415,7 +420,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                     else {
                         setCurrentRoutes(pInst);
                         CPSuccess_++;
-                        previousObj = objValue_;
+                        previousObj_ = objValue_;
                         RMPCounter_++;
                         isCPImproved = true;
                         CPCounter++;
@@ -451,7 +456,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
         for (auto &requestObj: zSolution_)
             std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
         (*pLogIsudResultsStream_)
-                << save_ISUDResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+                << save_MPResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
         masterTime_->stop();
     }
     catch (const std::exception& e){
@@ -464,7 +469,7 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
         masterTime_->start();
         float tiLim = availableTime_;
         setObjValue();
-        float previousObj = objValue_;
+        previousObj_ = objValue_;
         bool restartAlgorithm = true;
         bool isCPImproved;
         int CPCounter;
@@ -514,12 +519,13 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
                 RPIter_++;
                 //               std::cout << "RP improve: " << objValue_ << std::endl;
 //                if (epoch == 4)
-                (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
-                                                              masterTime_->dSinceStart().count(), subProTime,
-                                                              ReducedPro_->auxObjValue_);
+                (*pLogIsudResultsStream_) << save_MPResults(epoch, "RP",
+                                                            (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
+                                                            masterTime_->dSinceStart().count(), subProTime,
+                                                            ReducedPro_->auxObjValue_);
                 RMPCounter_++;
-                if (previousObj > objValue_) {
-                    previousObj = objValue_;
+                if (previousObj_ > objValue_) {
+                    previousObj_ = objValue_;
                 } else
                     break;
             }
@@ -558,7 +564,7 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
 
             while (isCPImproved) {
                 isCPImproved = false;
-                previousObj = objValue_;
+                previousObj_ = objValue_;
 
                 availableTime_ = tiLim - masterTime_->dSinceStart().count();
                 if (availableTime_ > 0) {
@@ -570,8 +576,8 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
                     CPIter_++;
                     CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                     setObjValue();
-                    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
-                                                                  masterTime_->dSinceStart().count(), subProTime, 0.0);
+                    (*pLogIsudResultsStream_) << save_MPResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
+                                                                masterTime_->dSinceStart().count(), subProTime, 0.0);
 
                     if (CompPro_->status_ == FRACTIONAL) {
                         CPFails_++;
@@ -596,7 +602,7 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
                     else {
                         setCurrentRoutes(pInst);
                         CPSuccess_++;
-                        previousObj = objValue_;
+                        previousObj_ = objValue_;
                         RMPCounter_++;
                         isCPImproved = true;
                         CPCounter++;
@@ -634,7 +640,7 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
         for (auto &requestObj: zSolution_)
             std::cout << "request " << requestObj->getRequestId() << " : " << requestObj->penalty_ << std::endl;*/
         (*pLogIsudResultsStream_)
-                << save_ISUDResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+                << save_MPResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
         masterTime_->stop();
     }
     catch (const std::exception& e){
@@ -645,7 +651,7 @@ void MasterAlgorithm::solveISUD_improved(PInstance &pInst, int epoch, InputPaths
 
 void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
-    float previousObj = objValue_;
+    previousObj_ = objValue_;
 
     // update reduced costs if needed only at the start of epoch, if we used penalties to create routes
     if  ((pInst->parameters_->initialStart_ == PRE_SOLUTION)&&(pInst->parameters_->initialDual_ == PENALTIES) && (RMPCounter_ == 1)){
@@ -676,9 +682,9 @@ void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &input
             break;
         solveMP_INT(pInst, inputPaths);
         MIPIter_++;
-        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RMP", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                      masterTime_->dSinceStart().count(), subProTime,
-                                                      MasterPro_->auxObjValue_);
+        (*pLogIsudResultsStream_) << save_MPResults(epoch, "RMP", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                    masterTime_->dSinceStart().count(), subProTime,
+                                                    MasterPro_->auxObjValue_);
 
         RMPCounter_++;
         // save duals
@@ -687,17 +693,17 @@ void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &input
             (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "RMP");
         }*/
         setObjValue();
-        if (previousObj > objValue_) {
-            previousObj = objValue_;
+        if (previousObj_ > objValue_) {
+            previousObj_ = objValue_;
         }
         else
             break;
     }
 
     setObjValue();
-    (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "MIP", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                  masterTime_->dSinceStart().count(), subProTime,
-                                                  MasterPro_->auxObjValue_);
+    (*pLogIsudResultsStream_) << save_MPResults(epoch, "MIP", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                masterTime_->dSinceStart().count(), subProTime,
+                                                MasterPro_->auxObjValue_);
     RMPCounter_++;
 
 
@@ -713,7 +719,7 @@ void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &input
 }
 
 // Solve Reduced Problem (RP) and log results
-void MasterAlgorithm::solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float &previousObj, float subProTime) {
+void MasterAlgorithm::solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float subProTime) {
     RPTime_->start();
     CompPro_->fractionalZ_.clear();
     while (true) {
@@ -728,14 +734,14 @@ void MasterAlgorithm::solveRP(PInstance &pInst, InputPaths &inputPaths, int epoc
         setCurrentRoutes(pInst);
 
         RPIter_++;
-        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "RP", (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
-                                                      masterTime_->dSinceStart().count(), subProTime,
-                                                      ReducedPro_->auxObjValue_);
+        (*pLogIsudResultsStream_) << save_MPResults(epoch, "RP", (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
+                                                    masterTime_->dSinceStart().count(), subProTime,
+                                                    ReducedPro_->auxObjValue_);
         RMPCounter_++;
 
         updateReducedCosts(pInst);
-        if (previousObj - objValue_ > 0.01) {
-            previousObj = objValue_;
+        if (previousObj_ - objValue_ > 0.01) {
+            previousObj_ = objValue_;
         } else
             break;
 
@@ -755,8 +761,9 @@ void MasterAlgorithm::setCurrentRoutes(PInstance &pInst) {
 void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
     setObjValue();
-    float previousObj = objValue_;
-
+    previousObj_ = objValue_;
+    float previousIP = objValue_;
+    float iterTime = masterTime_->dSinceStart().count();
 
     // save initial duals
     /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -768,27 +775,26 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     /************************************************************************************************/
     setAvailableTime();
     if (availableTime_ > 1) {
-        float lpObj = previousObj;
         // solve RP with MIP solver
         while (true) {
-            updateReducedCosts(pInst);
             setAvailableTime();
-            if (minReducedCost_ >= 0 || availableTime_ <= 1)
+            if (availableTime_ <= 1)
                 break;
             solveMP_LP(pInst, inputPaths);
             LPIter_++;
-            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                          masterTime_->dSinceStart().count(), subProTime, 0.0);
+            epochTime_ += (masterTime_->dSinceStart().count() - iterTime);
+            iterTime = masterTime_->dSinceStart().count();
+            (*pLogIsudResultsStream_) << save_MPResults(epoch, "LMP", MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
 
             RMPCounter_++;
-            // save duals
-            /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
-                (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "LMP");
-                (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "LMP");
-            }*/
-            if (lpObj > objValue_) {
-                lpObj = objValue_;
+            if ((previousObj_ - objValue_ > 0.01)) {
+                previousObj_ = objValue_;
             } else
+                break;
+
+            updateReducedCosts(pInst);
+            if (minReducedCost_ >= -0.1)
                 break;
         }
 
@@ -797,26 +803,54 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         if (availableTime_ < 0.1)
             availableTime_ = 0.1;
         // solve the model in Integer mode
-        lpObjValue_ = lpObj;
-        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
+        lpObjValue_ = previousObj_;
+        previousObj_ = previousIP;
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousIP);
         MIPIter_++;
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         setObjValue();
 
+        setCurrentRoutes(pInst);
+        if (!pInst->parameters_->vehiclePortion_){
+            if (SPIter_ == 1){
+                // Update selectedVehicles_ for comparison
+                pInst->firstSelectedVehicles_.assign(pInst->nbVehicles_, 0);
+                for (const auto &vehicleObj : pInst->vehicles_) {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                        pInst->firstSelectedVehicles_[vehicleObj->vehicleID_] = 1;
+                    }
+                }
+            }
+            else {
+                // Prepare a solution vector for the current iteration
+                int diffCount = 0;
+                for (const auto &vehicleObj : pInst->vehicles_) {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty()){
+                        if (pInst->firstSelectedVehicles_[vehicleObj->vehicleID_] == 0)
+                            diffCount ++;
+                    }
+                }
 
-        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                      masterTime_->dSinceStart().count(), subProTime, 0.0);
+                // Calculate the percentage change in the number of zeros
+                vehicleChange_ = (static_cast<float>(diffCount) / pInst->firstSelectedVehicles_.size()) * 100.0;
+
+                // Log or use the percentageChange as needed
+                std::cout << "Percentage of changes in selected vehicles: " << vehicleChange_ << "%" << std::endl;
+            }
+        }
+
+        epochTime_ += (masterTime_->dSinceStart().count() - iterTime);
+        (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
         RMPCounter_++;
     }
-
-    setCurrentRoutes(pInst);
-
     masterTime_->stop();
 }
 
 void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
-    float previousObj = objValue_;
+    previousObj_ = objValue_;
+    float iterTime = masterTime_->dSinceStart().count();
 
     // save initial duals
     /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
@@ -828,7 +862,6 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
     /************************************************************************************************/
     setAvailableTime();
     if (availableTime_ > 1) {
-        float lpObj = previousObj;
         // solve RP with MIP solver
         while (true) {
             //          updateReducedCosts(pInst);
@@ -840,14 +873,15 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
 
             solveMP_LP(pInst, inputPaths);
             LPIter_++;
-            (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "LMP", MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                          masterTime_->dSinceStart().count(), subProTime, 0.0);
+            epochTime_ += (masterTime_->dSinceStart().count() - iterTime);
+            iterTime = masterTime_->dSinceStart().count();
+            (*pLogIsudResultsStream_) << save_MPResults(epoch, "LMP", MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
 
             RMPCounter_++;
 
-            // save duals
-            if ((lpObj - objValue_ > 0.01)) {
-                lpObj = objValue_;
+            if ((previousObj_ - objValue_ > 0.01)) {
+                previousObj_ = objValue_;
             } else
                 break;
 
@@ -861,7 +895,7 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
 
 void MasterAlgorithm::solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
-    float previousObj = objValue_;
+    previousObj_ = objValue_;
 
     /************************************************************************************************/
     //                                     MASTER PROBLEM
@@ -873,14 +907,14 @@ void MasterAlgorithm::solveRMP(PInstance &pInst, int epoch, InputPaths &inputPat
             availableTime_ = 2;
         // solve the model in Integer mode
         lpObjValue_ = objValue_;
-        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj);
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj_);
         MIPIter_++;
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         setObjValue();
+        epochTime_ += masterTime_->dSinceStart().count();
 
-
-        (*pLogIsudResultsStream_) << save_ISUDResults(epoch, "CG", (int) MasterPro_->compRoutes_.size()-nbVehicles_,
-                                                      masterTime_->dSinceStart().count(), subProTime, 0.0);
+        (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
         RMPCounter_++;
     }
     setCurrentRoutes(pInst);
@@ -1092,10 +1126,9 @@ void MasterAlgorithm::save_IncDegree_RDCost(InputPaths &inputPaths, int epoch, i
 }
 
 
-std::string MasterAlgorithm::save_ISUDResults(int epoch, const std::string& model, int nbColumns, float reachTime,
-                                              float subProTime, float auxObj) const {
+std::string MasterAlgorithm::save_MPResults(int epoch, const std::string& model, int nbColumns, float reachTime,
+                                            float subProTime, float auxObj) const {
     std::stringstream repStr;
-
     repStr << epoch << ",";
     repStr << RMPCounter_ << ",";
     repStr << SPIter_ << ",";
@@ -1103,8 +1136,12 @@ std::string MasterAlgorithm::save_ISUDResults(int epoch, const std::string& mode
     repStr << nbColumns << ",";
     repStr << model << ",";
     repStr << objValue_ << ",";
+    repStr << previousObj_ << ",";
+    repStr << 100*((previousObj_ - objValue_)/previousObj_) << ",";
     repStr << reachTime << ",";
     repStr << subProTime << ",";
+    repStr << epochTime_ << ",";
+    repStr << vehicleChange_ << ",";
     repStr << auxObj << "\n";
     return repStr.str();
 }
@@ -1126,6 +1163,7 @@ void MasterAlgorithm::setAvailableTime(PInstance &pInst, float elapsedTime, int 
                 availableTime_ = LARGE_CONSTANT;
                 break;
         }
+        availableTime_ = LARGE_CONSTANT;
     }
     else
         availableTime_ = LARGE_CONSTANT;
