@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-9
+#SBATCH --array=1-18
 #SBATCH --output=/dev/null
 
 module load eigen
