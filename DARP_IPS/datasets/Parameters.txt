@@ -45,7 +45,7 @@ Dynamic_Pricing = 1
 usePick = 1
 nbPick = 2
 sortPath = 0
-sortColumn = 0
+sortColumn = 1
 
 # CPLEX PARAMETERS
 #

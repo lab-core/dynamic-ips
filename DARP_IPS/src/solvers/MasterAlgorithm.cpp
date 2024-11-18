@@ -190,6 +190,7 @@ void MasterAlgorithm::initialization(PInstance &pInst, InputPaths &inputPaths, P
     RMPCounter_ = 0;
     SPIter_ = 0;
     CPBuilt_ = false;
+    epochTime_ = 0;
 
     initializeVehicles(pInst);
     // create a feasible integer solution at the start of epoch or simulation
@@ -305,6 +306,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
         bool restartAlgorithm = true;
         bool isCPImproved;
         int CPCounter;
+        float iterTime;
 
         /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
             (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
@@ -344,7 +346,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                 restartAlgorithm = false;
                 isCPImproved = false;
             }
-
+            iterTime = masterTime_->dSinceStart().count();
             while (isCPImproved) {
                 isCPImproved = false;
                 previousObj_ = objValue_;
@@ -373,6 +375,8 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
 
                     CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
                     setObjValue();
+                    epochTime_ += (masterTime_->dSinceStart().count() - iterTime);
+                    iterTime = masterTime_->dSinceStart().count();
                     (*pLogIsudResultsStream_) << save_MPResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
                                                                 masterTime_->dSinceStart().count(), subProTime, 0.0);
 
@@ -722,6 +726,7 @@ void MasterAlgorithm::solveMP_MIP(PInstance &pInst, int epoch, InputPaths &input
 void MasterAlgorithm::solveRP(PInstance &pInst, InputPaths &inputPaths, int epoch, float subProTime) {
     RPTime_->start();
     CompPro_->fractionalZ_.clear();
+    float iterTime = masterTime_->dSinceStart().count();
     while (true) {
         updateReducedCosts(pInst);
         setAvailableTime();
@@ -732,6 +737,8 @@ void MasterAlgorithm::solveRP(PInstance &pInst, InputPaths &inputPaths, int epoc
         setObjValue();
         solveRP_LPINT(pInst, 0, inputPaths);
         setCurrentRoutes(pInst);
+        epochTime_ += (masterTime_->dSinceStart().count() - iterTime);
+        iterTime = masterTime_->dSinceStart().count();
 
         RPIter_++;
         (*pLogIsudResultsStream_) << save_MPResults(epoch, "RP", (int) ReducedPro_->compRoutes_.size() - nbVehicles_,
