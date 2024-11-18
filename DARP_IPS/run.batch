@@ -1,15 +1,12 @@
 #!/bin/bash
-#SBATCH --time=05:15:00
-#SBATCH --account=def-legraina
-#SBATCH --mem=32G
+#SBATCH --time=2:10:00
+#SBATCH --mem=16G
 #SBATCH --cpus-per-task=16
+#SBATCH --output=/dev/null
 
 module load eigen
 module load gcc
 
-#/home/elamib/projects/def-legraina/elamib/dynamic-ips/DARP_IPS/bin/realtime_DARP Instances-120 
-#20160225_07-120m
 
-#bin/realtime_DARP Instances-120 20160225_07-120m
-bin/realtime_DARP $1 $2 $3 $4
+bin/realtime_DARP sufficient_manhattan-vehicles-300 Instances-120 20150828_07-120m 1500 6 2
  
