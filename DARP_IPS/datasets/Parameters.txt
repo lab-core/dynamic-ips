@@ -13,7 +13,7 @@ solutionMode = 2
 NumIter = 20
 GreedyReOptimize = 0
 saveScratch = 1
-vehicleReturn = 1
+vehicleReturn = 0
 timeWindows = 0
 
 # ISUD PARAMETERS
