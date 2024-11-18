@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-18
+#SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
 module load eigen
@@ -12,9 +12,9 @@ i=1
 for vehicles in sufficient_manhattan-vehicles-300
 #for vehicles in manhattan-vehicles
 do
-  for mode in 2
+  for mode in 1
   do
-    for algorithm in 6 3
+    for algorithm in 2
     do
       for directory in Instances_12-14
       do
