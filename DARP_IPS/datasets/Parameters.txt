@@ -10,9 +10,9 @@ nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 solutionMode = 2
-NumIter = 20
+NumIter = 200
 GreedyReOptimize = 0
-saveScratch = 1
+saveScratch = 2
 vehicleReturn = 0
 timeWindows = 0
 
