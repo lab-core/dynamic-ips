@@ -10,7 +10,7 @@ nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 solutionMode = 2
-NumIter = 200
+NumIter = 2
 GreedyReOptimize = 0
 saveScratch = 2
 vehicleReturn = 0
@@ -43,7 +43,7 @@ constPortion = 0
 Vehicle_portion = 0
 Dynamic_Pricing = 1
 usePick = 1
-nbPick = 4
+nbPick = 2
 sortPath = 0
 sortColumn = 1
 

@@ -17,7 +17,7 @@ bool savePartial = false ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
-bool solveEpoch = false;
+bool solveEpoch = true;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->dynamicPricing_ = true;
                 }*/
                 if (i == 1)
-                    mainInst->parameters_->vehicleReturn_ = true;
+                    mainInst->parameters_->vehiclePortion_ = true;
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
