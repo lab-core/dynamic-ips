@@ -239,15 +239,15 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             // Update available time
             masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
 
-            if (simulationTime_->dSinceStart().count() >= 25)
-                break;
+            /*if (simulationTime_->dSinceStart().count() >= 25)
+                break;*/
 
             if (mainInst->parameters_->numIter_ == iter){
                 break;
             }
         }
-        if (simulationTime_->dSinceStart().count() >= 25)
-            break;
+        /*if (simulationTime_->dSinceStart().count() >= 25)
+            break;*/
 
         if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
             masterModel_->CGSuccess_++;

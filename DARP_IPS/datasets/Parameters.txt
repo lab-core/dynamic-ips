@@ -12,7 +12,7 @@ mainAlgorithm = 0
 solutionMode = 2
 NumIter = 4
 GreedyReOptimize = 0
-saveScratch = 2
+saveScratch = 1
 vehicleReturn = 0
 timeWindows = 0
 
