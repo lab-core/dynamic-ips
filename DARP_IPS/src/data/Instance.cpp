@@ -321,9 +321,7 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                                 mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
                     }
                         // adding onboard nodes to the graph
-                    else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED) ||
-                             (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED &&
-                              vehicleObj->currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)) {
+                    else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
                         instGraph_->nodes_.emplace(
                                 std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
                                                               vehicleObj->currentRoute_->routeNodes_[i]));
@@ -404,9 +402,7 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
                                 mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
                     }
                         // adding onboard nodes to the graph
-                    else if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED) ||
-                             (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED &&
-                              vehicleObj->currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)) {
+                    else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
                         instGraph_->nodes_.emplace(
                                 std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
                                                               vehicleObj->currentRoute_->routeNodes_[i]));
@@ -892,8 +888,7 @@ void Instance::updateTaskIndexLabeling() {
         orderCounter = firstIndex;
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
             for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                if ((vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
-                    (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && vehicleObj->currentRoute_->routeNodes_[i]->type_ == DROPOFF)){
+                if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                     vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->taskIndexLabel_ = orderCounter;
                     orderCounter++;
                 }

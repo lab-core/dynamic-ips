@@ -24,8 +24,7 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
     // adding onboard nodes to the graph
     if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
         for (int i = 1; i < (Vehicle_)->currentRoute_->routeSize_; ++i) {
-            if (((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)||
-                ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED && (Vehicle_)->currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)){
+            if ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                 subGraph_->onboards_.emplace_back(std::make_shared<Node>((Vehicle_)->currentRoute_->routeNodes_[i]));
                 subGraph_->nodes_[subGraph_->onboards_.back()->nodeID_]  = subGraph_->onboards_.back();
                 subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];

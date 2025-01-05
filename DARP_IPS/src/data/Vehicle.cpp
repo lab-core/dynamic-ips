@@ -23,6 +23,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     idleTime_ = 0;
     startTime_ = 0;
     vehicleIndex_ = vehicleId;
+    idle_ = true;
+    numPickup_ = 1;
 }
 
 Vehicle::~Vehicle() = default;
@@ -41,9 +43,7 @@ void Vehicle::setEmptyRoute(PInstance &pInst) {
         if (currentRoute_!= nullptr) {
             if (currentRoute_->routeSize_ > 1) {
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                    if ((currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED) ||
-                        (currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED &&
-                         currentRoute_->routeNodes_[i]->initialType_ == DROPOFF)) {
+                    if (currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED) {
                         emptyRoute_->addNode(currentRoute_->routeNodes_[i]);
                     }
                 }
@@ -246,7 +246,7 @@ void Vehicle::updateStateTime(float elapsedTime, int &committedTime, bool vehicl
 
 // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
 void Vehicle::finalizeSolutionRoutes() const {
-    if (idle_)
+    if (currentRoute_->routeSize_ == 1)
         solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
