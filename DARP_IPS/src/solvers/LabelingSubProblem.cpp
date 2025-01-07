@@ -35,7 +35,7 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool prune
             nodeObj->successors_.clear();
             nodeObj->prunedArces_.reset();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
-                if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
+                if (nodeObj->nodeID_ != pickNodeObj->nodeID_ && pickNodeObj->nodeStatus_ != COMMITTED) {
                     if (prunedArcs) {
                         float minWait =
                                 (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
@@ -85,7 +85,7 @@ void LabelingSubProblem::initialization() {
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
 
-    /*if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
+    if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
             initialLabel->extend(&(*subGraph_->nodes_[(Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]), solverOptions_->isDropPickPossible_);
@@ -94,7 +94,7 @@ void LabelingSubProblem::initialization() {
             if (i == (Vehicle_)->currentRoute_->routeSize_)
                 break;
         }
-    }*/
+    }
 
     initialLabel->pathNode_.back()->nbActiveLabels_++;
     initialLabel->pathNode_.back()->bestLabelReduceCost_ = initialLabel->reducedCost_;
