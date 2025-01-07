@@ -18,7 +18,7 @@ public:
     float deltaPram_{};
     int epochLength_{};
     int penaltyL_{};
-    int committedTime_{};
+    float committedTime_{};
     int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
@@ -68,7 +68,7 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-               int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
+               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
                bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
