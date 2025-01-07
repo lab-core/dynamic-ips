@@ -339,10 +339,12 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
         if (parameters_->solutionMode_ == ANYTIME) {
             if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
-                nbNewRequests_++;
-                addRequest(mainInst->requests_[i]);
-                instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
-                instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                }
 
             }
             else
