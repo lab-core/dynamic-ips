@@ -461,9 +461,10 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
     bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
-    bool discardSuboptimalPath = false, isDominanceReleased = false;
-    bool isPickDropPossible = false, useZoom = false, useMultiStage = false, vehiclePortion = false, usePick = false;
-    bool greedyReOptimize = false, vehicleReturn = false, dynamicPricing = false, constPortion = false;
+    bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
+    bool useMultiStage = false, vehiclePortion = false, usePick = false, greedyReOptimize = false;
+    bool vehicleReturn = false, dynamicPricing = false, partialPricing = false, routeRecycle = false;
+    bool constPortion = false;
     int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1, numIter = -1;;
     float timeWindows = -1;
@@ -581,6 +582,12 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "Dynamic_Pricing "))
             file >> dynamicPricing;
 
+        else if (strEndWith(title, "Partial_Pricing "))
+            file >> partialPricing;
+
+        else if (strEndWith(title, "Route_Recycle "))
+            file >> routeRecycle;
+
         else if (strEndWith(title, "usePick "))
             file >> usePick;
 
@@ -605,6 +612,10 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "MIPGap "))
             file >> mipGap;
     }
+    if (dynamicPricing && partialPricing){
+        std::cout << "It is not possible to activate dynamic and partial pricing simultaneously!" << std::endl;
+        throw myTools::myException("Parameters are not valid!!", __LINE__);
+    }
     pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
@@ -618,7 +629,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
                                                           static_cast<subproblemAlgorithm>(subAlgorithm),
-                                                          constPortion, vehiclePortion, dynamicPricing, usePick, nbPick,
+                                                          constPortion, vehiclePortion, dynamicPricing, partialPricing,
+                                                          routeRecycle, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit,
@@ -713,9 +725,11 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
-                        "mainAlgorithm,solutionMode,NumIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,CP_IncDegree,"
-                        "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,isDropPickPossible,"
-                        "isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,Vehicle_portion,Dynamic_Pricing,nbPick,sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
+                        "mainAlgorithm,solutionMode,NumIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,"
+                        "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,"
+                        "isDropPickPossible,isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,"
+                        "LabelingStrategy,Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,nbPick,"
+                        "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();

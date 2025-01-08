@@ -10,30 +10,30 @@
 
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-                       float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
+                       int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
                        int numIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
-                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree,
-                       bool useMultiStage, float minImp, bool useZoom, int nbColumn,
-                       bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
-                       bool discardSuboptimalPath, bool isDominanceReleased,
-                       bool isDropPickPossible, SubProSolveMode subproSolveMode, LabelingStrategy LabelingStrategy,
-                       subproblemAlgorithm subAlgorithm, bool constPortion, bool vehiclePortion, bool dynamicPricing,
-                       bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
+                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
+                       float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel,
+                       bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
+                       bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
+                       LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
+                       bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
+                       int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
-        mainAlgorithm_(mainAlgorithm), numIter_(numIter), greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
-        vehicleReturn_(vehicleReturn), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
-        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn),
-        isTruncated_(isTruncated), MaxLabel_(maxLabel), isSuccessorsLimited_(isSuccessorsLimited),
-        isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm),
-        constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), usePick_(usePick), nbPick_(nbPick),
-        sortPath_(sortPath) , sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), solutionMode_(solutionMode), discardSuboptimalPath_(discardSuboptimalPath),
-        MIPGap_(MIPGap), timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs){
-    savePartial_ = false;
-}
+        mainAlgorithm_(mainAlgorithm), numIter_(numIter), greedyReOptimize_(greedyReOptimize),
+        saveScratch_(saveScratch), vehicleReturn_(vehicleReturn), initialStart_(initialStart),
+        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
+        minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn), isTruncated_(isTruncated), MaxLabel_(maxLabel),
+        isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
+        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode),
+        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), constPortion_(constPortion),
+        vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
+        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath) ,
+        sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
+        solutionMode_(solutionMode), discardSuboptimalPath_(discardSuboptimalPath), MIPGap_(MIPGap),
+        timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), savePartial_(false){}
 
 Parameters::~Parameters() = default;
 
@@ -90,6 +90,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# portion of constraints for MP " << " = " << constPortion_ << std::endl;
     repStr << std::setw(setwLength) << "# solve for vehicle portion " << " = " << vehiclePortion_ << std::endl;
     repStr << std::setw(setwLength) << "# use Dynamic Pricing " << " = " << dynamicPricing_ << std::endl;
+    repStr << std::setw(setwLength) << "# use Partial Pricing " << " = " << partialPricing_ << std::endl;
+    repStr << std::setw(setwLength) << "# Recycle Routes " << " = " << routeRecycle_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
@@ -139,6 +141,8 @@ std::string Parameters::toStr() const {
     repStr << LabelingStrategyName[LabelingStrategy_] << ",";
     repStr << boolToString(vehiclePortion_) << ",";
     repStr << boolToString(dynamicPricing_) << ",";
+    repStr << boolToString(partialPricing_) << ",";
+    repStr << boolToString(routeRecycle_) << ",";
     repStr << nbPick_ << ",";
     repStr << SortPathsName[sortPath_] << ",";
     repStr << SortColumnsName[sortColumn_] << ",";

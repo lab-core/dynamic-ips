@@ -18,7 +18,7 @@ public:
     float deltaPram_{};
     int epochLength_{};
     int penaltyL_{};
-    float committedTime_{};
+    int committedTime_{};
     int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
@@ -55,6 +55,8 @@ public:
     bool constPortion_;
     bool vehiclePortion_{};
     bool dynamicPricing_{};
+    bool partialPricing_;
+    bool routeRecycle_;
     bool usePick_;
     int nbPick_;
     SortPaths sortPath_;
@@ -68,13 +70,14 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-               float committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
+               int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
                bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
-               bool vehiclePortion, bool dynamicPricing, bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
+               bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
+               bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap);
 
     virtual ~Parameters();

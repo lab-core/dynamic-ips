@@ -36,6 +36,8 @@ public:
     bool idle_;
     int vehicleIndex_;                      // used for considering a part of vehicle constraints in master problems
     std::bitset<MAX_BIT_SIZE> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
+    int numPickup_;
+    bool stateChanged_;
 
 
     // Constructor and Destructor
@@ -55,12 +57,14 @@ public:
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
     void updateState(int epoch, int &epochLength, float simulationStart, bool vehicleReturn);
-    void updateStateTime(float elapsedTime, float &epochLength, float simulationStart, bool vehicleReturn);
+    void updateStateTime(float elapsedTime, int &committedTime, bool vehicleReturn, std::bitset<MAX_BIT_SIZE> &removedRequests);
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
     void finalizeSolutionRoutes() const;
     void updateDepartTime(float departTime);
+    void handleIdleState(float epochEndTime);
+    void setRequestStatus(PNode &node, float reachTime);
 };
 
 

@@ -24,8 +24,10 @@ public:
     int nbPrunedArcs_;
     int nbEliminated_;                          // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
+    int nbRecycledColumns_;
     int nbOutputs_;                             // total number of generated routes
     int maxPickup_;                             // number of pickups that are allowed in each path
+    vector<PRoute> availableRoutes_;
 
     PSolverOption solverOptions_;
     myTools::Timer *subproTime_;                // timer for labeling algorithm
@@ -67,6 +69,7 @@ public:
 
     void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
     void extendToDropOnboards(PLabel &selectedLabel);
+    void constructLabels(PLabel &initialLabel);
 };
 
 

@@ -20,6 +20,7 @@ LabelingSubProblem::LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverO
     nbEliminated_ = 0;
     nbPrunedPath_ = 0;
     nbPrunedArcs_ = 0;
+    nbRecycledColumns_ = 0;
     nbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
     subproTime_ = new myTools::Timer(); subproTime_->init();
@@ -35,7 +36,7 @@ void LabelingSubProblem::sortSuccessors(std::vector<PNode> &nodeList, bool prune
             nodeObj->successors_.clear();
             nodeObj->prunedArces_.reset();
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
-                if (nodeObj->nodeID_ != pickNodeObj->nodeID_ && pickNodeObj->nodeStatus_ != COMMITTED) {
+                if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
                     if (prunedArcs) {
                         float minWait =
                                 (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
@@ -85,7 +86,7 @@ void LabelingSubProblem::initialization() {
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }
 
-    if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
+    /*if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
         int i = 1;
         while ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
             initialLabel->extend(&(*subGraph_->nodes_[(Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]), solverOptions_->isDropPickPossible_);
@@ -94,7 +95,7 @@ void LabelingSubProblem::initialization() {
             if (i == (Vehicle_)->currentRoute_->routeSize_)
                 break;
         }
-    }
+    }*/
 
     initialLabel->pathNode_.back()->nbActiveLabels_++;
     initialLabel->pathNode_.back()->bestLabelReduceCost_ = initialLabel->reducedCost_;
@@ -102,7 +103,14 @@ void LabelingSubProblem::initialization() {
     activeNodes_.push_back(initialLabel->pathNode_.back());
     if (!initialLabel->openNode_.empty())
         extendToOnboard = true;
+    if (!availableRoutes_.empty()) {
+        if (availableRoutes_.size() > 1)
+            std::cout << "";
+
+        constructLabels(initialLabel);
+    }
     initialLabel->pathNode_.back()->activeLabels_.push_back(std::move(initialLabel));
+
     /*if (extendToOnboard) {
         vector<Node *> activeDropNodes = activeNodes_;
         int nbActive;
@@ -995,6 +1003,73 @@ void LabelingSubProblem::extendToDropOnboards(PLabel &selectedLabel) {
     }
 }
 
+void LabelingSubProblem::constructLabels(PLabel &initialLabel) {
+    for (auto &route: availableRoutes_) {
+        bool isValidRoute = true;
 
+        // Check if all nodes in the route exist in the subGraph
+        for (auto &node: route->routeNodes_) {
+            if (subGraph_->nodes_.count(node->nodeID_) == 0) {
+                isValidRoute = false;
+                break;
+            }
+        }
+
+        if (!isValidRoute) {
+            continue; // Skip invalid routes
+        }
+        nbRecycledColumns_++;
+        PLabel parentLabel = initialLabel;
+
+        for (int i = 1; i < route->routeSize_; ++i) {
+            // Get or create a new label
+            PLabel newLabel;
+            if (!labelPool_.empty()) {
+                newLabel = std::move(labelPool_.back());
+                labelPool_.pop_back();
+                newLabel->copyLabel(*parentLabel);
+            } else {
+                newLabel = std::make_shared<Label>(*parentLabel);
+            }
+
+            // Extend the label
+            newLabel->extend(&(*subGraph_->nodes_[route->routeNodes_[i]->nodeID_]),
+                             solverOptions_->isDropPickPossible_);
+
+            bool isRepeated = false;
+            for (auto &labelObj: newLabel->pathNode_.back()->activeLabels_) {
+                if (newLabel->isDominated(labelObj, this->solverOptions_)) {
+                    isRepeated = true;
+                    break;
+                }
+            }
+            if (!isRepeated) {
+                auto &pathNode = newLabel->pathNode_.back();
+
+                // Update label statistics and active node list
+                pathNode->nbActiveLabels_++;
+                if (pathNode->bestLabelReduceCost_ > newLabel->reducedCost_) {
+                    pathNode->bestLabelReduceCost_ = newLabel->reducedCost_;
+                }
+
+                if (pathNode->nbActiveLabels_ == 1) {
+                    activeNodes_.push_back(pathNode);
+                }
+
+                pathNode->activeLabels_.push_back(newLabel);
+
+                // Update parent label for pickup nodes
+                if (route->routeNodes_[i]->type_ == PICKUP) {
+                    parentLabel->extendCheck_.set(route->routeNodes_[i]->related_Request_->taskIndexLabel_, true);
+                    parentLabel->numExtendCheck_++;
+                }
+            }
+
+            // Update the parent label for the next iteration
+            parentLabel = newLabel;
+        }
+    }
+
+}
 
 
