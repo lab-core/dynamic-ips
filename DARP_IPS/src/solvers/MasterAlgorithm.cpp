@@ -840,9 +840,6 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
 
                 // Calculate the percentage change in the number of zeros
                 vehicleChange_ = (static_cast<float>(diffCount) / pInst->firstSelectedVehicles_.size()) * 100.0;
-
-                // Log or use the percentageChange as needed
-                std::cout << "Percentage of changes in selected vehicles: " << vehicleChange_ << "%" << std::endl;
             }
         }
 

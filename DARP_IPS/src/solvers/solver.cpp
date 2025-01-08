@@ -172,7 +172,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 }
                 else
                     subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
-                subProSolve.back()->availableRoutes_ = masterModel_->availableRoutes_[vehicleObj->vehicleID_];
+                if (EpochInst->parameters_->routeRecycle_)
+                    subProSolve.back()->availableRoutes_ = masterModel_->availableRoutes_[vehicleObj->vehicleID_];
                 masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
             }
         }
