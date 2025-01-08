@@ -1158,7 +1158,6 @@ void MasterAlgorithm::setAvailableTime() {
 }
 
 void MasterAlgorithm::setAvailableTime(PInstance &pInst, float elapsedTime, int iteration) {
-    availableTime_ = LARGE_CONSTANT;
     if (iteration > 1) {
         switch (pInst->parameters_->solutionMode_) {
             case ANYTIME:
@@ -1174,4 +1173,5 @@ void MasterAlgorithm::setAvailableTime(PInstance &pInst, float elapsedTime, int 
     }
     else
         availableTime_ = LARGE_CONSTANT;
+    availableTime_ = LARGE_CONSTANT;
 }
