@@ -153,11 +153,11 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 num++;
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->partialPricing_) {
-                    if (vehicleObj->currentRoute_->routeRequests_.size() >= 2){
+                    if (vehicleObj->currentRoute_->routeRequests_.size() >= 3){
                         vehicleObj->numPickup_ = 3;
                         nbThreePick_ ++;
                     }
-                    else if (vehicleObj->currentRoute_->routeRequests_.size() == 1){
+                    else if (vehicleObj->currentRoute_->routeRequests_.size() >= 1){
                         vehicleObj->numPickup_ = 2;
                         nbTwoPick_ ++;
                     }
@@ -171,7 +171,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                     subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
                 }
                 else
-                    subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
+//                    subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
+                    subProSolve.back()->maxPickup_ = (epoch_ % 2 == 0) ? 1 : 2;
                 if (EpochInst->parameters_->routeRecycle_)
                     subProSolve.back()->availableRoutes_ = masterModel_->availableRoutes_[vehicleObj->vehicleID_];
                 masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
