@@ -1,9 +1,10 @@
 #!/bin/bash
-#SBATCH --time=2:10:00
-#SBATCH --mem=16G
 #SBATCH --cpus-per-task=16
+#SBATCH --mem=24G
+#SBATCH --time=2:40:00
 #SBATCH --array=1-24
 #SBATCH --output=/dev/null
+
 
 
 module load eigen
