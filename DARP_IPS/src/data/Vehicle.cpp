@@ -20,12 +20,19 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     InitialDual_ = 0;
     bestReducedCost_ = INFINITY;
     score_ = INFINITY;
+
     idleTime_ = 0;
+    driveEmptyTime_ = 0;
+    driveFullTime_ = 0;
+    serviceTime_ = 0;
+    returnEmptyTime_ = 0;
+
     startTime_ = 0;
     vehicleIndex_ = vehicleId;
     idle_ = true;
     numPickup_ = 1;
     stateChanged_ = false;
+    preSolvePick_ = 1;
 }
 
 Vehicle::~Vehicle() = default;
@@ -181,9 +188,14 @@ void Vehicle::updateState(int epoch, int &epochLength, float simulationStart, bo
     }
 }
 
-void Vehicle::updateStateTime(float elapsedTime, int &committedTime, bool vehicleReturn, std::bitset<MAX_BIT_SIZE> &removedRequests) {
+void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests) {
+    int committedTime = 0;
+    if (mainInst->parameters_->solutionMode_ == ANYTIME)
+        committedTime = mainInst->parameters_->committedTime_;
+    else
+        committedTime = mainInst->parameters_->epochLength_;
     stateChanged_ = false;
-    if (vehicleReturn && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime
+    if (mainInst->parameters_->vehicleReturn_ && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime - committedTime
     && currentRoute_->routeSize_ == 1){
         if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
             idleTime_ += (elapsedTime + committedTime - departTime_);
@@ -191,67 +203,92 @@ void Vehicle::updateStateTime(float elapsedTime, int &committedTime, bool vehicl
             solutionRoute_->routeNodes_.back()->departTime_ = currentRoute_->plannedDepartTime_[0];
             solutionRoute_->plannedDepartTime_.back() = currentRoute_->plannedDepartTime_[0];
             currentRoute_->addSink(sinkNode_);
+            mainInst->nbReturn_++;
         }
     }
     if (currentRoute_->routeSize_ > 1) {
-        // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
-        if (departTime_ < elapsedTime + committedTime || currentRoute_->plannedReachTime_[1] == departTime_) {
-            onboards_.clear();
-            int breakIndex = 0;
-            for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                stateChanged_ = true;
-                currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
-                currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-                solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i],
-                                        currentRoute_->plannedDepartTime_[i]);
-                if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
-                    sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
-
-                // set request status
-                if (currentRoute_->routeNodes_[i]->type_ == PICKUP)
-                    removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
-                setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
-
-                if (i == currentRoute_->routeSize_-1 ||
-                    ((currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime) &&
-                     (currentRoute_->routeNodes_[i]->locationID_ != currentRoute_->routeNodes_[i+1]->locationID_))){
-                    // at depart point the vehicle is ready to leave the stop location and delta time has passed
-                    departTime_ = currentRoute_->plannedDepartTime_[i];
-                    // if we have reached the end of the route, next condition is checked
-                    if (i == currentRoute_->routeSize_-1 && departTime_ < elapsedTime + committedTime) {
-                        handleIdleState(elapsedTime + committedTime);
+        if (currentRoute_->routeRequests_.size() != 1 || preSolvePick_ != 1) {
+            idle_ = false;
+            // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
+            if (departTime_ < elapsedTime + committedTime || currentRoute_->plannedReachTime_[1] == departTime_) {
+                onboards_.clear();
+                int breakIndex = 0;
+                for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+                    stateChanged_ = true;
+                    mainInst->nbStateChanged_++;
+                    currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
+                    currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
+                    currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
+                    solutionRoute_->addNode(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i],
+                                            currentRoute_->plannedDepartTime_[i]);
+                    if (currentRoute_->routeNodes_[i]->initialType_ == SINK) {
+                        returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+                        sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
                     }
-                    numPassengers_ = currentRoute_->plannedPassengers_[i];
-                    departNode_ =  currentRoute_->routeNodes_[i];
-                    currentRoute_->routeNodes_[i]->type_ = SOURCE;
-                    breakIndex = i;
-                    break;
-                }
-            }
-            for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
-                if (currentRoute_->routeNodes_[i]->type_ != SOURCE && currentRoute_->routeNodes_[i]->type_ != SINK) {
-                    if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-                        currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
-                        onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                    else {
+                        serviceTime_ += currentRoute_->routeNodes_[i]->serviceTime_;
+                        if (currentRoute_->plannedPassengers_[i-1] > 0)
+                            driveFullTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+                        else
+                            driveEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+                    }
+
+
+                    // set request status
+                    if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                        removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
+                        currentRoute_->routeNodes_[i]->related_Request_->assignTime_ = elapsedTime;
+                    }
+
+
+                    setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
+
+                    if (i == currentRoute_->routeSize_ - 1 ||
+                        ((currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime) &&
+                         (currentRoute_->routeNodes_[i]->locationID_ !=
+                          currentRoute_->routeNodes_[i + 1]->locationID_))) {
+                        // at depart point the vehicle is ready to leave the stop location and delta time has passed
+                        departTime_ = currentRoute_->plannedDepartTime_[i];
+                        // if we have reached the end of the route, next condition is checked
+                        if (i == currentRoute_->routeSize_ - 1 && departTime_ < elapsedTime + committedTime) {
+                            handleIdleState(elapsedTime + committedTime);
+                            mainInst->nbPotentialIdle_++;
+                        }
+                        numPassengers_ = currentRoute_->plannedPassengers_[i];
+                        departNode_ = currentRoute_->routeNodes_[i];
+                        currentRoute_->routeNodes_[i]->type_ = SOURCE;
+                        breakIndex = i;
+                        break;
                     }
                 }
+                for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
+                    if (currentRoute_->routeNodes_[i]->type_ != SOURCE &&
+                        currentRoute_->routeNodes_[i]->type_ != SINK) {
+                        if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+                            currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
+                            onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                        }
+                    }
 /*                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + committedTime)
                     currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
+                }
+                currentRoute_->removeNode(breakIndex);
             }
-
-            currentRoute_->removeNode(breakIndex);
         }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
-    else if (departTime_ < elapsedTime + committedTime){
+    else if (departTime_ <= elapsedTime + committedTime){
+        if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_[0]->serviceTime_ <= elapsedTime)
+            mainInst->nbIdle_++;
+        else
+            mainInst->nbPotentialIdle_++;
         handleIdleState(elapsedTime + committedTime);
     }
 }
 
 // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
-void Vehicle::finalizeSolutionRoutes() const {
+void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
     if (currentRoute_->routeSize_ == 1)
         solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
@@ -262,7 +299,18 @@ void Vehicle::finalizeSolutionRoutes() const {
             solutionRoute_->addNode(currentRoute_->routeNodes_[i],currentRoute_->plannedReachTime_[i],
                                      currentRoute_->plannedDepartTime_[i]);
 
+            if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
+                returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+            else {
+                serviceTime_ += currentRoute_->routeNodes_[i]->serviceTime_;
+                if (currentRoute_->plannedPassengers_[i-1] > 0)
+                    driveFullTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+                else
+                    driveEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
+            }
+
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                currentRoute_->routeNodes_[i]->related_Request_->assignTime_ = elapsedTime;
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
                 currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
@@ -294,13 +342,13 @@ void Vehicle::updateDepartTime(float departTime) {
 }
 
 void Vehicle::updateCurrentRoute(float elapsedTime) {
-    if (currentRoute_->routeSize_ > 1 && idle_) {
-        if (idle_) {
-            float departure = std::max(startTime_ + elapsedTime, solutionRoute_->plannedDepartTime_.back());
-            idleTime_ -= (departTime_ - (departure));
-            updateDepartTime(departure);
-        }
+    float earliestDepart = std::max(elapsedTime, departNode_->reachTime_+ departNode_->serviceTime_);
+    float departure = std::max(elapsedTime + 5, earliestDepart);
+    if (departure < departTime_) {
+        idleTime_ -= (departTime_ - (departure));
+        updateDepartTime(departure);
     }
+    idle_ = false;
 }
 
 

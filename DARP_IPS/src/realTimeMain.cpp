@@ -168,6 +168,12 @@ int main(int argc, char** argv) {
                     Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
                     requestResultsStream << mainInst->saveRequestsResults();
                     requestResultsStream.close();
+
+                    // print vehicles results to csv
+                    Tools::LogOutput vehiclesResultsStream(inputPaths.getOutputFinalVehicles());
+                    vehiclesResultsStream << mainInst->saveVehicleResults();
+                    vehiclesResultsStream.close();
+
                     Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
                     finalInstanceStream
                             << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,customer Group,"

@@ -31,13 +31,20 @@ public:
     float dual_;
     float InitialDual_;                    // when in parameters we use penalties as duals we save previous duals in it
     float bestReducedCost_;                // best reduce cost of the routes generated after solving its subproblem
-    float idleTime_;                        // idle time of the vehicle
     float score_;                           // calculated based on earliest possible pickup (for selection vehicle portion)
     bool idle_;
     int vehicleIndex_;                      // used for considering a part of vehicle constraints in master problems
     std::bitset<MAX_BIT_SIZE> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
     int numPickup_;
     bool stateChanged_;
+    int preSolvePick_;
+
+    // KPIs
+    float idleTime_;                        // idle time of the vehicle
+    float serviceTime_;                     // service time of the vehicle
+    float driveFullTime_;                   // time the vehicle drive with passengers
+    float driveEmptyTime_;                  // time the vehicle drives empty to reach passengers
+    float returnEmptyTime_;                 // time the vehicle drives empty to return
 
 
     // Constructor and Destructor
@@ -57,11 +64,11 @@ public:
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
     void updateState(int epoch, int &epochLength, float simulationStart, bool vehicleReturn);
-    void updateStateTime(float elapsedTime, int &committedTime, bool vehicleReturn, std::bitset<MAX_BIT_SIZE> &removedRequests);
+    void updateStateTime(PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests);
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
-    void finalizeSolutionRoutes() const;
+    void finalizeSolutionRoutes(float elapsedTime);
     void updateDepartTime(float departTime);
     void handleIdleState(float epochEndTime);
     void setRequestStatus(PNode &node, float reachTime);

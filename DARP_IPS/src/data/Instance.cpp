@@ -22,6 +22,10 @@ Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int
     zones_.resize(MAX_ZONE);
     nbZones_ = 0;
     nbRejected_ = 0;
+    nbIdle_ = 0;
+    nbPotentialIdle_ = 0;
+    nbReturn_ = 0;
+    nbStateChanged_ = 0;
 }
 
 
@@ -40,7 +44,12 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbTasks_ = 0;
     zones_ = mainInst.zones_;
     nbZones_ = mainInst.nbZones_;
+    nbIdle_ = 0;
+    nbPotentialIdle_ = 0;
+    nbReturn_ = 0;
+    nbStateChanged_ = 0;
 //    instGraph_->sinkNodes_ = mainInst.instGraph_->sinkNodes_;
+
 }
 
 
@@ -104,7 +113,12 @@ std::string Instance::solutionToString() {
     int NumRejectdPartial = 0;
     int NumRejectd = 0;
 
-    float idleTime = 0;                 // total vehicle idle times
+    float idleTime = 0;                 // total vehicles idle times
+    float serviceTime = 0;              // total vehicles service time
+    float driveFullTime = 0;            // total vehicles drive with passengers
+    float driveEmptyTime = 0;           // total vehicles drives empty to reach passengers
+    float returnEmptyTime = 0;          // total vehicles drives empty to return
+
     int totalCustomers = 0;
     int totalCustomersPartial = 0;
     int nbIdle = 0;
@@ -217,6 +231,11 @@ std::string Instance::solutionToString() {
         totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
         numServed += (int)vehicleObj->solutionRoute_->routeRequests_.size();
         idleTime += vehicleObj->idleTime_;
+        serviceTime += vehicleObj->serviceTime_;
+        driveFullTime += vehicleObj->driveFullTime_;
+        driveEmptyTime += vehicleObj->driveEmptyTime_;
+        returnEmptyTime += vehicleObj->returnEmptyTime_;
+
         if (vehicleObj->solutionRoute_->routeSize_ == 1)
             nbIdle++;
         totalStopLoad += std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
@@ -230,6 +249,18 @@ std::string Instance::solutionToString() {
     repStr << std::setw(sentenceSize) << "# TOTAL WAIT TIME" << " = " << totalWaiting << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL SERVICE TIME" << " = " << serviceTime << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL DRIVE EMPTY TIME" << " = " << driveEmptyTime << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL RETURN EMPTY TIME" << " = " << returnEmptyTime << " (s)" << std::endl;
+    repStr << "#" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL WAIT TIME" << " = " << totalWaiting/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL IDLE TIME" << " = " << idleTime/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL SERVICE TIME" << " = " << serviceTime/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL DRIVE EMPTY TIME" << " = " << driveEmptyTime/60 << " (min)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TOTAL RETURN EMPTY TIME" << " = " << returnEmptyTime/60 << " (min)" << std::endl;
     repStr << "#" << std::endl;
     repStr << std::setw(sentenceSize) << "# (P) FINAL OBJECTIVE VALUE" << " = " << penaltyPartial + totalWaitingPartial << std::endl;
     repStr << std::setw(sentenceSize) << "# (P) TOTAL WAIT TIME" << " = " << totalWaitingPartial << " (s)" << std::endl;
@@ -256,6 +287,11 @@ std::string Instance::solutionToString() {
     }
     repStr << std::setw(sentenceSize) << "# PASSENGERS IN VEHICLE" << " = " << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(sentenceSize) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
+    repStr << std::setw(sentenceSize) << "# SERVICE TIME PER VEHICLE" << " = " << serviceTime/static_cast<float>(nbVehicles_) << std::endl;
+    repStr << std::setw(sentenceSize) << "# DRIVE FULL TIME PER VEHICLE" << " = " << driveFullTime/static_cast<float>(nbVehicles_) << std::endl;
+    repStr << std::setw(sentenceSize) << "# DRIVE EMPTY TIME PER VEHICLE" << " = " << driveEmptyTime/static_cast<float>(nbVehicles_) << std::endl;
+    repStr << std::setw(sentenceSize) << "# RETURN EMPTY TIME PER VEHICLE" << " = " << returnEmptyTime/static_cast<float>(nbVehicles_) << std::endl;
+    
     repStr << "#" << std::endl;
     instRepStr_ << totalCustomers << ",";
 
@@ -288,7 +324,18 @@ std::string Instance::solutionToString() {
 }
 
 // this function update the set of available requests, removed completed requests and update onboards
-void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests) {
+void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest> &penaltyRequests, float elapsedTime,
+                                int lastRecRequests) {
+    nbReturn_ = mainInst->nbReturn_;
+    nbIdle_ = mainInst->nbIdle_;
+    nbPotentialIdle_ = mainInst->nbPotentialIdle_;
+    nbStateChanged_ = mainInst->nbStateChanged_;
+
+    mainInst->nbReturn_ = 0;
+    mainInst->nbIdle_ = 0;
+    mainInst->nbPotentialIdle_ = 0;
+    mainInst->nbStateChanged_ = 0;
+
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(vehicleObj->sinkNode_);
@@ -657,8 +704,8 @@ std::string Instance::saveSolutionRoutes() {
 
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
-    repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,"
-              "DropTime,LatestPick,InVehicleID,VehicleID,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
+    repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,DropTime,LatestPick,"
+              "AssignTime,InVehicleID,VehicleID,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
 
     int startIndex;
     if (solveEpoch)
@@ -676,6 +723,7 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->pickTime_ << ",";
             repStr << requestObj->dropTime_ << ",";
             repStr << requestObj->latestPickup_ << ",";
+            repStr << requestObj->assignTime_ << ",";
             repStr << requestObj->initialVehicleID_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
             repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
@@ -687,6 +735,31 @@ std::string Instance::saveRequestsResults() {
     }
     return repStr.str();
 }
+
+std::string Instance::saveVehicleResults() {
+    std::stringstream repStr;
+    repStr << "VehicleID,startID,capacity,startTime,endTime,LastVisitTime,#Stops,#RequestsServed,WaitTime,"
+              "idleTime,serviceTime,driveFullTime,driveEmptyTime,returnEmptyTime" << std::endl;
+
+    for (auto & vehicleObj : vehicles_) {
+        repStr << vehicleObj->vehicleID_ << ",";
+        repStr << vehicleObj->sinkNode_->locationID_ << ",";
+        repStr << vehicleObj->capacity_ << ",";
+        repStr << simulationStartTime_ << ",";
+        repStr << vehicleObj->endTime_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeNodes_.back()->departTime_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
+        repStr << vehicleObj->solutionRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->idleTime_ << ",";
+        repStr << vehicleObj->serviceTime_ << ",";
+        repStr << vehicleObj->driveFullTime_ << ",";
+        repStr << vehicleObj->driveEmptyTime_ << ",";
+        repStr << vehicleObj->returnEmptyTime_ << "\n";
+    }
+    return repStr.str();
+}
+
 
 std::string Instance::saveEpochRoutes(int epoch) {
     std::stringstream repStr;

@@ -55,6 +55,7 @@ protected:
     std::string output_finalLog_;               // save the final routes and parameters and solution in a txt file
     std::string output_finalRoutes_;            // save final routes in a csv
     std::string output_finalRequests_;          // save the status of final requests in a csv
+    std::string output_finalVehicles_;          // save the status of final requests in a csv
     std::string output_paramFile_;              // save the parameters
     std::string output_paramCSV_;              // save the parameters csv
 
@@ -89,6 +90,7 @@ public:
     const std::string &getOutputFinalLog() const;
     const std::string &getOutputFinalRoutes() const;
     const std::string &getOutputFinalRequests() const;
+    const std::string &getOutputFinalVehicles() const;
     const std::string &getOutputParamFile() const;
     const std::string &getOutputParamCsv() const;
     const std::string &getOutputOnboards() const;

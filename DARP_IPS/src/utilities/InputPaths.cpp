@@ -59,6 +59,7 @@ const std::string &InputPaths::getOutputEpochResults() const {return output_epoc
 const std::string &InputPaths::getOutputFinalLog() const { return output_finalLog_; }
 const std::string &InputPaths::getOutputFinalRoutes() const { return output_finalRoutes_; }
 const std::string &InputPaths::getOutputFinalRequests() const { return output_finalRequests_; }
+const std::string &InputPaths::getOutputFinalVehicles() const { return output_finalVehicles_; }
 const std::string &InputPaths::getOutputParamFile() const { return output_paramFile_;}
 const std::string &InputPaths::getOutputParamCsv() const {return output_paramCSV_;}const std::string &InputPaths::getOutputOnboards() const { return output_onboards_;}
 const std::string &InputPaths::getOutputWaitRequests() const { return output_waitRequests_;}
@@ -151,6 +152,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_vehDuals_ = outputDir_ + "VehicleDuals" + prefix_ + ".csv";
     output_finalRoutes_ = outputDir_ + "Routes_" + prefix_ + ".csv";
     output_finalRequests_ = outputDir_ + "Requests_" + prefix_ + ".csv";
+    output_finalVehicles_ = outputDir_ + "Vehicles_" + prefix_ + ".csv";
     output_paramFile_ = outputDir_ + "Parameters.txt";
     output_paramCSV_ = outputDir_ + "Parameters_" + prefix_ + ".csv";
     output_incDegree_RDCost_ = outputDir_ + "RouteDegreeCost_" + prefix_ + ".csv";

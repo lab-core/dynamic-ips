@@ -42,6 +42,10 @@ public:
     std::stringstream instRepStr_;                      // save all the results as one record
     std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve sub problem
     std::vector<int> firstSelectedVehicles_;
+    int nbReturn_;
+    int nbIdle_;
+    int nbPotentialIdle_;
+    int nbStateChanged_;
 
 
     // Constructor and Destructor
@@ -91,6 +95,7 @@ public:
     // print solution in csv files
     std::string saveSolutionRoutes();
     std::string saveRequestsResults();
+    std::string saveVehicleResults();
     // save the solution route of the vehicles (current solution of ISUD)
     std::string saveEpochRoutes(int epoch);
 

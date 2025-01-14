@@ -30,10 +30,12 @@ public:
     float latestPickup_;                // latest possible pick up time for the request
     float pickTime_;                    // actual pick up time of the request
     float dropTime_;                    // actual pick up time of the request
-    int nbPassengers_;                  // number of passengers to pick up or drop off
     float serviceTime_;                 // time to perform pick up or drop off
     float minTravelTime_;               // minimum travel time between pickup and drop off location
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
+    float assignTime_;                  // the time that request is assigned and commited to be served
+
+    int nbPassengers_;                  // number of passengers to pick up or drop off
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     float dual_;
