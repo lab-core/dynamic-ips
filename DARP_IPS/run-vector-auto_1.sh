@@ -12,9 +12,9 @@ i=1
 for vehicles in sufficient_manhattan-vehicles-300
 #for vehicles in manhattan-vehicles
 do
-  for mode in 1
+  for mode in 2
   do
-    for algorithm in 2
+    for algorithm in 6
     do
       for directory in Instances_12-14
       do

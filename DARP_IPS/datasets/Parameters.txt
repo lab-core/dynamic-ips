@@ -10,10 +10,10 @@ nbThreads = 16
 InitialDual = 0
 mainAlgorithm = 0
 solutionMode = 2
-NumIter = 40
+NumIter = 1
 GreedyReOptimize = 0
 saveScratch = 1
-vehicleReturn = 1
+vehicleReturn = 0
 timeWindows = 0
 
 # ISUD PARAMETERS
@@ -41,11 +41,11 @@ LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Vehicle_portion = 0
-Dynamic_Pricing = 1
-Partial_Pricing = 0
+Dynamic_Pricing = 0
+Partial_Pricing = 1
 Route_Recycle = 0
 usePick = 1
-nbPick = 4
+nbPick = 2
 sortPath = 0
 sortColumn = 1
 
