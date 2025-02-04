@@ -7,12 +7,48 @@
 
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
+#include "utilities/MyTools.h"
+#include <cmath>
 
 //-----------------------------------------------------------------------------
 //  Contains MIP formulation to solve with Cplex
 //  This is just for testing the results and comparison
 //-----------------------------------------------------------------------------
 
-void MIPSolver(PInstance& PInst, InputPaths &filePaths);
+class MIPSolver {
+public:
+    IloEnv env_;
+    IloModel Model_;
+    IloCplex Cplex_;
+    IloObjective objFunction_;
+    IloRangeArray constraints_;
+
+
+    // Variables
+    IloNumVar3D X_;
+    IloNumVar2D U_;
+    IloNumVar2D W_;
+    IloNumVarArray Z_;
+
+    float objValue_;
+    int nbNodes_;
+    int nbRequests_;
+    int nbVehicles_;
+
+    myTools::Timer *solveTime_;                             // time to solve the model
+    // Solution containers
+    std::vector<PRoute> routeSolution_;
+    std::vector<PRequest> zSolution_;
+
+    MIPSolver();
+
+    virtual ~MIPSolver();
+
+    void initializeModel(PInstance &pInst);
+    void buildModel(PInstance &pInst);
+    void solveModel(PInstance &pInst, InputPaths &inputPaths);
+    void SolveMIP(PInstance &pInst, InputPaths &inputPaths);
+
+};
 
 #endif //_MIPSOLVER_H
