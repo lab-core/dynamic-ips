@@ -11,7 +11,11 @@ module load eigen gcc
 # Define fixed parameters
 vehicles="sufficient_manhattan-vehicles-300"
 directory="Instances_12-14"
-algorithm=6
+
+# Define algorithms for each mode
+declare -A algorithms
+algorithms[1]=2  # Mode 1 -> Algorithm 2
+algorithms[2]=6  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
@@ -28,6 +32,7 @@ declare -a jobs
 i=1
 
 for mode in 2 1; do
+  algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
  #   for instance in "${instances_1000[@]}"; do
