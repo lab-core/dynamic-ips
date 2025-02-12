@@ -30,12 +30,12 @@ NumColumn = 50
 #
 isTruncated = 1
 MaxLabel = 15
-isDominanceReleased = 0
+isDominanceReleased = 1
 isSuccessorsLimited = 0
 pruneNodes = 1
 pruneArcs = 1
 discardSuboptimalPath = 1
-isDropPickPossible = 1
+isDropPickPossible = 0
 SubproSolveStartState = 2
 LabelingStrategy = 1
 subproblemAlgorithm = 1
