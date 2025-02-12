@@ -156,27 +156,27 @@ void DualAuxSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
             Cplex_.getValues(deltaVar_, dVal);
 
             for (auto & requestObj : pInst->requests_) {
-                if (requestObj->dual_ != piVal[requestObj->taskIndex_])
-                    std::cout << requestObj->dual_ << "  :  " << piVal[requestObj->taskIndex_] << std::endl;
+            //    if (requestObj->dual_ != piVal[requestObj->taskIndex_])
+            //        std::cout << requestObj->dual_ << "  :  " << piVal[requestObj->taskIndex_] << std::endl;
                 requestObj->dual_ = piVal[requestObj->taskIndex_];
                 objValue_ += piVal[requestObj->taskIndex_];
             }
             for (auto & vehicleObj : pInst->vehicles_) {
-                if (vehicleObj->dual_ != sigmaVal[vehicleObj->vehicleID_])
-                    std::cout << vehicleObj->dual_ << "  :  " << sigmaVal[vehicleObj->vehicleID_] << std::endl;
+            //    if (vehicleObj->dual_ != sigmaVal[vehicleObj->vehicleID_])
+            //        std::cout << vehicleObj->dual_ << "  :  " << sigmaVal[vehicleObj->vehicleID_] << std::endl;
                 vehicleObj->dual_ = sigmaVal[vehicleObj->vehicleID_];
                 objValue_ += sigmaVal[vehicleObj->vehicleID_];
             }
-            for (int r = 0; r < (int) epsilonVar_.getSize(); ++r) {
-                if (eVal[r] != 0)
-                    std::cout << "epsilon " << r << " : " << eVal[r] << std::endl;
-            }
-            for (int i = 0; i < (int) deltaVar_.getSize(); ++i) {
-                if (dVal[i] != 0)
-                    std::cout << "delta " << i << " : " << dVal[i] << std::endl;
-            }
+            // for (int r = 0; r < (int) epsilonVar_.getSize(); ++r) {
+            //     if (eVal[r] != 0)
+            //         std::cout << "epsilon " << r << " : " << eVal[r] << std::endl;
+            // }
+            // for (int i = 0; i < (int) deltaVar_.getSize(); ++i) {
+            //     if (dVal[i] != 0)
+            //         std::cout << "delta " << i << " : " << dVal[i] << std::endl;
+            // }
         }
-        std::cout << "Dual objective: " << objValue_ << std::endl;
+        // std::cout << "Dual objective: " << objValue_ << std::endl;
 
         Cplex_.clearModel();
 

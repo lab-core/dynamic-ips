@@ -13,11 +13,7 @@ MAIN_DIR="datasets/$DIRECTORY"
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$MAIN_DIR" -mindepth 1 -maxdepth 1 -type d -print | sort))
 
-# Calculate the starting index for the second half
-HALF_COUNT=$(( ${#INSTANCES[@]} / 2 ))
-
-# Run only the second half of the instances
-for ((i=$HALF_COUNT; i<${#INSTANCES[@]}; i++)); do
-  instance_basename=$(basename "${INSTANCES[$i]}")
+for instance in "${INSTANCES[@]}"; do
+  instance_basename=$(basename "$instance")
   "$program" "$map_file" "$DIRECTORY" "$instance_basename" $args "$param_dir"
 done

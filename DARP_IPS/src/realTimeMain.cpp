@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     std::string dataDir = "datasets/";
     std::string vehicleFile = "";
     std::string vehicleFolder = "";
+    std::string paramFile = "";
     int nbLocations = 1718;
 
     std::vector<std::string> instNames;         // vector of instance file names
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
     std::cout << "Number of arguments = " << argc << std::endl;
     int mainAlgo = -1;
     int solMode = -1;
-    if (argc == 6){
+    if (argc == 7){
         std::string instanceNames = "datasets/InstanceNames.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
@@ -42,8 +43,9 @@ int main(int argc, char** argv) {
         numVehicles = std::stoi(argv[3]);
         mainAlgo = std::stoi(argv[4]);
         solMode = std::stoi(argv[5]);
+        paramFile = argv[6];
     }
-    else if (argc == 7){
+    else if (argc == 8){
         vehicleFolder = argv[1];
         instFolder = argv[2];
         instNames.emplace_back(argv[3]);
@@ -53,13 +55,14 @@ int main(int argc, char** argv) {
         numVehicles = std::stoi(argv[4]);
         mainAlgo = std::stoi(argv[5]);
         solMode = std::stoi(argv[6]);
+        paramFile = argv[7];
     }
     else
         myTools::myException::throwError("There should be at least 6 arguments!");
 
     // build the path of input files
     // create output files for epoch results
-    InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder);
+    InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder, paramFile);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::string instName = instNames[0];
     /*if (numEpochTests > 1){

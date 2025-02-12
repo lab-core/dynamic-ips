@@ -110,6 +110,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
+                vehicleID = pInstance->vehicles_.size();
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, zoneID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, zoneID));
                 pInstance->instGraph_->sourceNodes_.back()->reachTime_ = pInstance->simulationStartTime_;
@@ -283,7 +284,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 // attributes for reading trip requests file
                 int nbPassengers = -1;
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, dropZoneID = -1;
-                float earlyPick = -1, deltaTime = -1;
+                float earlyPick = -1, requestTime = -1, deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -294,8 +295,12 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
 
                 // the starting time of the instance is 16pm
                 //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                if (pInstance->parameters_->solutionMode_ == STATIC)
+                    requestTime = 0;
+                else
+                    requestTime = earlyPick;
                 deltaTime = static_cast<float>(ServiceTime);
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, requestTime, earlyPick,
                                                                             nbPassengers, deltaTime, pickZoneID, dropZoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);

@@ -70,9 +70,9 @@ protected:
 public:
 
     // Constructors
-    explicit InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder);
+    explicit InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile);
     InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-               const std::string& vehicleFile, const std::string& vehicleFolder);
+               const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile);
 
     // getters
     const std::string &getInstanceName() const;
