@@ -299,7 +299,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         masterModel_->timeLimit_ = std::max(int(masterModel_->availableTime_), 10);
 
         masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-        masterModel_->setObjValue();
     }
 
     for (auto & routeObj : masterModel_->routeSolution_) {
