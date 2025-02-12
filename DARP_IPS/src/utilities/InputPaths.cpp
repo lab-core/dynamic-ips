@@ -11,20 +11,21 @@
 //  Instances of this class contain the paths of the inputs
 //-----------------------------------------------------------------------------
 
-InputPaths::InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder) : dataDir_(std::move(datadir)){
+InputPaths::InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder,
+    const std::string& paramFile) : dataDir_(std::move(datadir)){
     input_TripData_ = "";
     input_InstanceData_ = "";
     instanceName_ = "";
     instanceDir_ = "";
     input_durationData_ = "";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + "Parameters.txt";
+    input_paramFile_ = dataDir_ + paramFile;
     input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
 }
 
 InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-                       const std::string& vehicleFile, const std::string& vehicleFolder)
+                       const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile)
         : dataDir_(std::move(datadir)), instanceName_(instanceName) {
 
     instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
@@ -34,7 +35,7 @@ InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, cons
     input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
     //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + "Parameters.txt";
+    input_paramFile_ = dataDir_ + paramFile;
     input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
     input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
