@@ -88,47 +88,16 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
             if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->allocVehicleID_ == LARGE_CONSTANT) {
                 possibleDelay.clear();
                 for (auto &GRoute: greedyRouteList_) {
-                    GRoute->idle_ = false;
-                    // if a vehicle is idle before arrival of a request, its departure time should be after the request time
-                    // after arrival of each request, the vehicle positions should be updated
-                    if (GRoute->departureTime_ < PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_) {
-                        while ((GRoute->PCurrentStop_->child_ != nullptr) && (GRoute->departureTime_ <
-                                                                              PInst->requests_[i]->requestTime_ +
-                                                                              PInst->parameters_->committedTime_)) {
-                            GRoute->PCurrentStop_ = GRoute->PCurrentStop_->child_;
-                            GRoute->departureTime_ = GRoute->PCurrentStop_->leaveTime_;
-                        }
-                        // if we are at the end of the route
-                        if (GRoute->departureTime_ <
-                            PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_) {
-                            //                       GRoute->idleTime_ += PInst->requests_[i]->earlyPick_ + PInst->parameters_->committedTime_ - GRoute->departureTime_;
-                            GRoute->departureTime_ =
-                                    PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_;
-                            GRoute->PLastStop_->leaveTime_ =
-                                    PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_;
-                            GRoute->idleTime_ += PInst->requests_[i]->requestTime_ + PInst->parameters_->committedTime_ -
-                                                 GRoute->departureTime_;
-                            GRoute->idle_ = true;
-                        }
-                    }
+
                     GRoute->findInsertPlace(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
                                             positionList_[(*GRoute->Vehicle_)->vehicleID_]);
 
                     possibleDelay.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaDelay_);
-                    /*if (GRoute->idle_) {
-                        GRoute->departureTime_ = GRoute->preDepartTime_;
-                        GRoute->PLastStop_->leaveTime_ = GRoute->preDepartTime_;
-                    }*/
                 }
                 unsigned int vehicle_ID =
                         std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-                /*if (greedyRouteList_[vehicle_ID]->departureTime_ < PInst->requests_[i]->earlyPick_){
-                    // reset departure time
-                    greedyRouteList_[vehicle_ID]->departureTime_ = PInst->requests_[i]->earlyPick_;
-                    greedyRouteList_[vehicle_ID]->PLastStop_->leaveTime_ = PInst->requests_[i]->earlyPick_;
-                    greedyRouteList_[vehicle_ID]->idleTime_ += PInst->requests_[i]->earlyPick_ - greedyRouteList_[vehicle_ID]->departureTime_;
-                }*/
+
                 greedyRouteList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                             PInst->instGraph_->dropNodes_[i],
                                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);

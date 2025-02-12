@@ -10,6 +10,7 @@
 #include "solvers/ComplementPro.h"
 #include "solvers/GreedyModeler.h"
 #include "solvers/MIPMasterProblem.h"
+#include "solvers/DualAuxSolver.h"
 
 //enum selectionMode { NR = 0, RP = 1, CP = 2};
 
@@ -23,6 +24,8 @@ public:
     PComplementPro CompPro_;
     PReducedProblem ReducedPro_;
     PMasterPro MasterPro_;
+    PDualAuxSolver DualAuxSolver_;
+
     vector2D<PRoute> availableRoutes_;
     //   vector2D<int> subProResults_;
     int nbRoutes_;
@@ -65,6 +68,7 @@ public:
     float CPEpochSolveTime_;       // save the total time used to solve CP models
     bool CPBuilt_;                  // check whether CP model is built or not (one time during each iteration CP is built)
     float epochTime_;               // time passed inside one epoch
+    float iterTime_;                // helps in calculating and saving epochTime_;
     float vehicleChange_;
 
     myTools::Timer *masterTime_;
@@ -116,7 +120,7 @@ public:
 
     // These functions are used to solve master problems (CG, MP and RP)
     void solveRP_LPINT(PInstance &pInst, int compDegree, InputPaths &inputPaths);
-    void solveMP_LP(PInstance &pInst, InputPaths &inputPaths);
+    void solveMP_LP(PInstance &pInst, InputPaths &inputPaths, int epoch, float subProTime);
     void solveMP_INT(PInstance &pInst, InputPaths &inputPaths);
 
     // Display function

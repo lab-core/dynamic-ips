@@ -8,7 +8,7 @@
 //  This is just for testing the results and comparison
 //-----------------------------------------------------------------------------
 
-MIPSolver::MIPSolver() : Model_(env_), objFunction_(IloMinimize(env_)), constraints_(env_) {
+MIPSolver::MIPSolver() : Model_(env_), constraints_(env_) {
     solveTime_ = new myTools::Timer(); solveTime_->init();
     objValue_ = 0;
 }
@@ -77,7 +77,7 @@ void MIPSolver::buildModel(PInstance &pInst){
         i = pickNode->related_Request_->taskIndex_;
         objExpr += Z_[i] * pickNode->related_Request_->penalty_;
         for (auto & vehicleObj : pInst->vehicles_) {
-            objExpr += (U_[vehicleObj->vehicleID_][pickNode->xIndex_] - pickNode->readyTime_);
+            objExpr += (U_[vehicleObj->vehicleID_][pickNode->nodeIndex_] - pickNode->readyTime_);
         }
     }
 //    Model_.add(IloMinimize(env_, objExpr));
@@ -89,23 +89,23 @@ void MIPSolver::buildModel(PInstance &pInst){
     // constraints 1b -------------------
     for (auto & pickNode : pInst->instGraph_->pickNodes_) {
         IloExpr expr_1b(env_);
-        i = pickNode->xIndex_;
+        i = pickNode->nodeIndex_;
         expr_1b += Z_[pickNode->related_Request_->taskIndex_];
         for (auto & vehicleObj : pInst->vehicles_) {
 
             // other pick/drop nodes
             for (auto & otherNode : nodes) {
-                if (otherNode->xIndex_ != pickNode->xIndex_)
-                    expr_1b += X_[vehicleObj->vehicleID_][i][otherNode->xIndex_];
+                if (otherNode->nodeIndex_ != pickNode->nodeIndex_)
+                    expr_1b += X_[vehicleObj->vehicleID_][i][otherNode->nodeIndex_];
             }
 
             // vehicle onboards
             for (auto & nodeID : vehicleObj->onboards_) {
-                expr_1b += X_[vehicleObj->vehicleID_][i][pInst->instGraph_->nodes_[nodeID]->xIndex_];
+                expr_1b += X_[vehicleObj->vehicleID_][i][pInst->instGraph_->nodes_[nodeID]->nodeIndex_];
             }
 
             // vehicle sink node
-            expr_1b += X_[vehicleObj->vehicleID_][i][vehicleObj->sinkNode_->xIndex_];
+            expr_1b += X_[vehicleObj->vehicleID_][i][vehicleObj->sinkNode_->nodeIndex_];
         }
         IloRange c_1b = (expr_1b == 1);
         Model_.add(c_1b);
@@ -115,8 +115,8 @@ void MIPSolver::buildModel(PInstance &pInst){
     IloExpr expr_extract(env_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
-        int sourceIndex = vehicleObj->departNode_->xIndex_;
-        int sinkIndex = vehicleObj->sinkNode_->xIndex_;
+        int sourceIndex = vehicleObj->departNode_->nodeIndex_;
+        int sinkIndex = vehicleObj->sinkNode_->nodeIndex_;
 
         v = vehicleObj->vehicleID_;
         std::vector<PNode> nodesWithOnboards = nodes;
@@ -130,11 +130,11 @@ void MIPSolver::buildModel(PInstance &pInst){
         IloExpr expr_1d(env_);
         IloExpr expr_1e(env_);
         for (auto & otherNode : nodesWithOnboards) {
-            expr_1d += X_[v][sourceIndex][otherNode->xIndex_];
-            expr_1e += X_[v][otherNode->xIndex_][sinkIndex];
+            expr_1d += X_[v][sourceIndex][otherNode->nodeIndex_];
+            expr_1e += X_[v][otherNode->nodeIndex_][sinkIndex];
 
-            expr_extract += X_[v][otherNode->xIndex_][sourceIndex];
-            expr_extract += X_[v][sinkIndex][otherNode->xIndex_];
+            expr_extract += X_[v][otherNode->nodeIndex_][sourceIndex];
+            expr_extract += X_[v][sinkIndex][otherNode->nodeIndex_];
         }
         expr_1d += X_[v][sourceIndex][sinkIndex];
         expr_1e += X_[v][sourceIndex][sinkIndex];
@@ -159,12 +159,12 @@ void MIPSolver::buildModel(PInstance &pInst){
 
 
         for (auto & pickNode : pInst->instGraph_->pickNodes_) {
-            i = pickNode->xIndex_;
-            i_n = pickNode->pairNode_->xIndex_;
+            i = pickNode->nodeIndex_;
+            i_n = pickNode->pairNode_->nodeIndex_;
             // constraints 1f -------------------
             IloExpr expr_1f(env_);
             for (auto & otherNode : nodesWithOnboards) {
-                j = otherNode->xIndex_;
+                j = otherNode->nodeIndex_;
                 expr_1f += (X_[v][i][j]  - X_[v][i_n][j]);
             }
             expr_1f +=  (X_[v][i][sinkIndex] - X_[v][i_n][sinkIndex]);
@@ -210,10 +210,10 @@ void MIPSolver::buildModel(PInstance &pInst){
             // constraints 1g -------------------
             IloExpr expr_1g(env_);
             PNode onNode = pInst->instGraph_->nodes_[onboardID];
-            j = onNode->xIndex_;
+            j = onNode->nodeIndex_;
             for (auto & otherNode : nodesWithOnboards) {
-                if (otherNode->xIndex_ != j)
-                    expr_1g += X_[v][otherNode->xIndex_][j];
+                if (otherNode->nodeIndex_ != j)
+                    expr_1g += X_[v][otherNode->nodeIndex_][j];
             }
             expr_1g += X_[v][sourceIndex][j];
             IloRange c_1g = (expr_1g == 1);
@@ -249,10 +249,10 @@ void MIPSolver::buildModel(PInstance &pInst){
 
         // constraints 1c -------------------
         for (auto & node : nodesWithOnboards) {
-            i = node->xIndex_;
+            i = node->nodeIndex_;
             IloExpr expr_1c(env_);
             for (auto & otherNode : nodesWithOnboards) {
-                j = otherNode->xIndex_;
+                j = otherNode->nodeIndex_;
                 if (i != j) {
                     expr_1c += (X_[v][i][j] - X_[v][j][i]);
                 }
@@ -265,7 +265,7 @@ void MIPSolver::buildModel(PInstance &pInst){
 
 
         for (auto & node : allNodes) {
-            i = node->xIndex_;
+            i = node->nodeIndex_;
 
             // constraints 1o -------------------
             IloRange c_1o_1 = (W_[v][i] <= vehicleObj->capacity_);
@@ -277,7 +277,7 @@ void MIPSolver::buildModel(PInstance &pInst){
             constraints_.add(c_1o_2);
 
             for (auto & otherNode : allNodes) {
-                j = otherNode->xIndex_;
+                j = otherNode->nodeIndex_;
                 if (i != j) {
                     // constraints 1h -------------------
                     IloExpr expr_1h(env_);
@@ -406,13 +406,13 @@ void MIPSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
                 newRoute->addSource(vehicleObj->departNode_,vehicleObj->departTime_,
                                     vehicleObj->numPassengers_);
 
-                int currentNodeIndex = vehicleObj->departNode_->xIndex_;
+                int currentNodeIndex = vehicleObj->departNode_->nodeIndex_;
 
-                while (currentNodeIndex != vehicleObj->sinkNode_->xIndex_) {
+                while (currentNodeIndex != vehicleObj->sinkNode_->nodeIndex_) {
                     for (int i = 0; i < nbNodes_; ++i) {
                         if (xVal[currentNodeIndex][i] > 0.5) {
                             PNode nodeSelected = pInst->instGraph_->nodes_[getNode(pInst, v,i, nbRequests_)];
-                            if (nodeSelected->xIndex_ != vehicleObj->sinkNode_->xIndex_)
+                            if (nodeSelected->nodeIndex_ != vehicleObj->sinkNode_->nodeIndex_)
                                 newRoute->addNode(nodeSelected);
                             currentNodeIndex = i;
                             break;

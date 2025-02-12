@@ -63,8 +63,6 @@ public:
     std::vector<PNode> sourceNodes_;        // list of source nodes (vehicle start nodes)
     std::vector<PNode> sinkNodes_;          // list of sink nodes (vehicle end nodes)
     std::unordered_map<std::string,PNode> nodes_;     // map of node objects to nodeIDs
-    std::vector<std::string> intToNodeID_;  // link of nodeIndex_ to nodeID_ used in CPLEXSubProblem / MIPSolver
-
 
     // Constructor and Destructor
     Graph();

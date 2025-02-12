@@ -20,7 +20,6 @@ public:
     IloEnv env_;
     IloModel Model_;
     IloCplex Cplex_;
-    IloObjective objFunction_;
     IloRangeArray constraints_;
 
 

@@ -58,6 +58,9 @@ endif()
 set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
+# Threads for portability
+find_package(Threads REQUIRED)
+
 ######## Compiler message
 #set(CMAKE_BUILD_TYPE Release)
 message(STATUS "System: ${CMAKE_SYSTEM}")
@@ -78,4 +81,4 @@ add_subdirectory(src)
 
 
 add_executable(realtime_DARP src/realTimeMain.cpp)
-target_link_libraries(realtime_DARP ${DARP_IPS_LIB} ${LIBS})
+target_link_libraries(realtime_DARP ${DARP_IPS_LIB} ${LIBS} Threads::Threads)

@@ -20,14 +20,15 @@ public:
     // defining objects on the CPLEX model
     IloEnv env_;
     IloModel SubProModel_;
-    IloCplex SubProbCplex_;
+    IloCplex Cplex_;
 
-    IloNumVar2D X;
-    IloNumVarArray U;
-    IloNumVarArray W;
+    IloNumVar2D X_;
+    IloNumVarArray U_;
+    IloNumVarArray W_;
 
     PGraph subGraph_;
-
+    int nbNodes_;
+    int nbRequests_;
 
     // Constructor and Destructor
     explicit CPLEXSubProblem(PVehicle &vehicle);
@@ -35,11 +36,9 @@ public:
     ~CPLEXSubProblem() override;
 
     // Build and solve the subProblem with CPLEX
-    void BuildModelCPLEX(int maxPickUp);
-    void SolveCPLEX();
-
-    // function to convert solution to routes and save them in vehicle object
-    void SolutionToRoutes(std::vector<PRoute> &availableRoutes);
+    void initializeModel(PInstance &pInst);
+    void buildModel(PInstance &pInst);
+    void solveModel(PInstance &pInst, std::vector<PRoute> &availableRoutess);
 
     // Display function
     std::string toString() const;

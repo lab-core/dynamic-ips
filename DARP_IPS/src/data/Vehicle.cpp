@@ -32,7 +32,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, P
     idle_ = true;
     numPickup_ = 1;
     stateChanged_ = false;
-    preSolvePick_ = 1;
+    preSolvePick_ = 2;
 }
 
 Vehicle::~Vehicle() = default;
@@ -195,7 +195,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
     else
         committedTime = mainInst->parameters_->epochLength_;
     stateChanged_ = false;
-    if (mainInst->parameters_->vehicleReturn_ && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime - committedTime
+    /*if (mainInst->parameters_->vehicleReturn_ && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime - committedTime
     && currentRoute_->routeSize_ == 1){
         if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
             idleTime_ += (elapsedTime + committedTime - departTime_);
@@ -205,7 +205,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
             currentRoute_->addSink(sinkNode_);
             mainInst->nbReturn_++;
         }
-    }
+    }*/
     if (currentRoute_->routeSize_ > 1) {
         if (currentRoute_->routeRequests_.size() != 1 || preSolvePick_ != 1) {
             idle_ = false;
@@ -224,6 +224,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                     if (currentRoute_->routeNodes_[i]->initialType_ == SINK) {
                         returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
                         sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
+                        mainInst->nbReturn_++;
                     }
                     else {
                         serviceTime_ += currentRoute_->routeNodes_[i]->serviceTime_;

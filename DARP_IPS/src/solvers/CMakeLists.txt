@@ -2,7 +2,6 @@ set(LIB_NAME solvers)
 set(SOURCE_FILES
         MIPSolver.cpp
         MasterAlgorithm.cpp
-        CPLEXSubProblem.cpp
         ReducedProblem.cpp
         ComplementPro.cpp
         CplexModeler.cpp
@@ -10,7 +9,8 @@ set(SOURCE_FILES
         SubproModeler.cpp
         GreedyModeler.cpp
         solver.cpp
-        MIPMasterProblem.cpp)
+        MIPMasterProblem.cpp
+        DualAuxSolver.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})

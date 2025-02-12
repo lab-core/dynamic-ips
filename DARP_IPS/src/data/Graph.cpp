@@ -32,7 +32,6 @@ Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationI
         nodeID_ = myTools::createSourceID(vehicleID, SOURCE);
     else if (type == SINK)
         nodeID_ = myTools::createSourceID(vehicleID, SINK);
-    nodeIndex_ = -1;
 }
 
 Node::Node(const PNode &oldNode) {
@@ -50,7 +49,6 @@ Node::Node(const PNode &oldNode) {
     nbActiveLabels_ = 0;
     travelTimeFromSource_ = 0;
     bestLabelReduceCost_ = INFINITY;
-    nodeIndex_ = -1;
     pairNode_ = nullptr;
     zoneID_ = oldNode->zoneID_;
 }
@@ -77,7 +75,6 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
     nbActiveLabels_ = 0;
     travelTimeFromSource_ = 0;
     bestLabelReduceCost_ = INFINITY;
-    nodeIndex_ = -1;
     zoneID_ = -1;
 }
 
@@ -101,8 +98,6 @@ Graph::Graph(PNode &source, PNode &sink) {
 // function for adding node to graph
 void Graph::addNewNode(const PNode &node) {
     nodes_.emplace(std::pair<std::string, PNode> (node->nodeID_, node));
-    node->nodeIndex_ = nbNodes_;
-    intToNodeID_.push_back(node->nodeID_);
     nbNodes_++;
     switch(node->type_) {
         case SOURCE :

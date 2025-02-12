@@ -6,6 +6,7 @@
 #define DARP_IPS_REDUCEDPROBLEM_H
 
 #include "solvers/CplexModeler.h"
+#include "solvers/DualAuxSolver.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -41,7 +42,7 @@ public:
     void addZVar(PRequest &request);
 
     // this function add one route at each iteration of the algorithm during one epoch
-    void updateModel(PInstance &pInst, std::vector<PRequest> &fractionalZ);
+    void updateModel(PInstance &pInst);
 
     // this function build the model at the start of each epoch
     void buildModel(PInstance &pInst, std::vector<PRoute> &routeSolution,
@@ -56,13 +57,14 @@ public:
                          InputPaths &inputPaths, float availableTime, float preObj);
 
 
-    void solveModelIntAux(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+    void solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                           InputPaths &inputPaths, float availableTime, float preObj);
+
+    void solveModelIntAux_D(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                       InputPaths &inputPaths, float availableTime, float preObj, PDualAuxSolver &DualAuxSolver_);
 
     // Display function
     std::string toString() const override;
-    void restartRP();
-
 };
 
 

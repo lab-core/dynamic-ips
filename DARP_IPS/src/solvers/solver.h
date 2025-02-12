@@ -51,6 +51,7 @@ public:
     myTools::SharedVector<PLabel> labelsPool_;
 
     std::shared_ptr<MasterAlgorithm> masterModel_;
+    std::shared_ptr<MIPSolver> MIPModel_;
     PGreedyModeler GreedyModel_;
     PSolverOption subProOptions_;
 

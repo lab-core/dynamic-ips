@@ -220,10 +220,7 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
         Cplex_ = IloCplex(Model_);
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        logFile << "----------------------- CP ------------------------"<< std::endl;
-        std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "CP");
         solveTime_->start();
         if (!Cplex_.solve()) {
             Cplex_.clearModel();
@@ -360,8 +357,6 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                 status_ = POSITIVE_VALUE;
             }
         }
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;
@@ -376,10 +371,7 @@ void ComplementPro::solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolu
         Cplex_ = IloCplex(Model_);
 //        env_.out() << Model_ << std::endl;
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        logFile << "----------------------- CP ------------------------"<< std::endl;
-        std::streambuf* coutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(logFile.rdbuf());
+        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "CP");
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -496,8 +488,6 @@ void ComplementPro::solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolu
                 status_ = POSITIVE_VALUE;
             }
         }
-        std::cout.rdbuf(coutBuffer);
-        logFile.close();
     }
     catch (IloException& e) {
         std::cout << "Error occurred at line: " << __LINE__ << std::endl;

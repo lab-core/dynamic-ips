@@ -110,7 +110,9 @@ public:
     std::string saveVehDuals(int epoch, int isudIter, const string& model);
     void selectSubProVehicles();
     void resetAssignedVehicles();
+    void setNodeIndices();
 };
 
-
+int getIndex(const PNode& node, int id, int nbPairs);
+std::string getNode(const PInstance& pInst, int vehicleID, int index, int nbPairs);
 #endif //INSTANCE_H

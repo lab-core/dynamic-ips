@@ -54,6 +54,8 @@ class ReducedProblem;
 typedef std::shared_ptr<ReducedProblem> PReducedProblem;
 class ComplementPro;
 typedef std::shared_ptr<ComplementPro> PComplementPro;
+class DualAuxSolver;
+typedef std::shared_ptr<DualAuxSolver> PDualAuxSolver;
 class Label;
 typedef std::shared_ptr<Label> PLabel;
 struct Parameters;
@@ -82,7 +84,7 @@ enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
 enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, RT_CG = 2, MP_ISUD = 3, MP_MIP = 4, MP_CP = 5, A_CG = 6};
 enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2, IP_SOLUTION = 3};
-enum InitialDual {LAST_CP = 0, PENALTIES = 1};
+enum InitialDual {PENALTIES = 0, LMP = 1, AUX_D = 2, AUX_P = 3};
 enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 , COMMITTED = 3};
 enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3, SCORE = 4};
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};
@@ -134,10 +136,10 @@ static const std::vector<std::string> solutionModeName = {
         "ANYTIME"};
 
 static const std::vector<std::string> InitialDualName = {
-        "LAST_SOl",
         "PENALTY",
-        "ONE_REQUEST",
-        "ONE_LABELING"};
+        "LINEAR_LP",
+        "AUX_DUAL",
+        "AUX_MP"};
 
 static const std::vector<std::string> SubProSolveStartName = {
         "NOT_RESTRICTED     ",
@@ -174,6 +176,20 @@ typedef IloArray<IloNumVarArray> IloNumVar2D;		// 2-dim array of variables
 typedef IloArray<IloNumVar2D> IloNumVar3D;          // 3-dim array of variables
 typedef IloArray<IloNumArray> IloNum2D;		        // 2-dim array of variables
 
+// Function template to concatenate two vectors of the same type
+template <typename T>
+std::vector<T> concatenateVectors(const std::vector<T>& vec1, const std::vector<T>& vec2) {
+    std::vector<T> result;
+    result.reserve(vec1.size() + vec2.size()); // Reserve memory to optimize performance
+
+    // Insert elements from the first vector
+    result.insert(result.end(), vec1.begin(), vec1.end());
+
+    // Insert elements from the second vector
+    result.insert(result.end(), vec2.begin(), vec2.end());
+
+    return result;
+}
 
 namespace myTools {
     // class for defining exception errors
@@ -340,6 +356,23 @@ namespace myTools {
         void clear() {
             shared_vector.clear();  // Clears the internal vector
         }
+    };
+
+    // Define a RAII guard to manage std::cout redirection
+    class CoutRedirector {
+    public:
+        CoutRedirector(const std::string &logFilePath, std::string model)
+            : logFile_(logFilePath, std::ofstream::app),
+              originalBuffer_(std::cout.rdbuf()) {
+            logFile_ << "----------------------- " << model << " ------------------------" << std::endl;
+            std::cout.rdbuf(logFile_.rdbuf());
+        }
+        ~CoutRedirector() {
+            std::cout.rdbuf(originalBuffer_);
+        }
+    private:
+        std::ofstream logFile_;
+        std::streambuf *originalBuffer_;
     };
 
 

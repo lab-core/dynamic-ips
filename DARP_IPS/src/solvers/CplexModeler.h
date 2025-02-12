@@ -68,14 +68,15 @@ public:
     // this function adds routeVar to the model
     void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
     void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
+    void setParameters(PInstance &pInst, float availableTime);
 
 };
 
 // function to create IloNumArray with identical elements
 static void createIloNumArray (IloNumArray& numArray, unsigned int size, int elementValue) {
-    numArray.clear();
+    numArray.setSize(size);
     for (int i = 0; i < size; ++i) {
-        numArray.add(elementValue);
+        numArray[i] = elementValue;
     }
 }
 

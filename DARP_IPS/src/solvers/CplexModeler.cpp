@@ -7,6 +7,7 @@
 // Constructor and Destructor
 CplexModeler::CplexModeler() {
     Model_ = IloModel(env_);
+    Cplex_ = IloCplex(Model_);
     objFunction_ = IloMinimize(env_);
 //    Model_.add(objFunction_);
 
@@ -57,15 +58,9 @@ std::string CplexModeler::toString() const {
 
 // function to create pattern from routes
 void CplexModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
-    if (sign == POSITIVE) {
-        for (auto & requestObj : route->routeRequests_) {
-            pattern[requestObj->taskIndex_] = 1;
-        }
-    }
-    else if (sign == NEGATIVE) {
-        for (auto & requestObj : route->routeRequests_) {
-            pattern[requestObj->taskIndex_] = -1;
-        }
+    int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+    for (auto & requestObj : route->routeRequests_) {
+        pattern[requestObj->taskIndex_] = signMultiplier;
     }
 }
 
@@ -73,16 +68,16 @@ void CplexModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign si
 void CplexModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
 
     try {
-        IloNumColumn numVar;
-        if (sign == POSITIVE)
-            numVar = objFunction_(request->penalty_) + requestConst_[request->taskIndex_](1);
-        else
-            numVar = objFunction_(-request->penalty_) + requestConst_[request->taskIndex_](-1);
-        zVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
-        zVar[zVar.getSize()-1].setName(request->name_);
+        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        IloNumColumn numVar = objFunction_(signMultiplier * request->penalty_) +
+                              requestConst_[request->taskIndex_](signMultiplier);
+
+        IloNumVar newVar(numVar, 0, IloInfinity, ILOINT);
+        newVar.setName(request->name_);
+        zVar.add(newVar);
     }
-    catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+    catch (const IloException& e) {
+        std::cerr << "Error in CplexModeler::addZVarInt at line " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -90,16 +85,15 @@ void CplexModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign s
 void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
 
     try {
-        IloNumColumn numVar;
-        if (sign == POSITIVE)
-            numVar = objFunction_(request->penalty_) + requestConst_[request->taskIndex_](1);
-        else
-            numVar = objFunction_(-request->penalty_) + requestConst_[request->taskIndex_](-1);
-        zVar.add(IloNumVar(numVar));
-        zVar[zVar.getSize()-1].setName(request->name_);
+        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        IloNumColumn numVar = objFunction_(signMultiplier * request->penalty_) +
+                              requestConst_[request->taskIndex_](signMultiplier);
+        IloNumVar newVar(numVar, 0, IloInfinity, ILOFLOAT);
+        newVar.setName(request->name_);
+        zVar.add(newVar);
     }
-    catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+    catch (const IloException& e) {
+        std::cerr << "Error in CplexModeler::addZVarFloat at line " << __LINE__ << std::endl;
         std::cout << e << std::endl;
     }
 }
@@ -107,38 +101,54 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign
 
 // this function adds routeVar to the model
 void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
-    IloNumArray columnVar(env_, nbRequestTask_);
-    createPattern(columnVar, newRoute, sign);
-    IloNumColumn numVar;
-    if (sign == POSITIVE) {
-        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](1);
+    try {
+        IloNumArray columnVar(env_, nbRequestTask_);
+        createPattern(columnVar, newRoute, sign);
+        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->totalDelay_) + requestConst_(columnVar)
+                     + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](signMultiplier);
+
+        routeVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
+        routeVar[routeVar.getSize()-1].setName(newRoute->name_);
     }
-    else {
-        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](-1);
+    catch (const IloException& e) {
+        std::cerr << "Error in CplexModeler::addRouteVarInt at line " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
     }
-    routeVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
- //   numVar.setName(newRoute->name_);
-    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
 }
 
 // this function adds routeVar to the model
 void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
-    IloNumArray columnVar(env_, nbRequestTask_);
-    createPattern(columnVar, newRoute, sign);
-    IloNumColumn numVar;
-    if (sign == POSITIVE) {
-        numVar = objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](1);
-    }
-    else {
-        numVar = objFunction_(-newRoute->totalDelay_) + requestConst_(columnVar)
-                 + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](-1);
+    try {
+        IloNumArray columnVar(env_, nbRequestTask_);
+        createPattern(columnVar, newRoute, sign);
+        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->totalDelay_) + requestConst_(columnVar)
+                     + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](signMultiplier);
 
+        routeVar.add(IloNumVar(numVar, 0,IloInfinity,ILOFLOAT));
+        routeVar[routeVar.getSize()-1].setName(newRoute->name_);
     }
-    routeVar.add(IloNumVar(numVar));
-    routeVar[routeVar.getSize()-1].setName(newRoute->name_);
+    catch (const IloException& e) {
+        std::cerr << "Error in CplexModeler::addRouteVarFloat at line " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+void CplexModeler::setParameters(PInstance &pInst, float availableTime) {
+    Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+    Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+    Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+    if (pInst->parameters_->MIPGap_ > 0.0001)
+        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+    Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+
+    /*Cplex_.setParam(IloCplex::Param::MIP::Strategy::NodeSelect, 1);  // Best-bound search
+    Cplex_.setParam(IloCplex::Param::MIP::Cuts::Cliques, 0);         // Aggressive cliques
+    Cplex_.setParam(IloCplex::Param::MIP::Cuts::Covers, 0);          // Aggressive covers
+    Cplex_.setParam(IloCplex::Param::MIP::Cuts::FlowCovers, 0);      // Aggressive flow covers
+    Cplex_.setParam(IloCplex::Param::MIP::Cuts::Gomory, 2);
+    Cplex_.setParam(IloCplex::Param::MIP::Cuts::ZeroHalfCut, 2);*/
 }
 
 // this function initialized the model
@@ -147,7 +157,6 @@ void CplexModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
     nbRequestTask_ = pInst->nbTasks_;
 
     // define and add objective
-
     createIloNumArray (requestRHS_, nbRequestTask_, rhs);
     createIloNumArray (vehicleRHS_, nbVehicles, rhs);
 

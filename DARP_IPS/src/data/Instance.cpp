@@ -65,7 +65,6 @@ void Instance::resetInstance() {
     nbTasks_ = 0;
     instGraph_->nodes_.clear();
     instGraph_->nbNodes_ = 0;
-    instGraph_->intToNodeID_.clear();
     instGraph_->pickNodes_.clear();
     instGraph_->dropNodes_.clear();
     instGraph_->sourceNodes_.clear();
@@ -203,6 +202,7 @@ std::string Instance::solutionToString() {
             totalCustomers += requests_[i]->nbPassengers_;
         }
         else {
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
@@ -373,8 +373,6 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
                                 std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
                                                               vehicleObj->currentRoute_->routeNodes_[i]));
                         instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                        vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
-                        instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
                         instGraph_->nbNodes_++;
                     }
                 }
@@ -428,6 +426,16 @@ void Instance::buildPartialData(const PInstance &mainInst, std::vector<PRequest>
 }
 
 void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
+    nbReturn_ = mainInst->nbReturn_;
+    nbIdle_ = mainInst->nbIdle_;
+    nbPotentialIdle_ = mainInst->nbPotentialIdle_;
+    nbStateChanged_ = mainInst->nbStateChanged_;
+
+    mainInst->nbReturn_ = 0;
+    mainInst->nbIdle_ = 0;
+    mainInst->nbPotentialIdle_ = 0;
+    mainInst->nbStateChanged_ = 0;
+
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(vehicleObj->sinkNode_);
@@ -436,7 +444,8 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     }
     nbNewRequests_ = 0;
 
-    if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
+
+//    if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
         // add unperformed requests
         for (auto &vehicleObj: mainInst->vehicles_) {
             if (vehicleObj->currentRoute_->routeSize_ > 1) {
@@ -454,14 +463,12 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
                                 std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
                                                               vehicleObj->currentRoute_->routeNodes_[i]));
                         instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                        vehicleObj->currentRoute_->routeNodes_[i]->nodeIndex_ = instGraph_->nbNodes_;
-                        instGraph_->intToNodeID_.push_back(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_);
                         instGraph_->nbNodes_++;
                     }
                 }
             }
         }
-    }
+//    }
 
     // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
@@ -500,17 +507,26 @@ void Instance::setInitialTimes() {
     // if the vehicles start from the source depart time is after the first epoch
     if (parameters_->solutionMode_ == DYNAMIC){
         for (auto & vehicleObj : vehicles_){
-            if (vehicleObj->onboards_.empty() && vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->epochLength_))
-                vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
+            if (vehicleObj->onboards_.empty()) {
+                if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
+                    if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->epochLength_)) {
+                        vehicleObj->idle_ = true;
+                        vehicleObj->idleTime_ += (static_cast<float>(parameters_->epochLength_));
+                        vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
+                    }
+                }
+            }
         }
     }
     else if (parameters_->solutionMode_ == ANYTIME){
         for (auto & vehicleObj : vehicles_){
             if (vehicleObj->onboards_.empty()){
                 if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
-                    vehicleObj->idle_ = true;
-                    vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
-                    vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
+                    if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->committedTime_)) {
+                        vehicleObj->idle_ = true;
+                        vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
+                        vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
+                    }
                 }
             }
         }
@@ -1003,4 +1019,58 @@ void Instance::selectSubProVehicles() {
 void Instance::resetAssignedVehicles() {
     for (auto & requestObj : requests_)
         requestObj->solVehicleID_ = LARGE_CONSTANT;
+}
+
+void Instance::setNodeIndices() {
+    for (int i = 0; i < instGraph_->pickNodes_.size(); ++i) {
+        PNode nodeObj = instGraph_->pickNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, instGraph_->pickNodes_.size());
+    }
+    for (int i = 0; i < instGraph_->dropNodes_.size(); ++i) {
+        PNode nodeObj = instGraph_->dropNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, instGraph_->dropNodes_.size());
+    }
+
+    for (auto & vehicleObj : vehicles_){
+        vehicleObj->departNode_->nodeIndex_ = getIndex(vehicleObj->departNode_, 0, vehicleObj->onboards_.size());
+        vehicleObj->sinkNode_->nodeIndex_ = getIndex(vehicleObj->sinkNode_, 0, vehicleObj->onboards_.size());
+        for (int i = 0; i < vehicleObj->onboards_.size(); ++i) {
+            PNode nodeObj = instGraph_->nodes_[ vehicleObj->onboards_[i]];
+            nodeObj->nodeIndex_ = getIndex(nodeObj, i, instGraph_->dropNodes_.size());
+        }
+    }
+}
+
+// Function to get index based on node type and identifier
+int getIndex(const PNode& node, int id, int nbPairs) {
+    if (node->type_ == SOURCE) {
+        return 0;
+    } else if (node->type_ == SINK) {
+        return 1;
+    } else if (node->type_ == PICKUP) {
+        return 2 + id;
+    } else if (node->type_ == DROPOFF && node->nodeStatus_ != PLANNED) {
+        return 2 + nbPairs + id;
+    } else if (node->type_ == DROPOFF && node->nodeStatus_ == PLANNED) {
+        return 2 + 2 * nbPairs + id;
+    } else {
+        throw std::invalid_argument("Unknown node type");
+    }
+}
+
+// Function to get node information based on index
+std::string getNode(const PInstance& pInst, int vehicleID, int index, int nbPairs) {
+    if (index == 0) {
+        return pInst->vehicles_[vehicleID]->departNode_->nodeID_;
+    } else if (index == 1) {
+        return pInst->vehicles_[vehicleID]->sinkNode_->nodeID_;
+    } else if (index >= 2 && index < 2 + nbPairs) {
+        return pInst->instGraph_->pickNodes_[index - 2]->nodeID_;
+    } else if (index >= 2 + nbPairs && index < 2 + 2 * nbPairs) {
+        return pInst->instGraph_->dropNodes_[index - 2 - nbPairs]->nodeID_;
+    } else if (index >= 2 + 2 * nbPairs) {
+        return pInst->instGraph_->nodes_[pInst->vehicles_[vehicleID]->onboards_[index - (2 + 2 * nbPairs)]]->nodeID_;
+    } else {
+        throw std::invalid_argument("Invalid index");
+    }
 }
