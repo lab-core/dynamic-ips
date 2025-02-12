@@ -6,14 +6,14 @@ deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
-nbThreads = 8
-InitialDual = 2
+nbThreads = 16
+InitialDual = 1
 mainAlgorithm = 0
 solutionMode = 2
 NumIter = 1
 GreedyReOptimize = 0
-saveScratch = 0
-vehicleReturn = 0
+saveScratch = 1
+vehicleReturn = 1
 timeWindows = 0
 
 # ISUD PARAMETERS

@@ -15,9 +15,8 @@ algorithm=6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="Param_mode_1.txt"
-param_files[2]="Param_mode_2.txt"
-param_files[3]="Param_mode_3.txt"
+param_files[1]="Param_mode_1a.txt Param_mode_1b.txt"  # Mode 1 has two parameter files
+param_files[2]="Param_mode_2a.txt Param_mode_2b.txt Param_mode_2c.txt"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
 instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
@@ -28,20 +27,21 @@ instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 declare -a jobs
 i=1
 
-for mode in 2 1; do
-  param_dir=${param_files[$mode]}  # Select the correct parameter file
+for mode in 2; do
+  for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
-  for instance in "${instances_1000[@]}"; do
-    jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir"
-    ((i++))
-  done
-  for instance in "${instances_1100[@]}"; do
-    jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir"
-    ((i++))
-  done
-  for instance in "${instances_1400[@]}"; do
-    jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir"
-    ((i++))
+    for instance in "${instances_1000[@]}"; do
+      jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir"
+      ((i++))
+    done
+    for instance in "${instances_1100[@]}"; do
+      jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir"
+      ((i++))
+    done
+    for instance in "${instances_1400[@]}"; do
+      jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir"
+      ((i++))
+    done
   done
 done
 
