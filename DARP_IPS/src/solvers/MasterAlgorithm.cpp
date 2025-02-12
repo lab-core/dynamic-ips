@@ -955,7 +955,7 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths, int e
             break;
 
         updateReducedCosts(pInst);
-        if (minReducedCost_ >= 0)
+        if (minReducedCost_ >= -0.1)
             break;
     }
 }
@@ -1062,7 +1062,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, PInstance &pIn
                     }
                     break;
                 default: // CG and MIP:
-                    if (!routeObj->mpAdded_ && routeObj->reducedCost_ < 0) {
+                    if (!routeObj->mpAdded_ && routeObj->reducedCost_ < -0.1) {
                         MasterPro_->routesToAdd_.push_back(routeObj);
                         numAdded++;
                     }
