@@ -325,14 +325,16 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - mainInst->parameters_->epochLength_;
 
     // Return Idle Vehicles
-    for (auto &vehicleObj: EpochInst->vehicles_){
-        if (EpochInst->parameters_->vehicleReturn_ && vehicleObj->currentRoute_->routeSize_ == 1 &&
-            vehicleObj->currentRoute_->plannedReachTime_[0]+ vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch){
-            if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
-                vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
-                if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                    vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
-            }
+    if (EpochInst->parameters_->vehicleReturn_) {
+        for (auto &vehicleObj: EpochInst->vehicles_){
+            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch){
+                if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
+                    vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
+                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                }
+                }
         }
     }
 

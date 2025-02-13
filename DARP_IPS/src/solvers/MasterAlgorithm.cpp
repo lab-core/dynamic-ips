@@ -865,6 +865,7 @@ void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPa
 
 void MasterAlgorithm::solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
+    setObjValue();
     previousObj_ = objValue_;
 
     /************************************************************************************************/
