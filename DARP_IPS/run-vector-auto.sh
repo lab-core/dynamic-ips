@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=2:15:00
-#SBATCH --array=1-96
+#SBATCH --array=1-48
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -38,7 +38,7 @@ num_vehicles_list=(1500)
 declare -a jobs
 i=1
 
-for mode in 1 2; do
+for mode in 2; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for instance_path in "${INSTANCES[@]}"; do
     instance=$(basename "$instance_path")
