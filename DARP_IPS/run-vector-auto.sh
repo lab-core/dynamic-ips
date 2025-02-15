@@ -44,11 +44,11 @@ for mode in 1 2; do
     instance=$(basename "$instance_path")
 
     param_dir=${param_files[$mode]}
-    jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir"
+    jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
     ((i++))
 
     param_dir=${param_files[$((mode+2))]}
-    jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir"
+    jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir 1"
     ((i++))
   done
 done

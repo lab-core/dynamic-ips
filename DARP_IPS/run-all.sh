@@ -15,5 +15,5 @@ INSTANCES=($(find "./$MAIN_DIR" -mindepth 1 -maxdepth 1 -type d -print | sort))
 
 for instance in "${INSTANCES[@]}"; do
   instance_basename=$(basename "$instance")
-  "$program" "$map_file" "$DIRECTORY" "$instance_basename" $args "$param_dir"
+  "$program" "$map_file" "$DIRECTORY" "$instance_basename" $args "$param_dir 0"
 done

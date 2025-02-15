@@ -36,15 +36,15 @@ for mode in 2; do
   for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
     for instance in "${instances_1000[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir"
+      jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir 1"
       ((i++))
     done
     for instance in "${instances_1100[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir"
+      jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir 1"
       ((i++))
     done
     for instance in "${instances_1400[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir"
+      jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir 1"
       ((i++))
     done
   done

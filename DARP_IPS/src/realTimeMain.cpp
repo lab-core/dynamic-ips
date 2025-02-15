@@ -17,6 +17,7 @@ bool savePartial = false ;
 std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
+int saveScratch = 0;
 bool solveEpoch = false;
 
 int main(int argc, char** argv) {
@@ -32,7 +33,7 @@ int main(int argc, char** argv) {
     std::cout << "Number of arguments = " << argc << std::endl;
     int mainAlgo = -1;
     int solMode = -1;
-    if (argc == 7){
+    if (argc == 8){
         std::string instanceNames = "datasets/InstanceNames.txt";
         ReadWrite::readInstNames(instanceNames, instNames , 24, "_07-120m");
         std::cout << "24 Instance read!! " << std::endl;
@@ -44,8 +45,9 @@ int main(int argc, char** argv) {
         mainAlgo = std::stoi(argv[4]);
         solMode = std::stoi(argv[5]);
         paramFile = argv[6];
+        saveScratch = std::stoi(argv[7]);
     }
-    else if (argc == 8){
+    else if (argc == 9){
         vehicleFolder = argv[1];
         instFolder = argv[2];
         instNames.emplace_back(argv[3]);
@@ -56,6 +58,7 @@ int main(int argc, char** argv) {
         mainAlgo = std::stoi(argv[5]);
         solMode = std::stoi(argv[6]);
         paramFile = argv[7];
+        saveScratch = std::stoi(argv[8]);
     }
     else
         myTools::myException::throwError("There should be at least 6 arguments!");
@@ -85,6 +88,7 @@ int main(int argc, char** argv) {
                 if (!solveEpoch)
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
+                mainInst->parameters_->saveScratch_ = saveScratch;
 
                 /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                 mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
