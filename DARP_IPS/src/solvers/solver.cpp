@@ -123,9 +123,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
 
     while (true) {
-        int idleCounter = 0;
-        int Return = 0;
-        int returnIdle = 0;
         nbOnePick_ = 0;
         nbTwoPick_ = 0;
         nbThreePick_ = 0;
@@ -165,13 +162,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                         nbTwoPick_ ++;
                     }
                     else {
-                        if (vehicleObj->currentRoute_->routeSize_ == 1) {
-                            idleCounter++;
-                            if (vehicleObj->currentRoute_->routeNodes_.back()->initialType_ == SINK)
-                                returnIdle++;
-                        }
-                        if (vehicleObj->currentRoute_->routeNodes_.back()->initialType_ == SINK)
-                            Return++;
                         vehicleObj->numPickup_ = 1;
                         nbOnePick_ ++;
                     }
@@ -328,13 +318,13 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     if (EpochInst->parameters_->vehicleReturn_) {
         for (auto &vehicleObj: EpochInst->vehicles_){
             if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch){
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
                 if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
                     vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
                     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                         vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
                 }
-                }
+            }
         }
     }
 
