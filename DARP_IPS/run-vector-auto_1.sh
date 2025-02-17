@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:40:00
-#SBATCH --array=1-27
+#SBATCH --array=1-36
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -20,7 +20,7 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 # Define parameter files for each mode
 declare -A param_files
 param_files[1]="Param_mode_1a.txt"  # Mode 1 has two parameter files
-param_files[2]="Param_mode_2a.txt Param_mode_2b.txt Param_mode_2c.txt"  # Mode 2 has three parameter files
+param_files[2]="Param_mode_2a.txt Param_mode_2b.txt Param_mode_2c.txt Param_mode_2d.txt"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
 instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
