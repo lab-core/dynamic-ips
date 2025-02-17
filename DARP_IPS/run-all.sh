@@ -3,11 +3,11 @@
 # Define constants for command parameters
 program="bin/realtime_DARP"
 map_file="sufficient_manhattan-vehicles-300"
-instance_dir="Instances_12-14_Last"
+instance_dir="Instances_12-14"
 args="1500 6 1"
 param_dir="Parameters.txt"
 
-DIRECTORY="Instances_12-14_Last"
+DIRECTORY="Instances_12-14"
 MAIN_DIR="datasets/$DIRECTORY"
 
 # List of instances based on the previous grouping approach
