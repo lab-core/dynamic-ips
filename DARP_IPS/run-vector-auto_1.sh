@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=8G
+#SBATCH --mem=16G
 #SBATCH --time=2:40:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
@@ -31,7 +31,7 @@ instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 declare -a jobs
 i=1
 
-for mode in 2; do
+for mode in 1; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
