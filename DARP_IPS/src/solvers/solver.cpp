@@ -166,15 +166,18 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                         nbOnePick_ ++;
                     }
                     subProSolve.back()->maxPickup_= vehicleObj->numPickup_;
-                    vehicleObj->preSolvePick_ = subProSolve.back()->maxPickup_;
                 }
                 else if (EpochInst->parameters_->dynamicPricing_) {
                     subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
+                    // if (iter >= 5) {
+                    //     subProSolve.back()->solverOptions_->isTruncated_ = false;
+                    //     subProSolve.back()->solverOptions_->isDropPickPossible_ = true;
+                    // }
                 }
                 else
                     subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
  //                   subProSolve.back()->maxPickup_ = (epoch_ % 2 == 0) ? 1 : 2;
-
+                vehicleObj->preSolvePick_ = subProSolve.back()->maxPickup_;
                 if (EpochInst->parameters_->routeRecycle_)
                     subProSolve.back()->availableRoutes_ = masterModel_->availableRoutes_[vehicleObj->vehicleID_];
                 masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();

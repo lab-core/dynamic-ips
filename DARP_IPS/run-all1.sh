@@ -19,5 +19,5 @@ HALF_COUNT=$(( ${#INSTANCES[@]} / 2 ))
 # Run only the first half of the instances
 for ((i=0; i<$HALF_COUNT; i++)); do
   instance_basename=$(basename "${INSTANCES[$i]}")
-  "$program" "$map_file" "$DIRECTORY" "$instance_basename" $args "$param_dir 0"
+  "$program" "$map_file" "$DIRECTORY" "$instance_basename" $args "$param_dir" 0
 done
