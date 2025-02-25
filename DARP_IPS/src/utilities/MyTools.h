@@ -139,7 +139,8 @@ static const std::vector<std::string> InitialDualName = {
         "PENALTY",
         "LINEAR_LP",
         "AUX_DUAL",
-        "AUX_MP"};
+        "AUX_MP",
+    "AUX_BOX"};
 
 static const std::vector<std::string> SubProSolveStartName = {
         "NOT_RESTRICTED     ",
