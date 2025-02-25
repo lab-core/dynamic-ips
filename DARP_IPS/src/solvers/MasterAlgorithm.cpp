@@ -800,8 +800,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             MasterPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
         else if (pInst->parameters_->initialDual_ == AUX_box)
-            MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_, lpObjValue_);
+            MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
+                                     availableTime_, previousObj_);
+  //          MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
+  //                                   availableTime_, previousObj_, lpObjValue_);
         else
             MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
@@ -841,8 +843,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             requestObj->minDual_ = requestObj->penalty_;
             requestObj->avgDual_ = requestObj->penalty_;
         }
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "DUAL");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "DUAL");
+//        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "DUAL");
+//        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "DUAL");
 
         RMPCounter_++;
 
