@@ -739,7 +739,7 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->pickTime_ << ",";
             repStr << requestObj->dropTime_ << ",";
             repStr << requestObj->latestPickup_ << ",";
-            repStr << requestObj->assignTime_ << ",";
+            repStr << requestObj->commitTime_ << ",";
             repStr << requestObj->initialVehicleID_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
             repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
@@ -993,9 +993,14 @@ std::string Instance::saveReqDuals(int epoch, int isudIter, const string& model)
         repStr << epoch << ",";
         repStr << isudIter << ",";
         repStr << requestObj->getRequestId() << ",";
+        repStr << requestObj->InitialDual_ << ",";
         repStr << requestObj->dual_ << ",";
+        repStr << requestObj->minDual_ << ",";
+        repStr << requestObj->penalty_ << ",";
+        repStr << requestObj->avgDual_ << ",";
         repStr << model << ",";
-        repStr << requestObj->penalty_ << "\n";
+        repStr << requestObj->penalty_ << ",";
+        repStr << requestObj->InitialDual_ -  requestObj->dual_<< "\n";
     }
     return repStr.str();
 }
@@ -1006,8 +1011,10 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         repStr << epoch << ",";
         repStr << isudIter << ",";
         repStr << vehicleObj->vehicleID_ << ",";
+        repStr << vehicleObj->InitialDual_ << ",";
         repStr << vehicleObj->dual_ << ",";
-        repStr << model << "\n";
+        repStr << model << ",";
+        repStr << vehicleObj->InitialDual_ -  vehicleObj->dual_<< "\n";
     }
     return repStr.str();
 }

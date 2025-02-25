@@ -80,8 +80,8 @@ public:
     myTools::Timer *ZOOMTime_;
 
     Tools::LogOutput* pLogIsudResultsStream_;
- //   Tools::LogOutput* pLogIterReqDualStream_;
- //   Tools::LogOutput* pLogIterVehDualStream_;
+    Tools::LogOutput* pLogIterReqDualStream_;
+    Tools::LogOutput* pLogIterVehDualStream_;
 
     // Constructor and Destructor
     explicit MasterAlgorithm(InputPaths &inputPaths);

@@ -27,7 +27,7 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     name_ = name2;
     pickTime_ = LARGE_CONSTANT;
     dropTime_ = LARGE_CONSTANT;
-    assignTime_ = LARGE_CONSTANT;
+    commitTime_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
     minTravelTime_ = 0;

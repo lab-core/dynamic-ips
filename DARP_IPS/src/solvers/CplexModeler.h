@@ -64,6 +64,7 @@ public:
     // this function adds zVar to the model
     void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
     void addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign);
+    void addUVarFloat(IloNumVarArray &uVar, PRequest &request);
 
     // this function adds routeVar to the model
     void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);

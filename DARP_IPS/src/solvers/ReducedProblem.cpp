@@ -15,6 +15,7 @@ ReducedProblem::ReducedProblem() : CplexModeler(){
     // defining variable
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    uVar_ = IloNumVarArray(env_, 0.0, 0.0, 0.0,ILOFLOAT);
     compRoutes_.clear();
 }
 
@@ -338,7 +339,7 @@ std::string ReducedProblem::toString() const {
 }
 
 void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                      InputPaths &inputPaths, float availableTime, float preObj) {
+                                      InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
     try {
 
         IloConversion convZ (env_, zVar_, ILOINT);
@@ -381,31 +382,157 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
                         pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
-                        routeVar_[r].setBounds(-IloInfinity, 1.0);
                     }
-                    else
-                        routeVar_[r].setBounds(-IloInfinity, 0.0);
                 }
                 for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-                    if (zVal[i] > 0.5) {
+                    if (zVal[i] > 0.5)
                         zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
-                        zVar_[i].setBounds(-IloInfinity, 1.0);
-                    }
-                    else
-                        zVar_[i].setBounds(-IloInfinity, 0.0);
                 }
+                auxObjValue_ = 0;
 
-                // change objective to maximize
-                objFunction_.setSense(IloObjective::Maximize);
+                if (lpObj < objValue_) {
+                    for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                        if (routeVal[r] > 0.5) {
+                            routeVar_[r].setBounds(-IloInfinity, 0.0);
+                        }
+                        else
+                            routeVar_[r].setBounds(0.0, 1.0);
+                    }
+                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                        if (zVal[i] > 0.5) {
+                            zVar_[i].setBounds(-IloInfinity, 0.0);
+                        }
+                        else
+                            zVar_[i].setBounds(0.0, 1.0);
+                    }
 
-                IloNumArray requestRHS(env_);
-                IloNumArray vehicleRHS(env_);
+                    // change objective to maximize
+                    objFunction_.setSense(IloObjective::Maximize);
 
-                createIloNumArray (requestRHS, nbRequestTask_, 0.0);
-                createIloNumArray (vehicleRHS, pInst->nbVehicles_, 0.0);
-                requestConst_.setBounds(requestRHS, requestRHS);
-                vehicleConst_.setBounds(vehicleRHS, vehicleRHS);
+                    IloNumArray requestRHS(env_);
+                    IloNumArray vehicleRHS(env_);
 
+                    createIloNumArray (requestRHS, nbRequestTask_, 0.0);
+                    createIloNumArray (vehicleRHS, pInst->nbVehicles_, 0.0);
+                    requestConst_.setBounds(requestRHS, requestRHS);
+                    vehicleConst_.setBounds(vehicleRHS, vehicleRHS);
+
+                    Cplex_.extract(Model_);
+
+                    Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+                    solveTime_->start();
+                    if (!Cplex_.solve()) {
+                        env_.out() << Model_ << std::endl;
+                        solveTime_->stop();
+                        myTools::myException::throwError("Failed to optimize the Aux MP");
+                    }
+                    else {
+                        solveTime_->stop();
+
+                        auxObjValue_ = Cplex_.getObjValue();
+                        // getting dual values
+                        requestDuals_.clear();
+                        vehicleDuals_.clear();
+
+                        Cplex_.getDuals(requestDuals_, requestConst_);
+                        Cplex_.getDuals(vehicleDuals_, vehicleConst_);
+
+                        for (auto &requestObj: pInst->requests_) {
+                            requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
+                            /*if (requestObj->InitialDual_ != requestObj->dual_)
+                                std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
+                        }
+
+
+                        for (auto &vehicleObj: pInst->vehicles_) {
+                            if (vehicleObj->vehicleIndex_ > -1) {
+                                int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
+                                vehicleObj->dual_ = vehicleDuals_[index];
+                                /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
+                                     std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
+                            }
+                            else {
+                                vehicleObj->dual_ = 0;
+                            }
+                        }
+
+                        // reset changes
+                        objFunction_.setSense(IloObjective::Minimize);
+                        for (int i = (int) zVal.getSize() - 1; i >= 0; --i)
+                            zVar_[i].setBounds(0.0, IloInfinity);
+
+                        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r)
+                            routeVar_[r].setBounds(0.0, IloInfinity);
+                        requestConst_.setBounds(requestRHS_, requestRHS_);
+                        vehicleConst_.setBounds(vehicleRHS_, vehicleRHS_);
+                    }
+                }
+            }
+        }
+
+        Cplex_.clearModel();
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred in ReducedProblem::solveModelIntAux at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
+    try {
+
+        IloConversion convZ (env_, zVar_, ILOINT);
+        IloConversion convR (env_, routeVar_, ILOINT);
+        Model_.add(convZ);
+        Model_.add(convR);
+
+        Cplex_.extract(Model_);
+        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        setParameters(pInst, availableTime);
+
+        solveTime_->start();
+        if (!Cplex_.solve()) {
+            env_.out() << Model_ << std::endl;
+            solveTime_->stop();
+ //           std::cout << "Failed to optimize the MP" << std::endl;
+            myTools::myException::throwError("Failed to optimize the MP");
+        }
+        else {
+            solveTime_->stop();
+            if (Cplex_.getObjValue() >= preObj) {
+                convR.end();
+                convZ.end();
+                Cplex_.clearModel();
+            }
+            else {
+                objValue_ = Cplex_.getObjValue();
+
+                // saving the result and remove out of base variables
+                zSolution.clear();
+                routeSolution.clear();
+                IloNumArray zVal(env_);
+                IloNumArray routeVal(env_);
+                Cplex_.getValues(zVal, zVar_);
+                Cplex_.getValues(routeVal, routeVar_);
+                convR.end();
+                convZ.end();
+
+                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    if (routeVal[r] > 0.5) {
+                        routeSolution.push_back(compRoutes_[r]);
+                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                    }
+                }
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    if (zVal[i] > 0.5)
+                        zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
+                }
+                auxObjValue_ = 0;
+
+                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    uVar_[i].setBounds(0.0, IloInfinity);
+                }
                 Cplex_.extract(Model_);
 
                 Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
@@ -423,36 +550,39 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                     requestDuals_.clear();
                     vehicleDuals_.clear();
 
+                    IloNumArray uVal(env_);
+                    Cplex_.getValues(uVal, uVar_);
+
                     Cplex_.getDuals(requestDuals_, requestConst_);
                     Cplex_.getDuals(vehicleDuals_, vehicleConst_);
+
+                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                        if (uVal[i] > 0.5)
+                            std::cout << "U[" << zVar_[i].getName()  << "] : " << uVal[i] << std::endl;
+                    }
 
                     for (auto &requestObj: pInst->requests_) {
                         requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
                         /*if (requestObj->InitialDual_ != requestObj->dual_)
                             std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
                     }
+                    std::cout << "======================================" << std::endl;
 
 
                     for (auto &vehicleObj: pInst->vehicles_) {
                         if (vehicleObj->vehicleIndex_ > -1) {
                             int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
                             vehicleObj->dual_ = vehicleDuals_[index];
-                            // if (vehicleObj->InitialDual_ != vehicleObj->dual_)
-                            //     std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;
+                            /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
+                                 std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
                         }
                         else {
                             vehicleObj->dual_ = 0;
                         }
                     }
-                    // reset changes
-                    objFunction_.setSense(IloObjective::Minimize);
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i)
-                        zVar_[i].setBounds(0.0, IloInfinity);
 
-                    for (int r = (int) routeVal.getSize() - 1; r >= 0; --r)
-                        routeVar_[r].setBounds(0.0, IloInfinity);
-                    requestConst_.setBounds(requestRHS_, requestRHS_);
-                    vehicleConst_.setBounds(vehicleRHS_, vehicleRHS_);
+                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i)
+                        uVar_[i].setBounds(0.0, 0.0);
                 }
             }
         }

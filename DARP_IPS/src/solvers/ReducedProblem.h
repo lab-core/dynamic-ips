@@ -19,6 +19,7 @@ public:
     // Variables
     IloNumVarArray routeVar_;               // route variables
     IloNumVarArray zVar_;                   // request(z) variables
+    IloNumVarArray uVar_;
 
 
     float objValue_;
@@ -58,7 +59,10 @@ public:
 
 
     void solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, float preObj);
+                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
+
+    void solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
 
     void solveModelIntAux_D(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                        InputPaths &inputPaths, float availableTime, float preObj, PDualAuxSolver &DualAuxSolver_);

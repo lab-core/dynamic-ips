@@ -33,13 +33,16 @@ public:
     float serviceTime_;                 // time to perform pick up or drop off
     float minTravelTime_;               // minimum travel time between pickup and drop off location
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
-    float assignTime_;                  // the time that request is assigned and commited to be served
+    float commitTime_;                  // the time that request is commited to be served
+    float assignTime_;                  // the time that request is assigned to a plan which may change
 
     int nbPassengers_;                  // number of passengers to pick up or drop off
     float penalty_;                     // penalty of not serving at current period
     RequestStatus requestStatus_;       // status of the request 0:no action 1:on board 2:complete
     float dual_;
     float InitialDual_;                // when in parameters we use penalties as duals we save previous duals in it
+    float minDual_;
+    float avgDual_;
     int allocVehicleID_;                // the vehicle that serve the request
     int initialVehicleID_;              // this is saved to calculate displacement at the end of each epoch
     int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement

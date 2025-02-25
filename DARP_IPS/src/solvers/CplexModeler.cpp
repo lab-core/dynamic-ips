@@ -98,6 +98,22 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign
     }
 }
 
+void CplexModeler::addUVarFloat(IloNumVarArray &uVar, PRequest &request) {
+
+    try {
+        IloNumColumn numVar = objFunction_(0.8 * request->penalty_) +
+                              requestConst_[request->taskIndex_](1);
+        IloNumVar newVar(numVar, 0.0, 0.0, ILOFLOAT);
+ //       newVar.setName(request->name_);
+        uVar.add(newVar);
+    }
+    catch (const IloException& e) {
+        std::cerr << "Error in CplexModeler::addZVarFloat at line " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+
 
 // this function adds routeVar to the model
 void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {

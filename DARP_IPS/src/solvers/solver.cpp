@@ -153,7 +153,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 num++;
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->partialPricing_) {
-                    if (vehicleObj->currentRoute_->routeRequests_.size() >= 2 && EpochInst->nbRequests_ <= 400){
+                    if (vehicleObj->currentRoute_->routeRequests_.size() >= 2){
                         vehicleObj->numPickup_ = 3;
                         nbThreePick_ ++;
                     }
@@ -312,7 +312,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             masterModel_->DualAuxSolver_.reset();
     }
 
-    int lastEpoch = 0;
+    /*int lastEpoch = 0;
     if (mainInst->parameters_->solutionMode_ == ANYTIME)
         lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - mainInst->parameters_->committedTime_;
     else
@@ -330,7 +330,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 }
             }
         }
-    }
+    }*/
+    returnVehicles(EpochInst);
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
@@ -456,8 +457,17 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 //        preprocessTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             solveCG_Epoch(EpochInst, mainInst, inputPaths);
-        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+        else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
+            returnVehicles(EpochInst);
+            if (EpochInst->parameters_->solutionMode_ == ANYTIME){
+                for (auto &vehicleObj: EpochInst->vehicles_){
+                    if (vehicleObj->currentRoute_->routeSize_ > 1 && vehicleObj->idle_){
+                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                    }
+                }
+            }
+        }
         if (preObjective != masterModel_->objValue_)
             skip = false;
         else
@@ -897,6 +907,28 @@ void solver::updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, v
                                }),
                 vehicleRoutes.end()
         );
+    }
+}
+
+void solver::returnVehicles(PInstance & EpochInst) {
+    int lastEpoch = 0;
+    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
+    else
+        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - EpochInst->parameters_->epochLength_;
+
+    // Return Idle Vehicles
+    if (EpochInst->parameters_->vehicleReturn_) {
+        for (auto &vehicleObj: EpochInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
+                if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
+                    vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
+                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                }
+            }
+        }
     }
 }
 

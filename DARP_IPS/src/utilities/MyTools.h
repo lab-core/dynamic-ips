@@ -84,7 +84,7 @@ enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
 enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, RT_CG = 2, MP_ISUD = 3, MP_MIP = 4, MP_CP = 5, A_CG = 6};
 enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
 enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2, IP_SOLUTION = 3};
-enum InitialDual {PENALTIES = 0, LMP = 1, AUX_D = 2, AUX_P = 3};
+enum InitialDual {PENALTIES = 0, LMP = 1, AUX_D = 2, AUX_P = 3, AUX_box = 4};
 enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 , COMMITTED = 3};
 enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3, SCORE = 4};
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};

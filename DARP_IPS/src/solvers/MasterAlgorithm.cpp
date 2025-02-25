@@ -53,11 +53,11 @@ MasterAlgorithm::MasterAlgorithm(InputPaths &inputPaths) {
     (*pLogIsudResultsStream_) << "Epoch,MPIter,subProIter,TotalGenColumns,nbColumns,Model,ObjectiveValue,"
                                  "preObjective,RelativeImprove,MPTimeAcc.,SubProTime,IterTime,vehicleChange,AuxObj" << std::endl;
 
-    /*pLogIterReqDualStream_ = new Tools::LogOutput(inputPaths.getOutputReqDuals());
-    (*pLogIterReqDualStream_) << "Epoch,ISUDIter,RequestID,Dual,Model,Penalty," << std::endl;
+    pLogIterReqDualStream_ = new Tools::LogOutput(inputPaths.getOutputReqDuals());
+    (*pLogIterReqDualStream_) << "Epoch,ISUDIter,RequestID,InitialDual,Dual,MinDual,MaxDual,AvgDual,Model,Penalty,diff" << std::endl;
 
     pLogIterVehDualStream_ = new Tools::LogOutput(inputPaths.getOutputVehDuals());
-    (*pLogIterVehDualStream_) << "Epoch,ISUDIter,VehicleID, Dual, Model" << std::endl;*/
+    (*pLogIterVehDualStream_) << "Epoch,ISUDIter,VehicleID,InitialDual,Dual,Model,diff" << std::endl;
 }
 
 MasterAlgorithm::~MasterAlgorithm() {
@@ -70,11 +70,11 @@ MasterAlgorithm::~MasterAlgorithm() {
 
     delete ZOOMTime_;
     pLogIsudResultsStream_->close();
-    /*pLogIterReqDualStream_->close();
-    pLogIterVehDualStream_->close();*/
+    pLogIterReqDualStream_->close();
+    pLogIterVehDualStream_->close();
     delete pLogIsudResultsStream_;
-    /*delete pLogIterReqDualStream_;
-    delete pLogIterVehDualStream_;*/
+    delete pLogIterReqDualStream_;
+    delete pLogIterVehDualStream_;
 }
 
 
@@ -127,11 +127,14 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, PGreedyModeler &Gr
                 routeSolution_.push_back(vehicleObj->currentRoute_);
             }
         }
+        float box = 1;
+        if (pInst->parameters_->initialDual_ == AUX_box)
+            box = 0.8;
         for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i){
             if (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                 zSolution_.push_back(pInst->requests_[i]);
-                pInst->requests_[i]->dual_ = pInst->requests_[i]->penalty_;
-                pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->penalty_;
+                pInst->requests_[i]->dual_ = box * pInst->requests_[i]->penalty_;
+                pInst->requests_[i]->InitialDual_ = box * pInst->requests_[i]->penalty_;
             }
         }
         setObjValue();
@@ -795,7 +798,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         }
         else if (pInst->parameters_->initialDual_ == AUX_P)
             MasterPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_);
+                                     availableTime_, previousObj_, lpObjValue_);
+        else if (pInst->parameters_->initialDual_ == AUX_box)
+            MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
+                                     availableTime_, previousObj_, lpObjValue_);
         else
             MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
@@ -811,12 +817,32 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         if (pInst->parameters_->initialDual_ == AUX_D)
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
                                                     masterTime_->dSinceStart().count(), subProTime, DualAuxSolver_->objValue_);
-        else if (pInst->parameters_->initialDual_ == AUX_P)
+        else if (pInst->parameters_->initialDual_ == AUX_P || pInst->parameters_->initialDual_ == AUX_box) {
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
+ //           if (MasterPro_->auxObjValue_ > 0) {
+ //               (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Aux_P");
+ //               (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Aux_P");
+ //           }
+        }
         else
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
                                                         masterTime_->dSinceStart().count(), subProTime, 0.0);
+        for (auto & routeObj : routeSolution_) {
+            for (int i = 1; i < routeObj->routeSize_; ++i) {
+                if (routeObj->routeNodes_[i]->type_ == PICKUP) {
+                    routeObj->routeNodes_[i]->related_Request_->avgDual_ = routeObj->totalDelay_ / routeObj->routeRequests_.size();
+                    routeObj->routeNodes_[i]->related_Request_->minDual_ = routeObj->plannedReachTime_[i] - routeObj->routeNodes_[i]->related_Request_->earlyPick_;
+                }
+            }
+        }
+
+        for (auto & requestObj : zSolution_) {
+            requestObj->minDual_ = requestObj->penalty_;
+            requestObj->avgDual_ = requestObj->penalty_;
+        }
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "DUAL");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "DUAL");
 
         RMPCounter_++;
 
@@ -974,7 +1000,7 @@ void MasterAlgorithm::solveMP_INT(PInstance &pInst, InputPaths &inputPaths) {
         MasterPro_->updateModel(pInst);
         MPBuildTime_->stop();
         MasterPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, objValue_);
+                                     availableTime_, objValue_, lpObjValue_);
         MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
         objValue_ = MasterPro_->objValue_;
     }

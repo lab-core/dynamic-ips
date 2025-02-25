@@ -241,7 +241,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                         removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
-                        currentRoute_->routeNodes_[i]->related_Request_->assignTime_ = elapsedTime;
+                        currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
                     }
 
 
@@ -314,7 +314,7 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
             }
 
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                currentRoute_->routeNodes_[i]->related_Request_->assignTime_ = elapsedTime;
+                currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
                 currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;

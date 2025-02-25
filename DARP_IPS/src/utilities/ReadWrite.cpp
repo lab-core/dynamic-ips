@@ -696,8 +696,13 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                     newRoute->addSource(pInstance->vehicles_[v]->departNode_, pInstance->vehicles_[v]->departTime_,
                                         pInstance->vehicles_[v]->numPassengers_);
                     for (int i = 1; i < routeNodes[v].size(); ++i) {
-                        if (routeNodes[v][i] != nullptr)
+                        if (routeNodes[v][i] != nullptr) {
                             newRoute->addNode(routeNodes[v][i]);
+                            if (routeNodes[v][i]->type_ == PICKUP) {
+                                routeNodes[v][i]->related_Request_->allocVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
+                                routeNodes[v][i]->related_Request_->initialVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
+                            }
+                        }
                         else
                             continue;
  //                           newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
