@@ -98,14 +98,16 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign
     }
 }
 
-void CplexModeler::addUVarFloat(IloNumVarArray &uVar, PRequest &request) {
+void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, PRequest &request) {
 
     try {
-        IloNumColumn numVar = objFunction_(0.8 * request->penalty_) +
+        IloNumColumn uCol = objFunction_(0.8 * request->penalty_) +
                               requestConst_[request->taskIndex_](1);
-        IloNumVar newVar(numVar, 0.0, 0.0, ILOFLOAT);
- //       newVar.setName(request->name_);
-        uVar.add(newVar);
+        uVar.add(IloNumVar(uCol, 0.0, 0.0, ILOFLOAT));
+
+        IloNumColumn vCol = objFunction_(0) +
+                              requestConst_[request->taskIndex_](-1);
+        vVar.add(IloNumVar(vCol, 0.0, 0.0, ILOFLOAT));
     }
     catch (const IloException& e) {
         std::cerr << "Error in CplexModeler::addZVarFloat at line " << __LINE__ << std::endl;

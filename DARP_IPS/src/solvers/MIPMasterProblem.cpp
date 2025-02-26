@@ -18,7 +18,7 @@ void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolut
     for (auto & zSol : pInst->requests_) {
         addZVarFloat(zVar_, zSol, POSITIVE);
         if (pInst->parameters_->initialDual_ == AUX_box)
-            addUVarFloat(uVar_, zSol);
+            addUVarFloat(uVar_, vVar_, zSol);
     }
 
     // adding route solution columns

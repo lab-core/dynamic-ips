@@ -800,10 +800,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             MasterPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
         else if (pInst->parameters_->initialDual_ == AUX_box)
-            MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_);
-  //          MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
-  //                                   availableTime_, previousObj_, lpObjValue_);
+            MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
+                                     availableTime_, previousObj_, lpObjValue_);
         else
             MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
@@ -822,10 +820,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
         else if (pInst->parameters_->initialDual_ == AUX_P || pInst->parameters_->initialDual_ == AUX_box) {
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
- //           if (MasterPro_->auxObjValue_ > 0) {
- //               (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Aux_P");
- //               (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Aux_P");
- //           }
+  //          if (MasterPro_->auxObjValue_ > 0) {
+  //              (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Aux_P");
+  //              (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Aux_P");
+  //          }
         }
         else
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,

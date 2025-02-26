@@ -20,6 +20,7 @@ public:
     IloNumVarArray routeVar_;               // route variables
     IloNumVarArray zVar_;                   // request(z) variables
     IloNumVarArray uVar_;
+    IloNumVarArray vVar_;
 
 
     float objValue_;

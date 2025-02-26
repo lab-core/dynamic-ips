@@ -16,6 +16,7 @@ ReducedProblem::ReducedProblem() : CplexModeler(){
     zVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     routeVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
     uVar_ = IloNumVarArray(env_, 0.0, 0.0, 0.0,ILOFLOAT);
+    vVar_ = IloNumVarArray(env_, 0.0, 0.0, 0.0,ILOFLOAT);
     compRoutes_.clear();
 }
 
@@ -393,17 +394,17 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                 if (lpObj < objValue_) {
                     for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
                         if (routeVal[r] > 0.5) {
-                            routeVar_[r].setBounds(-IloInfinity, 0.0);
+                            routeVar_[r].setBounds(-IloInfinity, 1.0);
                         }
                         else
-                            routeVar_[r].setBounds(0.0, 1.0);
+                            routeVar_[r].setBounds(-IloInfinity, 0.0);
                     }
                     for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
                         if (zVal[i] > 0.5) {
-                            zVar_[i].setBounds(-IloInfinity, 0.0);
+                            zVar_[i].setBounds(-IloInfinity, 1.0);
                         }
                         else
-                            zVar_[i].setBounds(0.0, 1.0);
+                            zVar_[i].setBounds(-IloInfinity, 0.0);
                     }
 
                     // change objective to maximize
@@ -532,6 +533,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
 
                 for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
                     uVar_[i].setBounds(0.0, IloInfinity);
+                    vVar_[i].setBounds(0.0, IloInfinity);
                 }
                 Cplex_.extract(Model_);
 
@@ -551,14 +553,18 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                     vehicleDuals_.clear();
 
                     IloNumArray uVal(env_);
+                    IloNumArray vVal(env_);
                     Cplex_.getValues(uVal, uVar_);
+                    Cplex_.getValues(vVal, vVar_);
 
                     Cplex_.getDuals(requestDuals_, requestConst_);
                     Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
                     for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
-                        if (uVal[i] > 0.5)
+                        if (uVal[i] > 0)
                             std::cout << "U[" << zVar_[i].getName()  << "] : " << uVal[i] << std::endl;
+                        if (vVal[i] > 0)
+                            std::cout << "V[" << zVar_[i].getName()  << "] : " << vVal[i] << std::endl;
                     }
 
                     for (auto &requestObj: pInst->requests_) {
@@ -580,9 +586,11 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                             vehicleObj->dual_ = 0;
                         }
                     }
-
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i)
+                    // rest the model
+                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
                         uVar_[i].setBounds(0.0, 0.0);
+                        vVar_[i].setBounds(0.0, 0.0);
+                    }
                 }
             }
         }
