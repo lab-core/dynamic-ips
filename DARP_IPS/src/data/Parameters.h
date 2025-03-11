@@ -29,6 +29,10 @@ public:
     bool savePartial_;              // calculate the avg. wait time after one hour
     bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
     float timeWindow_;
+    int WaitForReturn_;             // time the vehicle remain idle before returning to crowded areas
+    int numVehicleSwitch_;          // the number of times we are allowed to change the vehicle assigned to a customer
+    int informTimeLimit_;
+    int pickupDeviationWindow_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -71,14 +75,16 @@ public:
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
-               bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow, warmStart initialStart,
+               bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
+               int WaitForReturn, int numVehicleSwitch, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
                LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
-               int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap);
+               int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
+               int pickupDeviationWindow);
 
     virtual ~Parameters();
 

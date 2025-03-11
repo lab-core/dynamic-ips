@@ -16,7 +16,8 @@ void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolut
 
     // adding request columns (z variables)
     for (auto & zSol : pInst->requests_) {
-        addZVarFloat(zVar_, zSol, POSITIVE);
+        if (zSol->plannedPickTime_ == LARGE_CONSTANT)
+            addZVarFloat(zVar_, zSol, POSITIVE);
         if (pInst->parameters_->initialDual_ == AUX_box)
             addUVarFloat(uVar_, vVar_, zSol);
     }

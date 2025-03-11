@@ -177,7 +177,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
 
 void InputPaths::makeInstanceOutput(const std::string& instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
-    std::string folder_name = dataDir_ + instanceFolder_+"_Last";
+    std::string folder_name = dataDir_ + instanceFolder_+"_New";
     std::string outputDir = folder_name + "/" + instanceNameOut_ + "/";
     char *path = const_cast<char *>(outputDir.c_str());
     if (mkdir(path, 0777) != 0){

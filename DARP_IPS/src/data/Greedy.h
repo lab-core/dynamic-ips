@@ -37,7 +37,6 @@ public:
 class GreedyRoute {
 public:
     PVehicle* Vehicle_;
-    PStopLabel PCurrentStop_;           // Last pickup node in the partial path
     PStopLabel PLastStop_;              // Last node in the partial path
     PStopLabel PInitialStop_;           // starting node of the route
     float totalDelay_;                  // total delay of the corresponding vehicle

@@ -153,9 +153,9 @@ std::string Route::toString() const {
             repStr << std::left << std::setw(9) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;
-        repStr << std::right << std::setw(9) << routeNodes_[i]->reachTime_ << " (s)  ";
-        repStr << std::right << std::setw(9) << routeNodes_[i]->departTime_ << " (s)  ";
-        if (routeNodes_[i]->initialType_ != SINK) {
+        repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
+        repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";
+        if (routeNodes_[i]->initialType_ != SINK && routeNodes_[i]->nodeStatus_ == DONE) {
             if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i]) ||
                 (routeNodes_[i]->reachTime_ != plannedReachTime_[i])) {
                 std::cout << "Connectivity constraint violated at node : ";

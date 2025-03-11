@@ -91,6 +91,7 @@ public:
     void updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, vector2D<PRoute> &availableRoutes);
 
     void returnVehicles(PInstance & EpochInst);
+    void returnVehiclesZone(PInstance & EpochInst);
 
     // Display results
     std::string toString(PInstance & mainInst) const;

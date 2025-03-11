@@ -17,8 +17,8 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
         requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime){
     allocVehicleID_ = LARGE_CONSTANT;
-    initialVehicleID_ = LARGE_CONSTANT;
     solVehicleID_ = LARGE_CONSTANT;
+    epochVehicleID_ = LARGE_CONSTANT;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
@@ -28,19 +28,22 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     pickTime_ = LARGE_CONSTANT;
     dropTime_ = LARGE_CONSTANT;
     commitTime_ = LARGE_CONSTANT;
+    assignTime_ = LARGE_CONSTANT;
+    plannedPickTime_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
     minTravelTime_ = 0;
     taskIndex_ = -1;
     taskIndexLabel_ = -1;
+    nbSwitch_ = 0;
 }
 Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime, int pickZoneID, int dropZoneID) :
         requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
         pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
     allocVehicleID_ = LARGE_CONSTANT;
-    initialVehicleID_ = LARGE_CONSTANT;
     solVehicleID_ = LARGE_CONSTANT;
+    epochVehicleID_ = LARGE_CONSTANT;
     maxTravelTime_ = 0;
     requestStatus_ = NO_ACTION;
     penalty_ = 0;
@@ -49,11 +52,15 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     name_ = name2;
     pickTime_ = LARGE_CONSTANT;
     dropTime_ = LARGE_CONSTANT;
+    commitTime_ = LARGE_CONSTANT;
+    assignTime_ = LARGE_CONSTANT;
+    plannedPickTime_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
     minTravelTime_ = 0;
     taskIndex_ = -1;
     taskIndexLabel_ = -1;
+    nbSwitch_ = 0;
 }
 
 Request::~Request() {

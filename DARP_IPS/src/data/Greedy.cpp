@@ -50,7 +50,6 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
                                  vehicle->departTime_, vehicle->numPassengers_);
     }
     selected_ = false;
-    PCurrentStop_ = PInitialStop_;
     PLastStop_ = PInitialStop_;
     totalDelay_ = 0;
     idleTime_ = 0;
@@ -81,14 +80,24 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
             PLastStop_ = newDropLabel;
         }
     }
-        // build previous solution
+    // build previous solution
     else {
         for (int i = 1; i < (*Vehicle_)->currentRoute_->routeNodes_.size(); i++) {
             idle_ = false;
-            PStopLabel newLabel = std::make_shared<StopLabel>((*Vehicle_)->currentRoute_->routeNodes_[i],
+            PStopLabel newLabel;
+            if (greedyLabelPool.empty()) {
+                newLabel = std::make_shared<StopLabel>((*Vehicle_)->currentRoute_->routeNodes_[i],
                                                               (*Vehicle_)->currentRoute_->plannedReachTime_[i],
                                                               (*Vehicle_)->currentRoute_->plannedDepartTime_[i],
                                                               (*Vehicle_)->currentRoute_->plannedPassengers_[i]);
+            } else {
+                newLabel = greedyLabelPool.back();
+                greedyLabelPool.pop_back();
+                newLabel->setValues((*Vehicle_)->currentRoute_->routeNodes_[i],
+                    (*Vehicle_)->currentRoute_->plannedReachTime_[i],
+                    (*Vehicle_)->currentRoute_->plannedDepartTime_[i],
+                    (*Vehicle_)->currentRoute_->plannedPassengers_[i]);
+            }
             newLabel->parent_ = PLastStop_;
             PLastStop_->child_ = newLabel;
             PLastStop_ = newLabel;
@@ -130,7 +139,6 @@ GreedyRoute::GreedyRoute(const GreedyRoute &label) {
     Vehicle_ = label.Vehicle_;
     departureTime_ = label.departureTime_;
     idleTime_ = label.idleTime_;
-    PCurrentStop_ = label.PCurrentStop_;
     PLastStop_ = label.PLastStop_;
     PInitialStop_ = label.PInitialStop_;
     totalDelay_ = label.totalDelay_;
@@ -158,14 +166,14 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
     position->updatePosition(PLastStop_, PLastStop_, waitIncrease, lengthIncrease);
 
     // define the initial position to add the request just after all
-    PStopLabel prePick = PCurrentStop_;
+    PStopLabel prePick = PInitialStop_;
     PStopLabel preDrop;
     while (prePick != nullptr) {
         waitIncrease = INFINITY;
         if (prePick == PLastStop_) {
             if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_){
-                std::cout << "Instance error! split the trip!" << std::endl;
-                throw myTools::myException("instance definition error", __FILE__, __LINE__);
+                throw myTools::myException("Instance error: capacity exceeded, consider splitting trip.", __FILE__, __LINE__);
+
             }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
@@ -270,8 +278,9 @@ void GreedyRoute::insertNode(PStopLabel &preLabel, PNode &newNode, std::vector<P
         updateReachTimes(newLabel);
     }
     if (newNode->type_ == PICKUP){
-        if ((reachTime - newNode->related_Request_->requestTime_) < 0 )
-            std::cout << "error" ;
+        if (reachTime - newNode->related_Request_->requestTime_ < 0 )
+            throw myTools::myException("Negative waiting time encountered in insertNode.", __FILE__, __LINE__);
+
         totalDelay_ += (reachTime - newNode->readyTime_);
     }
 }
@@ -366,8 +375,7 @@ void GreedyRoute::updateReachTimes(PStopLabel &preLabel) {
         currentLabel = currentLabel->child_;
     }
     if (totalDelay_ < 0 ) {
-        std::cout << toString() << std::endl;
-        throw myTools::myException("Negative total Delay", __FILE__, __LINE__);
+        throw myTools::myException("Negative total delay after updating route.", __FILE__, __LINE__);
     }
 }
 
@@ -405,7 +413,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
                 newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
             }
         }
-        newRoute->routeNodes_.back()->related_Request_->allocVehicleID_ = newRoute->vehicleID_;
+        newRoute->routeNodes_.back()->related_Request_->solVehicleID_ = newRoute->vehicleID_;
         currentLabel = currentLabel->child_;
     }
 
@@ -505,7 +513,7 @@ void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxD
     position->updatePosition(PLastStop_, PLastStop_, deltaDelay, DeltaT);
 
     // define the initial position to add the request just after all
-    PStopLabel prePick = PCurrentStop_;
+    PStopLabel prePick = PInitialStop_;
     PStopLabel preDrop;
     while ((prePick != nullptr) && (notFound)) {
         deltaDelay = INFINITY;

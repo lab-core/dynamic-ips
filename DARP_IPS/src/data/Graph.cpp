@@ -125,4 +125,7 @@ void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
 
 Zone::Zone(const unsigned int zoneId, int centerLocationId) : zoneID_(zoneId), centerLocationID_(centerLocationId) {
     travelToZone_ = 0;
+    nbVehiclesRef_ = 0;
+    nbVehicles_ = 0;
+    highDemandZone_ = true;
 }

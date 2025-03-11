@@ -26,7 +26,7 @@ public:
     int nbVehicles_;                                    // Number of vehicles
     std::vector<PVehicle> vehicles_;                    // List of vehicles
     int nbZones_;
-    std::vector<PZone> zones_;
+    std::unordered_map<int, PZone> zones_;
 
     int nbRequests_;                                    // Number of requests
     int nbRejected_;
@@ -110,6 +110,7 @@ public:
     std::string saveVehDuals(int epoch, int isudIter, const string& model);
     void selectSubProVehicles();
     void resetAssignedVehicles();
+    void setAssignedEpochVehicles(float assignTime);
     void setNodeIndices();
 };
 

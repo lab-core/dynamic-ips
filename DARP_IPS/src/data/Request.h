@@ -34,7 +34,9 @@ public:
     float minTravelTime_;               // minimum travel time between pickup and drop off location
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
     float commitTime_;                  // the time that request is commited to be served
-    float assignTime_;                  // the time that request is assigned to a plan which may change
+    float plannedPickTime_;             // the time that is announced to the customer
+    float assignTime_;                  // the time that request is first assigned to a plan which may change
+
 
     int nbPassengers_;                  // number of passengers to pick up or drop off
     float penalty_;                     // penalty of not serving at current period
@@ -44,12 +46,13 @@ public:
     float minDual_;
     float avgDual_;
     int allocVehicleID_;                // the vehicle that serve the request
-    int initialVehicleID_;              // this is saved to calculate displacement at the end of each epoch
     int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement
+    int epochVehicleID_;
     int taskIndex_;                     // request index (row) in master model
     int taskIndexLabel_;                // request index in sub problems graph
     int pickZoneID_;
     int dropZoneID_;
+    int nbSwitch_;
 
 
     // Constructor and Destructor

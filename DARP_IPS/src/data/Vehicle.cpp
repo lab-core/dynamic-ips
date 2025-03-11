@@ -14,7 +14,7 @@
 // Constructor and Destructor
 Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
                  PNode & sinkNode) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                                     endTime_(endTime), departNode_(std::move(departNode)), sinkNode_(std::move(sinkNode)){
+                                     endTime_(endTime), departNode_(departNode), sinkNode_(sinkNode){
     numPassengers_ = 0;
     dual_=0;
     InitialDual_ = 0;
@@ -128,7 +128,6 @@ void Vehicle::updateState(int epoch, int &epochLength, float simulationStart, bo
                     currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;
                     currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
                     currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
-                    currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
                 }
 
                 else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF){
@@ -226,7 +225,6 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                                             currentRoute_->plannedDepartTime_[i]);
                     if (currentRoute_->routeNodes_[i]->initialType_ == SINK) {
                         returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
-                        sinkNode_ = std::make_shared<Node>(currentRoute_->routeNodes_[i]);
                         mainInst->nbReturn_++;
                     }
                     else {
@@ -241,9 +239,11 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                         removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
-                        currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                        if (currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+                            currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                            currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                        }
                     }
-
 
                     setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
 
@@ -273,8 +273,6 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                             onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
                         }
                     }
-/*                if (currentRoute_->plannedReachTime_[i] < startTime_ + elapsedTime + committedTime)
-                    currentRoute_->routeNodes_[i]->nodeStatus_ = COMMITTED;*/
                 }
                 currentRoute_->removeNode(breakIndex);
             }
@@ -288,6 +286,14 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
         else
             mainInst->nbPotentialIdle_++;
         handleIdleState(elapsedTime + committedTime);
+    }
+    for (int i = 1; i < currentRoute_->routeSize_; ++i) {
+        if (currentRoute_->routeNodes_[i]->type_ == PICKUP && currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+            if (elapsedTime - currentRoute_->routeNodes_[i]->related_Request_->earlyPick_ >= mainInst->parameters_->informTimeLimit_) {
+                currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+            }
+        }
     }
 }
 
@@ -314,10 +320,13 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
             }
 
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                if (currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+                    currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                    currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                }
+                currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
-                currentRoute_->routeNodes_[i]->related_Request_->initialVehicleID_ = vehicleID_;
                 currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
             }
             else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF) {
@@ -372,7 +381,6 @@ void Vehicle::setRequestStatus(PNode &node, float reachTime){
         node->related_Request_->requestStatus_ = ON_BOARD;
         node->related_Request_->pickTime_ = reachTime;
         node->related_Request_->allocVehicleID_ = vehicleID_;
-        node->related_Request_->initialVehicleID_ = vehicleID_;
     }
 
     else if (node->type_ == DROPOFF){

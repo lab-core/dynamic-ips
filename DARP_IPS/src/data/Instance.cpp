@@ -19,7 +19,6 @@ Instance::Instance(std::string &name, float simulationStart, int nbVehicles, int
     requests_.reserve(nbRequests + nbOnboards);
     vehicles.reserve(nbVehicles);
     nbTasks_ = nbRequests;
-    zones_.resize(MAX_ZONE);
     nbZones_ = 0;
     nbRejected_ = 0;
     nbIdle_ = 0;
@@ -573,26 +572,23 @@ void Instance::sortVehicles(SortVehicle sortBase) {
 }
 
 void Instance::sortZones() {
+
     for (auto & zoneObj : zones_){
-        if (zoneObj != nullptr) {
-            for (auto &nextZoneObj: zones_) {
-                if (nextZoneObj != nullptr && zoneObj->zoneID_ != nextZoneObj->zoneID_) {
-                    nextZoneObj->travelToZone_ = durationMatrix_[zoneObj->centerLocationID_][nextZoneObj->centerLocationID_];
-                    zoneObj->successors_.push_back(&(*nextZoneObj));
-                }
+        for (auto &nextZoneObj: zones_) {
+            if (zoneObj.first != nextZoneObj.first) {
+                nextZoneObj.second->travelToZone_ = durationMatrix_[zoneObj.second->centerLocationID_][nextZoneObj.second->centerLocationID_];
+                zoneObj.second->successors_.push_back(&(*nextZoneObj.second));
             }
-            std::stable_sort(zoneObj->successors_.begin(), zoneObj->successors_.end(), [](Zone *lhs, Zone *rhs) {
-                return lhs->travelToZone_ < rhs->travelToZone_;
-            });
         }
+        std::stable_sort(zoneObj.second->successors_.begin(), zoneObj.second->successors_.end(), [](Zone *lhs, Zone *rhs) {
+            return lhs->travelToZone_ < rhs->travelToZone_;
+        });
     }
 }
 
 void Instance::resetZoneVehicles(){
     for (auto & zoneObj : zones_) {
-        if (zoneObj != nullptr) {
-            zoneObj->zoneVehicles_.clear();
-        }
+        zoneObj.second->zoneVehicles_.clear();
     }
 
     for (auto vehicleObj: vehicles_){
@@ -600,11 +596,9 @@ void Instance::resetZoneVehicles(){
             int distance = LARGE_CONSTANT;
             PZone selectedZone = nullptr;
             for (auto & zoneObj : zones_) {
-                if (zoneObj != nullptr) {
-                    if (distance > durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj->centerLocationID_]) {
-                        distance = durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj->centerLocationID_];
-                        selectedZone = zoneObj;
-                    }
+                if (distance > durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj.second->centerLocationID_]) {
+                    distance = durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj.second->centerLocationID_];
+                    selectedZone = zoneObj.second;
                 }
             }
             selectedZone->zoneVehicles_.push_back(vehicleObj);
@@ -613,10 +607,8 @@ void Instance::resetZoneVehicles(){
             zones_[vehicleObj->departNode_->zoneID_]->zoneVehicles_.push_back(vehicleObj);
     }
     for (auto & zoneObj : zones_) {
-        if (zoneObj != nullptr) {
-            std::stable_sort(zoneObj->zoneVehicles_.begin(), zoneObj->zoneVehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
+        std::stable_sort(zoneObj.second->zoneVehicles_.begin(), zoneObj.second->zoneVehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->departTime_ < rhs->departTime_;});
-        }
     }
 }
 
@@ -628,11 +620,9 @@ void Instance::selectVehiclesByZone(int select) {
             if (requests_[i]->pickZoneID_ > zones_.size() || zones_[requests_[i]->pickZoneID_] == nullptr) {
                 int distance = LARGE_CONSTANT;
                 for (auto & zoneObj : zones_) {
-                    if (zoneObj != nullptr) {
-                        if (distance > durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj->centerLocationID_]) {
-                            distance = durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj->centerLocationID_];
-                            selectedZone = zoneObj;
-                        }
+                    if (distance > durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj.second->centerLocationID_]) {
+                        distance = durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj.second->centerLocationID_];
+                        selectedZone = zoneObj.second;
                     }
                 }
 
@@ -675,7 +665,10 @@ void Instance::selectVehiclesByZone(int select) {
 void Instance::updatePenalties(float elapsedTime) {
     for (auto & requestObj : requests_) {
         requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_);
-        requestObj->latestPickup_ = requestObj->earlyPick_ + requestObj->penalty_;
+        if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
+            requestObj->latestPickup_ = requestObj->earlyPick_ + requestObj->penalty_;
+        else
+            requestObj->latestPickup_ = requestObj->plannedPickTime_ + parameters_->pickupDeviationWindow_;
     }
 }
 
@@ -721,7 +714,7 @@ std::string Instance::saveSolutionRoutes() {
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
     repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,DropTime,LatestPick,"
-              "AssignTime,InVehicleID,VehicleID,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
+              "AssignTime,CommitWaitTime,plannedWaitTime,VehicleID,#VehicleSwitch,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
 
     int startIndex;
     if (solveEpoch)
@@ -739,9 +732,11 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->pickTime_ << ",";
             repStr << requestObj->dropTime_ << ",";
             repStr << requestObj->latestPickup_ << ",";
-            repStr << requestObj->commitTime_ << ",";
-            repStr << requestObj->initialVehicleID_ << ",";
+            repStr << requestObj->assignTime_ - requestObj->earlyPick_ << ",";
+            repStr << requestObj->commitTime_ - requestObj->earlyPick_ << ",";
+            repStr << requestObj->plannedPickTime_ - requestObj->earlyPick_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
+            repStr << requestObj->nbSwitch_ << ",";
             repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
             repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
             repStr << requestObj->maxTravelTime_ << ",";
@@ -1026,6 +1021,24 @@ void Instance::selectSubProVehicles() {
 void Instance::resetAssignedVehicles() {
     for (auto & requestObj : requests_)
         requestObj->solVehicleID_ = LARGE_CONSTANT;
+}
+
+void Instance::setAssignedEpochVehicles(float assignTime) {
+    for (auto &vehicleObj : vehicles_) {
+        for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
+            if (requestObj->epochVehicleID_ == LARGE_CONSTANT) {
+                requestObj->nbSwitch_ = 1;
+                requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
+                requestObj->assignTime_ = assignTime;
+            }
+            else {
+                if (requestObj->epochVehicleID_ != vehicleObj->vehicleID_) {
+                    requestObj->nbSwitch_ ++;
+                    requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
+                }
+            }
+        }
+    }
 }
 
 void Instance::setNodeIndices() {

@@ -120,6 +120,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             pInstance->instGraph_->sinkNodes_.back()));
                 pInstance->vehicles_.back()->startTime_ = pInstance->simulationStartTime_;
+                pInstance->zones_[zoneID]->nbVehiclesRef_ ++;
             }
         }
     }
@@ -233,7 +234,6 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
                 pInstance->requests_.back()->allocVehicleID_ = vehicleID;
-                pInstance->requests_.back()->initialVehicleID_ = vehicleID;
                 pInstance->requests_.back()->solVehicleID_ = vehicleID;
 
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
@@ -463,8 +463,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     string title;
 
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1;
+    int informTimeLimit = -1, pickupDeviationWindow = -1;
     int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
-    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1;
+    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
     bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
     bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
     bool useMultiStage = false, vehiclePortion = false, usePick = false, greedyReOptimize = false;
@@ -523,6 +524,18 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "timeWindows "))
             file >> timeWindows;
+
+        else if (strEndWith(title, "WaitForReturn "))
+            file >> WaitForReturn;
+
+        else if (strEndWith(title, "numVehicleSwitch "))
+            file >> numVehicleSwitch;
+
+        else if (strEndWith(title, "informTimeLimit "))
+            file >> informTimeLimit;
+
+        else if (strEndWith(title, "pickupDeviationWindow "))
+            file >> pickupDeviationWindow;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -626,6 +639,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), numIter,
                                                           greedyReOptimize, saveScratch, vehicleReturn, timeWindows,
+                                                          WaitForReturn, numVehicleSwitch,
                                                           static_cast<warmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
                                                           useZoom, nbColumns, isTruncated, maxLabel, isSuccessorsLimited,
@@ -639,7 +653,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SortPaths>(sortPath),
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit,
-                                                          static_cast<SolutionMode>(solutionMode), mipGap);
+                                                          static_cast<SolutionMode>(solutionMode), mipGap,
+                                                          informTimeLimit, pickupDeviationWindow);
 }
 
 void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
@@ -656,6 +671,7 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
     }
 
     string title;
+    std::vector<int> excludeIDs = {192, 84, 129, 296, 50, 257, 142};
 
     while (file.good()) {
 //        readUntilChar(file, '\n', title);
@@ -670,7 +686,11 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
                 file >> centerLocationID;
 
                 pInstance->nbZones_++;
-                pInstance->zones_[zoneID] = std::move(std::make_shared<Zone>(zoneID, centerLocationID));
+                pInstance->zones_.insert(std::pair<int , PZone>(zoneID, std::make_shared<Zone>(zoneID, centerLocationID)));
+                for (auto & item : excludeIDs) {
+                    if (zoneID == item)
+                        pInstance->zones_[zoneID]->highDemandZone_ = false;
+                }
             }
         }
     }
@@ -682,13 +702,13 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
     if (pInstance->nbOnboards_ > 0){
-        ReadWrite::readVehiclesDataF(inputPaths.getInputVehicleFile(), pInstance, routeNodes);
-        ReadWrite::readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance, routeNodes);
+        readVehiclesDataF(inputPaths.getInputVehicleFile(), pInstance, routeNodes);
+        readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance, routeNodes);
     }
     else
-        ReadWrite::readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
+        readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
     if (pInstance->nbWaiting_ > 0) {
-        ReadWrite::readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
+        readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
  //       if (!solveEpoch) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
                 if (routeNodes[v].size() > 1) {
@@ -700,7 +720,6 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                             newRoute->addNode(routeNodes[v][i]);
                             if (routeNodes[v][i]->type_ == PICKUP) {
                                 routeNodes[v][i]->related_Request_->allocVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
-                                routeNodes[v][i]->related_Request_->initialVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
                             }
                         }
                         else
@@ -734,7 +753,8 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,nbThreads,InitialDual,warmStart,"
+    parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
+                        "nbThreads,InitialDual,warmStart,"
                         "mainAlgorithm,solutionMode,NumIter,GreedyReOptimize,vehicleReturn,MIP_maxIncDegree,"
                         "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,"
                         "isDropPickPossible,isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,"

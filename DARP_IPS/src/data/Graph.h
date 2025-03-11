@@ -83,6 +83,10 @@ public:
     std::vector<PVehicle> zoneVehicles_;
     std::vector<Zone *> successors_;
     int travelToZone_;
+    int nbVehiclesRef_;
+    int nbVehicles_;
+    bool underCapacity_;
+    bool highDemandZone_;
 
     // Constructor and Destructor
     Zone(const unsigned int zoneId, int centerLocationId);

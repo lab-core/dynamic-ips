@@ -12,6 +12,7 @@
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
                        int numIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
+                       int WaitForReturn, int numVehicleSwitch,
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel,
                        bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
@@ -19,10 +20,12 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
                        bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
                        int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
-                       int populateTimeLimit, SolutionMode solutionMode, float MIPGap):
+                       int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
+                       int pickupDeviationWindow):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), numIter_(numIter), greedyReOptimize_(greedyReOptimize),
+        WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch),
         saveScratch_(saveScratch), vehicleReturn_(vehicleReturn), initialStart_(initialStart),
         MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
         minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn), isTruncated_(isTruncated), MaxLabel_(maxLabel),
@@ -33,7 +36,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath) ,
         sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
         solutionMode_(solutionMode), discardSuboptimalPath_(discardSuboptimalPath), MIPGap_(MIPGap),
-        timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), savePartial_(false){}
+        timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), savePartial_(false),
+        informTimeLimit_(informTimeLimit), pickupDeviationWindow_(pickupDeviationWindow){}
 
 Parameters::~Parameters() = default;
 
@@ -61,6 +65,10 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
     repStr << std::setw(setwLength) << "# Waiting time window " << " = " << timeWindow_ << std::endl;
+    repStr << std::setw(setwLength) << "# Wait before return time " << " = " << WaitForReturn_ << std::endl;
+    repStr << std::setw(setwLength) << "# Maximum vehicle switch  " << " = " << numVehicleSwitch_ << std::endl;
+    repStr << std::setw(setwLength) << "# time to inform the customer " << " = " << informTimeLimit_ << " (s)" << std::endl;
+    repStr << std::setw(setwLength) << "# pickup Deviation Window " << " = " << pickupDeviationWindow_ << " (s)" << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -117,6 +125,8 @@ std::string Parameters::toStr() const {
     repStr << deltaPram_ << ",";
     repStr << epochLength_ << ",";
     repStr << committedTime_ << ",";
+    repStr << informTimeLimit_ << ",";
+    repStr << pickupDeviationWindow_ << ",";
     repStr << nbThreads_ << ",";
     repStr << InitialDualName[initialDual_] << ",";
     repStr << warmStartName[initialStart_] << ",";
