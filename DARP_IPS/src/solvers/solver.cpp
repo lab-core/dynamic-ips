@@ -319,7 +319,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }*/
-    returnVehiclesZone(EpochInst);
+    if (EpochInst->parameters_->vehicleReturn_)
+        returnVehiclesZone(EpochInst);
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
@@ -927,68 +928,63 @@ void solver::returnVehicles(PInstance & EpochInst) {
 
 
 void solver::returnVehiclesZone(PInstance & EpochInst) {
-    int lastEpoch = 0;
-    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
-    else
-        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - EpochInst->parameters_->epochLength_;
-
-    for (auto & zoneObj : EpochInst->zones_) {
-        zoneObj.second->nbVehicles_ = 0;
-    }
-
-    for (auto &vehicleObj: EpochInst->vehicles_) {
-        EpochInst->zones_[vehicleObj->currentRoute_->routeNodes_.back()->zoneID_]->nbVehicles_++;
-    }
-    for (auto &zoneObj : EpochInst->zones_) {
-        if (zoneObj.second->nbVehicles_ < zoneObj.second->nbVehiclesRef_ * 0.95 && zoneObj.second->highDemandZone_) {
-            zoneObj.second->underCapacity_ = true;
-        }
-        else
-            zoneObj.second->underCapacity_ = false;
-    }
-
-    // Return Idle Vehicles
-    std::vector<PVehicle> idleVehicles;
     if (EpochInst->parameters_->vehicleReturn_) {
+        int lastEpoch = 0;
+        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+            lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
+        else
+            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - EpochInst->parameters_->epochLength_;
+
+        for (auto & zoneObj : EpochInst->zones_) {
+            zoneObj.second->nbVehicles_ = 0;
+        }
+
+        for (auto &vehicleObj: EpochInst->vehicles_) {
+            EpochInst->zones_[vehicleObj->currentRoute_->routeNodes_.back()->zoneID_]->nbVehicles_++;
+        }
+        for (auto &zoneObj : EpochInst->zones_) {
+            if (zoneObj.second->nbVehicles_ < zoneObj.second->nbVehiclesRef_ * 0.95 && zoneObj.second->highDemandZone_) {
+                zoneObj.second->underCapacity_ = true;
+            }
+            else
+                zoneObj.second->underCapacity_ = false;
+        }
+
+        // Return Idle Vehicles
+        std::vector<PVehicle> idleVehicles;
+
         for (auto &vehicleObj: EpochInst->vehicles_) {
             if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
                 vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
                 if (!EpochInst->zones_[vehicleObj->departNode_->zoneID_]->underCapacity_ ) {
                     idleVehicles.push_back(vehicleObj);
                 }
-            }
-        }
-    }
-    if (!idleVehicles.empty()) {
-        for (auto &vehicleObj : idleVehicles) {
-            // Retrieve the current zone from the vehicle's last route node.
-            int currentZoneID = vehicleObj->currentRoute_->routeNodes_.back()->zoneID_;
-            PZone currentZone = EpochInst->zones_[currentZoneID];
-
-            // Iterate over the current zone's successors (assumed to be ordered by proximity).
-            for (Zone* successor : currentZone->successors_) {
-                // Check if the successor zone is under capacity (i.e., less than 90% of its reference).
-                if (successor->nbVehicles_ < successor->nbVehiclesRef_ * 0.95 && successor->highDemandZone_ &&
-                    vehicleObj->sinkNode_->zoneID_ != successor->zoneID_) {
-                    PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
-                    sinkNode->zoneID_ = successor->zoneID_;
-                    sinkNode->locationID_ = successor->centerLocationID_;
-                    successor->nbVehicles_++; // Update vehicle count.
-                    vehicleObj->currentRoute_->addSink(sinkNode);
-                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceStart().count());
-                    break; // Assign to the nearest eligible successor.
                 }
+        }
+
+        if (!idleVehicles.empty()) {
+            for (auto &vehicleObj : idleVehicles) {
+                // Retrieve the current zone from the vehicle's last route node.
+                int currentZoneID = vehicleObj->currentRoute_->routeNodes_.back()->zoneID_;
+                PZone currentZone = EpochInst->zones_[currentZoneID];
+
+                // Iterate over the current zone's successors (assumed to be ordered by proximity).
+                for (Zone* successor : currentZone->successors_) {
+                    // Check if the successor zone is under capacity (i.e., less than 90% of its reference).
+                    if (successor->nbVehicles_ < successor->nbVehiclesRef_ * 0.95 && successor->highDemandZone_ &&
+                        vehicleObj->sinkNode_->zoneID_ != successor->zoneID_) {
+                        PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
+                        sinkNode->zoneID_ = successor->zoneID_;
+                        sinkNode->locationID_ = successor->centerLocationID_;
+                        successor->nbVehicles_++; // Update vehicle count.
+                        vehicleObj->currentRoute_->addSink(sinkNode);
+                        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                            vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceStart().count());
+                        break; // Assign to the nearest eligible successor.
+                        }
+                }
+                // If no eligible successor is found, the vehicle remains unassigned.
             }
-            // If no eligible successor is found, the vehicle remains unassigned.
         }
     }
-
-    /*PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
-    if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
-        vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
-        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-            vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
-    }*/
 }
