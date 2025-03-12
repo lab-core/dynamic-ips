@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=ctb-dionneg1
 #SBATCH --mem=16G
-#SBATCH --time=0:50:00
-#SBATCH --array=1-3600
+#SBATCH --time=0:40:00
+#SBATCH --array=1-810
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -20,7 +20,7 @@ algorithms[1]=2  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="nbPick1 nbPick2 nbPick3 nbPick4 dynamic"  # Mode 1 has two parameter files
+param_files[1]="nbPick1 nbPick2 dynamic"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
