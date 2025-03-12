@@ -841,8 +841,8 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             requestObj->minDual_ = requestObj->penalty_;
             requestObj->avgDual_ = requestObj->penalty_;
         }
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "DUAL");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "DUAL");
+//        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "DUAL");
+//        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "DUAL");
 
         RMPCounter_++;
 
