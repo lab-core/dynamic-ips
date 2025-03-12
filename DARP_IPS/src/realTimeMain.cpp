@@ -68,15 +68,17 @@ int main(int argc, char** argv) {
     InputPaths inputPaths(dataDir, vehicleFile, vehicleFolder, paramFile);
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
     std::string instName = instNames[0];
-    /*if (numEpochTests > 1){
-        instNames.clear();
-        for (int i = 0; i < numEpochTests; ++i)
-            instNames.push_back(instName+"_"+std::to_string(i+1));
-    }*/
+    int num_i = 1;
+    int num_j = 1;
+
+    if (paramFile == "truncate") {
+        num_i = 7;
+        num_j = 3;
+    }
 
     for (auto & instanceName : instNames){
-        for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 1; ++j){
+        for (int i = 0; i < num_i; ++i) {
+            for (int j = 0; j < num_j; ++j){
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 // create output files for epoch results
                 inputPaths.initializeInputs(instFolder, instanceName);
@@ -90,8 +92,12 @@ int main(int argc, char** argv) {
                 ReadWrite::readParameters(inputPaths.getInputParamFile(), mainInst);
                 mainInst->parameters_->saveScratch_ = saveScratch;
 
-                /*mainInst->parameters_->MaxLabel_ = (i + 1) *5;
-                mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);*/
+                if (paramFile == "truncate") {
+                    mainInst->parameters_->MaxLabel_ = (i + 1) *5;
+                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+                }
+
+
 
                 /*if (i == 1) {
                     mainInst->parameters_->pruneNodes_ = true;
@@ -117,7 +123,7 @@ int main(int argc, char** argv) {
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
                 mainInst->parameters_->solutionMode_ = static_cast<SolutionMode>(solMode);
-                ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_);
+                ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_, paramFile);
                 std::cout << mainInst->toString();
 
                 // create solver
@@ -183,13 +189,13 @@ int main(int argc, char** argv) {
 
                     Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true);
                     finalInstanceStream
-                            << "VehicleFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,customer Group,"
+                            << "VehicleFile,paramFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,customer Group,"
                                "#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,#(Lim)served Req,#(Lim)Rejected Req,"
                                "#(Lim)served Cust,(Lim)wait/req,(Lim)wait/cust,(Lim)tripDelay/req,"
                                "idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,"
                                "#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
-                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total, CPSuccess, CPFails, CGSuccess";
-                    finalInstanceStream << "\n" << vehicleFolder << ",";
+                               "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total,CPSuccess,CPFails,CGSuccess";
+                    finalInstanceStream << "\n" << vehicleFolder << "," << paramFile << ",";
                     finalInstanceStream << mainInst->instRepStr_.str();
                     finalInstanceStream.close();
                 }

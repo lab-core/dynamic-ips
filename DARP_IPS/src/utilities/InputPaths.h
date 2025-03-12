@@ -114,7 +114,8 @@ public:
     void initializeInputs(const std::string& instFolder, const std::string& instanceName);
 
     // this function defines the path to outputs
-    void initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch, int nbVehicles);
+    void initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
+        int nbVehicles, const std::string& paramFile);
 
     // this function create a directory to build a new instance
     void makeInstanceOutput(const std::string& instNum);

@@ -698,7 +698,7 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
 }
 
 // function that open all input files and update main instance data
-void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch) {
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile) {
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
     if (pInstance->nbOnboards_ > 0){
@@ -744,7 +744,8 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     }
 
     inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
-                                 solutionModeName[pInstance->parameters_->solutionMode_], saveScratch, pInstance->nbVehicles_);
+                                 solutionModeName[pInstance->parameters_->solutionMode_],
+                                 saveScratch, pInstance->nbVehicles_, paramFile);
 
     // write the parameters in file
     std::ofstream myFile;
