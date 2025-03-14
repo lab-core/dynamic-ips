@@ -44,8 +44,6 @@ for mode in 2; do
   for instance_path in "${INSTANCES[@]}"; do
     instance=$(basename "$instance_path")
 
-  for instance in instances; do
-
 #    param_dir=${param_files[$mode]}
 #    jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
 #    ((i++))
