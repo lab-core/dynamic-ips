@@ -7,7 +7,7 @@ epochLength = 30
 penaltyL = 30
 committedTime = 30
 nbThreads = 16
-InitialDual = 3
+InitialDual = 1
 mainAlgorithm = 0
 solutionMode = 2
 NumIter = 1
@@ -15,6 +15,12 @@ GreedyReOptimize = 0
 saveScratch = 1
 vehicleReturn = 0
 timeWindows = 0
+WaitForReturn = 9999999
+numVehicleSwitch = 1000
+informTimeLimit = 120
+pickupDeviationWindow = 60
+
+
 
 # ISUD PARAMETERS
 #
@@ -30,7 +36,7 @@ NumColumn = 50
 #
 isTruncated = 1
 MaxLabel = 15
-isDominanceReleased = 1
+isDominanceReleased = 0
 isSuccessorsLimited = 0
 pruneNodes = 1
 pruneArcs = 1
