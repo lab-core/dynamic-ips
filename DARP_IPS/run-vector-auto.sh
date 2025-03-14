@@ -39,7 +39,7 @@ num_vehicles_list=(1500)
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for instance_path in "${INSTANCES[@]}"; do
     instance=$(basename "$instance_path")
