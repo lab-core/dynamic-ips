@@ -76,6 +76,10 @@ int main(int argc, char** argv) {
         num_j = 3;
     }
 
+    else if (paramFile == "pruning") {
+        num_i = 3;
+    }
+
     for (auto & instanceName : instNames){
         for (int i = 0; i < num_i; ++i) {
             for (int j = 0; j < num_j; ++j){
@@ -96,21 +100,24 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                     mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 }
-
-
-
-                /*if (i == 1) {
-                    mainInst->parameters_->pruneNodes_ = true;
+                else if (paramFile == "pruning") {
+                    if (i == 0) {
+                        mainInst->parameters_->pruneNodes_ = true;
+                    }
+                    else if (i == 1) {
+                        mainInst->parameters_->pruneNodes_ = true;
+                        mainInst->parameters_->pruneArcs_ = true;
+                    }
+                    else if (i == 2){
+                        mainInst->parameters_->pruneNodes_ = true;
+                        mainInst->parameters_->pruneArcs_ = true;
+                        mainInst->parameters_->discardSuboptimalPath_ = true;
+                    }
                 }
-                else if (i == 2) {
-                    mainInst->parameters_->pruneNodes_ = true;
-                    mainInst->parameters_->pruneArcs_ = true;
-                }
-                else if (i == 3){
-                    mainInst->parameters_->pruneNodes_ = true;
-                    mainInst->parameters_->pruneArcs_ = true;
-                    mainInst->parameters_->discardSuboptimalPath_ = true;
-                }*/
+
+
+
+
                 /*if (i < 4)
                     mainInst->parameters_->nbPick_= i+1;
                 if (i == 4) {
