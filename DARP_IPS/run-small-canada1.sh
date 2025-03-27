@@ -2,7 +2,7 @@
 #SBATCH --account=ctb-dionneg1
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
-#SBATCH --time=1:40:00
+#SBATCH --time=0:55:00
 #SBATCH --array=1-1080
 #SBATCH --output=/dev/null
 
