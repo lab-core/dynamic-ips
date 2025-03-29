@@ -59,13 +59,15 @@ void Route::addNode(PNode &node) {
         plannedDepartTime_.back() += node->related_Request_->earlyPick_ - reachTime;
         reachTime = node->related_Request_->earlyPick_;
     }
+    if (routeNodes_.back()->departTime_ != 0)
+        routeNodes_.back()->departTime_ = plannedDepartTime_.back();
     plannedReachTime_.push_back(reachTime);
     plannedDepartTime_.push_back(reachTime + node->serviceTime_);
     routeNodes_.push_back(node);
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->readyTime_);
+        totalDelay_ += reachTime - node->initialReadyTime_;
     }
 }
 
@@ -77,7 +79,7 @@ void Route::addNode(PNode &node, float reachTime, float departTime) {
     plannedDepartTime_.push_back(departTime);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        totalDelay_ += (reachTime - node->readyTime_);
+        totalDelay_ += reachTime - node->initialReadyTime_;
     }
     routeNodes_.push_back(node);
 }
@@ -103,7 +105,7 @@ void Route::removeNode(int nodeIndex) {
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
-            totalDelay_ += (plannedReachTime_[i] - routeNodes_[i]->readyTime_);
+            totalDelay_ += plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
         }
 
     }
@@ -165,7 +167,7 @@ std::string Route::toString() const {
         }
         repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
         if (routeNodes_[i]->initialType_ == PICKUP)
-            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->earlyPick_ << " (s)  ";
+            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->intialEarlyPick_ << " (s)  ";
         else
             repStr << std::right << std::setw(11) << "-----" << " (s)  ";
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
@@ -190,14 +192,16 @@ void Route::testRoute(PVehicle & vehicle) {
 
     for (int i = 1; i < routeSize_; ++i) {
         if (testRoute->routeNodes_[i]->reachTime_ != testRoute->plannedReachTime_[i]){
-            std::cout << "Connectivity constraint violated at node : ";
+            std::cout << "Connectivity constraint violated at node (reach time): ";
             std::cout << testRoute->routeNodes_[i]->nodeID_ << std::endl;
+            std::cout << testRoute->routeNodes_[i]->reachTime_ << " - " << testRoute->plannedReachTime_[i] << std::endl;
   //          throw myTools::myException("Route-Validation", __FILE__,__LINE__);
         }
 
         if (testRoute->routeNodes_[i]->departTime_ != testRoute->plannedDepartTime_[i]){
-            std::cout << "Connectivity constraint violated at node : ";
+            std::cout << "Connectivity constraint violated at node (depart time): ";
             std::cout << testRoute->routeNodes_[i]->nodeID_ << std::endl;
+            std::cout << testRoute->routeNodes_[i]->departTime_ << " - " << testRoute->plannedDepartTime_[i] << std::endl;
  //           throw myTools::myException("Route-Validation", __FILE__,__LINE__);
         }
 

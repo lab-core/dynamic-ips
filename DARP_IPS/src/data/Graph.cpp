@@ -21,6 +21,7 @@ Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationI
     nbPassengers_ = 0;
     serviceTime_ = 0;
     readyTime_ = 0;
+    initialReadyTime_ = 0;
     nodeStatus_ = DEFINED;
     bestLabelReduceCost_ = INFINITY;
     nbActiveLabels_ = 0;
@@ -46,6 +47,7 @@ Node::Node(const PNode &oldNode) {
     serviceTime_ = oldNode->serviceTime_;
     nodeStatus_ = oldNode->nodeStatus_;
     readyTime_ = oldNode->readyTime_;
+    initialReadyTime_ = oldNode->initialReadyTime_;
     nbActiveLabels_ = 0;
     travelTimeFromSource_ = 0;
     bestLabelReduceCost_ = INFINITY;
@@ -61,6 +63,7 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
     serviceTime_ = relatedRequest->serviceTime_;
     nodeStatus_ = DEFINED;
     readyTime_ = relatedRequest->earlyPick_;
+    initialReadyTime_ = related_Request_->intialEarlyPick_;
     pairNode_ = nullptr;
     initialType_ = type;
 

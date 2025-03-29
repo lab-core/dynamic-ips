@@ -16,6 +16,7 @@ unsigned int Request::requestCount_ = 0;
 Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime) :
         requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime){
+    intialEarlyPick_ = earlyPick;
     allocVehicleID_ = LARGE_CONSTANT;
     solVehicleID_ = LARGE_CONSTANT;
     epochVehicleID_ = LARGE_CONSTANT;
@@ -41,6 +42,7 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
         requestID_(requestCount_++), PickUpID_(pickUpID), requestTime_(requestTime),
         DropOffID_(dropOffID), earlyPick_(earlyPick), nbPassengers_(nbPassengers), serviceTime_(deltaTime),
         pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
+    intialEarlyPick_ = earlyPick;
     allocVehicleID_ = LARGE_CONSTANT;
     solVehicleID_ = LARGE_CONSTANT;
     epochVehicleID_ = LARGE_CONSTANT;
@@ -83,7 +85,7 @@ void Request::setMaxTravelTime(float &alphaParam, float &betaParam) {
 void Request::setPenalty(float elapsedTime, PParameters &parameters, float simulationStart) {
 
     penalty_ = static_cast<float>(parameters->deltaPram_
-                                  * pow(2, (elapsedTime - (earlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
+                                  * pow(2, (elapsedTime - (intialEarlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
 }
 // Display function
 std::string Request::toString() const {

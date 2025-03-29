@@ -75,8 +75,6 @@ public:
     // this function is to solve the main instance in anytime mode
     void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime);
 
-    void anyTimeSolverEvent(PInstance & mainInst, InputPaths &inputPaths);
-
     // this function is to solve the main instance in static mode
     void staticSolver(PInstance & mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime);
     // this function is to solve the main instance in dynamic mode iteratively with fixed epoch

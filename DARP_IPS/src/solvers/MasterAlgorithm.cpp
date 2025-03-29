@@ -161,7 +161,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, PGreedyModeler &Gr
                         if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                             vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->dual_ =
                                     vehicleObj->currentRoute_->plannedReachTime_[i] -
-                                    vehicleObj->currentRoute_->routeNodes_[i]->readyTime_;
+                                    vehicleObj->currentRoute_->routeNodes_[i]->initialReadyTime_;
                             vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->InitialDual_ = vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->dual_;
                         }
                     }
@@ -832,7 +832,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             for (int i = 1; i < routeObj->routeSize_; ++i) {
                 if (routeObj->routeNodes_[i]->type_ == PICKUP) {
                     routeObj->routeNodes_[i]->related_Request_->avgDual_ = routeObj->totalDelay_ / routeObj->routeRequests_.size();
-                    routeObj->routeNodes_[i]->related_Request_->minDual_ = routeObj->plannedReachTime_[i] - routeObj->routeNodes_[i]->related_Request_->earlyPick_;
+                    routeObj->routeNodes_[i]->related_Request_->minDual_ = routeObj->plannedReachTime_[i] - routeObj->routeNodes_[i]->related_Request_->intialEarlyPick_;
                 }
             }
         }

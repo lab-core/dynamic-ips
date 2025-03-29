@@ -165,8 +165,8 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
             nbPickUp_++;
         }*/
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->readyTime_);
-        reducedCost_ += (reachedTime_ - outNode->readyTime_);
+        totalDelay_ += (reachedTime_ - outNode->initialReadyTime_);
+        reducedCost_ += (reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / nbPickUp_;
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);

@@ -128,7 +128,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
                 }
             }
             else if (newLabel->currentNode_->type_ == PICKUP)
-                totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->readyTime_);
+                totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
 
         }
     }
@@ -177,7 +177,7 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
             }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
-            waitIncrease = pickTime - pickNode->readyTime_;
+            waitIncrease = pickTime - pickNode->initialReadyTime_;
             lengthIncrease = (pickTime - departureTime_) +
                              (pickNode->serviceTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_]);
             preDrop = PLastStop_;
@@ -245,11 +245,9 @@ void GreedyRoute::insertNode(PStopLabel &preLabel, PNode &newNode, std::vector<P
     // calculate reach time
     float reachTime = labelToNodeReachTime(preLabel, newNode);
     // update depart time
-    if (preLabel->currentNode_->type_ != SOURCE){
-        if (newNode->type_ == PICKUP){
-            if (preLabel->leaveTime_ < newNode->related_Request_->requestTime_)
-                preLabel->leaveTime_ = newNode->related_Request_->requestTime_;
-        }
+    if (preLabel->currentNode_->type_ != SOURCE && newNode->type_ == PICKUP){
+        if (preLabel->leaveTime_ < newNode->related_Request_->requestTime_)
+            preLabel->leaveTime_ = newNode->related_Request_->requestTime_;
     }
 
     // create new label
@@ -278,17 +276,17 @@ void GreedyRoute::insertNode(PStopLabel &preLabel, PNode &newNode, std::vector<P
         updateReachTimes(newLabel);
     }
     if (newNode->type_ == PICKUP){
-        if (reachTime - newNode->related_Request_->requestTime_ < 0 )
+        if (reachTime - newNode->related_Request_->earlyPick_ < 0 )
             throw myTools::myException("Negative waiting time encountered in insertNode.", __FILE__, __LINE__);
 
-        totalDelay_ += (reachTime - newNode->readyTime_);
+        totalDelay_ += (reachTime - newNode->initialReadyTime_);
     }
 }
 
 void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool) {
     greedyLabelPool.push_back(label);
     if (label->currentNode_->type_ == PICKUP) {
-        totalDelay_ -= (label->reachTime_ - label->currentNode_->readyTime_);
+        totalDelay_ -= label->reachTime_ - label->currentNode_->initialReadyTime_;
     }
     if (label->child_ == nullptr){
         label->parent_->child_ = nullptr;
@@ -329,10 +327,11 @@ void GreedyRoute::insertRequest(PInsertPosition &position, PNode &pickNode, PNod
 }
 // this function calculate the reachTime from a Label to a node
 float GreedyRoute::labelToNodeReachTime(PStopLabel &preLabel, PNode &Node) {
-    if ((Node->type_ == PICKUP)&&(preLabel->leaveTime_ <= Node->related_Request_->requestTime_))
-        return Node->related_Request_->requestTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
-    else
-        return preLabel->leaveTime_ + durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+    float reachTime = std::max(preLabel->leaveTime_, Node->related_Request_->requestTime_) +
+        durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
+    if (Node->type_ == PICKUP && Node->related_Request_->earlyPick_ > reachTime)
+        return Node->related_Request_->earlyPick_;
+    return reachTime;
 }
 
 
@@ -351,8 +350,8 @@ void GreedyRoute::updateReachTimes(PStopLabel &preLabel) {
 
         // update total delay
         if (currentLabel->child_->currentNode_->type_ == PICKUP) {
-            float preDelay = currentLabel->child_->reachTime_ - currentLabel->child_->currentNode_->readyTime_;
-            float newDelay = childReachTime - currentLabel->child_->currentNode_->readyTime_;
+            float preDelay = currentLabel->child_->reachTime_ - currentLabel->child_->currentNode_->initialReadyTime_;
+            float newDelay = childReachTime - currentLabel->child_->currentNode_->initialReadyTime_;
             totalDelay_ += (newDelay - preDelay);
             if (totalDelay_ < 0 ) {
                 std::cout << "error";
@@ -498,6 +497,10 @@ bool GreedyRoute::isAnyViolation(PStopLabel &startLabel) const {
                 return true;
             }
         }
+        else if (currentLabel->currentNode_->type_ == PICKUP) {
+            if (currentLabel->reachTime_ > currentLabel->currentNode_->related_Request_->latestPickup_)
+                return true;
+        }
         currentLabel = currentLabel->child_;
     }
     return false;
@@ -523,7 +526,7 @@ void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxD
             }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
-            deltaDelay =  pickTime - pickNode->readyTime_;
+            deltaDelay =  pickTime - pickNode->initialReadyTime_;
             DeltaT = (pickTime - departureTime_) +
                      (pickNode->serviceTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_]);
             preDrop = PLastStop_;

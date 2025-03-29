@@ -63,7 +63,6 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateState(int epoch, int &epochLength, float simulationStart, bool vehicleReturn);
     void updateStateTime(PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests);
     void updateCurrentRoute(float elapsedTime);
 

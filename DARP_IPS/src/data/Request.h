@@ -27,6 +27,7 @@ public:
     int DropOffID_;                     // Drop off location ID
     float requestTime_;                   // earliest possible pick up time for the request
     float earlyPick_;                   // earliest possible pick up time for the request
+    float intialEarlyPick_;
     float latestPickup_;                // latest possible pick up time for the request
     float pickTime_;                    // actual pick up time of the request
     float dropTime_;                    // actual pick up time of the request

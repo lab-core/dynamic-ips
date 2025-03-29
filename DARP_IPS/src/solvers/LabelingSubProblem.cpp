@@ -80,8 +80,8 @@ void LabelingSubProblem::initialization() {
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&(*nodeObj));
         initialLabel->openRequests_.set(nodeObj->related_Request_->taskIndexLabel_, true);
-        float remainedTime = nodeObj->related_Request_->maxTravelTime_ - (Vehicle_)->departTime_ +
-                             nodeObj->pairNode_->departTime_;
+        float remainedTime = nodeObj->related_Request_->maxTravelTime_ - Vehicle_->departTime_ +
+                             nodeObj->pairNode_->reachTime_ + nodeObj->pairNode_->serviceTime_;
 
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
     }

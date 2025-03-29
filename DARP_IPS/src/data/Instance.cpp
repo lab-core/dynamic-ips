@@ -158,11 +158,11 @@ std::string Instance::solutionToString() {
         repStr << std::fixed;
         repStr << std::setprecision(2);
         repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
-        repStr << std::right << std::setw(9) << requests_[i]->earlyPick_ << " (s)  ";
+        repStr << std::right << std::setw(9) << requests_[i]->intialEarlyPick_ << " (s)  ";
         if (requests_[i]->requestStatus_ == COMPLETED) {
             repStr << std::right << std::setw(9) << requests_[i]->pickTime_ << " (s)  ";
             repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
-            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->earlyPick_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->intialEarlyPick_ << " (s)  ";
 
 //            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->serviceTime_;
             float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
@@ -183,7 +183,7 @@ std::string Instance::solutionToString() {
             if (parameters_->savePartial_) {
                 if (requests_[i]->requestTime_ >= simulationStartTime_ + 3600) {
                     totalNumServedPartial++;
-                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
+                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->intialEarlyPick_;
                     totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
                     totalCustomersPartial += requests_[i]->nbPassengers_;
                 }
@@ -192,7 +192,7 @@ std::string Instance::solutionToString() {
                 if (requests_[i]->getRequestId() >= startIndex) {
                     //               if (requests_[i]->earlyPick_ >= simulationStartTime_) {
                     totalNumServedPartial++;
-                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->earlyPick_;
+                    totalWaitingPartial += requests_[i]->pickTime_ - requests_[i]->intialEarlyPick_;
                     totalTripDelayPartial += travelTime - requests_[i]->minTravelTime_;
                     totalCustomersPartial += requests_[i]->nbPassengers_;
                 }
@@ -666,9 +666,10 @@ void Instance::updatePenalties(float elapsedTime) {
     for (auto & requestObj : requests_) {
         requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_);
         if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
-            requestObj->latestPickup_ = requestObj->earlyPick_ + requestObj->penalty_;
-        else
+            requestObj->latestPickup_ = requestObj->intialEarlyPick_ + requestObj->penalty_;
+        else {
             requestObj->latestPickup_ = requestObj->plannedPickTime_ + parameters_->pickupDeviationWindow_;
+        }
     }
 }
 
@@ -693,7 +694,7 @@ std::string Instance::saveSolutionRoutes() {
         for (int j = 0; j< vehicleObj->solutionRoute_->routeNodes_.size(); j++) {
             repStr << vehicleObj->vehicleID_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->nodeID_ << ",";
-            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->readyTime_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->initialReadyTime_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->reachTime_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->initialType_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->locationID_ << ",";
@@ -713,7 +714,7 @@ std::string Instance::saveSolutionRoutes() {
 
 std::string Instance::saveRequestsResults() {
     std::stringstream repStr;
-    repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,DropTime,LatestPick,"
+    repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,DropTime,EarliestPick,LatestPick,"
               "AssignTime,CommitWaitTime,plannedWaitTime,VehicleID,#VehicleSwitch,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
 
     int startIndex;
@@ -728,16 +729,17 @@ std::string Instance::saveRequestsResults() {
             repStr << requestObj->nbPassengers_ << ",";
             repStr << requestObj->PickUpID_ << ",";
             repStr << requestObj->DropOffID_ << ",";
-            repStr << requestObj->earlyPick_ << ",";
+            repStr << requestObj->intialEarlyPick_ << ",";
             repStr << requestObj->pickTime_ << ",";
             repStr << requestObj->dropTime_ << ",";
+            repStr << requestObj->earlyPick_ << ",";
             repStr << requestObj->latestPickup_ << ",";
-            repStr << requestObj->assignTime_ - requestObj->earlyPick_ << ",";
-            repStr << requestObj->commitTime_ - requestObj->earlyPick_ << ",";
-            repStr << requestObj->plannedPickTime_ - requestObj->earlyPick_ << ",";
+            repStr << requestObj->assignTime_ - requestObj->intialEarlyPick_ << ",";
+            repStr << requestObj->commitTime_ - requestObj->intialEarlyPick_ << ",";
+            repStr << requestObj->plannedPickTime_ - requestObj->intialEarlyPick_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
             repStr << requestObj->nbSwitch_ << ",";
-            repStr << requestObj->pickTime_ - requestObj->earlyPick_ << ",";
+            repStr << requestObj->pickTime_ - requestObj->intialEarlyPick_ << ",";
             repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
             repStr << requestObj->maxTravelTime_ << ",";
             repStr << requestObj->minTravelTime_ << ",";
@@ -779,7 +781,7 @@ std::string Instance::saveEpochRoutes(int epoch) {
             repStr << epoch << ",";
             repStr << vehicleObj->vehicleID_ << ",";
             repStr << nodeObj->nodeID_ << ",";
-            repStr << nodeObj->readyTime_ << ",";
+            repStr << nodeObj->initialReadyTime_ << ",";
             repStr << nodeObj->reachTime_ << ",";
             repStr << nodeObj->type_ << ",";
             repStr << nodeObj->locationID_ << "\n";
@@ -861,7 +863,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
                 myFile << std::left << std::setw(7) << requestObj->nbPassengers_ ;
                 myFile << std::setw(10) << requestObj->PickUpID_ ;
                 myFile << std::setw(10) << requestObj->DropOffID_ ;
-                myFile << std::setw(10) << requestObj->earlyPick_ ;
+                myFile << std::setw(10) << requestObj->intialEarlyPick_ ;
                 myFile << std::setw(10) << requestObj->pickTime_;
                 myFile << std::setw(10) << (vehicleObj->currentRoute_->routeNodes_[i]->pairNode_)->departTime_;
                 myFile << std::setw(setwSize) << vehicleObj->vehicleID_;
@@ -887,7 +889,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
                 myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
                 myFile << std::setw(10) << requestObj->PickUpID_;
                 myFile << std::setw(10) << requestObj->DropOffID_;
-                myFile << std::setw(10) << requestObj->earlyPick_;
+                myFile << std::setw(10) << requestObj->intialEarlyPick_;
                 myFile << std::setw(10) << requestObj->pickZoneID_;
                 myFile << std::setw(10) << requestObj->dropZoneID_;
                 myFile << std::setw(10) << requestObj->InitialDual_;
@@ -912,7 +914,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
             myFile << std::setw(10) << requestObj->DropOffID_;
-            myFile << std::setw(10) << requestObj->earlyPick_;
+            myFile << std::setw(10) << requestObj->intialEarlyPick_;
             myFile << std::setw(10) << requestObj->pickZoneID_;
             myFile << std::setw(10) << requestObj->dropZoneID_;
             myFile << std::setw(10) << requestObj->InitialDual_;
@@ -938,7 +940,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
             myFile << std::setw(10) << requestObj->DropOffID_;
-            myFile << std::setw(10) << requestObj->earlyPick_;
+            myFile << std::setw(10) << requestObj->intialEarlyPick_;
             myFile << std::setw(10) << requestObj->pickZoneID_;
             myFile << std::setw(10) << requestObj->dropZoneID_ << "\n";
             nbRequests++;
