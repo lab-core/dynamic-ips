@@ -79,6 +79,9 @@ int main(int argc, char** argv) {
     else if (paramFile == "pruning") {
         num_i = 3;
     }
+    else if (paramFile == "dropPick") {
+        num_i = 2;
+    }
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < num_i; ++i) {
@@ -114,9 +117,10 @@ int main(int argc, char** argv) {
                         mainInst->parameters_->discardSuboptimalPath_ = true;
                     }
                 }
-
-
-
+                else if (paramFile == "dropPick") {
+                    if (i == 0)
+                        mainInst->parameters_->isDropPickPossible_ = true;
+                }
 
                 /*if (i < 4)
                     mainInst->parameters_->nbPick_= i+1;
