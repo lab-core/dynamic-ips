@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     int num_j = 1;
 
     if (paramFile == "truncate") {
-        num_i = 1;
+        num_i = 7;
         num_j = 3;
     }
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
                 mainInst->parameters_->saveScratch_ = saveScratch;
 
                 if (paramFile == "truncate") {
-                    mainInst->parameters_->MaxLabel_ = 35;
+                    mainInst->parameters_->MaxLabel_ = (i + 1) *5;
                     mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 }
                 else if (paramFile == "pruning") {

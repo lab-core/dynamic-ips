@@ -161,10 +161,10 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         numExtendCheck_++;
         openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
         reducedCost_ -= (outNode->related_Request_)->dual_;
-        /*if (travelTime > 0){
+        if (travelTime > 0){
             nbPickUp_++;
-        }*/
-        nbPickUp_ ++;
+        }
+//        nbPickUp_ ++;
         totalDelay_ += (reachedTime_ - outNode->initialReadyTime_);
         reducedCost_ += (reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
