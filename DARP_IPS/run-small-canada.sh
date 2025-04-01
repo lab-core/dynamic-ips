@@ -2,7 +2,7 @@
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=1:30:00
-#SBATCH --array=1-2
+#SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -20,11 +20,11 @@ algorithms[1]=2  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="truncate"  # Mode 1 has two parameter files
+param_files[1]="Parameters"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 #INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-instances=("20160512_12-120m_83" "20160512_12-120m_108")
+instances=("20160316_12-120m_114" "20160316_12-120m_120" "20160512_12-120m_105" "20160512_12-120m_107" "20160512_12-120m_108" "20160512_12-120m_109" "20160512_12-120m_110" "20160512_12-120m_116" "20160521_12-120m_98")
 
 # Define vehicle counts
 num_vehicles_list=(1500)
