@@ -224,8 +224,6 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         preprocessTime_->start();
         subProSolve.clear();
         preprocessTime_->stop();
-        masterModel_->SPIters_++;
-        masterModel_->SPIter_++;
 
 
         subProblemTime_->stop();
@@ -234,6 +232,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
             break;
         }
+        masterModel_->SPIters_++;
+        masterModel_->SPIter_++;
+
         if (nbNegativeFound == 0) {
             masterModel_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;

@@ -971,8 +971,6 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths, int e
         epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
         iterTime_ = masterTime_->dSinceStart().count();
         objValue_ = MasterPro_->objValue_;
-        (*pLogIsudResultsStream_) << save_MPResults(epoch, "LMP", MasterPro_->compRoutes_.size() - nbVehicles_,
-                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
 
         RMPCounter_++;
 
@@ -985,6 +983,8 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, InputPaths &inputPaths, int e
         if (minReducedCost_ >= -0.1)
             break;
     }
+    (*pLogIsudResultsStream_) << save_MPResults(epoch, "LMP", MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
 }
 
 

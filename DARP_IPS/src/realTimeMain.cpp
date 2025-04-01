@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         num_i = 3;
     }
     else if (paramFile == "dropPick") {
-        num_i = 2;
+        num_i = 1;
     }
 
     for (auto & instanceName : instNames){
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
                     }
                 }
                 else if (paramFile == "dropPick") {
-                    if (i == 0)
+                    if (i == 1)
                         mainInst->parameters_->isDropPickPossible_ = true;
                 }
 
