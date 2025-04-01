@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=ctb-dionneg1
+#SBATCH --account=def-legraina
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:30:00
