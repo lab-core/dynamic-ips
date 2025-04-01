@@ -54,13 +54,14 @@ void Route::addNode(PNode &node) {
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->related_Request_->requestTime_)
         plannedDepartTime_.back() = node->related_Request_->requestTime_;
-    float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
-    if (node->initialType_ == PICKUP && reachTime < node->related_Request_->earlyPick_) {
-        plannedDepartTime_.back() += node->related_Request_->earlyPick_ - reachTime;
-        reachTime = node->related_Request_->earlyPick_;
-    }
     if (routeNodes_.back()->departTime_ != 0)
         routeNodes_.back()->departTime_ = plannedDepartTime_.back();
+    float reachTime = std::max(plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_], node->related_Request_->earlyPick_);
+    /*if (node->initialType_ == PICKUP && reachTime < node->related_Request_->earlyPick_) {
+        plannedDepartTime_.back() += node->related_Request_->earlyPick_ - reachTime;
+        reachTime = node->related_Request_->earlyPick_;
+    }*/
+
     plannedReachTime_.push_back(reachTime);
     plannedDepartTime_.push_back(reachTime + node->serviceTime_);
     routeNodes_.push_back(node);
