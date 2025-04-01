@@ -23,8 +23,8 @@ declare -A param_files
 param_files[1]="truncate"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
-INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-#instances=("20160512_12-120m_83" "20160512_12-120m_108")
+#INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
+instances=("20160512_12-120m_83" "20160512_12-120m_108")
 
 # Define vehicle counts
 num_vehicles_list=(1500)
