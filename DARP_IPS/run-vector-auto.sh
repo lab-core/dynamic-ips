@@ -1,8 +1,8 @@
 #!/bin/bash
+#SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
 #SBATCH --time=2:15:00
-#SBATCH --array=1-24
+#SBATCH --array=1-48
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -21,7 +21,7 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="Param_mode_1a"  # Mode 1 has two parameter files
+param_files[1]="commit no_commit"  # Mode 1 has two parameter files
 param_files[2]="Param_mode_2c"  # Mode 2 has three parameter files
 param_files[3]="Param_mode_1r"
 param_files[4]="Param_mode_2r"
@@ -39,18 +39,20 @@ num_vehicles_list=(1500)
 declare -a jobs
 i=1
 
-for mode in 2; do
+for mode in 1; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for instance_path in "${INSTANCES[@]}"; do
     instance=$(basename "$instance_path")
+    for param_dir in ${param_files[$mode]}; do
 
 #    param_dir=${param_files[$mode]}
 #    jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
 #    ((i++))
 
-    param_dir=${param_files[$((mode+2))]}
+#    param_dir=${param_files[$((mode+2))]}
     jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir 1"
     ((i++))
+    done
   done
 done
 

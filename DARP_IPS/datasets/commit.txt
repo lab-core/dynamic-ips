@@ -17,8 +17,8 @@ vehicleReturn = 0
 timeWindows = 0
 WaitForReturn = 9999999
 numVehicleSwitch = 1000
-informTimeLimit = 9999999
-pickupDeviationWindow = 9999999
+informTimeLimit = 60
+pickupDeviationWindow = 60
 
 
 
@@ -36,7 +36,7 @@ NumColumn = 50
 #
 isTruncated = 1
 MaxLabel = 15
-isDominanceReleased = 1
+isDominanceReleased = 0
 isSuccessorsLimited = 0
 pruneNodes = 1
 pruneArcs = 1
@@ -60,4 +60,4 @@ sortColumn = 1
 BigM = 27000
 solveTimeLimit = 300
 populateTimeLimit = 200
-MIPGap = 0.01
+MIPGap = 0.001
