@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-legraina
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH --cpus-per-task=16
-#SBATCH --time=2:30:00
+#SBATCH --time=0:30:00
 #SBATCH --array=1-540
 #SBATCH --output=/dev/null
 
@@ -21,7 +21,7 @@ algorithms[1]=2  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="nbPick3 nbPick4"  # Mode 1 has two parameter files
+param_files[1]="nbPick2 dynamic nbPick1"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
