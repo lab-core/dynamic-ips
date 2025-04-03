@@ -34,8 +34,8 @@ NumColumn = 50
 
 # LABEL SETTING STRATEGIES
 #
-isTruncated = 0
-MaxLabel = 40
+isTruncated = 1
+MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
 pruneNodes = 1
@@ -52,7 +52,7 @@ Partial_Pricing = 0
 Route_Recycle = 0
 usePick = 1
 nbPick = 1
-sortPath = 1
+sortPath = 0
 sortColumn = 1
 
 # CPLEX PARAMETERS

@@ -18,7 +18,7 @@ std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
 int saveScratch = 0;
-bool solveEpoch =false;
+bool solveEpoch = true;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
