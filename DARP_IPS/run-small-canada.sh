@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=24G
-#SBATCH --cpus-per-task=16
-#SBATCH --time=4:35:00
-#SBATCH --array=1-18
+#SBATCH --mem=100G
+#SBATCH --cpus-per-task=24
+#SBATCH --time=6:35:00
+#SBATCH --array=1-1
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -20,11 +20,11 @@ algorithms[1]=2  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="nbPick1 nbPick2"  # Mode 1 has two parameter files
+param_files[1]="nbPick4"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-instances=("20151025_12-120m_87" "20151230_12-120m_92" "20151130_12-120m_70" "20160521_12-120m_85" "20160222_12-120m_59" "20150926_12-120m_100" "20160316_12-120m_51" "20150828_12-120m_59" "20160512_12-120m_73")
+instances=("20150828_12-120m_59")
 
 # Define vehicle counts
 num_vehicles_list=(1500)
