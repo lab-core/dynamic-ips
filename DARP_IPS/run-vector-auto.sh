@@ -2,7 +2,7 @@
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-2
+#SBATCH --array=1-4
 #SBATCH --output=/dev/null
 
 # Load required modules
