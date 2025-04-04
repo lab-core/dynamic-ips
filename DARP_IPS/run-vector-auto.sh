@@ -2,7 +2,7 @@
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-48
+#SBATCH --array=1-2
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,7 +11,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="manhattan-vehicles"
 vehicles_2="sufficient_manhattan-vehicles-300"
-directory="Instances-120"
+directory="Instances_12-14"
 main_dir="datasets/$directory"
 
 # Define algorithms for each mode
@@ -21,17 +21,17 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="commit no_commit"  # Mode 1 has two parameter files
-param_files[2]="Param_mode_2c"  # Mode 2 has three parameter files
+param_files[1]="ACG-LP ACG-AUX"  # Mode 1 has two parameter files
+param_files[2]="ACG-LP ACG-AUX"  # Mode 2 has three parameter files
 param_files[3]="Param_mode_1r"
 param_files[4]="Param_mode_2r"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-#instances=("20151230_07-120m" "20151130_07-120m" "20151110_07-120m")
+instances=("20160316_12-120m" "20160512_12-120m")
 
 # Define vehicle counts
-num_vehicles_list=(1500)
+num_vehicles_list=(1100)
 # Uncomment to use multiple vehicle counts
 # num_vehicles_list=(1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500)
 
@@ -39,10 +39,11 @@ num_vehicles_list=(1500)
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
-  for instance_path in "${INSTANCES[@]}"; do
-    instance=$(basename "$instance_path")
+#  for instance_path in "${INSTANCES[@]}"; do
+#    instance=$(basename "$instance_path")
+  for instance in "${instances[@]}"; do
     for param_dir in ${param_files[$mode]}; do
 
 #    param_dir=${param_files[$mode]}
@@ -50,7 +51,7 @@ for mode in 1; do
 #    ((i++))
 
 #    param_dir=${param_files[$((mode+2))]}
-    jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir 1"
+    jobs[$i]="$vehicles_2 $directory $instance 1100 $algorithm $mode $param_dir 1"
     ((i++))
     done
   done
