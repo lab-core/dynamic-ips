@@ -109,6 +109,7 @@ public:
     void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveISUD_improved(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveMP_CP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);

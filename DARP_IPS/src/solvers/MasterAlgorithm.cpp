@@ -874,6 +874,105 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     masterTime_->stop();
 }
 
+void MasterAlgorithm::solveMP_CP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    masterTime_->start();
+    previousObj_ = objValue_;
+    if (SPIter_ == 0)
+        lpObjValue_ = objValue_;
+
+    iterTime_ = masterTime_->dSinceStart().count();
+
+    /************************************************************************************************/
+    //                                     MASTER PROBLEM
+    /************************************************************************************************/
+    setAvailableTime();
+    if (availableTime_ > 1) {
+        solveMP_LP(pInst, inputPaths, epoch, subProTime);
+        objValue_ = previousObj_;
+
+        setAvailableTime();
+        if (availableTime_ < 3)
+            availableTime_ = 3;
+        MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
+                                     availableTime_, previousObj_);
+
+        MIPIter_++;
+        MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
+        setObjValue();
+
+        setCurrentRoutes(pInst);
+
+        epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
+        (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
+                                                         masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+        RMPCounter_++;
+        /************************************************************************************************/
+        //                                     COMPLEMENTARY PROBLEM
+        /************************************************************************************************/
+        int CPCounter = 0;
+        CPTime_->start();
+        setAvailableTime();
+        if (availableTime_ > 3) {
+            CPBuildTime_->start();
+            CompPro_->routesToAdd_.clear();
+            CompPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
+            CPBuildTime_->stop();
+            bool isCPImproved = true;
+
+            while (isCPImproved) {
+                isCPImproved = false;
+                previousObj_ = objValue_;
+                updateReducedCosts(pInst);
+                updateIncDegreesBit(pInst);
+                CompPro_->routesToAdd_.clear();
+                updateRoutesToAdd(CP, pInst);
+                setAvailableTime();
+                if (!CompPro_->routesToAdd_.empty() && availableTime_ > 1) {
+                    // add empty routes
+                    for (int v = 0; v < pInst->nbVehicles_; ++v) {
+                        if ( !pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
+                            !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty())
+                            CompPro_->routesToAdd_.push_back(pInst->vehicles_[v]->emptyRoute_);
+                    }
+                    CPBuildTime_->start();
+                    CompPro_->updateModel(pInst, zSolution_, routeSolution_);
+                    CPBuildTime_->stop();
+                    CompPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
+                    CPIter_++;
+
+                    CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
+                    setObjValue();
+                    epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
+                    iterTime_ = masterTime_->dSinceStart().count();
+                    (*pLogIsudResultsStream_) << save_MPResults(epoch, "CP", (int) (CompPro_->IncRoute_.size()),
+                                                                masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+                    if (CompPro_->status_ == NEGATIVE_VALUE) {
+                        setCurrentRoutes(pInst);
+                        CPSuccess_++;
+                        previousObj_ = objValue_;
+                        RMPCounter_++;
+                        isCPImproved = true;
+                        CPCounter++;
+                        setAvailableTime();
+                        if (availableTime_ <= 1) {
+                            break;
+                        }
+                    }
+                    else
+                        break;
+                }
+            }
+
+            CompPro_.reset();
+            CompPro_ = std::make_shared<ComplementPro>();
+            CPTime_->stop();
+        }
+    }
+    masterTime_->stop();
+}
+
 void MasterAlgorithm::solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
     iterTime_ = masterTime_->dSinceStart().count();

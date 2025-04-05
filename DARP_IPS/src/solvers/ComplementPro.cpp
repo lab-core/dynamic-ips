@@ -104,7 +104,7 @@ void ComplementPro::buildModel(PInstance &pInst, vector<PRequest> &zSolution, ve
 
     // adding z columns out of basis
     for (int i = 0; i < pInst->nbRequests_; ++i) {
-        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT)
+        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->plannedPickTime_ == LARGE_CONSTANT)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
     }
     for (int v = 0; v < pInst->nbVehicles_; ++v) {

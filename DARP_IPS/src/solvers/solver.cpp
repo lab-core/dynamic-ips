@@ -259,6 +259,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 case MP_MIP:
                     masterModel_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
+                case MP_CP:
+                    masterModel_->solveMP_CP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+                    break;
                 default: // MP_ISUD:
                     masterModel_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
                     break;
