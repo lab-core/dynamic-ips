@@ -95,11 +95,6 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolu
         if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
             addRouteVarFloat(routeObj, pInst);
     }
-    env_.out() << Model_ << std::endl;
-    Model_.add(requestConst_);
-    Model_.add(vehicleConst_);
-    Model_.add(objFunction_);
-    env_.out() << Model_ << std::endl;
 }
 
 void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
@@ -107,9 +102,9 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "LMP");
 
         Cplex_.extract(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+//        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+//        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -145,7 +140,7 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
                 }
             }
         }
-        Cplex_.clearModel();
+//        Cplex_.clearModel();
     }
     catch (IloException& e) {
         std::cout << "Error occurred in ReducedProblem::solveModelLP at line: " << __LINE__ << std::endl;
@@ -165,7 +160,8 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
         Cplex_.extract(Model_);
 
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
-        setParameters(pInst, availableTime);
+//        setParameters(pInst, availableTime);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -210,7 +206,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
 
             }
         }
-        Cplex_.clearModel();
+//        Cplex_.clearModel();
     }
     catch (IloException& e) {
         std::cout << "Error occurred in ReducedProblem::solveModelInt at line: " << __LINE__ << std::endl;
@@ -226,9 +222,9 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
 
         Cplex_.extract(Model_);
-        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+//        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+//        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+ //       Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -270,7 +266,8 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
             Model_.add(convR);
             Cplex_.extract(Model_);
             std::cout << "----------------------- MP ------------------------"<< std::endl;
-            setParameters(pInst, availableTime);
+//            setParameters(pInst, availableTime);
+            Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
 
             solveTime_->start();
@@ -350,7 +347,8 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
 
         Cplex_.extract(Model_);
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
-        setParameters(pInst, availableTime);
+//        setParameters(pInst, availableTime);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -420,7 +418,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
 
                     Cplex_.extract(Model_);
 
-                    Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+ //                   Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
                     solveTime_->start();
                     if (!Cplex_.solve()) {
                         env_.out() << Model_ << std::endl;
@@ -490,7 +488,8 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
 
         Cplex_.extract(Model_);
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
-        setParameters(pInst, availableTime);
+ //       setParameters(pInst, availableTime);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -537,7 +536,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                 }
                 Cplex_.extract(Model_);
 
-                Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+//                Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
                 solveTime_->start();
                 if (!Cplex_.solve()) {
                     env_.out() << Model_ << std::endl;
@@ -615,7 +614,8 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
 
         Cplex_.extract(Model_);
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
-        setParameters(pInst, availableTime);
+        Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
+//        setParameters(pInst, availableTime);
 
         solveTime_->start();
         if (!Cplex_.solve()) {

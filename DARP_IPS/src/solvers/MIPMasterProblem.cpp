@@ -33,9 +33,6 @@ void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolut
     for (auto & routeObj : routesToAdd_) {
         addRouteVarFloat(routeObj, pInst);
     }
-    Model_.add(requestConst_);
-    Model_.add(vehicleConst_);
-    Model_.add(objFunction_);
 }
 
 void MIPMasterProblem::updateModel(PInstance &pInst) {

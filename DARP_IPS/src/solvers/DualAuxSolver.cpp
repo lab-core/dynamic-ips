@@ -78,12 +78,14 @@ void DualAuxSolver::buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requ
     }
     zExpr_.resize(Requests.size());
     for (int i = 0; i < Requests.size(); ++i) {
-        zExpr_[Requests[i]->taskIndex_] = requestDuals_[Requests[i]->taskIndex_];
-        obj_p2 += deltaVar_[i];
+        if (Requests[i]->plannedPickTime_ == LARGE_CONSTANT) {
+            zExpr_[Requests[i]->taskIndex_] = requestDuals_[Requests[i]->taskIndex_];
+            obj_p2 += deltaVar_[i];
 
-        std::ostringstream eName;
-        eName << "d_" << i;
-        deltaVar_[i].setName(eName.str().c_str());
+            std::ostringstream eName;
+            eName << "d_" << i;
+            deltaVar_[i].setName(eName.str().c_str());
+        }
     }
     objExpr_.push_back(obj_p2);
     /*Model_.add(IloMinimize(env_, std::move(obj)));

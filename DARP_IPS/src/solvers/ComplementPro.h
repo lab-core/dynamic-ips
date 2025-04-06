@@ -28,7 +28,7 @@ public:
     std::vector<PRequest> fractionalZ_;         // list of requests in fractional solution
 
     // set of constraints
-    IloRangeArray normalConst_;
+    IloRange normalConst_;
     SolutionStatus status_;
 
     // Constructor and Destructor

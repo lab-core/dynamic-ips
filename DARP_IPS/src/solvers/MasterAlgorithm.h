@@ -111,6 +111,8 @@ public:
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_CP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
+    void solveCP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+
     void solveRLMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveRMP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);

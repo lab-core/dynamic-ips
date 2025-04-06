@@ -157,6 +157,7 @@ void CplexModeler::setParameters(PInstance &pInst, float availableTime) {
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
     Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
     Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+    Cplex_.setOut(env_.getNullStream());
     if (pInst->parameters_->MIPGap_ > 0.0001)
         Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
     Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
@@ -180,7 +181,15 @@ void CplexModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
 
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
     vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
-
+    Cplex_.setOut(env_.getNullStream());
+    Model_.add(requestConst_);
+    Model_.add(vehicleConst_);
+    Model_.add(objFunction_);
+    Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+    Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
+    Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+    if (pInst->parameters_->MIPGap_ > 0.0001)
+        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
 }
 
 

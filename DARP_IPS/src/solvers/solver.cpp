@@ -696,14 +696,14 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << simulationTime_->dSinceInit().count() << ",";
 
     // master problem Times
-    repStr << masterModel_->masterTime_->dSinceInit().count() - masterEpochTime_ << ",";
-    repStr << masterModel_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
-    repStr << masterModel_->MPBuildTime_->dSinceInit().count() - RPEpochBuildTime_ << ",";
+    repStr << static_cast<float>(masterModel_->masterTime_->dSinceInit().count()) - masterEpochTime_ << ",";
+    repStr << static_cast<float>(masterModel_->RPTime_->dSinceInit().count()) - RPEpochTime_ << ",";
+    repStr << static_cast<float>(masterModel_->MPBuildTime_->dSinceInit().count()) - RPEpochBuildTime_ << ",";
     repStr << masterModel_->MPEpochSolveTime_ << ",";
-    repStr << masterModel_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
-    repStr << masterModel_->CPBuildTime_->dSinceInit().count() - CPEpochBuildTime_ << ",";
+    repStr << static_cast<float>(masterModel_->CPTime_->dSinceInit().count()) - CPEpochTime_ << ",";
+    repStr << static_cast<float>(masterModel_->CPBuildTime_->dSinceInit().count()) - CPEpochBuildTime_ << ",";
     repStr << masterModel_->CPEpochSolveTime_ << ",";
-    repStr << masterModel_->ZOOMTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
+    repStr << static_cast<float>(masterModel_->ZOOMTime_->dSinceInit().count()) - isudMIPEpochTime_ << ",";
 
     masterEpochTime_ = masterModel_->masterTime_->dSinceInit().count();
     RPEpochTime_ = masterModel_->RPTime_->dSinceInit().count();
@@ -714,8 +714,8 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
 
     repStr << SubproEpochTime_ << ",";
     repStr << preprocessTime_ ->dSinceStart().count()<< ",";
-    repStr << GreedyModel_->greedyAssignTime_->dSinceInit().count() - AssignTime_ << ",";
-    repStr << GreedyModel_->greedyTime_->dSinceInit().count() - GreedyTime_ << ",";
+    repStr << static_cast<float>(GreedyModel_->greedyAssignTime_->dSinceInit().count()) - AssignTime_ << ",";
+    repStr << static_cast<float>(GreedyModel_->greedyTime_->dSinceInit().count()) - GreedyTime_ << ",";
     AssignTime_ = GreedyModel_->greedyAssignTime_->dSinceInit().count();
     GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     repStr << masterModel_->SPIter_ << ",";
