@@ -2,7 +2,7 @@
 #SBATCH --mem=12G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=0:10:00
-#SBATCH --array=1-540
+#SBATCH --array=1-1
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -20,11 +20,11 @@ algorithms[1]=6  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="Dual Partial"  # Mode 1 has two parameter files
+param_files[1]="Partial"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-#instances=("20150828_12-120m_59")
+instances=("20160521_12-120m_98")
 
 # Define vehicle counts
 num_vehicles_list=(1500)
@@ -36,9 +36,9 @@ i=1
 for mode in 1; do
   algorithm=${algorithms[$mode]}  # Select algorithm for the current mode
   for param_dir in ${param_files[$mode]}; do
-    for instance_path in "${INSTANCES[@]}"; do
-      instance=$(basename "$instance_path")
-#    for instance in "${instances[@]}"; do
+ #   for instance_path in "${INSTANCES[@]}"; do
+ #     instance=$(basename "$instance_path")
+    for instance in "${instances[@]}"; do
       jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
       ((i++))
     done
