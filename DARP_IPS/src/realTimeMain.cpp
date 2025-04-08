@@ -18,7 +18,7 @@ std::string instNum = "1";
 int numEpochTests = 30;
 int numVehicles;
 int saveScratch = 0;
-bool solveEpoch = false;
+bool solveEpoch = true;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -82,6 +82,12 @@ int main(int argc, char** argv) {
     else if (paramFile == "dropPick") {
         num_i = 1;
     }
+    else if (paramFile == "Dual") {
+        num_i = 3;
+    }
+    else if (paramFile == "Partial") {
+        num_i = 2;
+    }
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < num_i; ++i) {
@@ -121,15 +127,21 @@ int main(int argc, char** argv) {
                     if (i == 1)
                         mainInst->parameters_->isDropPickPossible_ = true;
                 }
+                else if (paramFile == "Dual") {
+                    if (i == 0)
+                        mainInst->parameters_->initialDual_ = LMP;
+                    else if (i == 1)
+                        mainInst->parameters_->initialDual_ = AUX_P;
+                    else if (i == 2)
+                        mainInst->parameters_->initialDual_ = LP_CP;
+                }
+                else if (paramFile == "Partial") {
+                    if (i == 0)
+                        mainInst->parameters_->dynamicPricing_ = true;
+                    else
+                        mainInst->parameters_->partialPricing_ = true;
+                }
 
-                /*if (i < 4)
-                    mainInst->parameters_->nbPick_= i+1;
-                if (i == 4) {
-                    mainInst->parameters_->nbPick_= 4;
-                    mainInst->parameters_->dynamicPricing_ = true;
-                }*/
-                /*if (i == 1)
-                    mainInst->parameters_->vehiclePortion_ = true;*/
                 ReadWrite::readZones(inputPaths.getInputZones(), mainInst);
                 mainInst->parameters_->savePartial_ = savePartial;
                 mainInst->parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(mainAlgo);
