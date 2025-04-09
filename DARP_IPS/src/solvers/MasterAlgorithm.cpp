@@ -847,7 +847,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             /************************************************************************************************/
             //                                     COMPLEMENTARY PROBLEM
             /************************************************************************************************/
-            if (minReducedCost_ < 0 && availableTime_ > 3) {
+            if (availableTime_ > 3) {
                 solveCP(pInst, epoch, inputPaths, subProTime);
             }
         }
@@ -863,7 +863,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", (int) MasterPro_->compRoutes_.size() - nbVehicles_,
                                                         masterTime_->dSinceStart().count(), subProTime, 0.0);
         }
-
+/*
         for (auto & routeObj : routeSolution_) {
             for (int i = 1; i < routeObj->routeSize_; ++i) {
                 if (routeObj->routeNodes_[i]->type_ == PICKUP) {
@@ -877,10 +877,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             requestObj->minDual_ = requestObj->penalty_;
             requestObj->avgDual_ = requestObj->penalty_;
         }
+*/
 
-
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
+ //       (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
+ //       (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
 
         RMPCounter_++;
 

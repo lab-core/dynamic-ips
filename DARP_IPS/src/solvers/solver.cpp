@@ -148,7 +148,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
                 if (EpochInst->parameters_->partialPricing_) {
                     if (vehicleObj->currentRoute_->routeRequests_.size() >= 2){
-                        vehicleObj->numPickup_ = 2;
+                        vehicleObj->numPickup_ = 3;
                         nbThreePick_ ++;
                     }
                     else if (vehicleObj->currentRoute_->routeRequests_.size() >= 1){
