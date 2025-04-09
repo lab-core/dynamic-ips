@@ -10,7 +10,7 @@ nbThreads = 16
 InitialDual = 1
 mainAlgorithm = 0
 solutionMode = 2
-NumIter = 40
+NumIter = 1
 GreedyReOptimize = 0
 saveScratch = 2
 vehicleReturn = 0
@@ -47,13 +47,13 @@ LabelingStrategy = 1
 subproblemAlgorithm = 1
 constPortion = 0
 Vehicle_portion = 0
-Dynamic_Pricing = 0
+Dynamic_Pricing = 1
 Partial_Pricing = 0
 Route_Recycle = 0
 usePick = 1
 nbPick = 2
 sortPath = 0
-sortColumn = 0
+sortColumn = 1
 
 # CPLEX PARAMETERS
 #

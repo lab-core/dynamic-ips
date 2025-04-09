@@ -864,7 +864,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
                                                         masterTime_->dSinceStart().count(), subProTime, 0.0);
         }
 
-        /*for (auto & routeObj : routeSolution_) {
+        for (auto & routeObj : routeSolution_) {
             for (int i = 1; i < routeObj->routeSize_; ++i) {
                 if (routeObj->routeNodes_[i]->type_ == PICKUP) {
                     routeObj->routeNodes_[i]->related_Request_->avgDual_ = routeObj->totalDelay_ / routeObj->routeRequests_.size();
@@ -877,9 +877,10 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             requestObj->minDual_ = requestObj->penalty_;
             requestObj->avgDual_ = requestObj->penalty_;
         }
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Aux_P");
-        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Aux_P");
-        */
+
+
+        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
+        (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
 
         RMPCounter_++;
 
@@ -972,7 +973,7 @@ void MasterAlgorithm::solveCP(PInstance &pInst, int epoch, InputPaths &inputPath
     CompPro_->updateModel(pInst, zSolution_, routeSolution_);
     CPBuildTime_->stop();
     while (isCPImproved) {
-        std::cout << "Solving CP:" << "Min cost: " << minReducedCost_ << " - " << maxReducedCost_ << std::endl;
+ //       std::cout << "Solving CP:" << "Min cost: " << minReducedCost_ << " - " << maxReducedCost_ << std::endl;
         previousObj_ = objValue_;
         isCPImproved = false;
 
