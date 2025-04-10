@@ -1,0 +1,63 @@
+# MODEL PARAMETERS
+#
+alphaParam = 1.5
+betaParam = 240
+deltaPram = 420
+epochLength = 30
+penaltyL = 30
+committedTime = 30
+nbThreads = 16
+InitialDual = 1
+mainAlgorithm = 0
+solutionMode = 2
+NumIter = 40
+GreedyReOptimize = 0
+saveScratch = 2
+vehicleReturn = 0
+timeWindows = 0
+WaitForReturn = 9999999
+numVehicleSwitch = 1000
+informTimeLimit = 9999999
+pickupDeviationWindow = 9999999
+
+
+
+# ISUD PARAMETERS
+#
+warmStart = 1
+MIP_maxIncDegree = 2
+CP_IncDegree = 10
+useMultiStage = 0
+minImp = 0.0025
+useZoom = 0
+NumColumn = 50
+
+# LABEL SETTING STRATEGIES
+#
+isTruncated = 1
+MaxLabel = 15
+isDominanceReleased = 0
+isSuccessorsLimited = 0
+pruneNodes = 1
+pruneArcs = 1
+discardSuboptimalPath = 1
+isDropPickPossible = 1
+SubproSolveStartState = 2
+LabelingStrategy = 1
+subproblemAlgorithm = 1
+constPortion = 0
+Vehicle_portion = 0
+Dynamic_Pricing = 1
+Partial_Pricing = 0
+Route_Recycle = 0
+usePick = 1
+nbPick = 4
+sortPath = 0
+sortColumn = 1
+
+# CPLEX PARAMETERS
+#
+BigM = 27000
+solveTimeLimit = 300
+populateTimeLimit = 200
+MIPGap = 0.001
