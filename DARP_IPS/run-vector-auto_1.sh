@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=18G
 #SBATCH --time=2:40:00
-#SBATCH --array=1-18
+#SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -19,7 +19,7 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="Ab_drop Ab_truncate"  # Mode 1 has two parameter files
+param_files[1]="no_commit"  # Mode 1 has two parameter files
 param_files[2]="ACG-LP ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
