@@ -23,17 +23,17 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 declare -A param_files
 param_files[1]="Ab_drop Ab_truncate"  # Mode 1 has two parameter files
 param_files[2]="ACG-LP ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
-param_files[3]="Param_mode_1r"
-param_files[4]="Param_mode_2r"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
-instances=("20150706_07-120m 20150828_07-120m 20151025_07-120m 20160109_07-120m 20160316_07-120m 20160401_07-120m")
-
-# Define vehicle counts
-num_vehicles_list=(1100)
-# Uncomment to use multiple vehicle counts
-# num_vehicles_list=(1700 1800 1900 2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200 3300 3400 3500)
+instances=(
+  "20150706_07-120m"
+  "20150828_07-120m"
+  "20151025_07-120m"
+  "20160109_07-120m"
+  "20160316_07-120m"
+  "20160401_07-120m"
+)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
@@ -45,12 +45,6 @@ for mode in 1; do
 #    instance=$(basename "$instance_path")
   for instance in "${instances[@]}"; do
     for param_dir in ${param_files[$mode]}; do
-
-#    param_dir=${param_files[$mode]}
-#    jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
-#    ((i++))
-
-#    param_dir=${param_files[$((mode+2))]}
     jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir 1"
     ((i++))
     done
