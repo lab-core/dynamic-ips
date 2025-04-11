@@ -17,8 +17,8 @@ vehicleReturn = 0
 timeWindows = 0
 WaitForReturn = 9999999
 numVehicleSwitch = 1000
-informTimeLimit = 9999999
-pickupDeviationWindow = 9999999
+informTimeLimit = 60
+pickupDeviationWindow = 60
 
 
 
