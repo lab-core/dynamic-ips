@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=18G
+#SBATCH --mem=24G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-12
+#SBATCH --array=1-4
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -27,11 +27,7 @@ param_files[2]="ACG-LP ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20150706_07-120m"
-  "20150828_07-120m"
   "20151025_07-120m"
-  "20160109_07-120m"
-  "20160316_07-120m"
   "20160401_07-120m"
 )
 
