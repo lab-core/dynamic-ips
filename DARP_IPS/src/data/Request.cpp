@@ -85,7 +85,7 @@ void Request::setMaxTravelTime(float &alphaParam, float &betaParam) {
 void Request::setPenalty(float elapsedTime, PParameters &parameters, float simulationStart) {
 
     penalty_ = static_cast<float>(parameters->deltaPram_
-                                  * pow(2, (elapsedTime - (intialEarlyPick_-simulationStart)) / static_cast<float>(8 * parameters->penaltyL_)));
+                                  * pow(2, (elapsedTime - (intialEarlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
 }
 // Display function
 std::string Request::toString() const {
