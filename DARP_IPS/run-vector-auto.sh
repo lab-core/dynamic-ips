@@ -2,7 +2,7 @@
 #SBATCH --mem=24G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-4
+#SBATCH --array=1-1
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,7 +11,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="manhattan-vehicles"
 vehicles_2="sufficient_manhattan-vehicles-300"
-directory="Instances-120"
+directory="Instances_12-14"
 main_dir="datasets/$directory"
 
 # Define algorithms for each mode
@@ -21,14 +21,13 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="Ab_drop Ab_truncate"  # Mode 1 has two parameter files
+param_files[1]="Ab_truncate"  # Mode 1 has two parameter files
 param_files[2]="ACG-LP ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20151025_07-120m"
-  "20160401_07-120m"
+  "20160512_12-120m"
 )
 
 # Create a single array containing all instance-mode-parameter combinations
@@ -41,7 +40,7 @@ for mode in 1; do
 #    instance=$(basename "$instance_path")
   for instance in "${instances[@]}"; do
     for param_dir in ${param_files[$mode]}; do
-    jobs[$i]="$vehicles_1 $directory $instance 2000 $algorithm $mode $param_dir 1"
+    jobs[$i]="$vehicles_2 $directory $instance 1100 $algorithm $mode $param_dir 1"
     ((i++))
     done
   done
