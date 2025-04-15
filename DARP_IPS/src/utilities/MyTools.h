@@ -351,8 +351,8 @@ namespace myTools {
             shared_vector.resize(size);
         }
 
-        void getSize(){
-            std::cout << shared_vector[0].size() << std::endl;
+        int getSize(){
+            return shared_vector[0].size();
         }
 
         void clear() {
