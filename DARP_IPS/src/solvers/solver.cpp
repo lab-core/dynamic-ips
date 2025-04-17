@@ -333,10 +333,10 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
-    if (labelsPool_.getSize() > 70000) {
+    /*if (labelsPool_.getSize() > 70000) {
         labelsPool_.clear();
         labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
-    }
+    }*/
 
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
