@@ -2,7 +2,7 @@
 #
 alphaParam = 1.5
 betaParam = 240
-deltaPram = 360
+deltaPram = 420
 epochLength = 30
 penaltyL = 30
 committedTime = 30
@@ -53,7 +53,7 @@ Route_Recycle = 0
 usePick = 1
 nbPick = 4
 sortPath = 0
-sortColumn = 0
+sortColumn = 1
 
 # CPLEX PARAMETERS
 #

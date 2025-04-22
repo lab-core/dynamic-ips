@@ -857,9 +857,9 @@ void solver::returnVehiclesZone(const PInstance & EpochInst) const {
     if (EpochInst->parameters_->vehicleReturn_) {
         float lastEpoch = 0;
         if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-            lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
+            lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->WaitForReturn_;
         else
-            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->epochLength_;
+            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->WaitForReturn_;
 
         for (auto & zoneObj : EpochInst->zones_) {
             zoneObj.second->nbVehicles_ = 0;
@@ -885,7 +885,7 @@ void solver::returnVehiclesZone(const PInstance & EpochInst) const {
                 if (!EpochInst->zones_[vehicleObj->departNode_->zoneID_]->underCapacity_ ) {
                     idleVehicles.push_back(vehicleObj);
                 }
-                }
+            }
         }
 
         if (!idleVehicles.empty()) {
