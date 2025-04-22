@@ -16,23 +16,23 @@ public:
     float alphaParam_{};
     float betaParam_{};
     float deltaPram_{};
-    int epochLength_{};
+    float epochLength_{};
     int penaltyL_{};
-    int committedTime_{};
+    float committedTime_{};
     int nbThreads_{};
     InitialDual initialDual_;
     MainAlgorithm mainAlgorithm_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
-    int numIter_;                  // solve master problem one time at each iteration of the CG
+    int numIter_;                  // solve the Master problem one time at each iteration of the CG
     bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
     int saveScratch_;              // save the results in scratch place of the server
     bool savePartial_;              // calculate the avg. wait time after one hour
     bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
     float timeWindow_;
-    int WaitForReturn_;             // time the vehicle remain idle before returning to crowded areas
+    int WaitForReturn_;             // The time that a vehicle remains idle before returning to crowded areas
     int numVehicleSwitch_;          // the number of times we are allowed to change the vehicle assigned to a customer
-    int informTimeLimit_;
-    int pickupDeviationWindow_;
+    float informTimeLimit_;
+    float pickupDeviationWindow_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -118,7 +118,7 @@ struct solverOption {
                  bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                  bool discardSuboptimalPath, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
-    explicit solverOption(PParameters &MainParams);
+    explicit solverOption(const PParameters &MainParams);
 
     virtual ~solverOption();
     void disableHeuristics();

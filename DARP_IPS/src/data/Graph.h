@@ -6,7 +6,6 @@
 #define GRAPH_H
 
 #include "data/Instance.h"
-#include "data/Label.h"
 
 //-----------------------------------------------------------------------------
 //  Node class
@@ -27,20 +26,20 @@ public:
     int zoneID_;                            // zone ID related to the location ID of the node
     NodeType type_;                         // node type: pick up, drop off, source, sink
     NodeType initialType_;                  // initial type (the type maybe change to source)
-    float reachTime_;                       // the time that vehicle reach to the node
-    float departTime_;                      // the time that vehicle reach to the node
+    float reachTime_;                       // the time that a vehicle reaches to the node
+    float departTime_;                      // the time that a vehicle reaches to the node
     int nbPassengers_;                      // number of passengers to pick up or drop off
     float serviceTime_;                     // time to perform pick up or drop off
     NodeStatus nodeStatus_;                 // status of the node: no action, planned, completed
-    float readyTime_;                     // earliest possible pick up time for the request (request time)
+    float readyTime_;                       // earliest possible pickup time for the request (request time)
     float initialReadyTime_;
-    float bestLabelReduceCost_;            // smallest reduced cost af active vehicles
+    float bestLabelReduceCost_;             // smallest reduced cost of active vehicles
     int nbActiveLabels_;                    // Number of active labels in labeling approach
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
-    std::bitset<MAX_BIT_SIZE> prunedArces_;
-    float travelTimeFromSource_;            // is used in labeling for sorting successors_
+    std::bitset<MAX_BIT_SIZE> prunedArcs_;
+    float travelTimeFromSource_;              // is used in labeling for sorting successors_
     int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
-    std::vector<PLabel> activeLabels_;      // list of active labels of the node (non-extended labels)
+    std::vector<PLabel> activeLabels_;      // list of active labels (non-extended labels)
 
     // Constructor and Destructor
     Node(string nodeId, const PRequest &relatedRequest, NodeType type);
@@ -59,7 +58,7 @@ class Graph {
 public:
     int nbNodes_;
     std::vector<PNode> pickNodes_;          // list of pickup nodes
-    std::vector<PNode> dropNodes_;          // list of drop off nodes
+    std::vector<PNode> dropNodes_;          // list of drop-off nodes
     std::vector<PNode> onboards_;           // list of requests that are already picked up
     std::vector<PNode> sourceNodes_;        // list of source nodes (vehicle start nodes)
     std::vector<PNode> sinkNodes_;          // list of sink nodes (vehicle end nodes)
@@ -67,13 +66,12 @@ public:
 
     // Constructor and Destructor
     Graph();
-    Graph(PNode &source, PNode &sink);
 
     // function for adding node to graph
     void addNewNode(const PNode &node);
 
     // function for updating the graph and adding new request
-    void addRequestToMainGraph(PNode & pickNode, PNode & dropNode);
+    void addRequestToMainGraph(const PNode & pickNode, const PNode & dropNode);
 };
 
 
@@ -83,14 +81,14 @@ public:
     int centerLocationID_;
     std::vector<PVehicle> zoneVehicles_;
     std::vector<Zone *> successors_;
-    int travelToZone_;
+    float travelToZone_;
     int nbVehiclesRef_;
     int nbVehicles_;
     bool underCapacity_;
     bool highDemandZone_;
 
     // Constructor and Destructor
-    Zone(const unsigned int zoneId, int centerLocationId);
+    Zone(unsigned int zoneId, int centerLocationId);
 };
 
 

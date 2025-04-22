@@ -10,20 +10,12 @@
 #include <sstream>
 #include <fstream>
 #include <memory>
-#include <unordered_map>
 #include <string>
-#include <climits>
 #include <chrono>
-#include <iomanip>
-#include <cstdlib>
-#include <cstdio>
-#include "Eigen/Dense"
+//#include "Eigen/Dense"
 #include "Tools.h"
-#include <set>
-#include <queue>
 #include <algorithm>
 #include <valarray>
-#include <numeric>
 #include <bitset>
 #include <ilcplex/ilocplex.h>
 
@@ -90,7 +82,7 @@ enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST =
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};
 enum selectionMode { NR = 0, RP = 1, CP = 2};
 enum SortPaths {L_SCORE = 0, RD_COST = 1, LAMBDA = 2};
-enum SortColumns {C_SCORE = 0, CRD_COSTS = 1, CLAMBDA = 2};
+enum SortColumns {C_SCORE = 0, CRD_COSTS = 1, CLAMBDA = 2, COMP_RC = 3};
 enum VarSign { POSITIVE, NEGATIVE };
 enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
 enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2, REJECTED = 3};
@@ -105,7 +97,8 @@ static const std::vector<std::string> SortPathsName = {
 static const std::vector<std::string> SortColumnsName = {
         "PATH_SCORE  ",
         "REDUCED_COST",
-        "LAMBDA_SCORE"};
+        "LAMBDA_SCORE",
+        "COMP_SCORE"};
 
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",
@@ -150,12 +143,6 @@ static const std::vector<std::string> SubProSolveStartName = {
 
 // Different node types and their names
 enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
-/*static const std::vector<std::string> nodeTypeName = {
-        "SOURCE ",
-        "SINK   ",
-        "PICKUP ",
-        "DROPOFF"
-};*/
 static const char *NodeTypeStr[] = {
         "SOURCE ",
         "SINK   ",
@@ -164,11 +151,11 @@ static const char *NodeTypeStr[] = {
 };
 
 #define LARGE_CONSTANT 9999999
-const int MAX_BIT_SIZE = 3000;
-const int MAX_ZONE = 350;
+constexpr int MAX_BIT_SIZE = 3000;
+constexpr int MAX_ZONE = 350;
 
-static const int sentenceSize = 47;
-static const int ServiceTime = 30;
+static constexpr int sentenceSize = 47;
+static constexpr int ServiceTime = 30;
 extern bool solveEpoch;
 
 // Definition of useful types
@@ -321,8 +308,8 @@ namespace myTools {
 
         // get the time spent since the initialization of the timer and since the last
         // time it was started
-        std::chrono::duration<double> dSinceInit();
-        std::chrono::duration<double> dSinceStart();
+        std::chrono::duration<float> dSinceInit() const;
+        std::chrono::duration<float> dSinceStart();
     };
 
     //-----------------------------------------------------------------------------
@@ -363,7 +350,7 @@ namespace myTools {
     // Define a RAII guard to manage std::cout redirection
     class CoutRedirector {
     public:
-        CoutRedirector(const std::string &logFilePath, std::string model)
+        CoutRedirector(const std::string &logFilePath, const std::string& model)
             : logFile_(logFilePath, std::ofstream::app),
               originalBuffer_(std::cout.rdbuf()) {
             logFile_ << "----------------------- " << model << " ------------------------" << std::endl;

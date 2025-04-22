@@ -3,7 +3,7 @@
 //
 
 #include "Greedy.h"
-
+#include "utilities/InputPaths.h"
 #include <utility>
 //---------------------------------------------------------------------------------------------
 //  StopLabel class
@@ -35,7 +35,7 @@ void StopLabel::setValues(PNode currentNode, float reachTime, float departTime, 
 //  This class is used to define greedy labels as linked list
 //---------------------------------------------------------------------------------------------
 
-GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize) :
+GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize) :
         Vehicle_(&vehicle) {
     idle_ = true;
     if (greedyLabelPool.empty())
@@ -54,7 +54,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
     totalDelay_ = 0;
     idleTime_ = 0;
     departureTime_ = vehicle->departTime_;
-    // just onboards are added and previous solution is not considered
+    // just onboards are added and the previous solution is not considered
     if (greedyReOptimize) {
         for (auto &nodeID: (*Vehicle_)->onboards_) {
             idle_ = false;
@@ -80,7 +80,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopL
             PLastStop_ = newDropLabel;
         }
     }
-    // build previous solution
+    // build the previous solution
     else {
         for (int i = 1; i < (*Vehicle_)->currentRoute_->routeNodes_.size(); i++) {
             idle_ = false;
@@ -157,7 +157,7 @@ void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) con
 
 // this function find a position to insert pickup point and add drop off point
 void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
-                                  std::vector<PStopLabel> &greedyLabelPool, PInsertPosition & position) {
+                                  std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position) {
     float waitIncrease = INFINITY;
 
     // Tour length increase
@@ -241,7 +241,7 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
 }
 
 
-void GreedyRoute::insertNode(PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool) {
+void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool) {
     // calculate reach time
     float reachTime = labelToNodeReachTime(preLabel, newNode);
     // update depart time
@@ -301,7 +301,7 @@ void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedy
     }
 }
 
-void GreedyRoute::insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
+void GreedyRoute::insertRequest(const PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
                                 std::vector<PStopLabel> &greedyLabelPool) {
     PStopLabel pickLabel;
     PStopLabel dropLabel;
@@ -325,8 +325,8 @@ void GreedyRoute::insertRequest(PInsertPosition &position, PNode &pickNode, PNod
     if (dropLabel->travelResource_ < 0)
         throw myTools::myException("Negative travel resource", __FILE__, __LINE__);
 }
-// this function calculate the reachTime from a Label to a node
-float GreedyRoute::labelToNodeReachTime(PStopLabel &preLabel, PNode &Node) {
+// this function calculates the reachTime from a Label to a node
+float GreedyRoute::labelToNodeReachTime(const PStopLabel &preLabel, const PNode &Node) {
     float reachTime = std::max(preLabel->leaveTime_, Node->related_Request_->requestTime_) +
         durationMatrix_[preLabel->currentNode_->locationID_][Node->locationID_];
     if (Node->type_ == PICKUP && Node->related_Request_->earlyPick_ > reachTime)
@@ -335,8 +335,8 @@ float GreedyRoute::labelToNodeReachTime(PStopLabel &preLabel, PNode &Node) {
 }
 
 
-// this function starts from a label in the list and update reachTimes and departTimes up to the tail
-void GreedyRoute::updateReachTimes(PStopLabel &preLabel) {
+// this function starts from a label in the list and updates reachTimes and departTimes up to the tail
+void GreedyRoute::updateReachTimes(const PStopLabel &preLabel) {
     PStopLabel currentLabel = preLabel;
     while (currentLabel->child_ != nullptr) {
         // calculate child reach time
@@ -378,7 +378,7 @@ void GreedyRoute::updateReachTimes(PStopLabel &preLabel) {
     }
 }
 
-// this function convert a greedyLabel list to a route
+// this function converts a greedyLabel list to a route
 PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
     newRoute->addSource(PInitialStop_->currentNode_, PInitialStop_->leaveTime_, (*Vehicle_)->numPassengers_);
@@ -487,7 +487,7 @@ void GreedyRoute::updateTailDepart() {
     departureTime_ = PLastStop_->leaveTime_;
 }
 
-bool GreedyRoute::isAnyViolation(PStopLabel &startLabel) const {
+bool GreedyRoute::isAnyViolation(const PStopLabel &startLabel) const {
     if (startLabel->nbPassengers_ > (*Vehicle_)->capacity_)
         return true;
     PStopLabel currentLabel = startLabel;
@@ -507,7 +507,7 @@ bool GreedyRoute::isAnyViolation(PStopLabel &startLabel) const {
 }
 
 void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
-                                    std::vector<PStopLabel> &removedLabels, PInsertPosition &position) {
+                                    std::vector<PStopLabel> &removedLabels, const PInsertPosition &position) {
     float deltaDelay = INFINITY;
     bool notFound = true;
     // Tour length increase

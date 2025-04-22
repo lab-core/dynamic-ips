@@ -5,7 +5,6 @@
 #ifndef DUALAUXSOLVER_H
 #define DUALAUXSOLVER_H
 
-#include "data/Instance.h"
 #include "utilities/InputPaths.h"
 #include "utilities/MyTools.h"
 
@@ -41,10 +40,10 @@ public:
 
     virtual ~DualAuxSolver();
 
-    void initializeModel(PInstance &pInst);
-    void addRouteExpr(PRoute &route);
-    void buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requests);
-    void solveModel(PInstance &pInst, InputPaths &inputPaths);
+    void initializeModel(const PInstance &pInst);
+    void addRouteExpr(const PRoute &route);
+    void buildModel(vector<PRoute> &RMPRoutes, vector<PRequest> &Requests);
+    void solveModel(const PInstance &pInst, const InputPaths &inputPaths);
 };
 
 

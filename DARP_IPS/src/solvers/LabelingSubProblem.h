@@ -34,19 +34,19 @@ public:
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
-    LabelingSubProblem(PVehicle &vehicle, PSolverOption &solverOptions);
+    LabelingSubProblem(const PVehicle &vehicle, const PSolverOption &solverOptions);
 
     ~LabelingSubProblem() override;
 
 
-    // this function sort the list of nodes based of their dual values
-    void sortSuccessors(std::vector<PNode> &nodeList, bool prunedArcs);
+    // this function sorts the list of nodes based on their dual values
+    void sortSuccessors(const std::vector<PNode> &nodeList, bool prunedArcs) const;
 
-    // reset that active lists of the nodes, create the first label at the source, add onboards
+    // reset that active lists of the nodes, create the first label at the source, add the onboard nodes
     void initialization();
     // main function of the dynamic programming
-    bool labelExtend(PLabel &parentLabel, Node *outNode, bool Terminate);
-    bool labelExtendPick(PLabel &parentLabel, Node *outNode);
+    bool labelExtend(const PLabel &parentLabel, Node *outNode, bool Terminate);
+    bool labelExtendPick(const PLabel &parentLabel, Node *outNode);
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
     bool solveDynamic_pushing(float availableTime);
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
@@ -57,19 +57,19 @@ public:
     bool solveDynamic_pullingWave(float availableTime);
     bool solveDynamic_pullingWave1(float availableTime);
     bool solveDynamic(float availableTime);
-    void removeDominated(Node *node, std::vector<PLabel> & labelPool);
+    void removeDominated(Node *node, std::vector<PLabel> & labelPool) const;
 
-    // function to convert solution to routes and save them in vehicle object
-    void SolutionToRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst);
+    // function to convert the solution to routes and save them in the vehicle object
+    void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst);
     void CollectLabels();
-    void solutionSummery(std::vector<int> &subProResults);
+    void solutionSummery(std::vector<int> &subProResults) const;
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;
 
-    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool);
-    void extendToDropOnboards(PLabel &selectedLabel);
-    void constructLabels(PLabel &initialLabel);
+    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool) const;
+    void extendToDropOnboards(const PLabel &selectedLabel);
+    void constructLabels(const PLabel &initialLabel);
 };
 
 

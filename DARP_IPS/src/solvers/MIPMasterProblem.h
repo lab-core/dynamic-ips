@@ -13,11 +13,11 @@ public:
     // Constructor and Destructor
     MIPMasterProblem();
 
-    // this function build the model at the start of each epoch
+    // this function builds the model at the start of each epoch
     void buildModelMP(PInstance &pInst, std::vector<PRoute> &routeSolution,
                       int nbVehicles);
 
-    // this function update the model and add column with negative reduce costs
+    // this function updates the model and adds column with negative reduce costs
     void updateModel(PInstance &pInst);
 };
 

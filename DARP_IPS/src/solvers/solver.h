@@ -5,16 +5,11 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "data/Instance.h"
+
 #include "solvers/MasterAlgorithm.h"
-#include "solvers/CPLEXSubProblem.h"
-#include "solvers/LabelingSubProblem.h"
 #include "solvers/MIPSolver.h"
-#include "solvers/GreedyModeler.h"
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
-extern vector2D<float> durationMatrix_;
-// extern Tools::PThreadsPool pPool;
 
 //-----------------------------------------------------------------------------
 //  solver class
@@ -64,35 +59,35 @@ public:
 //    Tools::LogOutput* pLogSolutionChange_;
 
 
-    solver(PInstance & mainInst, InputPaths &inputPaths);
+    solver(const PInstance & mainInst, InputPaths &inputPaths);
 
     virtual ~solver();
 
-    void selectVehiclesForSubproblem(PInstance &EpochInst, int iter);
+    static void selectVehiclesForSubproblem(const PInstance &EpochInst, int iter);
 
     // this function is to solve the epoch instance with CG using ISUD
     void solveCG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
     // this function is to solve the main instance in anytime mode
-    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime);
+    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime);
 
     // this function is to solve the main instance in static mode
     void staticSolver(PInstance & mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime);
     // this function is to solve the main instance in dynamic mode iteratively with fixed epoch
-    void dynamicSolver(PInstance & mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime);
+    void dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 
     // function to print epoch runTime to file
-    std::string saveRuntimes(PInstance & EpochInst);
+    std::string saveRuntimes(const PInstance & EpochInst);
 
-    void CreateOneStopRoutes(PVehicle &vehicle, std::vector<PRoute> &availableRoutes, PInstance & pInst,
-                             PInstance &EpochInst, int &nbNegative);
+    static void CreateOneStopRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
+                                    const PInstance &EpochInst, int &nbNegative);
 
-    void updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, vector2D<PRoute> &availableRoutes);
+    static void updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, vector2D<PRoute> &availableRoutes);
 
-    void returnVehicles(PInstance & EpochInst);
-    void returnVehiclesZone(PInstance & EpochInst);
+    void returnVehicles(const PInstance & EpochInst) const;
+    void returnVehiclesZone(const PInstance & EpochInst) const;
 
     // Display results
-    std::string toString(PInstance & mainInst) const;
+    std::string toString(const PInstance & mainInst) const;
 };
 
 

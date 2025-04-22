@@ -2,13 +2,12 @@
 // Created by Ella on 2021-10-18.
 //
 
-#ifndef _MIPSOLVER_H
-#define _MIPSOLVER_H
+#ifndef MIPSOLVER_H
+#define MIPSOLVER_H
 
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
 #include "utilities/MyTools.h"
-#include <cmath>
 
 //-----------------------------------------------------------------------------
 //  Contains MIP formulation to solve with Cplex
@@ -50,4 +49,4 @@ public:
 
 };
 
-#endif //_MIPSOLVER_H
+#endif //MIPSOLVER_H

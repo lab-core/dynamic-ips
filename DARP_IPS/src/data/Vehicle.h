@@ -23,17 +23,17 @@ public:
     float departTime_;                      // time the vehicle arrives at its departing stop for the epoch
     PNode departNode_;                      // vehicle departing stop
     PNode sinkNode_;                        // vehicle sink node
-    std::vector<std::string> onboards_;     // list of nodeIDs of the drop-off points for the onboard passengers
+    std::vector<std::string> onboards_;     // list of the nodeIDs for drop-off points for the onboard passengers
 
     PRoute currentRoute_;                   // current vehicle plan
     PRoute solutionRoute_;                  // actual vehicle plan (performed plan)
-    PRoute emptyRoute_;                     // empty route which may contain drop of points
+    PRoute emptyRoute_;                     // empty route which may contain a drop of points
     float dual_;
-    float InitialDual_;                    // when in parameters we use penalties as duals we save previous duals in it
-    float bestReducedCost_;                // best reduce cost of the routes generated after solving its subproblem
-    float score_;                           // calculated based on earliest possible pickup (for selection vehicle portion)
+    float InitialDual_;                    // used to dave duals when we use penalties as the duals
+    float bestReducedCost_;                // best reduced cost of the routes generated after solving its subproblem
+    float score_;                           // calculated based on the earliest possible pickup (vehicle portion)
     bool idle_;
-    int vehicleIndex_;                      // used for considering a part of vehicle constraints in master problems
+    int vehicleIndex_;                      // used for considering a part of vehicle constraints in the Master problems
     std::bitset<MAX_BIT_SIZE> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
     int numPickup_;
     bool stateChanged_;
@@ -42,35 +42,35 @@ public:
     // KPIs
     float idleTime_;                        // idle time of the vehicle
     float serviceTime_;                     // service time of the vehicle
-    float driveFullTime_;                   // time the vehicle drive with passengers
+    float driveFullTime_;                   // time the vehicle drives with passengers
     float driveEmptyTime_;                  // time the vehicle drives empty to reach passengers
     float returnEmptyTime_;                 // time the vehicle drives empty to return
 
 
     // Constructor and Destructor
-    Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode, PNode & sinkNode);
+    Vehicle(int vehicleId, int capacity, float departTime, float endTime, const PNode &departNode, const PNode & sinkNode);
 
     virtual ~Vehicle();
 
     // Setters
     void setDepartTime(float departTime);
-    void setEmptyRoute(PInstance &pInst);
+    void setEmptyRoute(const PInstance &pInst);
     void setSolutionRoute();
-    void setCurrentRoute(PRoute &currentRoute);
+    void setCurrentRoute(const PRoute &currentRoute);
 
     // Display function
     std::string toString() const;
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateStateTime(PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests);
+    void updateStateTime(const PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests);
     void updateCurrentRoute(float elapsedTime);
 
-    // this function is called at the end of algorithm to set the final stos of the solution based on final epoch
+    // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch
     void finalizeSolutionRoutes(float elapsedTime);
     void updateDepartTime(float departTime);
     void handleIdleState(float epochEndTime);
-    void setRequestStatus(PNode &node, float reachTime);
+    void setRequestStatus(const PNode &node, float reachTime) const;
 };
 
 

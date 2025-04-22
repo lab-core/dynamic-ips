@@ -6,6 +6,7 @@
 
 // Constructor and Destructor
 CplexModeler::CplexModeler() {
+    nbRequestTask_ = 0;
     Model_ = IloModel(env_);
     Cplex_ = IloCplex(Model_);
     objFunction_ = IloMinimize(env_);
@@ -37,7 +38,7 @@ CplexModeler::~CplexModeler() {
     }
 }*/
 
-// this function clear all objects from the model at the start of each epoch
+// this function clears all objects from the model at the start of each epoch
 void CplexModeler::clearModel() {
     Model_.end();
     std::cout << "The Model is destroyed" << std::endl;
@@ -56,8 +57,8 @@ std::string CplexModeler::toString() const {
     return repStr.str();
 }
 
-// function to create pattern from routes
-void CplexModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign sign) {
+// function to create a pattern from routes
+void CplexModeler::createPattern(IloNumArray &pattern, const PRoute &route, VarSign sign) {
     int signMultiplier = (sign == POSITIVE) ? 1 : -1;
     for (auto & requestObj : route->routeRequests_) {
         pattern[requestObj->taskIndex_] = signMultiplier;
@@ -65,7 +66,7 @@ void CplexModeler::createPattern(IloNumArray &pattern, PRoute &route, VarSign si
 }
 
 // this function adds zVar to the model
-void CplexModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+void CplexModeler::addZVarInt(IloNumVarArray &zVar, const PRequest &request, VarSign sign) {
 
     try {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
@@ -82,7 +83,7 @@ void CplexModeler::addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign s
     }
 }
 
-void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign) {
+void CplexModeler::addZVarFloat(IloNumVarArray &zVar, const PRequest &request, VarSign sign) {
 
     try {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
@@ -98,7 +99,7 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign
     }
 }
 
-void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, PRequest &request) {
+void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, const PRequest &request) {
 
     try {
         IloNumColumn uCol = objFunction_(0.8 * request->penalty_) +
@@ -118,7 +119,7 @@ void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, PReq
 
 
 // this function adds routeVar to the model
-void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
+void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst) {
     try {
         IloNumArray columnVar(env_, nbRequestTask_);
         createPattern(columnVar, newRoute, sign);
@@ -136,7 +137,7 @@ void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, Va
 }
 
 // this function adds routeVar to the model
-void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst) {
+void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst) {
     try {
         IloNumArray columnVar(env_, nbRequestTask_);
         createPattern(columnVar, newRoute, sign);
@@ -153,7 +154,7 @@ void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, 
     }
 }
 
-void CplexModeler::setParameters(PInstance &pInst, float availableTime) {
+void CplexModeler::setParameters(const PInstance &pInst, float availableTime) {
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
     Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
     Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
@@ -171,7 +172,7 @@ void CplexModeler::setParameters(PInstance &pInst, float availableTime) {
 }
 
 // this function initialized the model
-void CplexModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
+void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests
     nbRequestTask_ = pInst->nbTasks_;
 
@@ -181,7 +182,7 @@ void CplexModeler::initializeModel(PInstance &pInst, int rhs, int nbVehicles) {
 
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
     vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
-    Cplex_.setOut(env_.getNullStream());
+ //   Cplex_.setOut(env_.getNullStream());
     Model_.add(requestConst_);
     Model_.add(vehicleConst_);
     Model_.add(objFunction_);

@@ -24,7 +24,7 @@ private:
 public:
     static unsigned int labelCount_;                // Counter the number of requests
     const char* name_;
-    float passedTime_;                              // accumulated time of the path up to departing the last node
+    float passedTime_;                              // accumulated time of the path up to last node departure
     float reachedTime_;                             // accumulated time of the path up to reaching the last node
     int load_;                                      // consume capacity of the vehicle
     std::vector<float> travelResources_;            // travel time resource for controlling the trip delay
@@ -38,9 +38,7 @@ public:
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
-    //   int nbPickMove_;                               // this value if for the times that vehicle change location in pickups
     std::bitset<MAX_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
- //   std::bitset<MAX_BIT_SIZE> prunedDirections_;    // nodes that are unreachable due to the penalty
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
@@ -49,10 +47,10 @@ public:
     float lambdaScore_;
 
     // Constructor and Destructor
-    Label(Vehicle *vehicle, PNode &source);
+    Label(const Vehicle *vehicle, PNode &source);
     Label(const Label &label);
     void copyLabel(const Label &label);
-    void copyLabel(Vehicle *vehicle, PNode &source);
+    void copyLabel(const Vehicle *vehicle, PNode &source);
 
     virtual ~Label();
     // Getters and Setters
@@ -61,17 +59,17 @@ public:
     bool operator() (const Label &rhs) const;
 
     void extend(Node *outNode, bool isDropPickPossible);
-    // this function check the feasibility of the label before extension
-    bool isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
+    // this function checks the feasibility of the label before extension
+    bool isExtendFeasible(const Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
                           int &nbEliminated, int &nbPrunedArcs);
 
-    bool isTravelTimeFeasible(Node *outNode, int &nbEliminated);
-    bool isDominated(PLabel &otherLabel, PSolverOption &solverOption) const;
-    // this function examine the label to be sure that it leads to a route with negative reduced cost
-    bool isEliminated();
+    bool isTravelTimeFeasible(const Node *outNode, int &nbEliminated) const;
+    bool isDominated(const PLabel &otherLabel, const PSolverOption &solverOption) const;
+    // this function examines the label to be sure that it leads to a route with negative reduced cost
+    bool isEliminated() const;
 
 //    PRoute labelToRoute(PVehicle &vehicle);
-    PRoute labelToRoute(PVehicle &vehicle, PInstance & pInst);
+    PRoute labelToRoute(const PVehicle &vehicle, const PInstance & pInst) const;
 
     // Display function
     std::string toString() const;

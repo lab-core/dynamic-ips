@@ -37,7 +37,7 @@ Route::~Route(){
 unsigned int Route::getRouteId() const {return routeID_;}
 
 // these functions are used to add nodes to the routes
-void Route::addSource(PNode &node, float departTime, int departPassengers) {
+void Route::addSource(const PNode &node, float departTime, int departPassengers) {
     routeSize_ ++;
     if (node->type_ == SOURCE) {
         routeNodes_.push_back(node);
@@ -49,7 +49,7 @@ void Route::addSource(PNode &node, float departTime, int departPassengers) {
         node->departTime_ = departTime;
     }
 }
-void Route::addNode(PNode &node) {
+void Route::addNode(const PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->related_Request_->requestTime_)
@@ -77,7 +77,7 @@ void Route::addNode(PNode &node) {
 }
 
 
-void Route::addNode(PNode &node, float reachTime, float departTime) {
+void Route::addNode(const PNode &node, float reachTime, float departTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
     plannedReachTime_.push_back(reachTime);
@@ -89,7 +89,7 @@ void Route::addNode(PNode &node, float reachTime, float departTime) {
     routeNodes_.push_back(node);
 }
 
-void Route::addSink(PNode &node) {
+void Route::addSink(const PNode &node) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back());
     float reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
@@ -172,7 +172,7 @@ std::string Route::toString() const {
         }
         repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
         if (routeNodes_[i]->initialType_ == PICKUP)
-            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->intialEarlyPick_ << " (s)  ";
+            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->initialEarlyPick_ << " (s)  ";
         else
             repStr << std::right << std::setw(11) << "-----" << " (s)  ";
         repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
@@ -183,7 +183,7 @@ std::string Route::toString() const {
 }
 
 // this function is for testing the validation of the route
-void Route::testRoute(PVehicle & vehicle) {
+void Route::testRoute(const PVehicle & vehicle) {
     PRoute testRoute = std::make_shared<Route>(vehicleID_);
     testRoute->addSource(routeNodes_[0], vehicle->solutionRoute_->routeNodes_[0]->departTime_,
                          vehicle->solutionRoute_->plannedPassengers_[0]);
@@ -261,8 +261,8 @@ void Route::testRoute(PVehicle & vehicle) {
 
 }
 // This function is to reset the status of the nodes in the route
-void Route::resetRoute() {
-    for (int i = routeSize_-1; i > 0; --i) {
+void Route::resetRoute() const {
+    for (size_t i = routeSize_-1; i > 0; --i) {
         routeNodes_[i]->nodeStatus_ = DEFINED;
         if (routeNodes_[i]->type_ == DROPOFF) {
             routeNodes_[i]->related_Request_->requestStatus_ = ON_BOARD;

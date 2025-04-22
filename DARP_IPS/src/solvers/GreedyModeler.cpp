@@ -3,6 +3,7 @@
 //
 
 #include "GreedyModeler.h"
+#include "data/Greedy.h"
 
 GreedyModeler::GreedyModeler() {
     greedyTime_ = new myTools::Timer(); greedyTime_->init();
@@ -38,18 +39,21 @@ void GreedyModeler::initialization(PInstance &PInst) {
 }
 
 
-void GreedyModeler::solutionToRoute(PInstance &PInst) {
+void GreedyModeler::solutionToRoute(const PInstance &PInst) {
     setObjValue();
     for (auto & greedySol : greedyRouteList_) {
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_.reset();
+        PRoute newRoute;
         if (PInst->parameters_->solutionMode_ == STATIC) {
             PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ += greedySol->idleTime_;
-            PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute(true);
+            newRoute = greedySol->greedyLabelToRoute(true);
+
         }
         else {
-            PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->currentRoute_ = greedySol->greedyLabelToRoute(false);
-            greedySol->resetGreedyRoute(greedyLabelPool_);
+            newRoute = greedySol->greedyLabelToRoute(false);
         }
+        PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->setCurrentRoute(newRoute);
+        greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
     }
     greedyRouteList_.clear();
@@ -81,7 +85,7 @@ void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
     greedyAssignTime_->stop();
 }
 
-void GreedyModeler::solveInsertion(PInstance &PInst) {
+void GreedyModeler::solveInsertion(const PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
@@ -112,7 +116,7 @@ void GreedyModeler::solveInsertion(PInstance &PInst) {
 
 
 
-void GreedyModeler::solveAssignment(PInstance &PInst, int select) {
+void GreedyModeler::solveAssignment(const PInstance &PInst, int select) {
     std::vector<float> possibleDelay;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
@@ -143,9 +147,9 @@ void GreedyModeler::setObjValue() {
 }
 
 
-// this function just assign requests to vehicles based on the minimum delay possible and do not consider ride-sharing
-// any pick up is followed by the drop-off
-void GreedySolver_noShare(PInstance &PInst) {
+// this function assigns requests to vehicles based on the minimum delay possible and do not consider ride-sharing
+// any pickup is followed by the drop-off
+void GreedySolver_noShare(const PInstance &PInst) {
     std::vector<float> possibleDelay;
     for (auto & requestObj : PInst->requests_) {
         if (requestObj->requestStatus_ == NO_ACTION) {

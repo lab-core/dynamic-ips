@@ -13,7 +13,7 @@
 
 using std::to_string;
 // Constructor and Destructor
-Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationID_(locationID), type_(type), zoneID_(zoneID) {
+Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationID_(locationID), zoneID_(zoneID), type_(type) {
 
     related_Request_ = nullptr;
     reachTime_ = 0;
@@ -28,6 +28,7 @@ Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationI
     travelTimeFromSource_ = 0;
     pairNode_ = nullptr;
     initialType_ = type;
+    nodeIndex_ = -1;
 
     if (type == SOURCE)
         nodeID_ = myTools::createSourceID(vehicleID, SOURCE);
@@ -53,6 +54,7 @@ Node::Node(const PNode &oldNode) {
     bestLabelReduceCost_ = INFINITY;
     pairNode_ = nullptr;
     zoneID_ = oldNode->zoneID_;
+    nodeIndex_ = oldNode->nodeIndex_;
 }
 
 Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeID_(std::move(nodeId)),
@@ -63,7 +65,7 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
     serviceTime_ = relatedRequest->serviceTime_;
     nodeStatus_ = DEFINED;
     readyTime_ = relatedRequest->earlyPick_;
-    initialReadyTime_ = related_Request_->intialEarlyPick_;
+    initialReadyTime_ = related_Request_->initialEarlyPick_;
     pairNode_ = nullptr;
     initialType_ = type;
 
@@ -79,6 +81,7 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
     travelTimeFromSource_ = 0;
     bestLabelReduceCost_ = INFINITY;
     zoneID_ = -1;
+    nodeIndex_ = -1;
 }
 
 
@@ -90,12 +93,6 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
 // Constructor and Destructor
 Graph::Graph() {
     nbNodes_ = 0;
-}
-
-Graph::Graph(PNode &source, PNode &sink) {
-    nbNodes_ = 0;
-    addNewNode(source);
-    addNewNode(sink);
 }
 
 // function for adding node to graph
@@ -118,7 +115,7 @@ void Graph::addNewNode(const PNode &node) {
     }
 }
 
-void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
+void Graph::addRequestToMainGraph(const PNode & pickNode, const PNode & dropNode) {
     // create pickup node and drop off nodes
     addNewNode(pickNode);
     addNewNode(dropNode);
@@ -126,9 +123,10 @@ void Graph::addRequestToMainGraph(PNode & pickNode, PNode & dropNode) {
     nodes_[dropNode->nodeID_]->pairNode_ = &(*nodes_[pickNode->nodeID_]);
 }
 
-Zone::Zone(const unsigned int zoneId, int centerLocationId) : zoneID_(zoneId), centerLocationID_(centerLocationId) {
+Zone::Zone(unsigned int zoneId, int centerLocationId) : zoneID_(zoneId), centerLocationID_(centerLocationId) {
     travelToZone_ = 0;
     nbVehiclesRef_ = 0;
     nbVehicles_ = 0;
     highDemandZone_ = true;
+    underCapacity_ = false;
 }

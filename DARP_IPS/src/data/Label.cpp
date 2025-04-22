@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
+Label::Label(const Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -65,7 +65,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     isDropExtend_ = false;
     createTime_ = 0;
 }
-void Label::copyLabel(Vehicle *vehicle, PNode &source) {
+void Label::copyLabel(const Vehicle *vehicle, PNode &source) {
     status_ = ACTIVE;
     load_ = vehicle->numPassengers_;
     passedTime_ = vehicle->departTime_;
@@ -168,20 +168,18 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         totalDelay_ += (reachedTime_ - outNode->initialReadyTime_);
         reducedCost_ += (reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
-        labelScore_ = reducedCost_ / nbPickUp_;
+        labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
     }
- //   prunedDirections_ = prunedDirections_ | outNode->prunedArces_;
     passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }
 
-// this function check the feasibility of the label before extension
-bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity,
+// this function checks the feasibility of the label before extension
+bool Label::isExtendFeasible(const Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity,
                              int &nbPrunedPath, int &nbEliminated, int &nbPrunedArcs) {
     if (extendCheck_.test(outNode->related_Request_->taskIndexLabel_))
         return false;
-    float timeToReach;
     if (outNode->type_ == PICKUP){
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
@@ -200,13 +198,14 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
         if (nbPickUp_ >= maxPickUp)
             return false;
 
-        if (pathNode_.back()->prunedArces_.test(outNode->related_Request_->taskIndexLabel_)) {
+        if (pathNode_.back()->prunedArcs_.test(outNode->related_Request_->taskIndexLabel_)) {
             nbPrunedArcs++;
             return false;
         }
 
-        timeToReach = std::max(outNode->related_Request_->earlyPick_,
-                               std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_]);
+        float timeToReach = std::max(outNode->related_Request_->earlyPick_,
+                                     std::max(outNode->related_Request_->requestTime_, passedTime_) + durationMatrix_[
+                                         pathNode_.back()->locationID_][outNode->locationID_]);
         if (discardSuboptimalPath) {
             if (timeToReach > outNode->related_Request_->latestPickup_) {
  //               prunedDirections_.set(outNode->related_Request_->taskIndexLabel_, true);
@@ -241,7 +240,7 @@ bool Label::isExtendFeasible(Node *outNode, int maxPickUp, bool discardSuboptima
     return true;
 }
 
-bool Label::isTravelTimeFeasible(Node *outNode, int &nbEliminated) {
+bool Label::isTravelTimeFeasible(const Node *outNode, int &nbEliminated) const {
     float timeToReach;
     if (outNode->type_ == PICKUP)
         timeToReach = std::max(outNode->related_Request_->earlyPick_,
@@ -265,7 +264,7 @@ bool Label::isTravelTimeFeasible(Node *outNode, int &nbEliminated) {
     return true;
 }
 
-bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
+bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOption) const {
     /*if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);*/
 
@@ -275,9 +274,7 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
                 //               if (otherLabel->openRequests_ == this->openRequests_) {
                 if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
                     if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                        if (solverOption->isDominanceReleased_)
-                            return true;
-                        else if (this->haveLessTravelResource(otherLabel))
+                        if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
                             return true;
                     }
                 }
@@ -286,8 +283,8 @@ bool Label::isDominated(PLabel &otherLabel, PSolverOption &solverOption) const {
     }
     return false;
 }
-// this function examine the label to be sure that it leads to a route with negative reduced cost
-bool Label::isEliminated() {
+// this function examines the label to be sure that it leads to a route with negative reduced cost
+bool Label::isEliminated() const {
  //   return false;
     for (auto & nodeObj: openNode_) {
         if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] < durationMatrix_[pathNode_.back()->locationID_][(nodeObj)->locationID_]) {
@@ -298,7 +295,7 @@ bool Label::isEliminated() {
 }
 
 
-PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
+PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) const {
     PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
     newRoute->totalLength_ = passedTime_ - vehicle->departTime_;
     newRoute->reducedCost_ = reducedCost_ - vehicle->dual_;
@@ -313,8 +310,10 @@ PRoute Label::labelToRoute(PVehicle &vehicle, PInstance &pInst) {
     if (newRoute->routeRequests_.empty() && !pInst->vehicles_[newRoute->vehicleID_]->onboards_.empty())
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
     if (!newRoute->routeRequests_.empty()) {
-        newRoute->score_ = reducedCost_ / newRoute->routeRequests_.size();
-        newRoute->lambda_ = newRoute->totalDelay_/(newRoute->totalDelay_ - reducedCost_ + 0.0001);
+        newRoute->score_ = reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
+
+        newRoute->lambda_ = newRoute->totalDelay_ /(newRoute->totalDelay_ - reducedCost_ + 0.0001f);
+
     }
     else {
         newRoute->score_ = 0;

@@ -3,9 +3,11 @@
 //
 
 #include "DualAuxSolver.h"
+#include "data/Instance.h"
 
-DualAuxSolver::DualAuxSolver(int nbRequestTask, int nbVehicles) : Model_(env_), nbVehicles_(nbVehicles),
-nbRequestTask_(nbRequestTask), routeConst_(IloRangeArray(env_)), zConst_(IloRangeArray(env_)), objConst_(IloRangeArray(env_)){
+
+DualAuxSolver::DualAuxSolver(int nbRequestTask, int nbVehicles) : Model_(env_), nbRequestTask_(nbRequestTask),
+nbVehicles_(nbVehicles), routeConst_(IloRangeArray(env_)), zConst_(IloRangeArray(env_)), objConst_(IloRangeArray(env_)){
     solveTime_ = new myTools::Timer(); solveTime_->init();
     objValue_ = 0;
 }
@@ -16,7 +18,7 @@ DualAuxSolver::~DualAuxSolver() {
 }
 
 // this function initialized the model
-void DualAuxSolver::initializeModel(PInstance &pInst) {
+void DualAuxSolver::initializeModel(const PInstance &pInst) {
 
     // define variables
     requestDuals_ = IloNumVarArray(env_, nbRequestTask_, -IloInfinity, IloInfinity);
@@ -36,7 +38,7 @@ void DualAuxSolver::initializeModel(PInstance &pInst) {
     }
 }
 
-void DualAuxSolver::addRouteExpr(PRoute &route) {
+void DualAuxSolver::addRouteExpr(const PRoute &route) {
     IloExpr expr(env_);
     for (auto & requestObj : route->routeRequests_) {
         expr += requestDuals_[requestObj->taskIndex_];
@@ -45,7 +47,7 @@ void DualAuxSolver::addRouteExpr(PRoute &route) {
     routeExpr_.emplace_back(std::move(expr));
 }
 
-void DualAuxSolver::buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requests) {
+void DualAuxSolver::buildModel(vector<PRoute> &RMPRoutes, vector<PRequest> &Requests) {
     Model_.end();
     Model_ = IloModel(env_);
     Cplex_ = IloCplex(Model_);
@@ -56,8 +58,8 @@ void DualAuxSolver::buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requ
     zExpr_.clear();
     objExpr_.clear();
 
-    epsilonVar_ = IloNumVarArray(env_, RMProutes.size(), 0.0, IloInfinity);
-    deltaVar_ = IloNumVarArray(env_, Requests.size(), 0.0, IloInfinity);
+    epsilonVar_ = IloNumVarArray(env_,  static_cast<int>(RMPRoutes.size()), 0.0, IloInfinity);
+    deltaVar_ = IloNumVarArray(env_, static_cast<int>(Requests.size()), 0.0, IloInfinity);
 
     IloExpr obj_p1(env_);
     for (int i = 0; i < nbRequestTask_; ++i)
@@ -68,8 +70,8 @@ void DualAuxSolver::buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requ
 
     IloExpr obj_p2(env_);
 
-    for (int r = 0; r < RMProutes.size(); ++r) {
-        addRouteExpr(RMProutes[r]);
+    for (int r = 0; r < RMPRoutes.size(); ++r) {
+        addRouteExpr(RMPRoutes[r]);
         obj_p2 += epsilonVar_[r];
 
         std::ostringstream eName;
@@ -92,7 +94,7 @@ void DualAuxSolver::buildModel(vector<PRoute> &RMProutes, vector<PRequest> &Requ
     obj.end();*/
 }
 
-void DualAuxSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
+void DualAuxSolver::solveModel(const PInstance &pInst, const InputPaths &inputPaths) {
     solveTime_->start();
     try {
         Model_.add(IloMaximize(env_, objExpr_[0] - 100 *objExpr_[1]));
@@ -104,7 +106,7 @@ void DualAuxSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         Cplex_.setParam(IloCplex::Param::NodeAlgorithm, 2);
- //       Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
         if (!Cplex_.solve()) {
             solveTime_->stop();
             env_.out() << Model_ << std::endl;
@@ -160,14 +162,14 @@ void DualAuxSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
             for (auto & requestObj : pInst->requests_) {
             //    if (requestObj->dual_ != piVal[requestObj->taskIndex_])
             //        std::cout << requestObj->dual_ << "  :  " << piVal[requestObj->taskIndex_] << std::endl;
-                requestObj->dual_ = piVal[requestObj->taskIndex_];
-                objValue_ += piVal[requestObj->taskIndex_];
+                requestObj->dual_ = static_cast<float>(piVal[requestObj->taskIndex_]);
+                objValue_ += static_cast<float>(piVal[requestObj->taskIndex_]);
             }
             for (auto & vehicleObj : pInst->vehicles_) {
             //    if (vehicleObj->dual_ != sigmaVal[vehicleObj->vehicleID_])
             //        std::cout << vehicleObj->dual_ << "  :  " << sigmaVal[vehicleObj->vehicleID_] << std::endl;
-                vehicleObj->dual_ = sigmaVal[vehicleObj->vehicleID_];
-                objValue_ += sigmaVal[vehicleObj->vehicleID_];
+                vehicleObj->dual_ = static_cast<float>(sigmaVal[vehicleObj->vehicleID_]);
+                objValue_ += static_cast<float>(sigmaVal[vehicleObj->vehicleID_]);
             }
             // for (int r = 0; r < (int) epsilonVar_.getSize(); ++r) {
             //     if (eVal[r] != 0)

@@ -3,7 +3,8 @@
 //
 
 #include "InputPaths.h"
-
+#include <sys/stat.h>
+#include "utilities/MyTools.h"
 #include <utility>
 
 //-----------------------------------------------------------------------------
@@ -95,7 +96,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
                                    int nbVehicles, const std::string& paramFile) {
     // create directory for results
     if (saveScratch > 0) {
-        std::string instFolder = "";
+        std::string instFolder;
         if (saveScratch == 1)
             instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
         else
@@ -105,8 +106,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
             char *folderPath = const_cast<char *>(instFolder.c_str());
             int check = mkdir(folderPath, 0777);
             if (check == -1){
-                if (check == -1)
-                    throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
+                throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
             }
         }
         std::string outputFolder = instFolder + "/" + instanceName_;

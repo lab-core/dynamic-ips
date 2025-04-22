@@ -3,18 +3,15 @@
 //
 
 #include "Vehicle.h"
-
-#include <utility>
-
 //-----------------------------------------------------------------------------
 //  vehicle class
 //  contains the vehicle info like working time, capacity and passengers
 //-----------------------------------------------------------------------------
 
 // Constructor and Destructor
-Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, PNode &departNode,
-                 PNode & sinkNode) : vehicleID_(vehicleId), capacity_(capacity), departTime_(departTime),
-                                     endTime_(endTime), departNode_(departNode), sinkNode_(sinkNode){
+Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, const PNode &departNode,
+                 const PNode & sinkNode) : vehicleID_(vehicleId), endTime_(endTime), capacity_(capacity),
+                                     departTime_(departTime), departNode_(departNode), sinkNode_(sinkNode){
     numPassengers_ = 0;
     dual_=0;
     InitialDual_ = 0;
@@ -42,8 +39,8 @@ void Vehicle::setDepartTime(float departTime) {
     departTime_ = departTime;
 }
 
-// this function create an empty route and set it as the CurrentRoute_, used in initialization
-void Vehicle::setEmptyRoute(PInstance &pInst) {
+// this function creates an empty route and sets it as the CurrentRoute_, used in initialization
+void Vehicle::setEmptyRoute(const PInstance &pInst) {
     emptyRoute_ = std::make_shared<Route>(vehicleID_);
     emptyRoute_->addSource(departNode_, departTime_, numPassengers_);
 
@@ -71,7 +68,7 @@ void Vehicle::setSolutionRoute() {
     solutionRoute_->addSource(departNode_, departTime_, numPassengers_);
 }
 
-void Vehicle::setCurrentRoute(PRoute &currentRoute) {
+void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
     currentRoute_ = currentRoute;
     for (auto & requestObj : currentRoute_->routeRequests_)
         requestObj->solVehicleID_  = vehicleID_;
@@ -97,8 +94,8 @@ std::string Vehicle::toString() const {
 // function to update vehicle depart time at each time and
 // update the situation of nodes and ride requests
 
-void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests) {
-    int committedTime = 0;
+void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests) {
+    float committedTime = 0;
     if (mainInst->parameters_->solutionMode_ == ANYTIME)
         committedTime = mainInst->parameters_->committedTime_;
     else
@@ -121,7 +118,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
               currentRoute_->routeRequests_.size() > 1 ||
               preSolvePick_ != 1) {
             idle_ = false;
-            // the following condition is useful for the cases that the vehicle does not have any stop in current epoch
+            // this condition is useful for the cases that the vehicle does not have any stop in the current epoch
             if (departTime_ < elapsedTime + committedTime || currentRoute_->plannedReachTime_[1] == departTime_) {
                 onboards_.clear();
                 int breakIndex = 0;
@@ -160,9 +157,9 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
                         ((currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime) &&
                          (currentRoute_->routeNodes_[i]->locationID_ !=
                           currentRoute_->routeNodes_[i + 1]->locationID_))) {
-                        // at depart point the vehicle is ready to leave the stop location and delta time has passed
+                        //at the departure point, the vehicle is ready to leave the stop location (delta has passed)
                         departTime_ = currentRoute_->plannedDepartTime_[i];
-                        // if we have reached the end of the route, next condition is checked
+                        // if we have reached the end of the route, the next condition is checked
                         if (i == currentRoute_->routeSize_ - 1 && departTime_ < elapsedTime + committedTime) {
                             handleIdleState(elapsedTime + committedTime);
                             mainInst->nbPotentialIdle_++;
@@ -209,7 +206,7 @@ void Vehicle::updateStateTime(PInstance & mainInst, float elapsedTime, std::bits
     }
 }
 
-// this function is called at the end of algorithm to set the final stos of the solution based on final epoch
+// this function is called at the end of the algorithm to set the final stos of the solution based on final epoch
 void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
     if (currentRoute_->routeSize_ == 1)
         solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
@@ -287,7 +284,7 @@ void Vehicle::handleIdleState(float epochEndTime) {
 }
 
 
-void Vehicle::setRequestStatus(PNode &node, float reachTime){
+void Vehicle::setRequestStatus(const PNode &node, float reachTime) const {
     if (node->type_ == PICKUP) {
         node->related_Request_->requestStatus_ = ON_BOARD;
         node->related_Request_->pickTime_ = reachTime;

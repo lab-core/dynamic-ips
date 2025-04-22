@@ -26,7 +26,7 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
         throw myTools::myException("The input file was not opened properly!", __LINE__);
     }
 
-    // attributes to read data file and initialize instance
+    // attributes to read the data file and initialize instance
     string title;
     std::string name;
     int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1, nbLocations = -1;
@@ -40,27 +40,27 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
         if (strEndWith(title, "INSTANCE "))
             file >> name;
 
-            // read simulation start time
+        // read simulation start time
         else if (strEndWith(title, "SIMULATION_START "))
             file >> simulationStart;
 
-            // read number of vehicles
+        // read number of vehicles
         else if (strEndWith(title, "NUM_VEHICLES "))
             file >> nbVehicles;
 
-            // read number of onboards
+        // read the number of onboard requests
         else if (strEndWith(title, "NUM_ONBOARDS "))
             file >> nbOnboards;
 
-            // read number of requests remained from previous epochs
+        // read number of requests remained from previous epochs
         else if (strEndWith(title, "NUM_RECEIVED "))
             file >> nbReceived;
 
-            // read number of requests
+        // read the number of requests
         else if (strEndWith(title, "NUM_REQUESTS "))
             file >> nbRequests;
 
-            // read number of stop locations
+        // read number of stop locations
         else if (strEndWith(title, "NUM_LOCATIONS "))
             file >> nbLocations;
 
@@ -75,7 +75,7 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
 //************************************************************************
 // Read the vehicle file
 //************************************************************************
-void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pInstance) {
+void ReadWrite::readVehiclesData(const std::string& strTripsFile, const PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -110,7 +110,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
                 file >> zoneID;
                 if (departTime < pInstance->simulationStartTime_)
                     departTime = pInstance->simulationStartTime_;
-                vehicleID = pInstance->vehicles_.size();
+                vehicleID = static_cast<int>(pInstance->vehicles_.size());
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, zoneID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, zoneID));
                 pInstance->instGraph_->sourceNodes_.back()->reachTime_ = pInstance->simulationStartTime_;
@@ -126,7 +126,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, PInstance &pIn
     }
 }
 
-void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes) {
+void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, const PInstance &pInstance, vector2D<PNode> &routeNodes) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strTripsFile << " >>" << std::endl;
@@ -211,9 +211,10 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
         if (strEndWith(title, "REQUESTS_INFO")) {
 
             for (int r = 0; r < pInstance->nbOnboards_; ++r) {
-                // attributes for reading trip requests file
+                // attributes for reading the trip requests file
                 int nbPassengers = -1, vehicleID = -1, pickZoneID = -1, dropZoneID = -1, position = -1;
-                float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1, deltaTime = -1;
+                float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1;
+ //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -227,10 +228,10 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> position;
 
                 // the starting time of the instance is 16pm
-                //               deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
-                deltaTime = static_cast<float>(ServiceTime);
+                // deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
-                                                                            nbPassengers, deltaTime, pickZoneID, dropZoneID));
+                                                                            nbPassengers, static_cast<float>(ServiceTime),
+                                                                            pickZoneID, dropZoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
                 pInstance->requests_.back()->allocVehicleID_ = vehicleID;
@@ -281,10 +282,11 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
             for (int r = 0; r < nbRequest; ++r) {
-                // attributes for reading trip requests file
+                // attributes for the reading trip requests file
                 int nbPassengers = -1;
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, dropZoneID = -1;
-                float earlyPick = -1, requestTime = -1, deltaTime = -1;
+                float earlyPick = -1, requestTime;
+ //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -294,14 +296,13 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> dropZoneID;
 
                 // the starting time of the instance is 16pm
-                //        deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
+                // deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 if (pInstance->parameters_->solutionMode_ == STATIC)
                     requestTime = 0;
                 else
                     requestTime = earlyPick;
-                deltaTime = static_cast<float>(ServiceTime);
-                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, requestTime, earlyPick,
-                                                                            nbPassengers, deltaTime, pickZoneID, dropZoneID));
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, requestTime,
+                    earlyPick, nbPassengers, static_cast<float>(ServiceTime), pickZoneID, dropZoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -346,11 +347,12 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
             for (int r = 0; r < nbRequest; ++r) {
-                // attributes for reading trip requests file
+                // attributes for reading the trip requests file
                 int nbPassengers = -1;
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, vehicleID = -1, pickPosition = -1, dropPosition = -1;
                 int dropZoneID = -1;
-                float earlyPick = -1, deltaTime = -1, lDual = -1, iDual = -1;
+                float earlyPick = -1, lDual = -1, iDual = -1;
+ //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -364,37 +366,33 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> pickPosition;
                 file >> dropPosition;
 
-                // the starting time of the instance is 16pm
-                deltaTime = static_cast<float>(ServiceTime);
-  //              if (!solveEpoch || earlyPick >= pInstance->simulationStartTime_ - 300) {
-                    pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
-                                                                                nbPassengers, deltaTime, pickZoneID,
-                                                                                dropZoneID));
-                    pInstance->nameToRequest_.insert(
-                            std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
-                                                             pInstance->requests_.back()));
-                    std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
-                    std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
-                    PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
-                    PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
-                    pickNode->zoneID_ = pickZoneID;
-                    dropNode->zoneID_ = dropZoneID;
-                    pInstance->instGraph_->addRequestToMainGraph(pickNode, dropNode);
-                    if (pInstance->parameters_->timeWindow_ > 0)
-                        pInstance->requests_.back()->penalty_ = pInstance->parameters_->timeWindow_;
-                    else
-                        pInstance->requests_.back()->setPenalty(0, pInstance->parameters_,
-                                                                pInstance->simulationStartTime_);
-                    pInstance->requests_.back()->latestPickup_ = pInstance->requests_.back()->earlyPick_ +
-                                                                 pInstance->requests_.back()->penalty_;
-                    pInstance->requests_.back()->dual_ = iDual;
-                    pInstance->requests_.back()->InitialDual_ = iDual;
-                    if (pickPosition != 0) {
-                        routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
-                        routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
-                    }
-                    pInstance->nbWaiting_++;
- //               }
+                pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
+                    earlyPick, nbPassengers, static_cast<float>(ServiceTime), pickZoneID, dropZoneID));
+                pInstance->nameToRequest_.insert(
+                        std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
+                                                         pInstance->requests_.back()));
+                std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
+                std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
+                PNode pickNode = std::make_shared<Node>(pickID, pInstance->requests_.back(), PICKUP);
+                PNode dropNode = std::make_shared<Node>(dropID, pInstance->requests_.back(), DROPOFF);
+                pickNode->zoneID_ = pickZoneID;
+                dropNode->zoneID_ = dropZoneID;
+                pInstance->instGraph_->addRequestToMainGraph(pickNode, dropNode);
+                if (pInstance->parameters_->timeWindow_ > 0)
+                    pInstance->requests_.back()->penalty_ = pInstance->parameters_->timeWindow_;
+                else
+                    pInstance->requests_.back()->setPenalty(0, pInstance->parameters_,
+                                                            pInstance->simulationStartTime_);
+                pInstance->requests_.back()->latestPickup_ = pInstance->requests_.back()->earlyPick_ +
+                                                             pInstance->requests_.back()->penalty_;
+                pInstance->requests_.back()->dual_ = iDual;
+                pInstance->requests_.back()->InitialDual_ = iDual;
+                if (pickPosition != 0) {
+                    routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
+                    routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
+                }
+                pInstance->nbWaiting_++;
+
             }
         }
     }
@@ -431,7 +429,7 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
         if (strEndWith(title, "DURATION_INFO")) {
 
             for (int l = 0; l < nbLocations*nbLocations; ++l) {
-                // attributes for reading trip requests file
+                // attributes for reading the trip requests file
                 int startID = -1, endID = -1;
                 float duration = -1;
 
@@ -462,9 +460,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
     string title;
 
-    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1;
-    int informTimeLimit = -1, pickupDeviationWindow = -1;
-    int epochLength = -1, penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
+    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, epochLength = -1;
+    float informTimeLimit = -1, pickupDeviationWindow = -1;
+    int penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
     bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
     bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
@@ -657,7 +655,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           informTimeLimit, pickupDeviationWindow);
 }
 
-void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
+void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strZoneFile << " >>" << std::endl;
@@ -679,7 +677,7 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
         if (strEndWith(title, "ZONE_INFO")) {
             pInstance->nbZones_ = 0;
             while (!file.eof()) {
-                // attributes for reading trip requests file
+                // attributes for reading the trip requests file
                 int zoneID = -1, centerLocationID = -1;
 
                 file >> zoneID;
@@ -697,7 +695,7 @@ void ReadWrite::readZones(const string &strZoneFile, PInstance &pInstance) {
     pInstance->sortZones();
 }
 
-// function that open all input files and update main instance data
+// function that opens all input files and update main instance data
 void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile) {
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
@@ -771,49 +769,37 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 // (the characters that are read until the separating char are stored in ReadStr
 bool ReadWrite::readUntilChar(std::fstream &pFile, char separator, std::string &pReadStr) {
 
-    char cTmp = 'A';
-    // empty ReadStr if it is not
-    if (!pReadStr.empty())
-        pReadStr.erase();
+    // clear any existing contents
+    pReadStr.clear();
+    // read up to the separator
+    char c;
+    while (pFile.get(c) && c != separator) {
+        pReadStr.push_back(c);
+        }
 
-    // go through the file until the delimiter is met
-    if (pFile.good()){
-        cTmp = pFile.get();
-    }
-    while (cTmp != separator && pFile.good()){
-        pReadStr.push_back(cTmp);
-        cTmp = pFile.get();
-    }
-    if(!pFile.good())
-        return false;
-    return true;
+    // true if delimiter was found (stream still good), false on EOF/error
+    return static_cast<bool>(pFile);
 }
 
 // Read a file stream until meeting one of the two separating characters
 // (the characters that are read until the separating char are stored in ReadStr
 bool ReadWrite::readUntilOneOfTwoChar(std::fstream &pFile, char separator1, char separator2, string &pReadStr) {
-    char cTmp = 'A';
+    // clear any previous contents
+    pReadStr.clear();
 
-    // empty ReadStr if it is not
-    if (!pReadStr.empty())
-        pReadStr.erase();
+    // read until one of the delimiters or EOF/error
+    char c;
+    while (pFile.get(c) && c != separator1 && c != separator2) {
+        pReadStr.push_back(c);
+    }
 
-    // go through the file until the delimiter is met
-    if (pFile.good()){
-        cTmp = pFile.get();
-    }
-    while (cTmp != separator1 && cTmp != separator2 && pFile.good()){
-        pReadStr.push_back(cTmp);
-        cTmp = pFile.get();
-    }
-    if(!pFile.good())
-        return false;
-    return true;
+    // success if stream is still good (delimiter found, not EOF)
+    return static_cast<bool>(pFile);
 }
 // check if a string (sentence) ends with a given substring (word)
 bool ReadWrite::strEndWith(const std::string& sentence, const std::string& word) {
-    int lenWord = (int) word.length();
-    int lenSentence = (int) sentence.length();
+    int lenWord = static_cast<int>(word.length());
+    int lenSentence = static_cast<int>(sentence.length());
     if (lenWord > lenSentence)
         return false;
     else {
@@ -823,7 +809,7 @@ bool ReadWrite::strEndWith(const std::string& sentence, const std::string& word)
 }
 
 void ReadWrite::readInstNames(const string &strInstanceNameFile, vector<std::string> &fileNames, int nbInstances,
-                              std::string index) {
+                              const std::string &index) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strInstanceNameFile << " >>" << std::endl;

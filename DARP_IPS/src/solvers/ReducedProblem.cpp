@@ -18,10 +18,12 @@ ReducedProblem::ReducedProblem() : CplexModeler(){
     uVar_ = IloNumVarArray(env_, 0.0, 0.0, 0.0,ILOFLOAT);
     vVar_ = IloNumVarArray(env_, 0.0, 0.0, 0.0,ILOFLOAT);
     compRoutes_.clear();
+    auxObjValue_ = 0;
+    objValue_ = 0;
 }
 
 
-// this function initialized the model and define empty set of constraints
+// this function initializes the model and defines an empty set of constraints
 void ReducedProblem::ResetRPModel() {
 
     try {
@@ -62,26 +64,28 @@ void ReducedProblem:: addZVar(PRequest &request) {
     addZVarInt(zVar_, request, POSITIVE);
 }
 
-// this function add one route at each iteration of the algorithm during one epoch
-void ReducedProblem::updateModel(PInstance &pInst) {
+// this function adds one route at each iteration of the algorithm during one epoch
+void ReducedProblem::updateRPModel(PInstance &pInst) {
     // add the new compatible column to the model
     for (auto & routeObj : routesToAdd_) {
         if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1)
-            addRouteVar(routeObj, pInst);
+            addRouteVarFloat(routeObj, pInst);
     }
 }
 
 
-// this function build the model at the start of each epoch
+// this function builds the model at the start of each epoch
 void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolution,
                                 int nbVehicles) {
-    // model initialization (defining empty set of constraints and adding objective)
+    // model initialization (defining an empty set of constraints and adding the objective function)
     int rhs = 1;
     initializeModel(pInst, rhs, nbVehicles);
 
     // adding request columns (z variables)
-    for (auto & zSol : pInst->requests_)
-        addZVarFloat(zVar_, zSol, POSITIVE);
+    for (auto & zSol : pInst->requests_) {
+        if (zSol->plannedPickTime_ == LARGE_CONSTANT)
+            addZVarFloat(zVar_, zSol, POSITIVE);
+    }
 
     // adding route solution columns
     for (auto & routeSol : routeSolution){
@@ -97,14 +101,11 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolu
     }
 }
 
-void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
+void ReducedProblem::solveModelLP(const PInstance &pInst, const InputPaths &inputPaths) {
     try {
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "LMP");
 
         Cplex_.extract(Model_);
-//        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-//        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-//        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -115,7 +116,7 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
         else {
             solveTime_->stop();
 
-            objValue_ = Cplex_.getObjValue();
+            objValue_ = static_cast<float>(Cplex_.getObjValue());
             // getting dual values
             requestDuals_.clear();
             vehicleDuals_.clear();
@@ -124,14 +125,14 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
             Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
             for (auto &requestObj: pInst->requests_) {
-                requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
+                requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
                 requestObj->InitialDual_ = requestObj->dual_;
             }
 
             for (auto &vehicleObj: pInst->vehicles_) {
                 int index = vehicleObj->vehicleIndex_;
                 if (index > -1) {
-                    vehicleObj->dual_ = vehicleDuals_[index];
+                    vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
                     vehicleObj->InitialDual_ = vehicleObj->dual_;
                 }
                 else {
@@ -148,8 +149,8 @@ void ReducedProblem::solveModelLP(PInstance &pInst, InputPaths &inputPaths) {
     }
 }
 
-void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                   InputPaths &inputPaths, float availableTime, float preObj) {
+void ReducedProblem::solveModelInt(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                   const InputPaths &inputPaths, float availableTime, float preObj) {
     try {
 
         IloConversion convZ(env_, zVar_, ILOINT);
@@ -177,7 +178,7 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
                 Cplex_.clearModel();
             }
             else {
-                objValue_ = Cplex_.getObjValue();
+                objValue_ = static_cast<float>(Cplex_.getObjValue());
 
                 // saving the result and remove out of base variables
                 zSolution.clear();
@@ -190,15 +191,15 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
                 convZ.end();
 
 
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
-                        routeSolutionIndex_.push_back(r);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(static_cast<int>(r));
+ //                       pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }
 
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                     if (zVal[i] > 0.5) {
                         zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
                     }
@@ -214,17 +215,14 @@ void ReducedProblem::solveModelInt(PInstance &pInst, vector<PRequest> &zSolution
     }
 }
 
-void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                     InputPaths &inputPaths, float availableTime, float preObj) {
+void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                     const InputPaths &inputPaths, float availableTime, float preObj) {
     try {
 
         // Solve the Linear Relaxation
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
 
         Cplex_.extract(Model_);
-//        Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-//        Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
- //       Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
@@ -233,7 +231,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
         else {
             solveTime_->stop();
 
-            objValue_ = Cplex_.getObjValue();
+            objValue_ = static_cast<float>(Cplex_.getObjValue());
             // getting dual values
             requestDuals_.clear();
             vehicleDuals_.clear();
@@ -242,14 +240,14 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
             Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
             for (auto &requestObj: pInst->requests_) {
-                requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
+                requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
                 requestObj->InitialDual_ = requestObj->dual_;
             }
 
             for (auto &vehicleObj: pInst->vehicles_) {
                 int index = vehicleObj->vehicleIndex_;
                 if (index > -1) {
-                    vehicleObj->dual_ = vehicleDuals_[index];
+                    vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
                     vehicleObj->InitialDual_ = vehicleObj->dual_;
                 }
                 else {
@@ -284,7 +282,7 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                     Cplex_.clearModel();
                 }
                 else {
-                    objValue_ = Cplex_.getObjValue();
+                    objValue_ = static_cast<float>(Cplex_.getObjValue());
 
                     // saving the result and remove out of base variables
                     zSolution.clear();
@@ -296,15 +294,15 @@ void ReducedProblem::solveModelLPInt(PInstance &pInst, vector<PRequest> &zSoluti
                     convR.end();
                     convZ.end();
 
-                    for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                         if (routeVal[r] > 0.9) {
                             routeSolution.push_back(compRoutes_[r]);
-                            routeSolutionIndex_.push_back(r);
-                            pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                            routeSolutionIndex_.push_back(static_cast<int>(r));
+ //                           pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                         }
                     }
 
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         if (zVal[i] > 0.9) {
                             zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
                         }
@@ -336,8 +334,8 @@ std::string ReducedProblem::toString() const {
     return repStr.str();
 }
 
-void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                      InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
+void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                                      const InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
     try {
 
         IloConversion convZ (env_, zVar_, ILOINT);
@@ -365,7 +363,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                 Cplex_.clearModel();
             }
             else {
-                objValue_ = Cplex_.getObjValue();
+                objValue_ = static_cast<float>(Cplex_.getObjValue());
 
                 // saving the result and remove out of base variables
                 zSolution.clear();
@@ -377,27 +375,27 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                 convR.end();
                 convZ.end();
 
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+ //                       pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                     if (zVal[i] > 0.5)
                         zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
                 }
                 auxObjValue_ = 0;
 
                 if (lpObj < objValue_) {
-                    for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                    for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                         if (routeVal[r] > 0.5) {
                             routeVar_[r].setBounds(-IloInfinity, 1.0);
                         }
                         else
                             routeVar_[r].setBounds(-IloInfinity, 0.0);
                     }
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         if (zVal[i] > 0.5) {
                             zVar_[i].setBounds(-IloInfinity, 1.0);
                         }
@@ -405,7 +403,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                             zVar_[i].setBounds(-IloInfinity, 0.0);
                     }
 
-                    // change objective to maximize
+                    // change the objective function to maximize
                     objFunction_.setSense(IloObjective::Maximize);
 
                     IloNumArray requestRHS(env_);
@@ -428,7 +426,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                     else {
                         solveTime_->stop();
 
-                        auxObjValue_ = Cplex_.getObjValue();
+                        objValue_ = static_cast<float>(Cplex_.getObjValue());
                         // getting dual values
                         requestDuals_.clear();
                         vehicleDuals_.clear();
@@ -437,7 +435,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                         Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
                         for (auto &requestObj: pInst->requests_) {
-                            requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
+                            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
                             /*if (requestObj->InitialDual_ != requestObj->dual_)
                                 std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
                         }
@@ -446,7 +444,7 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
                         for (auto &vehicleObj: pInst->vehicles_) {
                             if (vehicleObj->vehicleIndex_ > -1) {
                                 int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
-                                vehicleObj->dual_ = vehicleDuals_[index];
+                                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
                                 /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
                                      std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
                             }
@@ -457,10 +455,10 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
 
                         // reset changes
                         objFunction_.setSense(IloObjective::Minimize);
-                        for (int i = (int) zVal.getSize() - 1; i >= 0; --i)
+                        for (IloInt i = zVal.getSize() - 1; i >= 0; --i)
                             zVar_[i].setBounds(0.0, IloInfinity);
 
-                        for (int r = (int) routeVal.getSize() - 1; r >= 0; --r)
+                        for (IloInt r = routeVal.getSize() - 1; r >= 0; --r)
                             routeVar_[r].setBounds(0.0, IloInfinity);
                         requestConst_.setBounds(requestRHS_, requestRHS_);
                         vehicleConst_.setBounds(vehicleRHS_, vehicleRHS_);
@@ -477,8 +475,8 @@ void ReducedProblem::solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSol
     }
 }
 
-void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
+void ReducedProblem::solveModelInt_box(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          const InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
     try {
 
         IloConversion convZ (env_, zVar_, ILOINT);
@@ -506,7 +504,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                 Cplex_.clearModel();
             }
             else {
-                objValue_ = Cplex_.getObjValue();
+                objValue_ = static_cast<float>(Cplex_.getObjValue());
 
                 // saving the result and remove out of base variables
                 zSolution.clear();
@@ -518,19 +516,19 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                 convR.end();
                 convZ.end();
 
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+ //                       pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                     }
                 }
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                     if (zVal[i] > 0.5)
                         zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
                 }
                 auxObjValue_ = 0;
 
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                     uVar_[i].setBounds(0.0, IloInfinity);
                     vVar_[i].setBounds(0.0, IloInfinity);
                 }
@@ -546,7 +544,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                 else {
                     solveTime_->stop();
 
-                    auxObjValue_ = Cplex_.getObjValue();
+                    objValue_ = static_cast<float>(Cplex_.getObjValue());
                     // getting dual values
                     requestDuals_.clear();
                     vehicleDuals_.clear();
@@ -559,7 +557,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                     Cplex_.getDuals(requestDuals_, requestConst_);
                     Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         if (uVal[i] > 0)
                             std::cout << "U[" << zVar_[i].getName()  << "] : " << uVal[i] << std::endl;
                         if (vVal[i] > 0)
@@ -567,7 +565,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                     }
 
                     for (auto &requestObj: pInst->requests_) {
-                        requestObj->dual_ = requestDuals_[requestObj->taskIndex_];
+                        requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
                         /*if (requestObj->InitialDual_ != requestObj->dual_)
                             std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
                     }
@@ -577,7 +575,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                     for (auto &vehicleObj: pInst->vehicles_) {
                         if (vehicleObj->vehicleIndex_ > -1) {
                             int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
-                            vehicleObj->dual_ = vehicleDuals_[index];
+                            vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
                             /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
                                  std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
                         }
@@ -586,7 +584,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
                         }
                     }
                     // rest the model
-                    for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                    for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         uVar_[i].setBounds(0.0, 0.0);
                         vVar_[i].setBounds(0.0, 0.0);
                     }
@@ -604,7 +602,7 @@ void ReducedProblem::solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolu
 
 
 void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                                   InputPaths &inputPaths, float availableTime, float preObj, PDualAuxSolver &DualAuxSolver_) {
+                                   InputPaths &inputPaths, float availableTime, float preObj, const PDualAuxSolver &DualAuxSolver_) {
     try {
 
         IloConversion convZ(env_, zVar_, ILOINT);
@@ -615,7 +613,6 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
         Cplex_.extract(Model_);
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
-//        setParameters(pInst, availableTime);
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -631,7 +628,7 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
                 Cplex_.clearModel();
             }
             else {
-                objValue_ = Cplex_.getObjValue();
+                objValue_ = static_cast<float>(Cplex_.getObjValue());
 
                 // saving the result and remove out of base variables
                 zSolution.clear();
@@ -643,11 +640,11 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
                 convR.end();
                 convZ.end();
 
-                for (int r = (int) routeVal.getSize() - 1; r >= 0; --r) {
+                for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
-                        routeSolutionIndex_.push_back(r);
-                        pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(static_cast<int>(r));
+            //            pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] - DualAuxSolver_->epsilonVar_[r] <= compRoutes_[r]->totalDelay_);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] >= compRoutes_[r]->totalDelay_);
                         DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] == compRoutes_[r]->totalDelay_);
@@ -658,7 +655,7 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
                     }
                 }
 
-                for (int i = (int) zVal.getSize() - 1; i >= 0; --i) {
+                for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                     if (zVal[i] > 0.5) {
                         zSolution.push_back(pInst->nameToRequest_[zVar_[i].getName()]);
              //           DualAuxSolver_->zConst_.add(DualAuxSolver_->zExpr_[zSolution.back()->taskIndex_] - DualAuxSolver_->deltaVar_[i]<= zSolution.back()->penalty_);

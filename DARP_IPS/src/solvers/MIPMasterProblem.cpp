@@ -10,7 +10,7 @@ MIPMasterProblem::MIPMasterProblem() {
 }
 
 void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolution, int nbVehicles) {
-    // model initialization (defining empty set of constraints and adding objective)
+    // model initialization (defining an empty set of constraints and adding the objective function)
     int rhs = 1;
     initializeModel(pInst, rhs, nbVehicles);
 

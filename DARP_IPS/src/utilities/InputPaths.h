@@ -5,13 +5,9 @@
 #ifndef INPUT_PATHS_H
 #define INPUT_PATHS_H
 
-#include <sstream>
 #include <string>
-#include <ctime>
 #include <fstream>
-#include <sys/stat.h>
-#include <iostream>
-#include "utilities/MyTools.h"
+
 
 
 //-----------------------------------------------------------------------------
@@ -50,8 +46,8 @@ protected:
     std::string output_instance_;
 
     // output data addresses
-    std::string output_epochRunTime_;           // save the summary of each epoch runtimes (master, sub problems,..)
-    std::string output_epochResults_;           // save the results of solving master problem at each epoch
+    std::string output_epochRunTime_;           // save the summary of each epoch runtime (master, sub problems,..)
+    std::string output_epochResults_;           // save the results of solving the Master problem at each epoch
     std::string output_finalLog_;               // save the final routes and parameters and solution in a txt file
     std::string output_finalRoutes_;            // save final routes in a csv
     std::string output_finalRequests_;          // save the status of final requests in a csv
@@ -65,7 +61,7 @@ protected:
     std::string output_reqDuals_;               // save requests duals after each iteration of solving MP
     std::string output_vehDuals_;               // save vehicles duals after each iteration of solving MP
     std::string output_solutionChange_;         // save the changes in incompatibility degree at each epoch
-    std::string output_summary_;                // save the summary of final solution
+    std::string output_summary_;                // save the summary of the final solution
 
 public:
 
@@ -106,7 +102,7 @@ public:
     const std::string &getOutputReqDuals() const;
     const std::string &getOutputVehDuals() const;
 
-    const string &getOutputSummary() const;
+    const std::string &getOutputSummary() const;
 
     const std::string &getOutputSolutionChange() const;
 
@@ -117,7 +113,7 @@ public:
     void initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
         int nbVehicles, const std::string& paramFile);
 
-    // this function create a directory to build a new instance
+    // this function creates a directory to build a new instance
     void makeInstanceOutput(const std::string& instNum);
 };
 

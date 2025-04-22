@@ -24,20 +24,20 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int pickupDeviationWindow):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
-        mainAlgorithm_(mainAlgorithm), numIter_(numIter), greedyReOptimize_(greedyReOptimize),
-        WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch),
-        saveScratch_(saveScratch), vehicleReturn_(vehicleReturn), initialStart_(initialStart),
-        MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
-        minImp_(minImp), useZoom_(useZoom), nbColumn_(nbColumn), isTruncated_(isTruncated), MaxLabel_(maxLabel),
-        isSuccessorsLimited_(isSuccessorsLimited), isDominanceReleased_(isDominanceReleased),
-        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode),
-        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), constPortion_(constPortion),
-        vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
-        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath) ,
-        sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), populateTimeLimit_(populateTimeLimit),
-        solutionMode_(solutionMode), discardSuboptimalPath_(discardSuboptimalPath), MIPGap_(MIPGap),
-        timeWindow_(timeWindow), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), savePartial_(false),
-        informTimeLimit_(informTimeLimit), pickupDeviationWindow_(pickupDeviationWindow){}
+        mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
+        greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
+        savePartial_(false), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
+        WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
+        pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
+        minImp_(minImp), useZoom_(useZoom),
+        nbColumn_(nbColumn), isTruncated_(isTruncated),
+        MaxLabel_(maxLabel), isDominanceReleased_(isDominanceReleased), isSuccessorsLimited_(isSuccessorsLimited),
+        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), discardSuboptimalPath_(discardSuboptimalPath),
+        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm) ,
+        constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
+        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick),
+        sortPath_(sortPath), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap){}
 
 Parameters::~Parameters() = default;
 
@@ -169,11 +169,11 @@ solverOption::solverOption(bool isTruncated, int maxLabel, bool isDominanceRelea
                            SortPaths pathSort, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                            bool discardSuboptimalPath, bool isDropPickPossible,
                            LabelingStrategy labelingStrategy) :
-        isTruncated_(isTruncated), nbPick_(nbPick), MaxLabel_(maxLabel),
-        isSuccessorsLimited_(isSuccessorsLimited), discardSuboptimalPath_(discardSuboptimalPath),
-        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), pathSort_(pathSort),
-        isDominanceReleased_(isDominanceReleased), isDropPickPossible_(isDropPickPossible),
-        LabelingStrategy_(labelingStrategy), usePick_(false) {}
+        isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased), isSuccessorsLimited_(isSuccessorsLimited),
+        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs),
+        discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), LabelingStrategy_(labelingStrategy),
+        MaxLabel_(maxLabel), usePick_(false),
+        nbPick_(nbPick), pathSort_(pathSort) {}
 
 solverOption::~solverOption() = default;
 
@@ -183,7 +183,7 @@ void solverOption::disableHeuristics() {
     isSuccessorsLimited_ = false;
 }
 
-solverOption::solverOption(PParameters &MainParams) {
+solverOption::solverOption(const PParameters &MainParams) {
     isTruncated_ = MainParams->isTruncated_;
     MaxLabel_ = MainParams->MaxLabel_;
     isDominanceReleased_ = MainParams->isDominanceReleased_;

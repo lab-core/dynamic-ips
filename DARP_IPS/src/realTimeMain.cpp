@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
                 std::shared_ptr<solver> instanceSolver = std::make_shared<solver>(mainInst, inputPaths);
                 if (mainInst->parameters_->solutionMode_ == DYNAMIC) {
                     try {
-                        instanceSolver->dynamicSolver(mainInst, inputPaths, instNum, middleSave, saveTime);
+                        instanceSolver->dynamicSolver(mainInst, inputPaths, middleSave, saveTime);
                     } catch (const std::exception &e) {
                         std::cout << "DYNAMIC solving caught an exception=: "
                                   << e.what() << std::endl;

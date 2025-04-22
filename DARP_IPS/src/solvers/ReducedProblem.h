@@ -33,7 +33,7 @@ public:
     ReducedProblem();
 
 
-    // this function initialized the model and define empty set of constraints
+    // this function initializes the model and defines an empty set of constraints
     void ResetRPModel();
 
     // this function adds routeVar to the model
@@ -43,30 +43,30 @@ public:
     // this function adds zVar to the model used for the routes that served only one request
     void addZVar(PRequest &request);
 
-    // this function add one route at each iteration of the algorithm during one epoch
-    void updateModel(PInstance &pInst);
+    // this function adds one route at each iteration of the algorithm during one epoch
+    void updateRPModel(PInstance &pInst);
 
-    // this function build the model at the start of each epoch
+    // this function builds the model at the start of each epoch
     void buildModel(PInstance &pInst, std::vector<PRoute> &routeSolution,
                     int nbVehicles);
 
     // solve functions
-    void solveModelLP(PInstance &pInst, InputPaths &inputPaths);
+    void solveModelLP(const PInstance &pInst, const InputPaths &inputPaths);
 
-    void solveModelInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, float preObj);
-    void solveModelLPInt(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                         InputPaths &inputPaths, float availableTime, float preObj);
+    void solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                       const InputPaths &inputPaths, float availableTime, float preObj);
+    void solveModelLPInt(const PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                         const InputPaths &inputPaths, float availableTime, float preObj);
 
 
-    void solveModelIntAux_P(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
+    void solveModelIntAux_P(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          const InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
 
-    void solveModelInt_box(PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
-                          InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
+    void solveModelInt_box(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
+                          const InputPaths &inputPaths, float availableTime, float preObj, float lpObj);
 
     void solveModelIntAux_D(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                       InputPaths &inputPaths, float availableTime, float preObj, PDualAuxSolver &DualAuxSolver_);
+                       InputPaths &inputPaths, float availableTime, float preObj, const PDualAuxSolver &DualAuxSolver_);
 
     // Display function
     std::string toString() const override;

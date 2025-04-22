@@ -42,9 +42,10 @@ namespace myTools {
     }
 
     // function to compare two val_array
-    bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs) {
-        std::valarray<bool> result = rhs <= lhs;
-        return std::all_of(begin(result), end(result), [](bool v) { return v; });
+    bool isLessEqual(const std::valarray<int> &rhs, const std::valarray<int> &lhs) {
+        return std::all_of(std::begin(rhs), std::end(rhs), [&, i = 0](int val) mutable {
+            return val <= lhs[i++];
+        });
     }
 
     // Appends the values of v2 vector to at the end of v1 vector
@@ -96,8 +97,7 @@ namespace myTools {
     void Timer::stop() {
         if (isStopped_)
             myException::throwError("Trying to stop an already stopped timer!");
-        high_resolution_clock::time_point cpuNow;
-        cpuNow = high_resolution_clock::now();
+        high_resolution_clock::time_point cpuNow = high_resolution_clock::now();
 
         cpuSinceStart_ = std::chrono::duration_cast<std::chrono::duration<double>>(cpuNow - cpuInit_);
         cpuSinceInit_ = cpuSinceInit_ + cpuSinceStart_;
@@ -108,34 +108,24 @@ namespace myTools {
 
     // get the time spent since the initialization of the timer and since the last
     // time it was started
-    std::chrono::duration<double> Timer::dSinceInit() {
-        std::chrono::duration<double> cpuCurrent;
+    std::chrono::duration<float> Timer::dSinceInit() const {
         if (isStarted_) {
-            high_resolution_clock::time_point cpuNow;
-            cpuNow = high_resolution_clock::now();
-
-            std::chrono::duration<double> cpuTmp;
-            cpuTmp = std::chrono::duration_cast<std::chrono::duration<double>>(cpuNow - cpuInit_);
-
-
-            cpuCurrent = cpuTmp + cpuSinceInit_;
-            return cpuCurrent;
+            high_resolution_clock::time_point cpuNow = high_resolution_clock::now();
+            return std::chrono::duration_cast<std::chrono::duration<double>>(cpuNow - cpuInit_) + cpuSinceInit_;
         }
-        else if (isStopped_) {
+        if (isStopped_) {
             return cpuSinceInit_;
         }
-        else
-            myException::throwError("Trying to get the value of an uninitialized timer!");
+        myException::throwError("Trying to get the value of an uninitialized timer!");
         return high_resolution_clock::duration::zero();
     } // end dSinceInit
 
     // Get the time spent since the last start of the timer without stopping it
-    std::chrono::duration<double> Timer::dSinceStart() {
+    std::chrono::duration<float> Timer::dSinceStart() {
         if (!isStarted_ && !isStopped_)
             myException::throwError("Trying to get the value of an uninitialized timer!");
         else if (isStarted_) {
-            high_resolution_clock::time_point cpuNow;
-            cpuNow = high_resolution_clock::now();
+            high_resolution_clock::time_point cpuNow = high_resolution_clock::now();
             cpuSinceStart_ = std::chrono::duration_cast<std::chrono::duration<double>>(cpuNow - cpuInit_);
 
         }

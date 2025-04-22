@@ -3,11 +3,16 @@
 //
 
 #include "solver.h"
+#include "solvers/LabelingSubProblem.h"
 
-solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
+solver::solver(const PInstance & mainInst, InputPaths &inputPaths) {
     elapsedTime_ = 0;
     SubproEpochTime_ = 0;
     epoch_ = 0;
+    nbOnePick_ = 0;
+    nbTwoPick_ = 0;
+    nbThreePick_ = 0;
+    nbRecycledColumns_ = 0;
 
     masterModel_ = std::make_shared<MasterAlgorithm>(inputPaths);
     GreedyModel_ = std::make_shared<GreedyModeler>();
@@ -37,7 +42,7 @@ solver::solver(PInstance & mainInst, InputPaths &inputPaths) {
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
 
-    // this Stream define runtime outputs
+    // this Stream defines the runtime outputs
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
     (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
                               "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
@@ -70,7 +75,7 @@ solver::~solver() {
 //    delete pLogSolutionChange_;
 }
 
-void solver::selectVehiclesForSubproblem(PInstance &EpochInst, int iter){
+void solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
     if (!EpochInst->parameters_->vehiclePortion_ || iter == 1) {
         // The subproblems are solved for all the vehicles
         EpochInst->selectedVehicles_.assign(EpochInst->nbVehicles_, iter);
@@ -96,10 +101,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     masterModel_->initialization(EpochInst, inputPaths, GreedyModel_);
 
     // define required variables
-    float previousObj;
-    int nbNegativeFound;
 
-    int iter = 0;
+ int iter = 0;
     bool subProBreak = false;
     masterModel_->RMPCounter_ ++;
     masterModel_->nbRoutes_ = 0;
@@ -124,12 +127,12 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         // Set available time
         iter++;
         masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
-        nbNegativeFound = 0;
-        previousObj = masterModel_->objValue_;
+        int nbNegativeFound = 0;
+        float previousObj = masterModel_->objValue_;
 
 
         //***********************************************************************************//
-        //                    L A B E L  S E T T I N G    M E T H O D
+        //                    LABEL SETTING METHOD
         //***********************************************************************************//
         // start the subproblems timer
         subProblemTime_->start();
@@ -151,7 +154,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                         vehicleObj->numPickup_ = 2;
                         nbThreePick_ ++;
                     }
-                    else if (vehicleObj->currentRoute_->routeRequests_.size() >= 1){
+                    else if (!vehicleObj->currentRoute_->routeRequests_.empty()){
                         vehicleObj->numPickup_ = 2;
                         nbTwoPick_ ++;
                     }
@@ -210,7 +213,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
 
         for (auto &subProblem: subProSolve) {
-            masterModel_->nbRoutes_ += masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size();
+            masterModel_->nbRoutes_ += static_cast<int>(masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size());
             nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
             nbNegativeFound_ += subProblem->nbNegativeColumns_;
             nbGenerated_ += subProblem->nbGenerated_;
@@ -287,8 +290,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     masterModel_->setObjValue();
 
     if (EpochInst->parameters_->mainAlgorithm_ == RT_CG) {
-        masterModel_->availableTime_ = static_cast<int>(EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count());
-        masterModel_->timeLimit_ = std::max(int(masterModel_->availableTime_), 10);
+        masterModel_->availableTime_ = EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count();
+        masterModel_->timeLimit_ = std::max(masterModel_->availableTime_, 10.0f);
 
         masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
     }
@@ -342,10 +345,9 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 }
 
 
-void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave,
+void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave,
                            float saveTime) {
     // define required variables
-    int nbReceivedRequest;
     epoch_ = 0;
     std::vector<float> EpochTime = {1,1,1};
 //    int commitTime = mainInst->parameters_->epochLength_;
@@ -359,7 +361,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
 
-    nbReceivedRequest = mainInst->nbOnboards_;
+    int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
     float preObjective = masterModel_->objValue_;
     bool skip = false;
@@ -379,7 +381,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         logFile << " EPOCH: " << epoch_ << std::endl;
         logFile.close();
         EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
-        int avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0) / EpochTime.size());
+        float avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0.0f) / static_cast<float>(EpochTime.size()));
         if (mainInst->parameters_->committedTime_ > std::max(avg, mainInst->parameters_->epochLength_)) {
             mainInst->parameters_->committedTime_ = std::max(avg, mainInst->parameters_->epochLength_);
             std::cout << "dec commit time: " << mainInst->parameters_->committedTime_ << std::endl;
@@ -398,7 +400,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
         for (auto &vehicleObj: mainInst->vehicles_) {
 //            vehicleObj->updateCurrentRoute(elapsedTime_);
             vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
-            mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
+            mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
         if (mainInst->parameters_->routeRecycle_) {
             for (auto &vehicleObj: mainInst->vehicles_) {
@@ -418,7 +420,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 
         // resetting a subInstance
         EpochInst->resetInstance();
-        // reading the data received in previous epoch
+        // reading the data received in the previous epoch
         EpochInst->buildPartialData(mainInst, masterModel_->zSolution_ , elapsedTime_, nbReceivedRequest);
         if (EpochInst->parameters_->timeWindow_ == 0)
             EpochInst->updatePenalties(elapsedTime_);
@@ -487,7 +489,6 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
 void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
-    int nbReceivedRequest;
 
     // start simulation timer
     mainInst->setInitialTimes();
@@ -500,7 +501,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
     simulationTime_->start();
 //    preprocessTime_->start();
-    nbReceivedRequest = mainInst->nbOnboards_;
+    int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst, nbReceivedRequest);
 
@@ -540,10 +541,8 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
     }
 }
 
-void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::string instNum, bool middleSave, float saveTime) {
+void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
     // define required variables
-    bool MIP_Stop = false;
-    int nbReceivedRequest;
     epoch_ = 0;
     int instance_count = 1;
 
@@ -555,10 +554,10 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             mainInst->vehicles_[v]->setCurrentRoute(mainInst->vehicles_[v]->emptyRoute_);
     }
 
-    nbReceivedRequest = mainInst->nbOnboards_;
+    int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
     while (nbReceivedRequest < mainInst->nbRequests_){
-    /*while ((!solveEpoch && (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty())) ||
+        /*while ((!solveEpoch && (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty())) ||
            (solveEpoch && nbReceivedRequest < mainInst->nbRequests_)) {*/
         nextEpoch:
         // start simulation timer
@@ -592,34 +591,34 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
         }
         for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_
-                                        + static_cast<float>(epoch_ * mainInst->parameters_->epochLength_), removedRequests);
-            mainInst->nbOnboards_ += (int) vehicleObj->onboards_.size();
+            vehicleObj->updateStateTime(mainInst, static_cast<float>(mainInst->simulationStartTime_) +
+                                        static_cast<float>(epoch_) * mainInst->parameters_->epochLength_, removedRequests);
+            mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
         masterModel_->nbRoutes_ = 0;
 
         // resetting a subInstance
         EpochInst->resetInstance();
-        // reading the data received in previous epoch
+        // reading the data received in the previous epoch
 
         EpochInst->buildPartialData(mainInst, masterModel_->zSolution_,
-                                    static_cast<float>(epoch_ * mainInst->parameters_->epochLength_),
+                                    static_cast<float>(epoch_) * mainInst->parameters_->epochLength_,
                                     nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
             vehicleObj->currentRoute_->createColumn();
         }
         if (EpochInst->parameters_->timeWindow_ == 0)
-            EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * epoch_);
+            EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * static_cast<float>(epoch_));
         if (epoch_ == 0 && mainInst->nbOnboards_ > 0)
             nbReceivedRequest += EpochInst->nbRequests_;
         else
             nbReceivedRequest += EpochInst->nbNewRequests_;
         std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbRequests_ << std::endl;
         // saving the status in the middle of running
-        if ((static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) >= saveTime) && middleSave ) {
+        if ((static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ >= saveTime) && middleSave ) {
             inputPaths.makeInstanceOutput(std::to_string(instance_count));
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
-                                             static_cast<float>(epoch_ * EpochInst->parameters_->epochLength_),mainInst->parameters_->epochLength_);
+                                             static_cast<float>(epoch_) * EpochInst->parameters_->epochLength_,mainInst->parameters_->epochLength_);
 
             saveTime += 60;
             /*if (instance_count >= 30)
@@ -636,23 +635,6 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             goto nextEpoch;
         }
         //       preprocessTime_->stop();
-        if (MIP_Stop) {
-            if (epoch_ == 150) {
-                EpochInst->parameters_->mainAlgorithm_ = RT_CG;
-                for (auto &requestObj: EpochInst->requests_)
-                    requestObj->dual_ = requestObj->penalty_;
-                for (auto &vehicleObj: EpochInst->vehicles_)
-                    vehicleObj->dual_ = 0;
-            }
-            /*if (epoch_ == 4) {
-                EpochInst->parameters_->mainAlgorithm_ = MP_ISUD;
-                EpochInst->parameters_->numIter_ = false;
- //               EpochInst->parameters_->greedyReOptimize_ = true;
-//                EpochInst->parameters_->useZoom_ = true;
-            }*/
-            /*if (epoch_ == 5)
-                break;*/
-        }
 
         switch (EpochInst->parameters_->mainAlgorithm_) {
             case GREEDY:
@@ -674,23 +656,23 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, std::str
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         //       (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
         EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_
-                                        + static_cast<float>((epoch_ + 1) * mainInst->parameters_->epochLength_));
+                                        + static_cast<float>(epoch_ + 1) * mainInst->parameters_->epochLength_);
         epoch_++;
         simulationTime_->stop();
     }
 
     for (auto & vehicleObj : mainInst->vehicles_) {
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_
-                                           + static_cast<float>((epoch_+1) * mainInst->parameters_->epochLength_));
+                                           + static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_);
     }
 
 }
 
 // function to print epoch runTime to file
-std::string solver::saveRuntimes(PInstance &EpochInst) {
+std::string solver::saveRuntimes(const PInstance &EpochInst) {
     std::stringstream repStr;
     epochRuntime_ = simulationTime_->dSinceStart().count();
-    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / (epoch_ + 1);
+    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
 
     repStr << epoch_ << ",";
     repStr << EpochInst->nbRequests_ << ",";
@@ -700,14 +682,14 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     repStr << simulationTime_->dSinceInit().count() << ",";
 
     // master problem Times
-    repStr << static_cast<float>(masterModel_->masterTime_->dSinceInit().count()) - masterEpochTime_ << ",";
-    repStr << static_cast<float>(masterModel_->RPTime_->dSinceInit().count()) - RPEpochTime_ << ",";
-    repStr << static_cast<float>(masterModel_->MPBuildTime_->dSinceInit().count()) - RPEpochBuildTime_ << ",";
+    repStr << masterModel_->masterTime_->dSinceInit().count() - masterEpochTime_ << ",";
+    repStr << masterModel_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
+    repStr << masterModel_->MPBuildTime_->dSinceInit().count() - RPEpochBuildTime_ << ",";
     repStr << masterModel_->MPEpochSolveTime_ << ",";
-    repStr << static_cast<float>(masterModel_->CPTime_->dSinceInit().count()) - CPEpochTime_ << ",";
-    repStr << static_cast<float>(masterModel_->CPBuildTime_->dSinceInit().count()) - CPEpochBuildTime_ << ",";
+    repStr << masterModel_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
+    repStr << masterModel_->CPBuildTime_->dSinceInit().count() - CPEpochBuildTime_ << ",";
     repStr << masterModel_->CPEpochSolveTime_ << ",";
-    repStr << static_cast<float>(masterModel_->ZOOMTime_->dSinceInit().count()) - isudMIPEpochTime_ << ",";
+    repStr << masterModel_->ZOOMTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
 
     masterEpochTime_ = masterModel_->masterTime_->dSinceInit().count();
     RPEpochTime_ = masterModel_->RPTime_->dSinceInit().count();
@@ -718,8 +700,8 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
 
     repStr << SubproEpochTime_ << ",";
     repStr << preprocessTime_ ->dSinceStart().count()<< ",";
-    repStr << static_cast<float>(GreedyModel_->greedyAssignTime_->dSinceInit().count()) - AssignTime_ << ",";
-    repStr << static_cast<float>(GreedyModel_->greedyTime_->dSinceInit().count()) - GreedyTime_ << ",";
+    repStr << GreedyModel_->greedyAssignTime_->dSinceInit().count() - AssignTime_ << ",";
+    repStr << GreedyModel_->greedyTime_->dSinceInit().count() - GreedyTime_ << ",";
     AssignTime_ = GreedyModel_->greedyAssignTime_->dSinceInit().count();
     GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     repStr << masterModel_->SPIter_ << ",";
@@ -746,7 +728,7 @@ std::string solver::saveRuntimes(PInstance &EpochInst) {
     return repStr.str();
 }
 
-std::string solver::toString(PInstance & mainInst) const {
+std::string solver::toString(const PInstance & mainInst) const {
     std::stringstream repStr;
     repStr << "*************************************************************************************" << std::endl;
     repStr << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch_ << " EPOCHS " << std::endl;
@@ -777,9 +759,9 @@ std::string solver::toString(PInstance & mainInst) const {
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << masterModel_->toStringTimersAvg(epoch_);
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/epoch_ << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     mainInst->instRepStr_ << epoch_-1 << "," << masterModel_->LPIter_ << "," << masterModel_->MIPIter_ << ",";
     mainInst->instRepStr_ << masterModel_->RPIter_ << "," << masterModel_->CPIter_ << ",";
     mainInst->instRepStr_ << masterModel_->ZoomIter_ << ",";
@@ -809,8 +791,8 @@ std::string solver::toString(PInstance & mainInst) const {
     return repStr.str();
 }
 
-void solver::CreateOneStopRoutes(PVehicle &vehicle, vector<PRoute> &availableRoutes, PInstance &pInst,
-                                 PInstance &EpochInst, int &nbNegative) {
+void solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes, const PInstance &pInst,
+                                 const PInstance &EpochInst, int &nbNegative) {
     for (auto & requestObj : EpochInst->requests_) {
         PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
         newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
@@ -823,8 +805,8 @@ void solver::CreateOneStopRoutes(PVehicle &vehicle, vector<PRoute> &availableRou
         newRoute->addNode(pInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
         newRoute->addNode(pInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
         newRoute->reducedCost_ = newRoute->totalDelay_ - requestObj->dual_ - vehicle->dual_;
-        newRoute->score_ = newRoute->reducedCost_ / newRoute->routeRequests_.size();
-        newRoute->lambda_ = newRoute->totalDelay_/(newRoute->totalDelay_ - newRoute->reducedCost_ + 0.0001);
+        newRoute->score_ = newRoute->reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
+        newRoute->lambda_ = newRoute->totalDelay_/(newRoute->totalDelay_ - newRoute->reducedCost_ + 0.001f);
         newRoute->totalLength_ = newRoute->plannedDepartTime_.back() - vehicle->departTime_;
         if (newRoute->reducedCost_ < 0)
             nbNegative++;
@@ -847,12 +829,12 @@ void solver::updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, v
     }
 }
 
-void solver::returnVehicles(PInstance & EpochInst) {
-    int lastEpoch = 0;
+void solver::returnVehicles(const PInstance & EpochInst) const {
+    float lastEpoch = 0;
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
         lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
     else
-        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - EpochInst->parameters_->epochLength_;
+        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->epochLength_;
 
     // Return Idle Vehicles
     if (EpochInst->parameters_->vehicleReturn_) {
@@ -871,13 +853,13 @@ void solver::returnVehicles(PInstance & EpochInst) {
 }
 
 
-void solver::returnVehiclesZone(PInstance & EpochInst) {
+void solver::returnVehiclesZone(const PInstance & EpochInst) const {
     if (EpochInst->parameters_->vehicleReturn_) {
-        int lastEpoch = 0;
+        float lastEpoch = 0;
         if (EpochInst->parameters_->solutionMode_ == ANYTIME)
             lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
         else
-            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - EpochInst->parameters_->epochLength_;
+            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->epochLength_;
 
         for (auto & zoneObj : EpochInst->zones_) {
             zoneObj.second->nbVehicles_ = 0;
@@ -918,12 +900,13 @@ void solver::returnVehiclesZone(PInstance & EpochInst) {
                     if (successor->nbVehicles_ < successor->nbVehiclesRef_ * 0.95 && successor->highDemandZone_ &&
                         vehicleObj->sinkNode_->zoneID_ != successor->zoneID_) {
                         PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
-                        sinkNode->zoneID_ = successor->zoneID_;
+                        sinkNode->zoneID_ = static_cast<int>(successor->zoneID_);
                         sinkNode->locationID_ = successor->centerLocationID_;
                         successor->nbVehicles_++; // Update vehicle count.
                         vehicleObj->currentRoute_->addSink(sinkNode);
                         if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                            vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceStart().count());
+                            vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_
+                                + elapsedTime_ + simulationTime_->dSinceStart().count());
                         break; // Assign to the nearest eligible successor.
                         }
                 }

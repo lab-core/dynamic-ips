@@ -2,8 +2,8 @@
 // Created by Ella on 2021-09-08.
 //
 
-#ifndef _READWRITE_H
-#define _READWRITE_H
+#ifndef READWRITE_H
+#define READWRITE_H
 
 
 #include "data/Instance.h"
@@ -23,8 +23,8 @@ public:
     static PInstance readInstance(const std::string& strInstanceFile);
 
     // Read the vehicle file
-    static void readVehiclesData(const std::string& strTripsFile, PInstance &pInstance);
-    static void readVehiclesDataF(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes);
+    static void readVehiclesData(const std::string& strTripsFile, const PInstance &pInstance);
+    static void readVehiclesDataF(const std::string& strTripsFile, const PInstance &pInstance, vector2D<PNode> &routeNodes);
 
     // Read the onboard file
     static void readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes);
@@ -33,14 +33,14 @@ public:
     static void readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest);
     static void readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes);
 
-    // Read duration data file
+    // Read the duration data file
     static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
 
     // Read the parameters datafile
     static void readParameters(const std::string& strParamFile, PInstance &pInstance);
-    static void readZones(const std::string& strZoneFile, PInstance &pInstance);
+    static void readZones(const std::string& strZoneFile, const PInstance &pInstance);
 
-    // function that open all input files and update main instance data
+    // function that opens all input files and update main instance data
     static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile);
 
     // Parsing functions
@@ -57,8 +57,8 @@ public:
 
     // Read the parameters datafile
     static void readInstNames(const std::string& strInstanceNameFile, std::vector<std::string> &fileNames,
-                              int nbInstances, std::string index);
+                              int nbInstances, const std::string &index);
 };
 
 
-#endif //_READWRITE_H
+#endif //READWRITE_H

@@ -6,7 +6,6 @@
 #define GREEDY_H
 
 #include "data/Instance.h"
-#include "utilities/InputPaths.h"
 
 //---------------------------------------------------------------------------------------------
 //  StopLabel class
@@ -46,42 +45,42 @@ public:
     bool idle_;
     // Constructor
 public:
-    GreedyRoute(PVehicle &vehicle, PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize);
+    GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize);
     GreedyRoute(const GreedyRoute &label);
 
     virtual ~GreedyRoute();
     void resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) const;
 
-    // this function find a position to insert pickup point and add drop off point at the end
+    // this function finds a position to insert pickup point and add drop off point at the end
 
     void findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PStopLabel> &greedyLabelPool,
-                         PInsertPosition & position);
+                         const PInsertPosition & position);
 
-    void insertNode(PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool);
+    void insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool);
 
-    // This function remove the Label from the list and update the data based on that
+    // This function removes the Label from the list and updates the data based on that
     void removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool);
-    // this function insert a request based on the pick-up position and add drop off at the end
-    void insertRequest(PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
+    // this function inserts a request based on the pick-up position and adds drop-off at the end
+    void insertRequest(const PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
                        std::vector<PStopLabel> &greedyLabelPool);
-    // this function calculate the reachTime from a Label to a node
-    static float labelToNodeReachTime(PStopLabel &preLabel, PNode &Node) ;
+    // this function calculates the reachTime from a Label to a node
+    static float labelToNodeReachTime(const PStopLabel &preLabel, const PNode &Node) ;
 
-    // this function starts from a label in the list and update reachTimes and departTimes up to the tail
-    void updateReachTimes(PStopLabel &preLabel);
+    // this function starts from a label in the list and updates reachTimes and departTimes up to the tail
+    void updateReachTimes(const PStopLabel &preLabel);
 
-    // this function convert a greedyLabel list to a route
+    // this function converts a greedyLabel list to a route
     PRoute greedyLabelToRoute(bool update) const;
     // Display function
     std::string toString() const;
 
     //This function is used to assign requests to vehicles for finding the portion of vehicles for dynamic programming
     void findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PStopLabel> &removedLabels,
-                           PInsertPosition & position);
+                           const PInsertPosition & position);
 
     void updateTailDepart();
     // function to check the feasibility of the insertion based on the vehicle capacity and trip duration constraints
-    bool isAnyViolation(PStopLabel &startLabel) const;
+    bool isAnyViolation(const PStopLabel &startLabel) const;
 };
 
 //---------------------------------------------------------------------------------------------

@@ -22,10 +22,10 @@ public:
     IloNumVarArray zIncVar_;                    // request (z) Incompatible variables
     IloNumVarArray routeSolVar_;                // route compatible variables (current basis)
     IloNumVarArray zSolVar_;                    // request (z) compatible variables (current basis)
-    IloNumVar auxVar_;                          // auxiliary variable for improved version
+    IloNumVar auxVar_;                          // auxiliary variable for the improved version
 
-    std::vector<PRoute> fractionalRoutes_;      // list of routes in fractional solution
-    std::vector<PRequest> fractionalZ_;         // list of requests in fractional solution
+    std::vector<PRoute> fractionalRoutes_;      // list of routes in the fractional solution
+    std::vector<PRequest> fractionalZ_;         // list of requests in the fractional solution
 
     // set of constraints
     IloRange normalConst_;
@@ -35,45 +35,46 @@ public:
     ComplementPro();
 
 
-    // this function initialized the model and define empty set of constraints
-    void initializeCPModel(PInstance &pInst, int nbVehicles);
+    // this function initializes the model and defines an empty set of constraints
+    void initializeCPModel(const PInstance &pInst, int nbVehicles);
 
     // this function adds zVar to the model
-    void addZVar(IloNumVarArray zVar, PRequest &request, VarSign sign);
+    void addZVar(IloNumVarArray zVar, const PRequest &request, VarSign sign);
 
     // this function adds routeVar to the model
-    void addRouteVar(IloNumVarArray routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void addAuxVar(PInstance &pInst, float cost, int nbVehicles);
+    void addRouteVar(IloNumVarArray routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
+    void addAuxVar(const PInstance &pInst, float cost, int nbVehicles);
 
-    // this function build the model at each iteration
-    void buildModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+    // this function builds the model at each iteration
+    void buildModel(const PInstance &pInst, const std::vector<PRequest> &zSolution, const std::vector<PRoute> &routeSolution,
                     int nbVehicles);
 
-    void repairModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                    int nbVehicles);
+    void repairModel(const PInstance &pInst, const vector<PRequest> &zSolution, const vector<PRoute> &routeSolution);
 
-    // this function use auxiliary variable
+    // this function uses auxiliary variable
     void buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                                int nbVehicles, float preObj);
 
-    // this function update the model and variables
-    void updateModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
+    // this function updates the model and variables
+    void updateModel(const PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution);
 
-    // this function solve the model
+    // this function solves the model
     void solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                       InputPaths &inputPaths);
 
-    void solveCP2Model(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                      InputPaths &inputPaths);
+    void solveCP2Model(const PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                      const InputPaths &inputPaths);
 
-    // this function check the situation of the CP solution to be column disjoint
-    bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
-    bool isColumnDisjointBit(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults);
+    // this function checks the situation of the CP solution to be column disjoint
+//    bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
+
+    static bool isColumnDisjointBit(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults);
+    static bool isColumnDisjointFast(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults);
 
     // Display function
     std::string toString() const override;
 
-    // this function initialized the model and define empty set of constraints
+    // this function initializes the model and defines an empty set of constraints
     void ResetCPModel();
     void restartCp();
 };

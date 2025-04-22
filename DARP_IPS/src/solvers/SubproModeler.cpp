@@ -4,17 +4,16 @@
 
 #include "SubproModeler.h"
 
-SubproModeler::SubproModeler(PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
+SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     subGraph_ = std::make_shared<Graph>();
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;
 }
 
-SubproModeler::~SubproModeler() {
-}
+SubproModeler::~SubproModeler() = default;
 
 // initialization of the subgraph
-void SubproModeler::initSubGraph(PInstance &pInst) {
+void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
     Vehicle_->graphRequests_.reset();
     nbTotalRequest_ = pInst->nbRequests_;
@@ -66,7 +65,7 @@ void SubproModeler::initSubGraph(PInstance &pInst) {
         subGraph_->pickNodes_[i]->pairNode_ = &(*subGraph_->dropNodes_[i]);
         subGraph_->dropNodes_[i]->pairNode_ = &(*subGraph_->pickNodes_[i]);
     }
-    subGraph_->nbNodes_ = subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2;
+    subGraph_->nbNodes_ = static_cast<int>(subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2);
 }
 
 

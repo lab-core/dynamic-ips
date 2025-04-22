@@ -7,7 +7,6 @@
 
 
 #include "data/Instance.h"
-#include "data/Route.h"
 
 //-----------------------------------------------------------------------------
 // General class for modeling and solving the ISUD components
@@ -49,27 +48,27 @@ public:
     // this function reset the model based the current set of routes and changed the set of constraints (size)
 //    void updateRequestOrder(PInstance &pInst);
 
-    // this function clear all objects from the model at the start of each epoch
+    // this function clears all objects from the model at the start of each epoch
     void clearModel();
 
     virtual // Display function
     std::string toString() const;
 
-    // function to create pattern from routes
-    static void createPattern (IloNumArray& pattern, PRoute &route, VarSign sign);
+    // function to create a pattern from routes
+    static void createPattern (IloNumArray& pattern, const PRoute &route, VarSign sign);
 
     // this function initialized the model
-    void initializeModel(PInstance &pInst, int rhs, int nbVehicles);
+    void initializeModel(const PInstance &pInst, int rhs, int nbVehicles);
 
     // this function adds zVar to the model
-    void addZVarInt(IloNumVarArray &zVar, PRequest &request, VarSign sign);
-    void addZVarFloat(IloNumVarArray &zVar, PRequest &request, VarSign sign);
-    void addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, PRequest &request);
+    void addZVarInt(IloNumVarArray &zVar, const PRequest &request, VarSign sign);
+    void addZVarFloat(IloNumVarArray &zVar, const PRequest &request, VarSign sign);
+    void addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, const PRequest &request);
 
     // this function adds routeVar to the model
-    void addRouteVarInt(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void addRouteVarFloat(IloNumVarArray &routeVar, PRoute &newRoute, VarSign sign, PInstance &pInst);
-    void setParameters(PInstance &pInst, float availableTime);
+    void addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
+    void addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
+    void setParameters(const PInstance &pInst, float availableTime);
 
 };
 
