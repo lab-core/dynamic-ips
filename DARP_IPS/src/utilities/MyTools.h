@@ -18,6 +18,7 @@
 #include <valarray>
 #include <bitset>
 #include <ilcplex/ilocplex.h>
+#include <unordered_map>
 
 using std::string;
 using std::vector;
