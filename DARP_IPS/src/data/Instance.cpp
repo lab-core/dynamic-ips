@@ -588,83 +588,6 @@ void Instance::sortZones() {
     }
 }
 
-void Instance::resetZoneVehicles(){
-    for (auto & zoneObj : zones_) {
-        zoneObj.second->zoneVehicles_.clear();
-    }
-
-    for (const auto& vehicleObj: vehicles_){
-        if (vehicleObj->departNode_->zoneID_ > zones_.size() || zones_[vehicleObj->departNode_->zoneID_] == nullptr) {
-            float distance = LARGE_CONSTANT;
-            PZone selectedZone = nullptr;
-            for (auto & zoneObj : zones_) {
-                if (distance > durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj.second->centerLocationID_]) {
-                    distance = durationMatrix_[vehicleObj->departNode_->locationID_][zoneObj.second->centerLocationID_];
-                    selectedZone = zoneObj.second;
-                }
-            }
-            selectedZone->zoneVehicles_.push_back(vehicleObj);
-        }
-        else
-            zones_[vehicleObj->departNode_->zoneID_]->zoneVehicles_.push_back(vehicleObj);
-    }
-    for (auto & zoneObj : zones_) {
-        std::stable_sort(zoneObj.second->zoneVehicles_.begin(), zoneObj.second->zoneVehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
-                return lhs->departTime_ < rhs->departTime_;});
-    }
-}
-
-void Instance::selectVehiclesByZone(int select) {
-    for (int i = 0; i < requests_.size(); i++) {
-        if (requests_[i]->requestStatus_ == NO_ACTION) {
-            bool vehicleSelected = false;
-            PZone selectedZone = nullptr;
-            if (requests_[i]->pickZoneID_ > zones_.size() || zones_[requests_[i]->pickZoneID_] == nullptr) {
-                float distance = LARGE_CONSTANT;
-                for (auto & zoneObj : zones_) {
-                    if (distance > durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj.second->
-                        centerLocationID_]) {
-                        distance = durationMatrix_[instGraph_->pickNodes_[i]->locationID_][zoneObj.second->
-                            centerLocationID_];
-                        selectedZone = zoneObj.second;
-                    }
-                }
-
-            }
-            else {
-                selectedZone = zones_[requests_[i]->pickZoneID_];
-            }
-            // select a vehicle from the request zone
-            for (auto &vehicleObj: selectedZone->zoneVehicles_) {
-                if (selectedVehicles_[vehicleObj->vehicleID_] == 0) {
-                    selectedVehicles_[vehicleObj->vehicleID_] = select;
-                    vehicleSelected = true;
-                    break;
-                }
-            }
-            // select a vehicle from neighbor zones
-            if (!vehicleSelected) {
-                for (auto & zoneObj : selectedZone->successors_) {
-                    for (auto &vehicleObj: zoneObj->zoneVehicles_) {
-                        if (!selectedVehicles_[vehicleObj->vehicleID_]) {
-                            selectedVehicles_[vehicleObj->vehicleID_] = select;
-                            vehicleSelected = true;
-                            break;
-                        }
-                    }
-                    if (vehicleSelected)
-                        break;
-                }
-            }
-        }
-    }
-}
-// function to update penalties in rolling horizon approach
-/*void Instance::updatePenaltiesEpoch(int epoch) {
-    for (auto & requestObj : requests_)
-        requestObj->setPenalty(parameters_->epochLength_ * epoch, parameters_, simulationStartTime_);
-}*/
-
 // function to update penalties in any time approach
 void Instance::updatePenalties(float elapsedTime) {
     for (auto & requestObj : requests_) {
@@ -672,7 +595,7 @@ void Instance::updatePenalties(float elapsedTime) {
         if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
             requestObj->latestPickup_ = requestObj->initialEarlyPick_ + requestObj->penalty_;
         else {
-            requestObj->latestPickup_ = requestObj->plannedPickTime_ + static_cast<float>(parameters_->pickupDeviationWindow_);
+            requestObj->latestPickup_ = requestObj->plannedPickTime_ + parameters_->pickupDeviationWindow_;
 
         }
     }

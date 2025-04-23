@@ -112,11 +112,11 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, std
             mainInst->nbReturn_++;
         }
     }*/
-    idle_ = true;
     if (currentRoute_->routeSize_ > 1) {
         if (!mainInst->parameters_->partialPricing_ ||
               currentRoute_->routeRequests_.empty() ||
-              (currentRoute_->routeRequests_.size() > 1 && preSolvePick_ != 1)) {
+              currentRoute_->routeRequests_.size() > 1 ||
+              preSolvePick_ != 1) {
             idle_ = false;
             // this condition is useful for the cases that the vehicle does not have any stop in the current epoch
             if (departTime_ < elapsedTime + committedTime || currentRoute_->plannedReachTime_[1] == departTime_) {

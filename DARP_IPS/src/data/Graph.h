@@ -86,6 +86,7 @@ public:
     int nbVehicles_;
     bool underCapacity_;
     bool highDemandZone_;
+    int nbUnserved_;
 
     // Constructor and Destructor
     Zone(unsigned int zoneId, int centerLocationId);

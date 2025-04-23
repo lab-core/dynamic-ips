@@ -41,7 +41,6 @@ public:
     PParameters parameters_;
     std::stringstream instRepStr_;                      // save all the results as one record
     std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve the subproblem
-    std::vector<int> firstSelectedVehicles_;
     int nbReturn_;
     int nbIdle_;
     int nbPotentialIdle_;
@@ -77,12 +76,6 @@ public:
     void sortVehicles(SortVehicle sortBase);
 
     void sortZones();
-    void resetZoneVehicles();
-    void selectVehiclesByZone(int select);
-
-    // function to update penalties in rolling horizon approach
-//    void updatePenaltiesEpoch(int epoch);
-
     // function to update penalties in any time approach
     void updatePenalties(float elapsedTime);
 

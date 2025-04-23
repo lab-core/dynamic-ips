@@ -127,6 +127,7 @@ Zone::Zone(unsigned int zoneId, int centerLocationId) : zoneID_(zoneId), centerL
     travelToZone_ = 0;
     nbVehiclesRef_ = 0;
     nbVehicles_ = 0;
+    nbUnserved_ = 0;
     highDemandZone_ = true;
     underCapacity_ = false;
 }

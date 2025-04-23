@@ -85,6 +85,7 @@ public:
 
     void returnVehicles(const PInstance & EpochInst) const;
     void returnVehiclesZone(const PInstance & EpochInst) const;
+    void returnVehiclesAssign(const PInstance & EpochInst) const;
 
     // Display results
     std::string toString(const PInstance & mainInst) const;

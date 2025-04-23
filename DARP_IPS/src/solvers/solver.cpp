@@ -327,7 +327,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
     }*/
     if (EpochInst->parameters_->vehicleReturn_)
-        returnVehiclesZone(EpochInst);
+        returnVehiclesAssign(EpochInst);
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
@@ -458,7 +458,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
             solveCG_Epoch(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
-            returnVehiclesZone(EpochInst);
+            returnVehiclesAssign(EpochInst);
             if (EpochInst->parameters_->solutionMode_ == ANYTIME){
                 for (auto &vehicleObj: EpochInst->vehicles_){
                     if (vehicleObj->currentRoute_->routeSize_ > 1 && vehicleObj->idle_){
@@ -914,4 +914,124 @@ void solver::returnVehiclesZone(const PInstance & EpochInst) const {
             }
         }
     }
+}
+
+
+void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
+    if (!EpochInst->parameters_->vehicleReturn_) return;
+    /* ---------- 1. reference time for “idle” test ---------- */
+    float lastEpoch = 0;
+    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->WaitForReturn_;
+    else
+        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_- EpochInst->parameters_->WaitForReturn_;
+
+    /* ---------- 2. collect idle vehicles ---------- */
+    std::vector<PVehicle> idleVehicles;
+    for (auto &vehicleObj: EpochInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
+            vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch &&
+            !EpochInst->zones_[vehicleObj->departNode_->zoneID_]->highDemandZone_) {
+            idleVehicles.push_back(vehicleObj);
+        }
+    }
+    if (idleVehicles.empty()) return;
+    int totalNeed = 0;
+    /* ---------- 3. compute zone weights ---------- */
+    for (auto & zoneObj : EpochInst->zones_)
+        zoneObj.second->nbUnserved_ = 0;
+
+    for (auto &requestObj: EpochInst->requests_) {
+        if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
+            EpochInst->zones_[requestObj->pickZoneID_]->nbUnserved_++;
+    }
+    /* keep zones with positive demand */
+    std::vector<int> zoneIDs;
+    for (auto &zp : EpochInst->zones_) {
+        if (zp.second->nbUnserved_ > 0) {
+            zoneIDs.push_back(zp.first);
+            totalNeed += zp.second->nbUnserved_;
+            std::cout << "Zone: " << zp.first << " - " << zp.second->nbUnserved_ << std::endl;
+        }
+    }
+    if (zoneIDs.empty()) return;
+
+/* ---------- 4. build and solve assignment MIP ---------- */
+    IloEnv   env;
+    try {
+        const std::size_t nV = idleVehicles.size();
+        const std::size_t nZ = zoneIDs.size();
+
+        IloModel model(env);
+        IloArray<IloBoolVarArray> y(env, nV);   // y[v][z]
+
+        for (std::size_t v = 0; v < nV; ++v) {
+            y[v] = IloBoolVarArray(env, nZ);
+            for (std::size_t z = 0; z < nZ; ++z)
+                y[v][z] = IloBoolVar(env);
+        }
+
+        /* objective */
+        IloExpr obj(env);
+        for (std::size_t v = 0; v < nV; ++v) {
+            int vehLoc = idleVehicles[v]->departNode_->locationID_;
+            for (std::size_t z = 0; z < nZ; ++z) {
+                float distance = durationMatrix_[vehLoc][EpochInst->zones_[zoneIDs[z]]->centerLocationID_];
+                float cost = distance / EpochInst->zones_[zoneIDs[z]]->nbUnserved_;
+                obj += cost * y[v][z];
+            }
+        }
+        model.add(IloMinimize(env, obj)); obj.end();
+        IloExpr total(env);
+        /* constraints: (1) exactly one zone per vehicle */
+        for (std::size_t v = 0; v < nV; ++v) {
+            IloExpr sum(env);
+            for (std::size_t z = 0; z < nZ; ++z) {
+                sum += y[v][z];
+                total += y[v][z];
+            }
+            model.add(sum <= 1); sum.end();
+        }
+
+        /* (2) capacity: do not oversupply a zone */
+        for (std::size_t z = 0; z < nZ; ++z) {
+            IloExpr cap(env);
+            for (std::size_t v = 0; v < nV; ++v) cap += y[v][z];
+
+            int capZ = EpochInst->zones_[zoneIDs[z]]->nbUnserved_;   // w_z
+            model.add(cap <= capZ);
+            cap.end();
+        }
+
+        /* (3) assign exactly min(|V|, total demand) vehicles */
+        model.add(total == std::min(totalNeed, static_cast<int>(nV)));
+        total.end();
+
+        IloCplex cplex(model);
+        cplex.setOut(env.getNullStream());
+        cplex.setParam(IloCplex::Param::RootAlgorithm, 2);
+        cplex.setParam(IloCplex::Param::Threads, EpochInst->parameters_->nbThreads_);
+        cplex.solve();
+
+        /* ---------- 5. write back assignments ---------- */
+        for (std::size_t v = 0; v < nV; ++v)
+            for (std::size_t z = 0; z < nZ; ++z)
+                if (cplex.getValue(y[v][z]) > 0.5) {
+                    std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Zone " << zoneIDs[z] << " with unserved: " << EpochInst->zones_[zoneIDs[z]]->nbUnserved_<< std::endl;
+
+                    PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
+                    sinkNode->zoneID_ = zoneIDs[z];
+                    sinkNode->locationID_ = EpochInst->zones_[zoneIDs[z]]->centerLocationID_;
+                    idleVehicles[v]->currentRoute_->addSink(sinkNode);
+                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                        idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
+                            + elapsedTime_ + simulationTime_->dSinceStart().count());
+                    break;
+                }
+    }
+    catch (const IloException &e) {
+        std::cerr << "CPLEX error in returnVehiclesAssign: "
+                  << e.getMessage() << std::endl;
+    }
+    env.end();
 }
