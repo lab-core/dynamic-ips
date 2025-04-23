@@ -33,6 +33,7 @@ public:
     int numVehicleSwitch_;          // the number of times we are allowed to change the vehicle assigned to a customer
     float informTimeLimit_;
     float pickupDeviationWindow_;
+    ReturnType returnPolicy_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -84,7 +85,7 @@ public:
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-               int pickupDeviationWindow);
+               int pickupDeviationWindow, ReturnType returnPolicy);
 
     virtual ~Parameters();
 

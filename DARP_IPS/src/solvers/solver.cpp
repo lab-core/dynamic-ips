@@ -326,8 +326,15 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }*/
-    if (EpochInst->parameters_->vehicleReturn_)
-        returnVehiclesAssign(EpochInst);
+    if (EpochInst->parameters_->vehicleReturn_) {
+        if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+            returnVehicles(EpochInst);
+        else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+            returnVehiclesZone(EpochInst);
+        else
+            returnVehiclesAssign(EpochInst);
+    }
+
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
@@ -458,7 +465,14 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
             solveCG_Epoch(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
-            returnVehiclesAssign(EpochInst);
+            if (EpochInst->parameters_->vehicleReturn_) {
+                if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+                    returnVehicles(EpochInst);
+                else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+                    returnVehiclesZone(EpochInst);
+                else
+                    returnVehiclesAssign(EpochInst);
+            }
             if (EpochInst->parameters_->solutionMode_ == ANYTIME){
                 for (auto &vehicleObj: EpochInst->vehicles_){
                     if (vehicleObj->currentRoute_->routeSize_ > 1 && vehicleObj->idle_){

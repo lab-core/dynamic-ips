@@ -21,7 +21,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
                        int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-                       int pickupDeviationWindow):
+                       int pickupDeviationWindow, ReturnType returnPolicy):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
@@ -37,7 +37,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
         routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap){}
+        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy){}
 
 Parameters::~Parameters() = default;
 
@@ -64,6 +64,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
     repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
+    repStr << std::setw(setwLength) << "# vehicle return method " << " = " << ReturnTypeName[returnPolicy_] << std::endl;
     repStr << std::setw(setwLength) << "# Waiting time window " << " = " << timeWindow_ << std::endl;
     repStr << std::setw(setwLength) << "# Wait before return time " << " = " << WaitForReturn_ << std::endl;
     repStr << std::setw(setwLength) << "# Maximum vehicle switch  " << " = " << numVehicleSwitch_ << std::endl;
@@ -135,6 +136,7 @@ std::string Parameters::toStr() const {
     repStr << numIter_ << ",";
     repStr << boolToString(greedyReOptimize_) << ",";
     repStr << boolToString(vehicleReturn_) << ",";
+    repStr << ReturnTypeName[returnPolicy_] << ",";
     repStr << MIP_maxIncDegree_ << ",";
     repStr << CP_IncDegree_ << ",";
     repStr << boolToString(useMultiStage_) << ",";

@@ -416,21 +416,27 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                         CPFails_++;
                         setAvailableTime();
                         if (pInst->parameters_->useZoom_ && availableTime_ > 1) {
+                            iterTime_ = masterTime_->dSinceStart().count();
                             ZOOMTime_->start();
                             solveRP_LPINT(pInst, 1, inputPaths);
                             ZoomIter_++;
+                            epochTime_ += masterTime_->dSinceStart().count() - iterTime_;
+                            iterTime_ = masterTime_->dSinceStart().count();
+
                             (*pLogIsudResultsStream_)
                                     << save_MPResults(epoch, "ZOOM",
                                                       static_cast<int>(ReducedPro_->compRoutes_.size()) - nbVehicles_,
                                                       masterTime_->dSinceStart().count(), subProTime,
-                                                      ReducedPro_->auxObjValue_);
+                                                      0.0);
                             RMPCounter_++;
 
                             ZOOMTime_->stop();
-                            if (previousObj_ > objValue_) {
+                            if (previousObj_ - objValue_ > 0.01) {
+                                std::cout << previousObj_ << std::endl;
                                 previousObj_ = objValue_;
                             }
                             else {
+                                restartAlgorithm = false;
                                 break;
                             }
                         }

@@ -87,6 +87,7 @@ enum SortColumns {C_SCORE = 0, CRD_COSTS = 1, CLAMBDA = 2, COMP_RC = 3};
 enum VarSign { POSITIVE, NEGATIVE };
 enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
 enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2, REJECTED = 3};
+enum ReturnType {TO_SOURCE = 0, ZONE = 1, ASSIGN = 2};
 static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
 
@@ -94,6 +95,11 @@ static const std::vector<std::string> SortPathsName = {
         "PATH_SCORE  ",
         "REDUCED_COST",
         "LAMBDA_SCORE"};
+
+static const std::vector<std::string> ReturnTypeName = {
+    "TO_SOURCE",
+    "ZONE     ",
+    "ASSIGN   "};
 
 static const std::vector<std::string> SortColumnsName = {
         "PATH_SCORE  ",

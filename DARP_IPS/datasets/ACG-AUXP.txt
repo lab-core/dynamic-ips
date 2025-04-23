@@ -19,7 +19,7 @@ WaitForReturn = 120
 numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
-
+returnType = 2
 
 
 # ISUD PARAMETERS

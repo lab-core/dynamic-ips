@@ -7,7 +7,7 @@ epochLength = 30
 penaltyL = 30
 committedTime = 30
 nbThreads = 16
-InitialDual = 2
+InitialDual = 1
 mainAlgorithm = 0
 solutionMode = 2
 NumIter = 1
@@ -20,6 +20,7 @@ numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
 returnType = 2
+
 
 
 # ISUD PARAMETERS
@@ -53,7 +54,7 @@ Route_Recycle = 0
 usePick = 1
 nbPick = 4
 sortPath = 0
-sortColumn = 0
+sortColumn = 1
 
 # CPLEX PARAMETERS
 #

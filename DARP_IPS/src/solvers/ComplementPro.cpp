@@ -298,7 +298,7 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
 
                 } else {
                     status_ = FRACTIONAL;
-                    if (pInst->parameters_->useZoom_ || pInst->parameters_->useMultiStage_) {
+                    if (pInst->parameters_->useZoom_) {
                         fractionalRoutes_.clear();
                         fractionalZ_.clear();
 
@@ -306,6 +306,11 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                             fractionalRoutes_.push_back(routeSolution[r]);
                         for (auto &r: InRouteVar)
                             fractionalRoutes_.push_back(IncRoute_[r]);
+
+                        /*for (auto &i: OutRequestVar)
+                            fractionalZ_.push_back(zSolution[i]);
+                        for (auto &i: InRequestVar)
+                            fractionalZ_.push_back(pInst->nameToRequest_[zIncVar_[i].getName()]);*/
                     }
 
                 }
