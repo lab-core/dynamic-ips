@@ -1,5 +1,4 @@
 #!/bin/bash
-#SBATCH --account=def-legraina
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=12G
 #SBATCH --time=2:15:00
@@ -37,15 +36,15 @@ for mode in 2; do
   for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
     for instance in "${instances_1000[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir 2"
+      jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir 1"
       ((i++))
     done
     for instance in "${instances_1100[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir 2"
+      jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir 1"
       ((i++))
     done
     for instance in "${instances_1400[@]}"; do
-      jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir 2"
+      jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir 1"
       ((i++))
     done
   done
