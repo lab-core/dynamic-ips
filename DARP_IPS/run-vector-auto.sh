@@ -22,7 +22,7 @@ algorithms[2]=6  # Mode 2 -> Algorithm 6
 # Define parameter files for each mode
 declare -A param_files
 param_files[1]="Ab_dynamic"  # Mode 1 has two parameter files
-param_files[2]="ACG-CP ACG-LP"  # Mode 2 has three parameter files
+param_files[2]="ACG-AUXP ACG-AUXD"  # Mode 2 has three parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
