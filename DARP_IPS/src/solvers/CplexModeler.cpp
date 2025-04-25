@@ -186,7 +186,11 @@ void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicl
     Model_.add(requestConst_);
     Model_.add(vehicleConst_);
     Model_.add(objFunction_);
-    Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+ //   Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+ //   Cplex_.setParam(IloCplex::Param::Preprocessing::Reduce, 2);
+    Cplex_.setParam(IloCplex::Param::Preprocessing::Aggregator, 0);
+    Cplex_.setParam(IloCplex::Param::Preprocessing::BoundStrength, 0);
+
     Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
     Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
     Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
