@@ -193,7 +193,6 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
     try {
         Cplex_.extract(Model_);
         myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "CP");
-
         solveTime_->start();
         if (!Cplex_.solve()) {
             Cplex_.clearModel();

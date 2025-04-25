@@ -262,7 +262,7 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
 
             Model_.add(convZ);
             Model_.add(convR);
-            Cplex_.extract(Model_);
+//            Cplex_.extract(Model_);
             std::cout << "----------------------- MP ------------------------"<< std::endl;
 //            setParameters(pInst, availableTime);
             Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);

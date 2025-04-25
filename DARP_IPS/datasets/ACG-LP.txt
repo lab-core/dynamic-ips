@@ -61,4 +61,4 @@ sortColumn = 1
 BigM = 27000
 solveTimeLimit = 300
 populateTimeLimit = 200
-MIPGap = 0.001
+MIPGap = 0.0001

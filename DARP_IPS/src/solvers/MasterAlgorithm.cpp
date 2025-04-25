@@ -288,9 +288,9 @@ void MasterAlgorithm::calcIncompatibilityM(const PRoute &route) const {
     if (!route->routeRequests_.empty()) {
         for (auto & e : adjacencyPairs_) {
             route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->column_.test(e.second);
-            if (route->vehicleID_ != route->routeRequests_[0]->solVehicleID_ && (route->column_.test(e.first) && route->column_.test(e.second))) {
+            /*if (route->vehicleID_ != route->routeRequests_[0]->solVehicleID_ && (route->column_.test(e.first) && route->column_.test(e.second))) {
                 route->incompatibilityDegree_++;
-            }
+            }*/
         }
     }
 
@@ -1199,7 +1199,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstanc
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                        if (!routeObj->cpAdded_ && !routeObj->isCompatible_ && !routeObj->routeRequests_.empty()) {
+                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0 && !routeObj->routeRequests_.empty()) {
                             CompPro_->routesToAdd_.push_back(routeObj);
                             numAdded++;
                         }
