@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=20G
+#SBATCH --mem=24G
 #SBATCH --cpus-per-task=16
-#SBATCH --time=6:15:00
-#SBATCH --array=1-12
+#SBATCH --time=2:15:00
+#SBATCH --array=1-2
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -27,12 +27,10 @@ param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20160225_17-300m"
-  "20160129_17-300m"
-  "20160316_17-300m"
+  "20160225_07-120m"
 )
 
-vehicle_counts=(1700 1800)
+vehicle_counts=(2000)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
@@ -45,7 +43,7 @@ for mode in 2; do
     #    instance=$(basename "$instance_path")
       for instance in "${instances[@]}"; do
         for param_dir in ${param_files[$mode]}; do
-        jobs[$i]="$vehicles_2 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
+        jobs[$i]="$vehicles_1 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
         ((i++))
         done
       done
