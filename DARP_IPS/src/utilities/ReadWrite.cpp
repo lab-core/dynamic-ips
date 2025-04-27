@@ -461,7 +461,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     string title;
 
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, epochLength = -1;
-    float informTimeLimit = -1, pickupDeviationWindow = -1, timeWindows = -1, mipGap = -1;
+    float informTimeLimit = -1, pickupDeviationWindow = -1, timeWindows = -1, mipGap = -1, maxWait = -1;
     int penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
     bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
@@ -536,6 +536,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "returnType "))
             file >> returnType;
+
+        else if (strEndWith(title, "MaxWait "))
+            file >> maxWait;
 
         else if (strEndWith(title, "warmStart "))
             file >> initialStart;
@@ -654,7 +657,8 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<SortColumns>(sortColumn),
                                                           bigM, solveTimeLimit, populateTimeLimit,
                                                           static_cast<SolutionMode>(solutionMode), mipGap,
-                                                          informTimeLimit, pickupDeviationWindow, static_cast<ReturnType>(returnType));
+                                                          informTimeLimit, pickupDeviationWindow,
+                                                          static_cast<ReturnType>(returnType), maxWait);
 }
 
 void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance) {
@@ -755,8 +759,8 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
-                        "nbThreads,InitialDual,warmStart,mainAlgorithm,solutionMode,NumIter,GreedyReOptimize,"
-                        "vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
+                        "maxWait,nbThreads,InitialDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
+                        "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
                         "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,"
                         "isDropPickPossible,isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,"
                         "LabelingStrategy,Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,nbPick,"

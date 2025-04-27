@@ -1,9 +1,8 @@
 #!/bin/bash
-#SBATCH --account=def-legraina
-#SBATCH --mem=16G
-#SBATCH --cpus-per-task=16
-#SBATCH --time=0:30:00
-#SBATCH --array=1-540
+#SBATCH --mem=10G
+#SBATCH --cpus-per-task=8
+#SBATCH --time=0:05:00
+#SBATCH --array=1-270
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -17,11 +16,11 @@ main_dir="datasets/$directory"
 
 # Define algorithms for each mode
 declare -A algorithms
-algorithms[1]=2  # Mode 1 -> Algorithm 2
+algorithms[1]=6  # Mode 1 -> Algorithm 2
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="nbPick1 dynamic"  # Mode 1 has two parameter files
+param_files[1]="Partial"  # Mode 1 has two parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
@@ -40,7 +39,7 @@ for mode in 1; do
     for instance_path in "${INSTANCES[@]}"; do
       instance=$(basename "$instance_path")
 #    for instance in "${instances[@]}"; do
-      jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 2"
+      jobs[$i]="$vehicles_2 $directory $instance 1500 $algorithm $mode $param_dir 1"
       ((i++))
     done
   done

@@ -45,6 +45,7 @@ public:
     int nbIdle_;
     int nbPotentialIdle_;
     int nbStateChanged_;
+    std::vector<PRequest> lastCommittedRequests_;
 
 
     // Constructor and Destructor

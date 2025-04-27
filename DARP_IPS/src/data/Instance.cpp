@@ -50,6 +50,7 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbReturn_ = 0;
     nbStateChanged_ = 0;
     nbRejected_ = 0;
+    lastCommittedRequests_ = mainInst.lastCommittedRequests_;
 }
 
 

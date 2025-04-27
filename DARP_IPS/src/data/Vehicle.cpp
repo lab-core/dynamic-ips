@@ -148,6 +148,8 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, std
                         if (currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
                             currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
                             currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                            if (currentRoute_->plannedReachTime_[i] - currentRoute_->routeNodes_[i]->related_Request_->initialEarlyPick_ > mainInst->parameters_->maxWait_)
+                                mainInst->lastCommittedRequests_.push_back(currentRoute_->routeNodes_[i]->related_Request_);
                         }
                     }
 

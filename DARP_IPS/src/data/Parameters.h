@@ -29,11 +29,12 @@ public:
     bool savePartial_;              // calculate the avg. wait time after one hour
     bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
     float timeWindow_;
-    int WaitForReturn_;             // The time that a vehicle remains idle before returning to crowded areas
+    float WaitForReturn_;             // The time that a vehicle remains idle before returning to crowded areas
     int numVehicleSwitch_;          // the number of times we are allowed to change the vehicle assigned to a customer
     float informTimeLimit_;
     float pickupDeviationWindow_;
     ReturnType returnPolicy_;
+    float maxWait_;
 
     // ISUD parameters
     warmStart initialStart_;
@@ -77,7 +78,7 @@ public:
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
                bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
-               int WaitForReturn, int numVehicleSwitch, warmStart initialStart,
+               float WaitForReturn, int numVehicleSwitch, warmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
@@ -85,7 +86,7 @@ public:
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-               int pickupDeviationWindow, ReturnType returnPolicy);
+               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait);
 
     virtual ~Parameters();
 

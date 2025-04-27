@@ -12,7 +12,7 @@
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
                        int numIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
-                       int WaitForReturn, int numVehicleSwitch,
+                       float WaitForReturn, int numVehicleSwitch,
                        warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel,
                        bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
@@ -21,7 +21,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
                        int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-                       int pickupDeviationWindow, ReturnType returnPolicy):
+                       int pickupDeviationWindow, ReturnType returnPolicy, float maxWait):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
@@ -37,7 +37,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
         routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy){}
+        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait){}
 
 Parameters::~Parameters() = default;
 
@@ -70,6 +70,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Maximum vehicle switch  " << " = " << numVehicleSwitch_ << std::endl;
     repStr << std::setw(setwLength) << "# time to inform the customer " << " = " << informTimeLimit_ << " (s)" << std::endl;
     repStr << std::setw(setwLength) << "# pickup Deviation Window " << " = " << pickupDeviationWindow_ << " (s)" << std::endl;
+    repStr << std::setw(setwLength) << "# Max request wait time" << " = " << maxWait_ << " (s)" << std::endl;
     repStr << std::endl;
 
     repStr << "# ISUD PARAMETERS" << std::endl;
@@ -128,6 +129,7 @@ std::string Parameters::toStr() const {
     repStr << committedTime_ << ",";
     repStr << informTimeLimit_ << ",";
     repStr << pickupDeviationWindow_ << ",";
+    repStr << maxWait_ << ",";
     repStr << nbThreads_ << ",";
     repStr << InitialDualName[initialDual_] << ",";
     repStr << warmStartName[initialStart_] << ",";

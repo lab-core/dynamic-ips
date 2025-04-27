@@ -51,6 +51,7 @@ public:
     PSolverOption subProOptions_;
 
     myTools::Timer *simulationTime_;
+    myTools::Timer *rebalancingTime_;
     myTools::Timer *subProblemTime_;
     myTools::Timer *preprocessTime_;
     Tools::LogOutput* pLogRunTimesStream_;
@@ -86,6 +87,7 @@ public:
     void returnVehicles(const PInstance & EpochInst) const;
     void returnVehiclesZone(const PInstance & EpochInst) const;
     void returnVehiclesAssign(const PInstance & EpochInst) const;
+    void returnVehiclesAlonso(const PInstance & EpochInst) const;
 
     // Display results
     std::string toString(const PInstance & mainInst) const;

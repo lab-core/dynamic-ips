@@ -21,6 +21,7 @@ solver::solver(const PInstance & mainInst, InputPaths &inputPaths) {
     simulationTime_ = new myTools::Timer(); simulationTime_->init();
     subProblemTime_ = new myTools::Timer(); subProblemTime_->init();
     preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
+    rebalancingTime_ = new myTools::Timer(); rebalancingTime_->init();
 
     masterEpochTime_ = 0;
     RPEpochTime_ = 0;
@@ -65,6 +66,7 @@ solver::~solver() {
     delete simulationTime_;
     delete subProblemTime_;
     delete preprocessTime_;
+    delete rebalancingTime_;
     pLogRunTimesStream_->close();
     pLogEpochSubRuntimeStream_->close();
 //    pLogEpochSubRouteStream_->close();
@@ -102,7 +104,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     // define required variables
 
- int iter = 0;
+    int iter = 0;
     bool subProBreak = false;
     masterModel_->RMPCounter_ ++;
     masterModel_->nbRoutes_ = 0;
@@ -281,7 +283,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
             masterModel_->CGSuccess_++;
             std::cout << "No changes in Objective" << std::endl;
-            break;
+ //           break;
         }
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
@@ -332,7 +334,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else if (EpochInst->parameters_->returnPolicy_ == ZONE)
             returnVehiclesZone(EpochInst);
         else
-            returnVehiclesAssign(EpochInst);
+            returnVehiclesAlonso(mainInst);
     }
 
 
@@ -356,6 +358,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
                            float saveTime) {
     // define required variables
     epoch_ = 0;
+    rebalancingTime_->start();
     std::vector<float> EpochTime = {1,1,1};
 //    int commitTime = mainInst->parameters_->epochLength_;
 
@@ -397,6 +400,8 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
             mainInst->parameters_->committedTime_ = ceil(epochRuntime_ + 2);
             std::cout << "inc commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
+        if (elapsedTime_ > 100)
+            break;
 
 //        mainInst->parameters_->committedTime_ = commitTime;
 
@@ -497,7 +502,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
     for (auto & vehicleObj : mainInst->vehicles_) {
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_ + elapsedTime_);
     }
-
+    rebalancingTime_->stop();
 }
 
 void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime) {
@@ -558,6 +563,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
+    rebalancingTime_->start();
     int instance_count = 1;
 
     mainInst->setInitialTimes();
@@ -679,6 +685,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_
                                            + static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_);
     }
+    rebalancingTime_->stop();
 
 }
 
@@ -934,11 +941,13 @@ void solver::returnVehiclesZone(const PInstance & EpochInst) const {
 void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
     if (!EpochInst->parameters_->vehicleReturn_) return;
     /* ---------- 1. reference time for “idle” test ---------- */
-    float lastEpoch = 0;
+
+    float epochStartTime = 0;
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->WaitForReturn_;
+        epochStartTime = EpochInst->simulationStartTime_ + elapsedTime_;
     else
-        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_- EpochInst->parameters_->WaitForReturn_;
+        epochStartTime = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_;
+    float lastEpoch = epochStartTime - EpochInst->parameters_->WaitForReturn_;
 
     /* ---------- 2. collect idle vehicles ---------- */
     std::vector<PVehicle> idleVehicles;
@@ -1031,7 +1040,7 @@ void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
         for (std::size_t v = 0; v < nV; ++v)
             for (std::size_t z = 0; z < nZ; ++z)
                 if (cplex.getValue(y[v][z]) > 0.5) {
-                    std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Zone " << zoneIDs[z] << " with unserved: " << EpochInst->zones_[zoneIDs[z]]->nbUnserved_<< std::endl;
+  //                  std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Zone " << zoneIDs[z] << " with unserved: " << EpochInst->zones_[zoneIDs[z]]->nbUnserved_<< std::endl;
 
                     PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
                     sinkNode->zoneID_ = zoneIDs[z];
@@ -1048,4 +1057,105 @@ void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
                   << e.getMessage() << std::endl;
     }
     env.end();
+}
+
+void solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
+    rebalancingTime_->stop();
+    if (!EpochInst->lastCommittedRequests_.empty()) {
+        /* ---------- 1. reference time for “idle” test ---------- */
+
+        float epochStartTime = 0;
+        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+            epochStartTime = EpochInst->simulationStartTime_ + elapsedTime_;
+        else
+            epochStartTime = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_;
+        float lastEpoch = epochStartTime - EpochInst->parameters_->WaitForReturn_;
+
+        /* ---------- 2. collect idle vehicles ---------- */
+        std::vector<PVehicle> idleVehicles;
+        for (auto &vehicleObj: EpochInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
+                idleVehicles.push_back(vehicleObj);
+            }
+        }
+        if (!idleVehicles.empty()) {
+
+            /* ---------- 4. build and solve assignment MIP ---------- */
+            IloEnv   env;
+            try {
+                const std::size_t nV = idleVehicles.size();
+                const std::size_t nR = EpochInst->lastCommittedRequests_.size();
+                const int need = static_cast<int>(std::min(nV, nR));
+
+                IloModel model(env);
+                IloArray<IloBoolVarArray> y(env, nV);          // y[v][r]
+                for (std::size_t v = 0; v < nV; ++v) {
+                    y[v] = IloBoolVarArray(env, nR);
+                    for (std::size_t r = 0; r < nR; ++r) y[v][r] = IloBoolVar(env);
+                }
+
+                /* objective */
+                IloExpr obj(env);
+                for (std::size_t v = 0; v < nV; ++v) {
+                    int vehLoc = idleVehicles[v]->departNode_->locationID_;
+                    for (std::size_t r = 0; r < nR; ++r) {
+                        int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
+                        float cost = durationMatrix_[vehLoc][reqLoc];
+                        obj += cost * y[v][r];
+                    }
+                }
+                model.add(IloMinimize(env, obj)); obj.end();
+                IloExpr total(env);
+                /* (1) at most one request per vehicle */
+                for (std::size_t v = 0; v < nV; ++v) {
+                    IloExpr sum(env);
+                    for (std::size_t r = 0; r < nR; ++r) sum += y[v][r];
+                    model.add(sum <= 1); sum.end();
+                }
+
+                /* (2) at most one vehicle per request */
+                for (std::size_t r = 0; r < nR; ++r) {
+                    IloExpr sum(env);
+                    for (std::size_t v = 0; v < nV; ++v) sum += y[v][r];
+                    model.add(sum <= 1); sum.end();
+                }
+
+                /* (3) use exactly min(|V_idle|, |R_late|) vehicles */
+                IloExpr tot(env);
+                for (std::size_t v = 0; v < nV; ++v)
+                    for (std::size_t r = 0; r < nR; ++r) tot += y[v][r];
+                model.add(tot == need); tot.end();
+
+                IloCplex cplex(model);
+                cplex.setOut(env.getNullStream());
+                cplex.setParam(IloCplex::Param::RootAlgorithm, 2);
+                cplex.setParam(IloCplex::Param::Threads, EpochInst->parameters_->nbThreads_);
+                cplex.solve();
+
+                /* ---------- 5. write back assignments ---------- */
+                for (std::size_t v = 0; v < nV; ++v)
+                    for (std::size_t r = 0; r < nR; ++r)
+                        if (cplex.getValue(y[v][r]) > 0.5) {
+                            std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Requests " << EpochInst->lastCommittedRequests_[r]->pickZoneID_ << std::endl;
+
+                            PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
+                            sinkNode->zoneID_ = EpochInst->lastCommittedRequests_[r]->pickZoneID_;
+                            sinkNode->locationID_ = EpochInst->lastCommittedRequests_[r]->PickUpID_;
+                            idleVehicles[v]->currentRoute_->addSink(sinkNode);
+                            if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                                idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
+                                    + elapsedTime_ + simulationTime_->dSinceStart().count());
+                            break;
+                        }
+            }
+            catch (const IloException &e) {
+                std::cerr << "CPLEX error in returnVehiclesAssign: "
+                          << e.getMessage() << std::endl;
+            }
+            env.end();
+        }
+    }
+    EpochInst->lastCommittedRequests_.clear();
+    rebalancingTime_->start();
 }
