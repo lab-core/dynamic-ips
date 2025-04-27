@@ -402,8 +402,6 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
             mainInst->parameters_->committedTime_ = ceil(epochRuntime_ + 2);
             std::cout << "inc commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
-        if (elapsedTime_ > 100)
-            break;
 
 //        mainInst->parameters_->committedTime_ = commitTime;
 
