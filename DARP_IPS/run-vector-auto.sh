@@ -38,7 +38,7 @@ i=1
 
 for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
-    for vehicle_count in "${vehicle_counts[@]}"; do``
+    for vehicle_count in "${vehicle_counts[@]}"; do
       for instance_path in "${INSTANCES[@]}"; do
         instance=$(basename "$instance_path")
  #     for instance in "${instances[@]}"; do
