@@ -283,7 +283,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
             masterModel_->CGSuccess_++;
             std::cout << "No changes in Objective" << std::endl;
- //           break;
+            break;
         }
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
@@ -329,12 +329,14 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         }
     }*/
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
-            returnVehicles(EpochInst);
-        else if (EpochInst->parameters_->returnPolicy_ == ZONE)
-            returnVehiclesZone(EpochInst);
-        else
-            returnVehiclesAlonso(mainInst);
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+            if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+                returnVehicles(EpochInst);
+            else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+                returnVehiclesZone(EpochInst);
+            else
+                returnVehiclesAlonso(mainInst);
+        }
     }
 
 
