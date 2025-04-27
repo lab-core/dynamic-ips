@@ -15,12 +15,12 @@ directory="Instances_12-14"
 # Define algorithms for each mode
 declare -A algorithms
 algorithms[1]="2"  # Mode 1 -> Algorithm 2
-algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
+algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
 param_files[1]="return2 return5 return7"  # Mode 1 has two parameter files
-param_files[2]="ACG-LP"  # Mode 2 has three parameter files
+param_files[2]="ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
 instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
