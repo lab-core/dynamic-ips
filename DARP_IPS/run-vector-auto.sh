@@ -16,12 +16,12 @@ main_dir="datasets/$directory"
 
 # Define algorithms for each mode
 declare -A algorithms
-algorithms[1]="2"  # Mode 1 -> Algorithm 2
+algorithms[1]="3"  # Mode 1 -> Algorithm 2
 algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="return2"  # Mode 1 has two parameter files
+param_files[1]="no_return"  # Mode 1 has two parameter files
 param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
