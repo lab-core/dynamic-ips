@@ -2,7 +2,7 @@
 #SBATCH --mem=24G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-2
+#SBATCH --array=1-48
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -39,9 +39,9 @@ i=1
 for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do``
-    #  for instance_path in "${INSTANCES[@]}"; do
-    #    instance=$(basename "$instance_path")
-      for instance in "${instances[@]}"; do
+      for instance_path in "${INSTANCES[@]}"; do
+        instance=$(basename "$instance_path")
+ #     for instance in "${instances[@]}"; do
         for param_dir in ${param_files[$mode]}; do
         jobs[$i]="$vehicles_1 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
         ((i++))
