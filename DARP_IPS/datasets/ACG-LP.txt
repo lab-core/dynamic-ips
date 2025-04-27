@@ -13,13 +13,14 @@ solutionMode = 2
 NumIter = 1
 GreedyReOptimize = 0
 saveScratch = 2
-vehicleReturn = 0
+vehicleReturn = 1
 timeWindows = 0
-WaitForReturn = 120
+WaitForReturn = 30
 numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
-returnType = 0
+returnType = 2
+MaxWait = 120
 
 
 

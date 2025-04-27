@@ -15,11 +15,12 @@ GreedyReOptimize = 0
 saveScratch = 2
 vehicleReturn = 1
 timeWindows = 0
-WaitForReturn = 120
+WaitForReturn = 30
 numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
-returnType = 0
+returnType = 2
+MaxWait = 120
 
 
 
@@ -61,4 +62,4 @@ sortColumn = 1
 BigM = 27000
 solveTimeLimit = 300
 populateTimeLimit = 200
-MIPGap = 0.001
+MIPGap = 0.0001
