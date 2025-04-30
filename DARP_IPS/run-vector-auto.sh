@@ -2,7 +2,7 @@
 #SBATCH --mem=24G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-24
+#SBATCH --array=1-48
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -30,13 +30,13 @@ instances=(
   "20160225_07-120m"
 )
 
-vehicle_counts=(2000)
+vehicle_counts=(1500)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
       for instance_path in "${INSTANCES[@]}"; do
