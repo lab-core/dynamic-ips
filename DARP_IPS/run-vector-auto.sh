@@ -40,9 +40,9 @@ i=1
 for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
-      for instance_path in "${INSTANCES[@]}"; do
-        instance=$(basename "$instance_path")
- #     for instance in "${instances[@]}"; do
+#      for instance_path in "${INSTANCES[@]}"; do
+#        instance=$(basename "$instance_path")
+      for instance in "${instances[@]}"; do
         for param_dir in ${param_files[$mode]}; do
         jobs[$i]="$vehicles_1 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
         ((i++))
