@@ -182,7 +182,7 @@ void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicl
 
     requestConst_ = IloRangeArray(env_, requestRHS_, requestRHS_);
     vehicleConst_ = IloRangeArray(env_, vehicleRHS_, vehicleRHS_);
- //   Cplex_.setOut(env_.getNullStream());
+    Cplex_.setOut(env_.getNullStream());
     Model_.add(requestConst_);
     Model_.add(vehicleConst_);
     Model_.add(objFunction_);
