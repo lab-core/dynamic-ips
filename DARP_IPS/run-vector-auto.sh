@@ -16,7 +16,7 @@ main_dir="datasets/$directory"
 
 # Define algorithms for each mode
 declare -A algorithms
-algorithms[1]="3"  # Mode 1 -> Algorithm 2
+algorithms[1]="2 3"  # Mode 1 -> Algorithm 2
 algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
@@ -31,7 +31,7 @@ instances=(
   "20160129_07-960m"
 )
 
-vehicle_counts=(2000)
+vehicle_counts=(1500)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
