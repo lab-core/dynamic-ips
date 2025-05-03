@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=18G
 #SBATCH --time=2:15:00
-#SBATCH --array=1-18
+#SBATCH --array=1-27
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -19,7 +19,7 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="return2 return5 return7"  # Mode 1 has two parameter files
+param_files[1]="return1 return3 return4"  # Mode 1 has two parameter files
 param_files[2]="ACG-CP ACG-AUXP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
@@ -31,7 +31,7 @@ instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 declare -a jobs
 i=1
 
-for mode in 2; do
+for mode in 1; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
