@@ -456,6 +456,8 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                         RMPCounter_++;
                         isCPImproved = false;
                         setAvailableTime();
+                        restartAlgorithm = false;
+                        break;
                         if (availableTime_ <= 1) {
                             restartAlgorithm = false;
                             break;
@@ -753,6 +755,8 @@ void MasterAlgorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, in
             if (previousObj_ - objValue_ > 0.01) {
                 previousObj_ = objValue_;
             } else
+                break;
+            if (RPIter_ == 2)
                 break;
         }
         else
