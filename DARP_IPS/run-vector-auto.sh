@@ -2,7 +2,7 @@
 #SBATCH --mem=18G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-24
+#SBATCH --array=1-14
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -17,7 +17,7 @@ main_dir="datasets/$directory"
 # Define algorithms for each mode
 declare -A algorithms
 algorithms[1]="2 3"  # Mode 1 -> Algorithm 2
-algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
+algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
@@ -27,22 +27,22 @@ param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20160225_07-960m"
-  "20160129_07-960m"
+  "20160225_07-120m"
+  "20160129_07-120m"
 )
 
-vehicle_counts=(1500)
+vehicle_counts=(1900 1800 1700 1600 1500 1400 1300)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
-      for instance_path in "${INSTANCES[@]}"; do
-        instance=$(basename "$instance_path")
-#      for instance in "${instances[@]}"; do
+#      for instance_path in "${INSTANCES[@]}"; do
+#        instance=$(basename "$instance_path")
+      for instance in "${instances[@]}"; do
         for param_dir in ${param_files[$mode]}; do
         jobs[$i]="$vehicles_1 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
         ((i++))
