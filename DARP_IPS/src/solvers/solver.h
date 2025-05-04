@@ -40,6 +40,7 @@ public:
     int nbOnePick_;
     int nbTwoPick_;
     int nbThreePick_;
+    int greedyRebalanceTime_;
 
     int epoch_;
 

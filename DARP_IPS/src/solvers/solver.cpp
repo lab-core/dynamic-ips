@@ -13,6 +13,7 @@ solver::solver(const PInstance & mainInst, InputPaths &inputPaths) {
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
     nbRecycledColumns_ = 0;
+    greedyRebalanceTime_ = 0;
 
     masterModel_ = std::make_shared<MasterAlgorithm>(inputPaths);
     GreedyModel_ = std::make_shared<GreedyModeler>();
@@ -360,6 +361,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
                            float saveTime) {
     // define required variables
     epoch_ = 0;
+    greedyRebalanceTime_ = 0;
     rebalancingTime_->start();
     std::vector<float> EpochTime = {1,1,1};
 //    int commitTime = mainInst->parameters_->epochLength_;
@@ -471,12 +473,16 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
             if (EpochInst->parameters_->vehicleReturn_) {
-                if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
-                    returnVehicles(EpochInst);
-                else if (EpochInst->parameters_->returnPolicy_ == ZONE)
-                    returnVehiclesZone(EpochInst);
-                else
-                    returnVehiclesAssign(EpochInst);
+                if (elapsedTime_ - greedyRebalanceTime_ >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+                    if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+                        returnVehicles(EpochInst);
+                    else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+                        returnVehiclesZone(EpochInst);
+                    else {
+                        greedyRebalanceTime_ = elapsedTime_;
+                        returnVehiclesAlonso(mainInst);
+                    }
+                }
             }
             if (EpochInst->parameters_->solutionMode_ == ANYTIME){
                 for (auto &vehicleObj: EpochInst->vehicles_){
