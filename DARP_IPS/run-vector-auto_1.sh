@@ -15,7 +15,7 @@ directory="Instances_12-14"
 # Define algorithms for each mode
 declare -A algorithms
 algorithms[1]="2"  # Mode 1 -> Algorithm 2
-algorithms[2]="3"  # Mode 2 -> Algorithm 6
+algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
