@@ -55,7 +55,7 @@ Route_Recycle = 0
 usePick = 1
 nbPick = 4
 sortPath = 0
-sortColumn = 0
+sortColumn = 3
 
 # CPLEX PARAMETERS
 #

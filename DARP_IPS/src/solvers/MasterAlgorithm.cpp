@@ -285,32 +285,36 @@ void MasterAlgorithm::updateIncDegreesBit(const PInstance &pInst) const {
 void MasterAlgorithm::calcIncompatibilityM(const PRoute &route) const {
     route->isCompatible_ = true;
     route->incompatibilityDegree_ = 0;
-    if (!route->routeRequests_.empty()) {
+//    if (!route->routeRequests_.empty()) {
         for (auto & e : adjacencyPairs_) {
             route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->column_.test(e.second);
-            /*if (route->vehicleID_ != route->routeRequests_[0]->solVehicleID_ && (route->column_.test(e.first) && route->column_.test(e.second))) {
-                route->incompatibilityDegree_++;
-            }*/
         }
-    }
+        for (auto & e : vehiclePairs_) {
+            route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->vehicleID_ == e.second;
+        }
+//    }
 
     if (route->incompatibilityDegree_ > 0) {
         route->isCompatible_ = false;
-        route->IncScore_ = route->reducedCost_/ route->incompatibilityDegree_;
+//        route->IncScore_ = route->reducedCost_/ route->incompatibilityDegree_;
     }
-    else {
-        route->IncScore_ = route->reducedCost_;
-    }
+//    else {
+//        route->IncScore_ = route->reducedCost_;
+//    }
 }
 
 void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     adjacencyPairs_.clear();
+    vehiclePairs_.clear();
     for (auto & vehicleObj : pInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeRequests_.size() > 1) {
             for (size_t i=0; i + 1 < vehicleObj->currentRoute_->routeRequests_.size(); ++i) {
                 adjacencyPairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_[i]->taskIndex_, vehicleObj->currentRoute_->routeRequests_[i + 1]->taskIndex_);
             }
+            vehiclePairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_.back()->taskIndex_, vehicleObj->vehicleID_);
         }
+        else if (vehicleObj->currentRoute_->routeRequests_.size() == 1)
+            vehiclePairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_.back()->taskIndex_, vehicleObj->vehicleID_);
     }
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
@@ -321,6 +325,88 @@ void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     }
 }
 
+void MasterAlgorithm::updateScore1(const PInstance &pInst) {
+    auto start = std::chrono::high_resolution_clock::now(); // Start timer
+
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
+                routeObj->IncScore_ = 0.0;
+                float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
+                if (m_j == 0.0) continue;
+                for (auto & basisRouteObj: routeSolution_) {
+                    float m_l = static_cast<float>(basisRouteObj->routeRequests_.size()) + 1.0f;
+                    if (m_l == 0.0) continue;
+                    float overlap = 0.0f;
+                    for (const auto& req : routeObj->routeRequests_) {
+                        if (basisRouteObj->column_.test(req->taskIndex_)) {
+                            overlap += 1.0f;
+                        }
+                    }
+                    if (basisRouteObj->vehicleID_ == routeObj->vehicleID_)
+                        overlap += 1.0f;
+                    routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                }
+                for (auto & requestObj: routeObj->routeRequests_) {
+                    if (requestObj->solVehicleID_ == LARGE_CONSTANT)
+                        routeObj->IncScore_ += 1 / m_j;
+                }
+ //               std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
+                routeObj->IncScore_ *= routeObj->reducedCost_;
+            }
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now(); // End timer
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "updateScore took " << elapsed.count() << " seconds\n";
+}
+
+void MasterAlgorithm::updateScore(const PInstance &pInst) {
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
+                routeObj->IncScore_ = 0.0;
+                float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
+                if (m_j == 0.0) continue;
+                std::bitset<MAX_BIT_SIZE> vehicles;
+                for (auto & requestObj: routeObj->routeRequests_) {
+                    if (requestObj->solVehicleID_ == LARGE_CONSTANT)
+                        routeObj->IncScore_ += 1 / m_j;
+                    else if (!vehicles.test(requestObj->solVehicleID_)){
+                        vehicles.set(requestObj->solVehicleID_, true);
+                        float m_l = static_cast<float>(pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->routeRequests_.size()) + 1.0f;
+                        if (m_l == 0.0) continue;
+                        float overlap = 0.0f;
+                        for (const auto& req : routeObj->routeRequests_) {
+                            if (pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->column_.test(req->taskIndex_)) {
+                                overlap += 1.0f;
+                            }
+                        }
+                        if (pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
+                            overlap += 1.0f;
+                        routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                    }
+                }
+                if (!vehicles.test(routeObj->vehicleID_)){
+                    float m_l = static_cast<float>(pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->routeRequests_.size()) + 1.0f;
+                    if (m_l == 0.0) continue;
+                    float overlap = 0.0f;
+                    for (const auto& req : routeObj->routeRequests_) {
+                        if (pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->column_.test(req->taskIndex_)) {
+                            overlap += 1.0f;
+                        }
+                    }
+                    if (pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
+                        overlap += 1.0f;
+                    routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                }
+     //           std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
+                routeObj->IncScore_ *= routeObj->reducedCost_;
+            }
+        }
+    }
+}
 
 void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
     minReducedCost_ = INFINITY;
@@ -1173,8 +1259,10 @@ std::string MasterAlgorithm::toStringTimersAvg(int epoch) const {
 
 void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstance &pInst){
     updateReducedCosts(pInst);
-    if (selectMode == CP || selectMode == RP || pInst->parameters_->sortColumn_ == COMP_RC)
-        updateIncDegreesM(pInst);
+    if (selectMode == CP || selectMode == RP || pInst->parameters_->sortColumn_ == COMP_RC) {
+ //       updateIncDegreesM(pInst);
+        updateScore(pInst);
+    }
     if (minReducedCost_ <= 0) {
         for (auto & vehicleObj : pInst->vehicles_) {
             if (pInst->parameters_->sortColumn_ == C_SCORE) {
@@ -1205,7 +1293,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstanc
                     case CP:
                         if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0 && !routeObj->routeRequests_.empty()) {
                             CompPro_->routesToAdd_.push_back(routeObj);
-                            numAdded++;
+//                            numAdded++;
                         }
                         break;
                     case RP:
@@ -1307,6 +1395,7 @@ void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
+    availableTime_ = LARGE_CONSTANT;
 }
 
 

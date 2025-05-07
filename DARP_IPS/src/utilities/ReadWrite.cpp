@@ -723,7 +723,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         if (routeNodes[v][i] != nullptr) {
                             newRoute->addNode(routeNodes[v][i]);
                             if (routeNodes[v][i]->type_ == PICKUP) {
-                                routeNodes[v][i]->related_Request_->allocVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
+                                routeNodes[v][i]->related_Request_->solVehicleID_ = pInstance->vehicles_[v]->vehicleID_;
                             }
                         }
                         else

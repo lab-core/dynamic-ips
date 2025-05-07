@@ -66,6 +66,7 @@ public:
     float iterTime_;                // helps in calculating and saving epochTime_;
     float vehicleChange_;
     std::vector<std::pair<int,int>> adjacencyPairs_;
+    std::vector<std::pair<int,int>> vehiclePairs_;
 
     myTools::Timer *masterTime_;
     myTools::Timer *RPTime_;
@@ -100,6 +101,8 @@ public:
     void calcIncompatibilityM(const PRoute &route) const;
     void updateIncDegreesBit(const PInstance &pInst) const;
     void updateIncDegreesM(const PInstance &pInst);
+    void updateScore1(const PInstance &pInst);
+    void updateScore(const PInstance &pInst);
 
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(const PInstance &pInst);
