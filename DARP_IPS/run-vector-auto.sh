@@ -21,17 +21,17 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-param_files[1]="return2"  # Mode 1 has two parameter files
+param_files[1]="no_return"  # Mode 1 has two parameter files
 param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20150926_12-120m"
-  "20151025_12-120m"
+  "20150828_12-120m"
+  "20151130_12-120m"
 )
 
-vehicle_counts=(1400)
+vehicle_counts=(1000)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
