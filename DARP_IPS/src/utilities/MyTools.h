@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <valarray>
 #include <bitset>
+#include <boost/dynamic_bitset.hpp>
 #include <ilcplex/ilocplex.h>
 #include <unordered_map>
 
@@ -159,6 +160,7 @@ static const char *NodeTypeStr[] = {
 
 #define LARGE_CONSTANT 9999999
 constexpr int MAX_BIT_SIZE = 3000;
+constexpr int LABEL_BIT_SIZE = 1000;
 constexpr int MAX_ZONE = 350;
 
 static constexpr int sentenceSize = 47;

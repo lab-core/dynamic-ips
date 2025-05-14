@@ -94,7 +94,7 @@ std::string Vehicle::toString() const {
 // function to update vehicle depart time at each time and
 // update the situation of nodes and ride requests
 
-void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests) {
+void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boost::dynamic_bitset<> &removedRequests) {
     float committedTime = 0;
     if (mainInst->parameters_->solutionMode_ == ANYTIME)
         committedTime = mainInst->parameters_->committedTime_;

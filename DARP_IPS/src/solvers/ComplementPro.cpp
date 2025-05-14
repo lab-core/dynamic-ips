@@ -263,7 +263,7 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                         OutRequestVar.push_back(static_cast<int>(i));
                     }
                 }
-                if (isColumnDisjointFast(zResult, routeResult)) {
+                if (isColumnDisjointFast(zResult, routeResult, pInst)) {
                     // remove outgoing variable
                     Cplex_.clearModel();
                     for (auto &r: OutRouteVar) {
@@ -392,7 +392,7 @@ void ComplementPro::solveCP2Model(const PInstance &pInst, std::vector<PRequest> 
                         InRequestVar.push_back(static_cast<int>(i));
                     }
                 }
-                if (isColumnDisjointFast(zResult, routeResult)) {
+                if (isColumnDisjointFast(zResult, routeResult, pInst)) {
                     // remove outgoing variable
                     routeSolution = routeResult;
                     zSolution = zResult;
@@ -456,10 +456,10 @@ void ComplementPro::solveCP2Model(const PInstance &pInst, std::vector<PRequest> 
     else
         return false;
 }*/
-bool ComplementPro::isColumnDisjointBit(const vector<PRequest> &zResults, const vector<PRoute> &routeResults) {
-    std::vector<std::bitset<MAX_BIT_SIZE>> Columns;
-    std::bitset<MAX_BIT_SIZE> unions;
-    std::bitset<MAX_BIT_SIZE> vehicles;
+bool ComplementPro::isColumnDisjointBit(const vector<PRequest> &zResults, const vector<PRoute> &routeResults, const PInstance &pInst) {
+    std::vector<boost::dynamic_bitset<>> Columns;
+    boost::dynamic_bitset<> unions(pInst->nbRequests_);
+    boost::dynamic_bitset<> vehicles(pInst->nbVehicles_);
     int counts = 0;
     int veh = 0;
     for (auto & requestObj : zResults) {
@@ -478,10 +478,10 @@ bool ComplementPro::isColumnDisjointBit(const vector<PRequest> &zResults, const 
     return true;  // Sets are disjoint
 }
 
-bool ComplementPro::isColumnDisjointFast(const vector<PRequest>& zResults,
-                                         const vector<PRoute>& routeResults) {
-    std::bitset<MAX_BIT_SIZE> coveredRequests;
-    std::bitset<MAX_BIT_SIZE> usedVehicles;
+bool ComplementPro::isColumnDisjointFast(const vector<PRequest>& zResults, const vector<PRoute>& routeResults,
+    const PInstance &pInst) {
+    boost::dynamic_bitset<> coveredRequests(pInst->nbRequests_);
+    boost::dynamic_bitset<> usedVehicles(pInst->nbVehicles_);
 
     // mark each request index; exit on duplicate
     for (auto& requestObj : zResults) {

@@ -15,6 +15,7 @@ SubproModeler::~SubproModeler() = default;
 // initialization of the subgraph
 void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
+    Vehicle_->graphRequests_.resize(pInst->nbRequests_);
     Vehicle_->graphRequests_.reset();
     nbTotalRequest_ = pInst->nbRequests_;
     subGraph_->addNewNode(std::make_shared<Node>((Vehicle_)->departNode_));
@@ -65,6 +66,9 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
         subGraph_->pickNodes_[i]->pairNode_ = &(*subGraph_->dropNodes_[i]);
         subGraph_->dropNodes_[i]->pairNode_ = &(*subGraph_->pickNodes_[i]);
     }
+    /*for (const auto& [id, node] : subGraph_->nodes_) {
+        node->prunedArcs_.resize(pInst->requests_.size() + pInst->nbOnboards_);
+    }*/
     subGraph_->nbNodes_ = static_cast<int>(subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2);
 }
 

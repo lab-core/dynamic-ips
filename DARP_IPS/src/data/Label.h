@@ -29,16 +29,16 @@ public:
     int load_;                                      // consume capacity of the vehicle
     std::vector<float> travelResources_;            // travel time resource for controlling the trip delay
     std::vector<Node*> openNode_;                   // it makes sure that all the picked requests are dropped
-    std::bitset<MAX_BIT_SIZE> completeRequests_;    // keep track of completed tasks
+    std::bitset<LABEL_BIT_SIZE> completeRequests_;    // keep track of completed tasks
     int numCompleted_;                              //
-    std::bitset<MAX_BIT_SIZE> openRequests_;        // used to check feasibility and domination
+    std::bitset<LABEL_BIT_SIZE> openRequests_;        // used to check feasibility and domination
     std::vector<Node*> pathNode_;                   // order of nodes in the path
 
     float reducedCost_;
     float totalDelay_;
     LabelStatus status_;
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
-    std::bitset<MAX_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
+    std::bitset<LABEL_BIT_SIZE> extendCheck_;         // check the elementary condition of the path
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before

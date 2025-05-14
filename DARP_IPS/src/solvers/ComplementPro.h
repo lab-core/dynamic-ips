@@ -68,8 +68,8 @@ public:
     // this function checks the situation of the CP solution to be column disjoint
 //    bool isColumnDisjoint(std::vector<PRequest> &zResults, std::vector<PRoute> &routeResults, int nbVehicle);
 
-    static bool isColumnDisjointBit(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults);
-    static bool isColumnDisjointFast(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults);
+    static bool isColumnDisjointBit(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults, const PInstance &pInst);
+    static bool isColumnDisjointFast(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults, const PInstance &pInst);
 
     // Display function
     std::string toString() const override;

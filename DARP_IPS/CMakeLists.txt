@@ -42,6 +42,16 @@ if(CPLEX_ILOCPLEX_FOUND)
     link_directories(${CPLEX_ILOCPLEX_LIBRARY})
 endif()
 
+find_package(Boost REQUIRED)
+
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    message(STATUS "Boost found at: ${Boost_INCLUDE_DIRS}")
+else()
+    message(FATAL_ERROR "Boost not found")
+endif()
+
+
 ######## GUROBI Dependency
 #find_package(GUROBI REQUIRED)
 #include_directories(${GUROBI_INCLUDE_DIRS})

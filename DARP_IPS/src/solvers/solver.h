@@ -83,7 +83,7 @@ public:
     static void CreateOneStopRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
                                     const PInstance &EpochInst, int &nbNegative);
 
-    static void updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, vector2D<PRoute> &availableRoutes);
+    static void updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes);
 
     void returnVehicles(const PInstance & EpochInst) const;
     void returnVehiclesZone(const PInstance & EpochInst) const;

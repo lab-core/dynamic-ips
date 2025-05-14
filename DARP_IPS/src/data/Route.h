@@ -33,12 +33,13 @@ public:
     unsigned int routeSize_;                    //number of stops in the route including start and stop
     float createTime_;                         // time that route is created through solving subproblems
     float totalLength_;
-    std::bitset<MAX_BIT_SIZE> column_;
+    boost::dynamic_bitset<> column_;
     bool isCompatible_;                         // return false if the corresponding column is compatible
     bool mpAdded_;                              // True if the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // True if the route has already been added to the CP model
     float score_;                              // equals to the reduced cost/number of pickups(or tasks)
     float lambda_;
+    float IncScoreRatio_;
     float IncScore_;
 
     // Constructor and Destructor
@@ -75,7 +76,7 @@ public:
         else
             return false;
     }
-    void createColumn();
+    void createColumn(int nbRequests);
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {

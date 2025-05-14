@@ -60,7 +60,8 @@ public:
     void removeDominated(Node *node, std::vector<PLabel> & labelPool) const;
 
     // function to convert the solution to routes and save them in the vehicle object
-    void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst);
+    void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
+        int nbRequests);
     void CollectLabels();
     void solutionSummery(std::vector<int> &subProResults) const;
     // Display function

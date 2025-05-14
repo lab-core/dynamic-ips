@@ -34,7 +34,7 @@ public:
     float score_;                           // calculated based on the earliest possible pickup (vehicle portion)
     bool idle_;
     int vehicleIndex_;                      // used for considering a part of vehicle constraints in the Master problems
-    std::bitset<MAX_BIT_SIZE> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
+    boost::dynamic_bitset<> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
     int numPickup_;
     bool stateChanged_;
     int preSolvePick_;
@@ -63,7 +63,7 @@ public:
 
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
-    void updateStateTime(const PInstance & mainInst, float elapsedTime, std::bitset<MAX_BIT_SIZE> &removedRequests);
+    void updateStateTime(const PInstance & mainInst, float elapsedTime, boost::dynamic_bitset<> &removedRequests);
     void updateCurrentRoute(float elapsedTime);
 
     // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch

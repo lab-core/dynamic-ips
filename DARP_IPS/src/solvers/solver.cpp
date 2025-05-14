@@ -200,7 +200,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                             masterModel_->availableTime_ - subProblemTime_->dSinceStart().count())) {
                         subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
                                                      masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
-                                                     mainInst);
+                                                     mainInst, EpochInst->nbRequests_);
                     } else {
                         subProblem->CollectLabels();
                         subProBreak = true;
@@ -409,7 +409,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        std::bitset<MAX_BIT_SIZE> removedRequests;
+        boost::dynamic_bitset<> removedRequests(EpochInst->nbRequests_);
 
         for (auto &vehicleObj: mainInst->vehicles_) {
 //            vehicleObj->updateCurrentRoute(elapsedTime_);
@@ -436,6 +436,10 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
         EpochInst->buildPartialData(mainInst, masterModel_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        for (auto &vehicleObj: mainInst->vehicles_){
+            vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
+            vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
+        }
         if (EpochInst->parameters_->timeWindow_ == 0)
             EpochInst->updatePenalties(elapsedTime_);
         if (epoch_ == 0 && mainInst->nbOnboards_ > 0)
@@ -533,7 +537,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
 
     masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
     for (auto &vehicleObj: mainInst->vehicles_){
-        vehicleObj->currentRoute_->createColumn();
+        vehicleObj->currentRoute_->createColumn(StaticInst->nbRequests_);
     }
     if (StaticInst->parameters_->timeWindow_ == 0)
         StaticInst->updatePenalties(0);
@@ -602,7 +606,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         logFile.close();
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        std::bitset<MAX_BIT_SIZE> removedRequests;
+        boost::dynamic_bitset<> removedRequests;
+        removedRequests.resize(EpochInst->nbRequests_);
         if (mainInst->parameters_->routeRecycle_) {
             if (removedRequests.count()) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
@@ -631,7 +636,8 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                                     static_cast<float>(epoch_) * mainInst->parameters_->epochLength_,
                                     nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
-            vehicleObj->currentRoute_->createColumn();
+            vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
+            vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
         }
         if (EpochInst->parameters_->timeWindow_ == 0)
             EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * static_cast<float>(epoch_));
@@ -838,12 +844,12 @@ void solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availa
         if (newRoute->reducedCost_ < 0)
             nbNegative++;
         availableRoutes.emplace_back(std::move(newRoute));
-        availableRoutes.back()->createColumn();
+        availableRoutes.back()->createColumn(EpochInst->nbRequests_);
     }
 }
 
 
-void solver::updateAvailableRoutes(std::bitset<MAX_BIT_SIZE> &removedRequests, vector2D<PRoute> &availableRoutes) {
+void solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes) {
     for (auto &vehicleRoutes : availableRoutes) {
         // Remove routes with overlapping requests or empty route requests
         vehicleRoutes.erase(

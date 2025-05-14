@@ -774,12 +774,13 @@ bool LabelingSubProblem::solveDynamic(float availableTime) {
     return true;
 }
 
-void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes, const PInstance &pInst) {
+void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes,
+    const PInstance &pInst, int nbRequests) {
     nbNegativeColumns_ = 0;
     availableRoutes.clear();
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst));
-        availableRoutes.back()->createColumn();
+        availableRoutes.back()->createColumn(nbRequests);
         if (availableRoutes.back()->reducedCost_ < -0.01)
             nbNegativeColumns_ ++;
         nbOutputs_++;

@@ -257,7 +257,8 @@ void MasterAlgorithm::calcIncompatibilityBit(const PRoute &route, const PInstanc
         route->isCompatible_ = false;
         route->incompatibilityDegree_++;
     }
-    std::bitset<MAX_BIT_SIZE> vehicles;
+    boost::dynamic_bitset<> vehicles;
+    vehicles.resize(pInst->vehicles_.size());
     for (auto & requestObj : route->routeRequests_){
         if (requestObj->solVehicleID_ < LARGE_CONSTANT)
             vehicles.set(requestObj->solVehicleID_, true);
@@ -289,9 +290,9 @@ void MasterAlgorithm::calcIncompatibilityM(const PRoute &route) const {
         for (auto & e : adjacencyPairs_) {
             route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->column_.test(e.second);
         }
-        for (auto & e : vehiclePairs_) {
-            route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->vehicleID_ == e.second;
-        }
+//        for (auto & e : vehiclePairs_) {
+//            route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->vehicleID_ == e.second;
+//        }
 //    }
 
     if (route->incompatibilityDegree_ > 0) {
@@ -331,7 +332,7 @@ void MasterAlgorithm::updateScore1(const PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                routeObj->IncScore_ = 0.0;
+                routeObj->IncScoreRatio_ = 0.0;
                 float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
                 if (m_j == 0.0) continue;
                 for (auto & basisRouteObj: routeSolution_) {
@@ -345,14 +346,14 @@ void MasterAlgorithm::updateScore1(const PInstance &pInst) {
                     }
                     if (basisRouteObj->vehicleID_ == routeObj->vehicleID_)
                         overlap += 1.0f;
-                    routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                    routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
                 }
                 for (auto & requestObj: routeObj->routeRequests_) {
                     if (requestObj->solVehicleID_ == LARGE_CONSTANT)
-                        routeObj->IncScore_ += 1 / m_j;
+                        routeObj->IncScoreRatio_ += 1 / m_j;
                 }
  //               std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
-                routeObj->IncScore_ *= routeObj->reducedCost_;
+                routeObj->IncScoreRatio_ *= routeObj->reducedCost_;
             }
         }
     }
@@ -366,13 +367,13 @@ void MasterAlgorithm::updateScore(const PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                routeObj->IncScore_ = 0.0;
+                routeObj->IncScoreRatio_ = 0.0;
                 float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
                 if (m_j == 0.0) continue;
-                std::bitset<MAX_BIT_SIZE> vehicles;
+                boost::dynamic_bitset<> vehicles(pInst->nbVehicles_);
                 for (auto & requestObj: routeObj->routeRequests_) {
                     if (requestObj->solVehicleID_ == LARGE_CONSTANT)
-                        routeObj->IncScore_ += 1 / m_j;
+                        routeObj->IncScoreRatio_ += 1 / m_j;
                     else if (!vehicles.test(requestObj->solVehicleID_)){
                         vehicles.set(requestObj->solVehicleID_, true);
                         float m_l = static_cast<float>(pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->routeRequests_.size()) + 1.0f;
@@ -385,7 +386,7 @@ void MasterAlgorithm::updateScore(const PInstance &pInst) {
                         }
                         if (pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
                             overlap += 1.0f;
-                        routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                        routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
                     }
                 }
                 if (!vehicles.test(routeObj->vehicleID_)){
@@ -399,10 +400,10 @@ void MasterAlgorithm::updateScore(const PInstance &pInst) {
                     }
                     if (pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
                         overlap += 1.0f;
-                    routeObj->IncScore_ += (overlap * overlap) / (m_j * m_l);
+                    routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
                 }
      //           std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
-                routeObj->IncScore_ *= routeObj->reducedCost_;
+ //               routeObj->IncScoreRatio_ *= routeObj->reducedCost_;
             }
         }
     }
@@ -429,6 +430,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
                 routeObj->score_ = 0;
                 routeObj->lambda_ = 0;
             }
+            routeObj->IncScore_ = routeObj->reducedCost_ * routeObj->IncScoreRatio_;
         }
         vehicleObj->bestReducedCost_ = minReducedCost_;
     }
@@ -444,6 +446,9 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
         bool restartAlgorithm = true;
 
         while (restartAlgorithm) {
+            if (pInst->parameters_->sortColumn_ == COMP_RC) {
+                updateScore(pInst);
+            }
             // move these here and initialize
             bool isCPImproved = true;
             /************************************************************************************************/
@@ -542,8 +547,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                         RMPCounter_++;
                         isCPImproved = false;
                         setAvailableTime();
-                        restartAlgorithm = false;
-                        break;
+                        restartAlgorithm = true;
                         if (availableTime_ <= 1) {
                             restartAlgorithm = false;
                             break;
@@ -842,8 +846,8 @@ void MasterAlgorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, in
                 previousObj_ = objValue_;
             } else
                 break;
-            if (RPIter_ == 2)
-                break;
+            // if (RPIter_ == 2)
+            //     break;
         }
         else
             break;
@@ -870,6 +874,9 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     //                                     MASTER PROBLEM
     /************************************************************************************************/
     setAvailableTime();
+    if (pInst->parameters_->sortColumn_ == COMP_RC) {
+        updateScore(pInst);
+    }
     if (availableTime_ > 1) {
         solveMP_LP(pInst, inputPaths, epoch, subProTime);
         objValue_ = previousObj_;
@@ -1259,9 +1266,8 @@ std::string MasterAlgorithm::toStringTimersAvg(int epoch) const {
 
 void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstance &pInst){
     updateReducedCosts(pInst);
-    if (selectMode == CP || selectMode == RP || pInst->parameters_->sortColumn_ == COMP_RC) {
- //       updateIncDegreesM(pInst);
-        updateScore(pInst);
+    if (selectMode == CP || selectMode == RP) {
+        updateIncDegreesM(pInst);
     }
     if (minReducedCost_ <= 0) {
         for (auto & vehicleObj : pInst->vehicles_) {
