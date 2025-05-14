@@ -2,7 +2,7 @@
 #SBATCH --mem=10G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-2
+#SBATCH --array=1-3
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -28,7 +28,8 @@ param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
   "20150828_12-120m"
-  "20151130_12-120m"
+  "20150926_12-120m"
+  "20160316_12-120m"
 )
 
 vehicle_counts=(1000)
