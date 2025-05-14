@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=18G
+#SBATCH --mem=10G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-14
+#SBATCH --array=1-2
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,12 +11,12 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="manhattan-vehicles"
 vehicles_2="sufficient_manhattan-vehicles-300"
-directory="Instances-120"
+directory="Instances_12-14_warm"
 main_dir="datasets/$directory"
 
 # Define algorithms for each mode
 declare -A algorithms
-algorithms[1]="2 3"  # Mode 1 -> Algorithm 2
+algorithms[1]="2"  # Mode 1 -> Algorithm 2
 algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
@@ -27,11 +27,11 @@ param_files[2]="ACG-LP"  # Mode 2 has three parameter files
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20160225_07-120m"
-  "20160129_07-120m"
+  "20150926_12-120m"
+  "20151025_12-120m"
 )
 
-vehicle_counts=(1900 1800 1700 1600 1500 1400 1300)
+vehicle_counts=(1400)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
