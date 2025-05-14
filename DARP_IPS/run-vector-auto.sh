@@ -37,7 +37,7 @@ vehicle_counts=(1400)
 declare -a jobs
 i=1
 
-for mode in 2; do
+for mode in 1; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
 #      for instance_path in "${INSTANCES[@]}"; do
