@@ -19,8 +19,8 @@ WaitForReturn = 30
 numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
-returnType = 3
-MaxWait = 120
+returnType = 2
+MaxWait = 180
 
 
 
