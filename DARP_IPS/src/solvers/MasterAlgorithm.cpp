@@ -334,7 +334,7 @@ void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                calcIncompatibilityM(routeObj);
+                calcIncompatibilityMFull(routeObj);
             }
         }
     }
@@ -454,7 +454,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
         vehicleObj->bestReducedCost_ = minReducedCost_;
     }
     if (minReducedCost_ < 0)
-        maxReducedCost_ = -0.5f * minReducedCost_;
+        maxReducedCost_ = -1.0f * minReducedCost_;
 }
 
 void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
@@ -563,7 +563,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
                         RMPCounter_++;
                         isCPImproved = false;
                         setAvailableTime();
-                        restartAlgorithm = true;
+                        restartAlgorithm = false;
                         if (availableTime_ <= 1) {
                             restartAlgorithm = false;
                             break;
@@ -874,8 +874,8 @@ void MasterAlgorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, in
                 previousObj_ = objValue_;
             } else
                 break;
-            // if (RPIter_ == 2)
-            //     break;
+            if (RPIter_ == 2)
+                 break;
         }
         else
             break;
@@ -1218,6 +1218,8 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, const InputPaths &inputPaths,
                 lpObjValue_ = MasterPro_->objValue_;
             } else
                 break;
+            if (LPIter_ == 2)
+                break;
         }
         else
             break;
@@ -1325,7 +1327,7 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstanc
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0) {
+                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0 && routeObj->reducedCost_ < maxReducedCost_) {
                             CompPro_->routesToAdd_.push_back(routeObj);
                             numAdded++;
                         }
