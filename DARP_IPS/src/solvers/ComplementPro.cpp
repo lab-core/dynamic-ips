@@ -104,7 +104,7 @@ void ComplementPro::buildModel(const PInstance &pInst, const vector<PRequest> &z
 
     // adding z columns out of the basis
     for (int i = 0; i < pInst->nbRequests_; ++i) {
-        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->plannedPickTime_ == LARGE_CONSTANT) {
+        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT) {
             if (pInst->vehicles_[pInst->requests_[i]->solVehicleID_]->currentRoute_->routeRequests_.size() > 1)
                 addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
         }
@@ -162,7 +162,7 @@ void ComplementPro::buildModelCP_improved(PInstance &pInst, std::vector<PRequest
     }
     // adding z columns out of the basis
     for (int i = 0; i < pInst->nbRequests_; ++i) {
-        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->plannedPickTime_ == LARGE_CONSTANT)
+        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT)
             addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
     }
 

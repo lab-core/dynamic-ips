@@ -31,7 +31,7 @@ instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 

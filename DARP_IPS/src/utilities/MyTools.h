@@ -84,13 +84,20 @@ enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST =
 enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};
 enum selectionMode { NR = 0, RP = 1, CP = 2};
 enum SortPaths {L_SCORE = 0, RD_COST = 1, LAMBDA = 2};
-enum SortColumns {C_SCORE = 0, CRD_COSTS = 1, CLAMBDA = 2, COMP_RC = 3};
+enum SortColumns {NORMAL_RC = 0, RC = 1, LAMBDA_S = 2, COMP_C = 3, WAIT_S = 4};
 enum VarSign { POSITIVE, NEGATIVE };
 enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
 enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2, REJECTED = 3};
 enum ReturnType {TO_SOURCE = 0, ZONE = 1, ASSIGN = 2};
 static const std::vector<std::string> reqStatusName = {
         "NO_ACTION", "ON_BOARD ", "COMPLETED" };
+
+static const std::vector<std::string> SortColumnsName = {
+    "PATH_SCORE  ",
+    "REDUCED_COST",
+    "LAMBDA_SCORE",
+    "COMP_SCORE",
+    "WAIT_SCORE"};
 
 static const std::vector<std::string> SortPathsName = {
         "PATH_SCORE  ",
@@ -102,11 +109,6 @@ static const std::vector<std::string> ReturnTypeName = {
     "ZONE     ",
     "ASSIGN   "};
 
-static const std::vector<std::string> SortColumnsName = {
-        "PATH_SCORE  ",
-        "REDUCED_COST",
-        "LAMBDA_SCORE",
-        "COMP_SCORE"};
 
 static const std::vector<std::string> LabelingStrategyName = {
         "PUSHING",

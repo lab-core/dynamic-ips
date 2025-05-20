@@ -80,7 +80,7 @@ void DualAuxSolver::buildModel(vector<PRoute> &RMPRoutes, vector<PRequest> &Requ
     }
     zExpr_.resize(Requests.size());
     for (int i = 0; i < Requests.size(); ++i) {
-        if (Requests[i]->plannedPickTime_ == LARGE_CONSTANT) {
+        if (Requests[i]->committedPickTime_ == LARGE_CONSTANT) {
             zExpr_[Requests[i]->taskIndex_] = requestDuals_[Requests[i]->taskIndex_];
             obj_p2 += deltaVar_[i];
 

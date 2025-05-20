@@ -311,13 +311,14 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
     if (!newRoute->routeRequests_.empty()) {
         newRoute->score_ = reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
-
+        newRoute->waitScore_ = newRoute->totalDelay_ / static_cast<float>(newRoute->routeRequests_.size());
         newRoute->lambda_ = newRoute->totalDelay_ /(newRoute->totalDelay_ - reducedCost_ + 0.0001f);
 
     }
     else {
         newRoute->score_ = 0;
         newRoute->lambda_ = 0;
+        newRoute->waitScore_ = 0;
     }
     newRoute->createTime_ = createTime_;
     if (totalDelay_ != newRoute->totalDelay_) {

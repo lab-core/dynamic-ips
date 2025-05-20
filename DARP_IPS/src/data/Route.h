@@ -25,6 +25,7 @@ public:
     float totalDelay_;                          // sum of waiting times of the requests served by the route
     vector<PNode> routeNodes_;                  // the ordered list of the nodes that are visited within the route
     std::vector<PRequest> routeRequests_;       // list of requests served by the route
+    std::vector<float> plannedDelay_;
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<float> plannedDepartTime_;      // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
@@ -39,8 +40,10 @@ public:
     bool cpAdded_;                              // True if the route has already been added to the CP model
     float score_;                              // equals to the reduced cost/number of pickups(or tasks)
     float lambda_;
+    float waitScore_;
     float IncScoreRatio_;
     float IncScore_;
+    int nbCommitted_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
@@ -69,12 +72,10 @@ public:
     // This function is to reset the status of the nodes in the route
     void resetRoute() const;
 
-    bool equal (Route const &routeObj) const {
-        if ((this->totalDelay_ == routeObj.totalDelay_)&& (this->routeSize_ == routeObj.routeSize_) &&
-            (this->plannedReachTime_.back() == routeObj.plannedReachTime_.back()))
-            return true;
-        else
-            return false;
+    bool equal(const Route& routeObj) const {
+        return this->column_ == routeObj.column_
+            && this->routeSize_ == routeObj.routeSize_
+            && this->totalDelay_ == routeObj.totalDelay_;
     }
     void createColumn(int nbRequests);
 };

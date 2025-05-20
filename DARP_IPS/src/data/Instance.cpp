@@ -593,10 +593,10 @@ void Instance::sortZones() {
 void Instance::updatePenalties(float elapsedTime) {
     for (auto & requestObj : requests_) {
         requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_);
-        if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
+        if (requestObj->committedPickTime_ == LARGE_CONSTANT)
             requestObj->latestPickup_ = requestObj->initialEarlyPick_ + requestObj->penalty_;
         else {
-            requestObj->latestPickup_ = requestObj->plannedPickTime_ + parameters_->pickupDeviationWindow_;
+            requestObj->latestPickup_ = requestObj->committedPickTime_ + parameters_->pickupDeviationWindow_;
 
         }
     }
@@ -690,7 +690,7 @@ std::string Instance::saveRequestsResults() const {
             repStr << requestObj->latestPickup_ << ",";
             repStr << requestObj->assignTime_ - requestObj->initialEarlyPick_ << ",";
             repStr << requestObj->commitTime_ - requestObj->initialEarlyPick_ << ",";
-            repStr << requestObj->plannedPickTime_ - requestObj->initialEarlyPick_ << ",";
+            repStr << requestObj->committedPickTime_ - requestObj->initialEarlyPick_ << ",";
             repStr << requestObj->allocVehicleID_ << ",";
             repStr << requestObj->nbSwitch_ << ",";
             repStr << requestObj->pickTime_ - requestObj->initialEarlyPick_ << ",";
@@ -1011,6 +1011,15 @@ void Instance::setNodeIndices() const {
             PNode nodeObj = instGraph_->nodes_[ vehicleObj->onboards_[i]];
             nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->dropNodes_.size()));
         }
+    }
+}
+
+void Instance::resetDuals() {
+    for (auto & requestObj : requests_) {
+        requestObj->dual_ = requestObj->penalty_;
+    }
+    for (auto & vehicleObj : vehicles_) {
+        vehicleObj->dual_ = 0;
     }
 }
 

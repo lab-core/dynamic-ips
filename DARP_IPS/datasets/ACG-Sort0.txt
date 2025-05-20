@@ -19,7 +19,7 @@ WaitForReturn = 30
 numVehicleSwitch = 1000
 informTimeLimit = 60
 pickupDeviationWindow = 60
-returnType = 2
+returnType = 3
 MaxWait = 120
 
 
@@ -62,4 +62,4 @@ sortColumn = 0
 BigM = 27000
 solveTimeLimit = 300
 populateTimeLimit = 200
-MIPGap = 0.0001
+MIPGap = 0.00001

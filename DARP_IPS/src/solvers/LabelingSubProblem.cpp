@@ -779,11 +779,16 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
     nbNegativeColumns_ = 0;
     availableRoutes.clear();
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
-        availableRoutes.emplace_back(labelObj->labelToRoute(vehicle, pInst));
-        availableRoutes.back()->createColumn(nbRequests);
-        if (availableRoutes.back()->reducedCost_ < -0.01)
-            nbNegativeColumns_ ++;
-        nbOutputs_++;
+        if (labelObj->numCompleted_ > 0) {
+            PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
+            newRoute->createColumn(nbRequests);
+            if (vehicle->currentRoute_->routeRequests_.empty() || !newRoute->equal(*vehicle->currentRoute_)) {
+                if (newRoute->reducedCost_ < -0.01)
+                    nbNegativeColumns_ ++;
+                nbOutputs_++;
+                availableRoutes.emplace_back(std::move(newRoute));
+            }
+        }
     }
     for (auto & nodeObj : subGraph_->nodes_){
         for (auto & labelObj : nodeObj.second->activeLabels_)

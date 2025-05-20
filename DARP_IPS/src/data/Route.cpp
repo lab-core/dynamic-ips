@@ -26,8 +26,11 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     cpAdded_ = false;
     score_ = 0;
     lambda_ = 0;
+    waitScore_ = 0;
     createTime_ = 0;
     totalLength_ = 0;
+    isCompatible_ = true;
+    nbCommitted_ = 0;
 }
 Route::~Route(){
     delete[] name_;
@@ -72,7 +75,10 @@ void Route::addNode(const PNode &node) {
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
+        plannedDelay_.push_back(reachTime - node->initialReadyTime_);
         totalDelay_ += reachTime - node->initialReadyTime_;
+        if (node->related_Request_->committedPickTime_ != LARGE_CONSTANT)
+            nbCommitted_++;
     }
 }
 

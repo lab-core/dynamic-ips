@@ -32,7 +32,8 @@ public:
     float minTravelTime_;               // minimum travel time between pickup and drop off location
     float maxTravelTime_;               // maximum allowed travel time between pickup and drop off location
     float commitTime_;                  // the time that request is commited to be served
-    float plannedPickTime_;             // the time that is announced to the customer
+    float committedPickTime_;             // the time that is announced to the customer
+    float plannedDelay_;
     float assignTime_;                  // the time that request is first assigned to a plan which may change
 
 

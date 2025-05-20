@@ -286,14 +286,11 @@ void MasterAlgorithm::updateIncDegreesBit(const PInstance &pInst) const {
 void MasterAlgorithm::calcIncompatibilityM(const PRoute &route) const {
     route->isCompatible_ = true;
     route->incompatibilityDegree_ = 0;
-//    if (!route->routeRequests_.empty()) {
+    if (!route->routeRequests_.empty()) {
         for (auto & e : adjacencyPairs_) {
             route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->column_.test(e.second);
         }
-//        for (auto & e : vehiclePairs_) {
-//            route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->vehicleID_ == e.second;
-//        }
-//    }
+    }
 
     if (route->incompatibilityDegree_ > 0) {
         route->isCompatible_ = false;
@@ -304,6 +301,23 @@ void MasterAlgorithm::calcIncompatibilityM(const PRoute &route) const {
 //    }
 }
 
+void MasterAlgorithm::calcIncompatibilityMFull(const PRoute &route) const {
+    route->isCompatible_ = true;
+    route->incompatibilityDegree_ = 0;
+    if (!route->routeRequests_.empty()) {
+        for (auto & e : adjacencyPairs_) {
+            route->incompatibilityDegree_ += route->column_.test(e.first) ^ route->column_.test(e.second);
+        }
+    }
+    if (route->incompatibilityDegree_ > 0) {
+        route->isCompatible_ = false;
+    }
+    for (auto & e : vehiclePairs_) {
+        if (route->vehicleID_ == e.first ^ route->column_.test(e.second))
+         route->incompatibilityDegree_ ++;
+    }
+}
+
 void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     adjacencyPairs_.clear();
     vehiclePairs_.clear();
@@ -312,10 +326,10 @@ void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
             for (size_t i=0; i + 1 < vehicleObj->currentRoute_->routeRequests_.size(); ++i) {
                 adjacencyPairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_[i]->taskIndex_, vehicleObj->currentRoute_->routeRequests_[i + 1]->taskIndex_);
             }
-            vehiclePairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_.back()->taskIndex_, vehicleObj->vehicleID_);
+            vehiclePairs_.emplace_back(vehicleObj->vehicleID_, vehicleObj->currentRoute_->routeRequests_[0]->taskIndex_);
         }
         else if (vehicleObj->currentRoute_->routeRequests_.size() == 1)
-            vehiclePairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_.back()->taskIndex_, vehicleObj->vehicleID_);
+            vehiclePairs_.emplace_back(vehicleObj->vehicleID_, vehicleObj->currentRoute_->routeRequests_[0]->taskIndex_);
     }
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
@@ -425,6 +439,11 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
             if (!routeObj->routeRequests_.empty()) {
                 routeObj->score_ = routeObj->reducedCost_ / static_cast<float>(routeObj->routeRequests_.size());
                 routeObj->lambda_ = routeObj->totalDelay_ / (routeObj->totalDelay_ - routeObj->reducedCost_ + 0.0001f);
+                routeObj->waitScore_ = 0;
+                for (int i = 0; i < routeObj->routeRequests_.size(); ++i) {
+                    if (routeObj->routeRequests_[i]->plannedDelay_ != LARGE_CONSTANT)
+                        routeObj->waitScore_ += routeObj->plannedDelay_[i] - routeObj->routeRequests_[i]->plannedDelay_;
+                }
             }
             else {
                 routeObj->score_ = 0;
@@ -446,9 +465,6 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
         bool restartAlgorithm = true;
 
         while (restartAlgorithm) {
-            if (pInst->parameters_->sortColumn_ == COMP_RC) {
-                updateScore(pInst);
-            }
             // move these here and initialize
             bool isCPImproved = true;
             /************************************************************************************************/
@@ -459,7 +475,7 @@ void MasterAlgorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPa
             /************************************************************************************************/
             //                                     COMPLEMENTARY PROBLEM
             /************************************************************************************************/
-            // if the vlue of the objective function improves, the CP is build
+            // if the value of the objective function improves, the CP is built
             CPTime_->start();
             setAvailableTime();
 
@@ -823,6 +839,18 @@ void MasterAlgorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, in
 
         // select compatible routes with negative reduced costs
         updateRoutesToAdd(RP, pInst);
+        /*for (auto & vehicleObj : pInst->vehicles_) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                Tools::LogOutput routeStream(inputPaths.getOutputIncDegreeRdCost(), true);
+                routeStream << routeObj->getRouteId() << "," << epoch << "," << RMPCounter_ << "," << routeObj->vehicleID_ ;
+                routeStream << "," << routeObj->totalDelay_ << "," << routeObj->incompatibilityDegree_ ;
+                routeStream << "," << routeObj->reducedCost_ << "," << routeObj->lambda_ << "," ;
+                routeStream << routeObj->score_ << "," << routeObj->IncScoreRatio_ << "," << routeObj->waitScore_ ;
+                routeStream << "," << routeObj->nbCommitted_ << "," << routeObj->createTime_ << "," << routeObj->routeRequests_.size() <<"\n";
+                routeStream.close();
+
+            }
+        }*/
 
         if (!ReducedPro_->routesToAdd_.empty()){
             MPBuildTime_->start();
@@ -874,7 +902,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
     //                                     MASTER PROBLEM
     /************************************************************************************************/
     setAvailableTime();
-    if (pInst->parameters_->sortColumn_ == COMP_RC) {
+    if (pInst->parameters_->sortColumn_ == COMP_C) {
         updateScore(pInst);
     }
     if (availableTime_ > 1) {
@@ -1268,48 +1296,48 @@ void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstanc
     updateReducedCosts(pInst);
     if (selectMode == CP || selectMode == RP) {
         updateIncDegreesM(pInst);
+        if (pInst->parameters_->sortColumn_ == COMP_C) {
+            updateScore(pInst);
+        }
     }
     if (minReducedCost_ <= 0) {
         for (auto & vehicleObj : pInst->vehicles_) {
-            if (pInst->parameters_->sortColumn_ == C_SCORE) {
+            if (pInst->parameters_->sortColumn_ == NORMAL_RC)
                 std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
-                                 availableRoutes_[vehicleObj->vehicleID_].end(),
-                                 [](const PRoute &lhs, const PRoute &rhs) { return lhs->score_ < rhs->score_; });
-            }
-            else if (pInst->parameters_->sortColumn_ == CLAMBDA){
-                std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
+                                availableRoutes_[vehicleObj->vehicleID_].end(),
+                                [](const PRoute &lhs, const PRoute &rhs) { return lhs->score_ < rhs->score_; });
+
+            else if (pInst->parameters_->sortColumn_ == LAMBDA_S)
+                    std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                                  availableRoutes_[vehicleObj->vehicleID_].end(),
                                  [](const PRoute &lhs, const PRoute &rhs) { return lhs->lambda_ < rhs->lambda_; });
-            }
-            else if (pInst->parameters_->sortColumn_ == COMP_RC){
-                std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
+
+            else if (pInst->parameters_->sortColumn_ == COMP_C || selectMode == CP)
+                    std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                                  availableRoutes_[vehicleObj->vehicleID_].end(),
                                  [](const PRoute &lhs, const PRoute &rhs) { return lhs->IncScore_ < rhs->IncScore_; });
-            }
-
-            else {
+            else
                 std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                                  availableRoutes_[vehicleObj->vehicleID_].end(),
                                  [](const PRoute &lhs, const PRoute &rhs) { return lhs->reducedCost_ < rhs->reducedCost_; });
-            }
 
             int numAdded = 0;
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0 && !routeObj->routeRequests_.empty()) {
+                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0) {
                             CompPro_->routesToAdd_.push_back(routeObj);
-//                            numAdded++;
+                            numAdded++;
                         }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2 && routeObj->reducedCost_ <= 0) {
+                        if (!routeObj->mpAdded_ && routeObj->isCompatible_ && routeObj->reducedCost_ < 0) {
                             ReducedPro_->routesToAdd_.push_back(routeObj);
                             numAdded++;
                         }
                         break;
                     default: // CG and MIP:
-                        if (!routeObj->mpAdded_ && routeObj->reducedCost_ < -0.1) {
+                        if (!routeObj->mpAdded_ && routeObj->reducedCost_ < 0) {
                             MasterPro_->routesToAdd_.push_back(routeObj);
                             numAdded++;
                         }

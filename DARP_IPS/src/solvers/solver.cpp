@@ -255,6 +255,8 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             masterModel_->timeLimit_ = masterModel_->availableTime_;
             //solve the restricted Mater Problem
             masterModel_->epochTime_ += subProblemTime_->dSinceStart().count();
+            if (iter == 1)
+                EpochInst->resetDuals();
             switch(EpochInst->parameters_->mainAlgorithm_) {
                 case RT_CG:
                     masterModel_->solveRLMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
@@ -977,7 +979,7 @@ void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
         zoneObj.second->nbUnserved_ = 0;
 
     for (auto &requestObj: EpochInst->requests_) {
-        if (requestObj->plannedPickTime_ == LARGE_CONSTANT)
+        if (requestObj->committedPickTime_ == LARGE_CONSTANT)
             EpochInst->zones_[requestObj->pickZoneID_]->nbUnserved_++;
     }
     /* keep zones with positive demand */

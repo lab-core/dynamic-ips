@@ -83,7 +83,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolu
 
     // adding request columns (z variables)
     for (auto & zSol : pInst->requests_) {
-        if (zSol->plannedPickTime_ == LARGE_CONSTANT)
+        if (zSol->committedPickTime_ == LARGE_CONSTANT)
             addZVarFloat(zVar_, zSol, POSITIVE);
     }
 
@@ -190,9 +190,14 @@ void ReducedProblem::solveModelInt(const PInstance &pInst, vector<PRequest> &zSo
                 convR.end();
                 convZ.end();
 
-
+  //              std::cout << "Route,vehicle,index,RC,Committed,nbRequets,waitScore" << std::endl;
                 for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
+                        /*if (compRoutes_[r]->createTime_ > 100) {
+                            std::cout << compRoutes_[r]->getRouteId() << "," ;
+                            std::cout << compRoutes_[r]->vehicleID_ << "," << compRoutes_[r]->createTime_ << "," ;
+                            std::cout << compRoutes_[r]->reducedCost_ << "," << compRoutes_[r]->nbCommitted_ << ","<< compRoutes_[r]->routeRequests_.size() << ","<< compRoutes_[r]->waitScore_ << std::endl;
+                        }*/
                         routeSolution.push_back(compRoutes_[r]);
                         routeSolutionIndex_.push_back(static_cast<int>(r));
  //                       pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
@@ -293,10 +298,14 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
                     Cplex_.getValues(routeVal, routeVar_);
                     convR.end();
                     convZ.end();
-
+  //                  std::cout << "Route,vehicle,index,RC,Committed,nbRequsets,IncDegree,waitScore" << std::endl;
                     for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                         if (routeVal[r] > 0.9) {
                             routeSolution.push_back(compRoutes_[r]);
+                            /*std::cout << compRoutes_[r]->getRouteId() << "," ;
+                            std::cout << compRoutes_[r]->vehicleID_ << "," << compRoutes_[r]->createTime_ << "," ;
+                            std::cout << compRoutes_[r]->reducedCost_ << "," << compRoutes_[r]->nbCommitted_ << ",";
+                            std::cout << compRoutes_[r]->routeRequests_.size()<< "," << compRoutes_[r]->incompatibilityDegree_ << "," << compRoutes_[r]->waitScore_ << std::endl;*/
                             routeSolutionIndex_.push_back(static_cast<int>(r));
  //                           pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                         }

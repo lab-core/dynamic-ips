@@ -96,9 +96,10 @@ public:
     void createInitialSolution(PInstance &pInst, const PGreedyModeler &GreedyModel);
     void initialization(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
 
-    // this function updates the incompatibility degree of availableRoutes
+    //This function updates the incompatibility degree of availableRoutes
     static void calcIncompatibilityBit(const PRoute &route, const PInstance &pInst);
     void calcIncompatibilityM(const PRoute &route) const;
+    void calcIncompatibilityMFull(const PRoute &route) const;
     void updateIncDegreesBit(const PInstance &pInst) const;
     void updateIncDegreesM(const PInstance &pInst);
     void updateScore1(const PInstance &pInst);

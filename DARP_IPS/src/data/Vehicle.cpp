@@ -70,8 +70,10 @@ void Vehicle::setSolutionRoute() {
 
 void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
     currentRoute_ = currentRoute;
-    for (auto & requestObj : currentRoute_->routeRequests_)
-        requestObj->solVehicleID_  = vehicleID_;
+    for (int i = 0; i < currentRoute->routeRequests_.size(); ++i) {
+        currentRoute->routeRequests_[i]->solVehicleID_  = vehicleID_;
+        currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
+    }
 }
 
 
@@ -144,10 +146,11 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                        currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
                         removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
-                        if (currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+                        if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
                             currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
-                            currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                            currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
                             if (currentRoute_->plannedReachTime_[i] - currentRoute_->routeNodes_[i]->related_Request_->initialEarlyPick_ > mainInst->parameters_->maxWait_)
                                 mainInst->lastCommittedRequests_.push_back(currentRoute_->routeNodes_[i]->related_Request_);
                         }
@@ -196,9 +199,9 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
         handleIdleState(elapsedTime + committedTime);
     }
     for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-        if (currentRoute_->routeNodes_[i]->type_ == PICKUP && currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+        if (currentRoute_->routeNodes_[i]->type_ == PICKUP && currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
             if (elapsedTime - currentRoute_->routeNodes_[i]->related_Request_->earlyPick_ >= mainInst->parameters_->informTimeLimit_) {
-                currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->earlyPick_ = currentRoute_->plannedReachTime_[i] -
                     mainInst->parameters_->pickupDeviationWindow_;
                 currentRoute_->routeNodes_[i]->readyTime_ = currentRoute_->routeNodes_[i]->related_Request_->earlyPick_;
@@ -230,11 +233,11 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
             }
 
             if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                if (currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ == LARGE_CONSTANT) {
+                if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
                     currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
-                    currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                    currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
                 }
-                currentRoute_->routeNodes_[i]->related_Request_->plannedPickTime_ = currentRoute_->plannedReachTime_[i];
+                currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
                 currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
                 currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;

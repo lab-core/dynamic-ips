@@ -105,6 +105,7 @@ public:
     void resetAssignedVehicles() const;
     void setAssignedEpochVehicles(float assignTime) const;
     void setNodeIndices() const;
+    void resetDuals();
 };
 
 int getIndex(const PNode& node, int id, int nbPairs);

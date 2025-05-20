@@ -167,7 +167,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     // create output files for epoch results
     std::ofstream myFile;
     myFile.open(output_incDegree_RDCost_);
-    myFile << "Epoch, ISUDIter, VehicleID, IncDegree, ReducedCost, CreateTime, RouteID" << std::endl;
+    myFile << "RouteID,Epoch,MPIter,VehicleID,TotalDelay,IncDegree,ReducedCost,LambdaScore,NormalScore,IncScore,WaitScore,nbCommitted,index,nbRequests" << std::endl;
     myFile.close();
 
     myFile.open(output_cplexLog_);

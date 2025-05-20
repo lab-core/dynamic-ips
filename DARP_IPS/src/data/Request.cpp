@@ -31,7 +31,8 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     dropTime_ = LARGE_CONSTANT;
     commitTime_ = LARGE_CONSTANT;
     assignTime_ = LARGE_CONSTANT;
-    plannedPickTime_ = LARGE_CONSTANT;
+    committedPickTime_ = LARGE_CONSTANT;
+    plannedDelay_ = LARGE_CONSTANT;
     latestPickup_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
