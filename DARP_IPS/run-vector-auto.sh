@@ -32,7 +32,7 @@ instances=(
   "20150917_07-960m"
 )
 
-vehicle_counts=(1800)
+vehicle_counts=(2000)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
@@ -45,7 +45,7 @@ for mode in 1; do
 #        instance=$(basename "$instance_path")
       for instance in "${instances[@]}"; do
         for param_dir in ${param_files[$mode]}; do
-        jobs[$i]="$vehicles_1 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
+        jobs[$i]="$vehicles_2 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
         ((i++))
         done
       done
