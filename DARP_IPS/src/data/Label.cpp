@@ -21,6 +21,7 @@ Label::Label(const Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     totalDelay_ = 0;
     status_ = ACTIVE;
     openNode_.clear();
+    nbCommitted_ = 0;
     openRequests_.reset();
 
     completeRequests_.reset();
@@ -51,6 +52,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
+    nbCommitted_ = label.nbCommitted_;
 
     completeRequests_ = label.completeRequests_;
 //    prunedDirections_ = label.prunedDirections_;
@@ -79,6 +81,7 @@ void Label::copyLabel(const Vehicle *vehicle, PNode &source) {
     totalDelay_ = 0;
     openNode_.clear();
     openRequests_.reset();
+    nbCommitted_ = 0;
 
     completeRequests_.reset();
     extendCheck_.reset();
@@ -105,6 +108,7 @@ void Label::copyLabel(const Label &label) {
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
+    nbCommitted_ = label.nbCommitted_;
 
     completeRequests_ = label.completeRequests_;
  //   prunedDirections_ = label.prunedDirections_;
@@ -161,6 +165,8 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         numExtendCheck_++;
         openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
         reducedCost_ -= (outNode->related_Request_)->dual_;
+        if (outNode->related_Request_->committedPickTime_ != LARGE_CONSTANT)
+            nbCommitted_++;
         /*if (travelTime > 0){
             nbPickUp_++;
         }*/

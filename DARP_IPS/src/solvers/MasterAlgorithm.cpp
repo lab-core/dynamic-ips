@@ -313,7 +313,7 @@ void MasterAlgorithm::calcIncompatibilityMFull(const PRoute &route) const {
         route->isCompatible_ = false;
     }
     for (auto & e : vehiclePairs_) {
-        if (route->vehicleID_ == e.first ^ route->column_.test(e.second))
+        if ((route->vehicleID_ == e.first) ^ route->column_.test(e.second))
          route->incompatibilityDegree_ ++;
     }
 }
@@ -322,14 +322,14 @@ void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     adjacencyPairs_.clear();
     vehiclePairs_.clear();
     for (auto & vehicleObj : pInst->vehicles_) {
-        if (vehicleObj->currentRoute_->routeRequests_.size() > 1) {
-            for (size_t i=0; i + 1 < vehicleObj->currentRoute_->routeRequests_.size(); ++i) {
-                adjacencyPairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_[i]->taskIndex_, vehicleObj->currentRoute_->routeRequests_[i + 1]->taskIndex_);
+        if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+            vehiclePairs_.emplace_back(vehicleObj->vehicleID_, vehicleObj->currentRoute_->routeRequests_[0]->taskIndex_);
+            if (vehicleObj->currentRoute_->routeRequests_.size() > 1) {
+                for (size_t i=0; i + 1 < vehicleObj->currentRoute_->routeRequests_.size(); ++i) {
+                    adjacencyPairs_.emplace_back(vehicleObj->currentRoute_->routeRequests_[i]->taskIndex_, vehicleObj->currentRoute_->routeRequests_[i + 1]->taskIndex_);
+                }
             }
-            vehiclePairs_.emplace_back(vehicleObj->vehicleID_, vehicleObj->currentRoute_->routeRequests_[0]->taskIndex_);
         }
-        else if (vehicleObj->currentRoute_->routeRequests_.size() == 1)
-            vehiclePairs_.emplace_back(vehicleObj->vehicleID_, vehicleObj->currentRoute_->routeRequests_[0]->taskIndex_);
     }
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
@@ -1218,8 +1218,8 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, const InputPaths &inputPaths,
                 lpObjValue_ = MasterPro_->objValue_;
             } else
                 break;
-            if (LPIter_ == 2)
-                break;
+ //           if (LPIter_ == 2)
+ //               break;
         }
         else
             break;

@@ -33,7 +33,7 @@ public:
     int numCompleted_;                              //
     std::bitset<LABEL_BIT_SIZE> openRequests_;        // used to check feasibility and domination
     std::vector<Node*> pathNode_;                   // order of nodes in the path
-
+    int nbCommitted_;
     float reducedCost_;
     float totalDelay_;
     LabelStatus status_;

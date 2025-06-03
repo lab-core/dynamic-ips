@@ -109,6 +109,8 @@ void ReducedProblem::solveModelLP(const PInstance &pInst, const InputPaths &inpu
         solveTime_->start();
         if (!Cplex_.solve()) {
             solveTime_->stop();
+            env_.out() << Model_ << std::endl;
+
             std::cout << "Failed to optimize the LMP" << std::endl;
             Cplex_.clearModel();
             myTools::myException::throwError("Failed to optimize the LMP");
