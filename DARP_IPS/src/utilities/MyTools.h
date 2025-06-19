@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 #include <chrono>
-//#include "Eigen/Dense"
+#include "Eigen/Dense"
 #include "Tools.h"
 #include <algorithm>
 #include <valarray>
