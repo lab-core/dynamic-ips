@@ -673,6 +673,15 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         switch (EpochInst->parameters_->mainAlgorithm_) {
             case GREEDY:
                 GreedyModel_->GreedySolver(EpochInst);
+                if (EpochInst->parameters_->vehicleReturn_) {
+                    if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+                        returnVehicles(EpochInst);
+                    else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+                        returnVehiclesZone(EpochInst);
+                    else {
+                        returnVehiclesAlonso(mainInst);
+                    }
+                }
                 break;
             case MIP_CPLEX:
                 MIPModel_ = std::make_shared<MIPSolver>();
