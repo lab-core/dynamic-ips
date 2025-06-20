@@ -28,6 +28,7 @@ public:
 
     // calculation of penalties and initialization of the subgraph
     void initSubGraph(const PInstance &pInst);
+    void setNodeIndices() const;
 };
 
 

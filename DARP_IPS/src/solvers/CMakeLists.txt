@@ -10,7 +10,8 @@ set(SOURCE_FILES
         GreedyModeler.cpp
         solver.cpp
         MIPMasterProblem.cpp
-        DualAuxSolver.cpp)
+        DualAuxSolver.cpp
+        CPLEXSubProblem.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})

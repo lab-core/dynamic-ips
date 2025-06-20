@@ -69,6 +69,9 @@ typedef std::shared_ptr<MIPMasterProblem> PMasterPro;
 class LabelingSubProblem;
 typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
 
+class CPLEXSubProblem;
+typedef std::shared_ptr<CPLEXSubProblem> PCplexSubPro;
+
 // extern PTravelTime travelMat;
 
 // SubProblem solution status

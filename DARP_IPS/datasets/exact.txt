@@ -36,12 +36,12 @@ NumColumn = 50
 # LABEL SETTING STRATEGIES
 #
 isTruncated = 0
-MaxLabel = 40
+MaxLabel = 15
 isDominanceReleased = 0
 isSuccessorsLimited = 0
-pruneNodes = 0
-pruneArcs = 0
-discardSuboptimalPath = 0
+pruneNodes = 1
+pruneArcs = 1
+discardSuboptimalPath = 1
 isDropPickPossible = 1
 SubproSolveStartState = 2
 LabelingStrategy = 1

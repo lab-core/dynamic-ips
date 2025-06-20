@@ -209,6 +209,22 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
             }
         }
     }
+
+    // check penalties
+    /*if (currentRoute_->routeRequests_.empty())
+        dual_ = 0;
+    else {
+        float duals = dual_;
+        for (auto & requestObj : currentRoute_->routeRequests_)
+            duals += requestObj->dual_;
+        if (currentRoute_->totalDelay_ - duals > 0.1) {
+            float deltaDual = currentRoute_->totalDelay_ - duals;
+            for (auto & requestObj : currentRoute_->routeRequests_) {
+                requestObj->dual_ = requestObj->penalty_;
+//                requestObj->dual_ += deltaDual/currentRoute_->routeRequests_.size();
+            }
+        }
+    }*/
 }
 
 // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch

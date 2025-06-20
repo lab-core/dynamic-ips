@@ -1200,6 +1200,18 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, const InputPaths &inputPaths,
         // select routes with negative reduced costs
         updateRoutesToAdd(NR, pInst);
 
+        /*for (auto & vehicleObj : pInst->vehicles_) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+                Tools::LogOutput routeStream(inputPaths.getOutputIncDegreeRdCost(), true);
+                routeStream << routeObj->getRouteId() << "," << epoch << "," << RMPCounter_ << "," << routeObj->vehicleID_ ;
+                routeStream << "," << routeObj->totalDelay_ << "," << routeObj->incompatibilityDegree_ ;
+                routeStream << "," << routeObj->reducedCost_ << "," << routeObj->lambda_ << "," ;
+                routeStream << routeObj->score_ << "," << routeObj->IncScoreRatio_ << "," << routeObj->waitScore_ ;
+                routeStream << "," << routeObj->nbCommitted_ << "," << routeObj->createTime_ << "," << routeObj->routeRequests_.size() <<"\n";
+                routeStream.close();
+            }
+        }*/
+
         if (!MasterPro_->routesToAdd_.empty()){
             MPBuildTime_->start();
             MasterPro_->updateModel(pInst);
@@ -1211,6 +1223,9 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, const InputPaths &inputPaths,
             epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
             iterTime_ = masterTime_->dSinceStart().count();
             objValue_ = MasterPro_->objValue_;
+
+            *pLogIsudResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MasterPro_->compRoutes_.size()),
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
 
             RMPCounter_++;
 
@@ -1224,8 +1239,7 @@ void MasterAlgorithm::solveMP_LP(PInstance &pInst, const InputPaths &inputPaths,
         else
             break;
     }
-    *pLogIsudResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MasterPro_->compRoutes_.size()),
-                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
+
 }
 
 
@@ -1431,6 +1445,7 @@ void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
+    availableTime_ = LARGE_CONSTANT;
 }
 
 

@@ -17,6 +17,8 @@
 class CPLEXSubProblem : public SubproModeler{
 public:
 
+    int nbGenerated_;
+
     // defining objects on the CPLEX model
     IloEnv env_;
     IloModel SubProModel_;
@@ -26,9 +28,11 @@ public:
     IloNumVarArray U_;
     IloNumVarArray W_;
 
-    PGraph subGraph_;
     int nbNodes_;
     int nbRequests_;
+
+    double bestObjectiveValue_;  // Store the best objective value found
+    bool solutionFound_;         // Flag to check if solution was found
 
     // Constructor and Destructor
     explicit CPLEXSubProblem(PVehicle &vehicle);
@@ -42,6 +46,17 @@ public:
 
     // Display function
     std::string toString() const;
+    void extractPoolSolutions(PInstance &pInst, std::vector<PRoute> &availableRoutes);
+    void extractSingleSolution(PInstance &pInst, std::vector<PRoute> &availableRoutes, int solutionIndex);
+    double getBestObjectiveValue() const { return bestObjectiveValue_; }
+    bool hasSolution() const { return solutionFound_; }
+    void solveForColumnGeneration(PInstance &pInst, std::vector<PRoute> &availableRoutes);
+    void setInitialIncumbent();
+
+
+    void addSimpleMIPStart();
+
+    void addSmartMIPStart();
 
 };
 typedef std::shared_ptr<CPLEXSubProblem> PCplexSubPro;

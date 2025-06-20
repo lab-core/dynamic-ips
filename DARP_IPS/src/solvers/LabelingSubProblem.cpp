@@ -848,9 +848,11 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
     repStr << nbEliminated_ << ",";
+    repStr << nbPrunedArcs_ << ",";
     repStr << nbPrunedPath_ << ",";
+    repStr << nbNegativeColumns_ << ",";
     repStr << nbOutputs_ << ",";
- //   repStr << nbOutputs_ << "\n";
+    repStr << Vehicle_->bestReducedCost_ << ",";
     repStr << subproTime_->dSinceStart().count() << "\n";
     return repStr.str();
 }

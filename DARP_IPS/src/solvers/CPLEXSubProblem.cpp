@@ -12,6 +12,7 @@
 // Constructor and Destructor
 CPLEXSubProblem::CPLEXSubProblem(PVehicle &vehicle) : SubproModeler(vehicle){
     SubProModel_ = IloModel(env_);
+    nbGenerated_ = 0;
 }
 CPLEXSubProblem::~CPLEXSubProblem() {
     env_.end();
@@ -21,7 +22,7 @@ CPLEXSubProblem::~CPLEXSubProblem() {
 // Build the SUb Problem model with CPLEX
 //************************************************************************
 void CPLEXSubProblem::initializeModel(PInstance &pInst) {
-    pInst->setNodeIndices();
+    setNodeIndices();
     // update order of requests
     nbNodes_ = subGraph_->nbNodes_;
     nbRequests_ = subGraph_->pickNodes_.size();
@@ -55,19 +56,19 @@ void CPLEXSubProblem::initializeModel(PInstance &pInst) {
 
 void CPLEXSubProblem::buildModel(PInstance &pInst){
     int i,j,i_n;
-    std::vector<PNode> nodes = concatenateVectors(pInst->instGraph_->pickNodes_, pInst->instGraph_->dropNodes_);
+    std::vector<PNode> nodes = concatenateVectors(subGraph_->pickNodes_, subGraph_->dropNodes_);
 
     // define objective function
     IloExpr objExpr(env_);
-    for (auto & pickNode : pInst->instGraph_->pickNodes_) {
+    for (auto & pickNode : subGraph_->pickNodes_) {
         objExpr += (U_[pickNode->nodeIndex_] - pickNode->readyTime_);
         for (int j = 0; j < subGraph_->nbNodes_; ++j) {
-            objExpr -= (X_[pickNode->nodeIndex_][j] * pickNode->related_Request_->dual_);
+            objExpr -= (X_[j][pickNode->nodeIndex_]* pickNode->related_Request_->dual_);
         }
     }
 
     objExpr -= (Vehicle_)->dual_;
-    SubProModel_.add(IloMinimize(env_, objExpr));
+//    SubProModel_.add(IloMinimize(env_, objExpr));
 
     // -----------------------------------------
     // defining constraints
@@ -80,10 +81,37 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
 
     std::vector<PNode> nodesWithOnboards = nodes;
     for (auto & nodeID : Vehicle_->onboards_)
-        nodesWithOnboards.push_back(pInst->instGraph_->nodes_[nodeID]);
+        nodesWithOnboards.push_back(subGraph_->nodes_[nodeID]);
     std::vector<PNode> allNodes = nodesWithOnboards;
     allNodes.push_back(Vehicle_->sinkNode_);
     allNodes.push_back(Vehicle_->departNode_);
+
+    for (auto & nodeObj : nodesWithOnboards) {
+        if (nodeObj->type_ != SINK) {
+            int fromIndex = nodeObj->nodeIndex_;
+
+            for (auto &pickNodeObj : subGraph_->pickNodes_) {
+                if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
+                    int toIndex = pickNodeObj->nodeIndex_;
+
+                    // Apply the same pruning logic from sortSuccessors
+                    float minWait = (Vehicle_)->departTime_ +
+                                   nodeObj->travelTimeFromSource_ +
+                                   nodeObj->serviceTime_ +
+                                   durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] -
+                                   pickNodeObj->readyTime_;
+
+                    if (minWait > pickNodeObj->related_Request_->penalty_) {
+                        // Mark this arc as pruned
+                        expr_extract += (X_[fromIndex][toIndex]);
+                    }
+                }
+            }
+        }
+    }
+
+
+
 
     // constraints 1d 1e -------------------
     IloExpr expr_1d(env_);
@@ -112,7 +140,7 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
     SubProModel_.add(c_1i);
     SubProModel_.add(c_1j);
 
-    for (auto & pickNode : pInst->instGraph_->pickNodes_) {
+    for (auto & pickNode : subGraph_->pickNodes_) {
         i = pickNode->nodeIndex_;
         i_n = pickNode->pairNode_->nodeIndex_;
         // constraints 1f -------------------
@@ -156,7 +184,7 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
     for (auto & onboardID : Vehicle_->onboards_) {
         // constraints 1g -------------------
         IloExpr expr_1g(env_);
-        PNode onNode = pInst->instGraph_->nodes_[onboardID];
+        PNode onNode = subGraph_->nodes_[onboardID];
         j = onNode->nodeIndex_;
         for (auto & otherNode : nodesWithOnboards) {
             if (otherNode->nodeIndex_ != j)
@@ -215,13 +243,34 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
         IloRange c_1o_2 = (W_[i] >= 0);
         SubProModel_.add(c_1o_2);
 
+        // Tighten capacity bounds
+        if (node->type_ == PICKUP) {
+            W_[i].setBounds(node->nbPassengers_, Vehicle_->capacity_);
+        } else if (node->type_ == DROPOFF) {
+            W_[i].setBounds(0, Vehicle_->capacity_);
+        }
+
+        // Tighten U bounds for pickup nodes
+        if (node->type_ == PICKUP) {
+            // Tighten U bounds for pickup nodes
+            double minTime = std::max(node->readyTime_,
+                                     Vehicle_->departTime_ +
+                                     durationMatrix_[Vehicle_->departNode_->locationID_][node->locationID_]);
+            double maxTime = std::min(node->related_Request_->latestPickup_,
+                                     Vehicle_->endTime_ - node->serviceTime_);
+
+            if (minTime < maxTime) {
+                U_[i].setBounds(minTime, maxTime);
+            }
+        }
+
         for (auto & otherNode : allNodes) {
             j = otherNode->nodeIndex_;
             if (i != j) {
                 // constraints 1h -------------------
                 IloExpr expr_1h(env_);
                 expr_1h = U_[i] + node->serviceTime_ + durationMatrix_[node->locationID_][otherNode->locationID_]
-                          - U_[j] - 61200 * (1 - X_[i][j]);
+                          - U_[j] - 86400 * (1 - X_[i][j]);
                 IloRange c_1h = (expr_1h <= 0);
                 SubProModel_.add(c_1h);
 
@@ -235,6 +284,7 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
         }
     }
 
+
     // add this constraint for re-optimization when the vehicle is not idle
     // at the start and have some passengers onboard
     IloRange c = (W_[sinkIndex] >= Vehicle_->numPassengers_);
@@ -245,81 +295,88 @@ void CPLEXSubProblem::buildModel(PInstance &pInst){
     SubProModel_.add(extarct);
 }
 
+// Updated solveModel method
 void CPLEXSubProblem::solveModel(PInstance &pInst, std::vector<PRoute> &availableRoutes) {
     try {
-
         Cplex_ = IloCplex(SubProModel_);
 
-        // std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
-        // logFile << "----------------------- MIP SOlver ------------------------" << std::endl;
-        // std::streambuf *coutBuffer = std::cout.rdbuf();
-        // std::cout.rdbuf(logFile.rdbuf());
+        // Initialize tracking variables
+        bestObjectiveValue_ = 1e9;  // Large positive value
+        solutionFound_ = false;
 
-     //   Cplex_.setParam(IloCplex::Param::TimeLimit, 3600);
-     //   Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-    //    Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
-        Cplex_.setParam(IloCplex::Param::NodeAlgorithm, 2);
-        Cplex_.setParam(IloCplex::Param::MIP::Limits::RepairTries, 10);
-        Cplex_.setParam(IloCplex::Param::MIP::PolishAfter::Time, 50);
+        // Output settings
+        Cplex_.setOut(env_.getNullStream());  // Disable output for speed
+        Cplex_.setOut(std::cout);  // Enable this for debugging
 
+        // CRITICAL: For column generation subproblems, you often need optimal or near-optimal solutions
+        // Set tighter parameters for better solutions
+        Cplex_.setParam(IloCplex::Param::TimeLimit, 1000);  // 30 seconds should be enough
+        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.01);  // 0.01% gap for near-optimal
 
-    //    Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+        // Algorithm settings
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);  // Dual simplex
+        Cplex_.setParam(IloCplex::Param::NodeAlgorithm, 2);  // Dual simplex
+        Cplex_.setParam(IloCplex::Param::Threads, 8);
 
-        // Export model for manual inspection
-    //    Cplex_.exportModel("model.lp");
+        // Emphasis on optimality for column generation
+    //    Cplex_.setParam(IloCplex::Param::Emphasis::MIP, 2);  // Emphasize optimality
 
-        // Try solving the model
+        // Preprocessing
+ //       Cplex_.setParam(IloCplex::Param::Preprocessing::Reduce, 3);  // Aggressive
+ //       Cplex_.setParam(IloCplex::Param::MIP::Strategy::Probe, 3);   // Aggressive probing
+
+        // Cuts - moderate settings
+        Cplex_.setParam(IloCplex::Param::MIP::Cuts::Gomory, 1);
+
+        // Node selection strategy
+        Cplex_.setParam(IloCplex::Param::MIP::Strategy::NodeSelect, 2);  // Best estimate
+
+    //    addSmartMIPStart();
+
+        // Solve for optimal/near-optimal solution first
         if (!Cplex_.solve()) {
-            std::cout << "Failed to optimize the MIP." << std::endl;
-
+            std::cout << "Failed to optimize the subproblem for vehicle "
+                      << Vehicle_->vehicleID_ << std::endl;
+            std::cout << "Status: " << Cplex_.getStatus() << std::endl;
+            return;
         }
-        else {
-            Vehicle_->bestReducedCost_ = Cplex_.getObjValue();
-            std::cout << "The objective value: " << Cplex_.getObjValue() << std::endl;
 
-            IloNumArray uVal(env_);
-            IloNumArray wVal(env_);
+        // Store the best objective value
+        bestObjectiveValue_ = Cplex_.getObjValue();
+        Vehicle_->bestReducedCost_ = bestObjectiveValue_;
+        solutionFound_ = true;
 
-            int nbNodes = nbRequests_ * 2 + 2 + Vehicle_->onboards_.size();
-            IloNum2D xVal(env_, nbNodes);
+        std::cout << "Vehicle " << Vehicle_->vehicleID_
+                  << " - Best objective: " << bestObjectiveValue_
+                  << " (Status: " << Cplex_.getStatus() << ")" << std::endl;
 
-            Cplex_.getValues(uVal, U_);
-            Cplex_.getValues(wVal, W_);
+        // Extract the optimal solution
+        extractSingleSolution(pInst, availableRoutes, -1);
 
-            for (int i = 0; i < nbNodes; ++i) {
-                xVal[i] = IloNumArray(env_);
-                Cplex_.getValues(xVal[i], X_[i]);
+        // Only look for additional solutions if we found negative reduced cost
+        if (bestObjectiveValue_ < -0.001) {
+            // Solution pool settings for multiple solutions
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 20);
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);  // 50% gap from best for pool
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::Intensity, 2);
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::Replace, 1);
+            Cplex_.setParam(IloCplex::Param::MIP::Limits::Populate, 100);  // Limit populate effort
+
+            // Shorter time limit for populate
+            Cplex_.setParam(IloCplex::Param::TimeLimit, 500);
+
+            try {
+                Cplex_.populate();
+                extractPoolSolutions(pInst, availableRoutes);
+            } catch (IloException& e) {
+                std::cout << "Warning: Could not populate solution pool: " << e << std::endl;
             }
-
-            // creating the route
-            PRoute newRoute = std::make_shared<Route>(Vehicle_->vehicleID_);
-
-            newRoute->addSource(Vehicle_->departNode_,Vehicle_->departTime_,
-                                Vehicle_->numPassengers_);
-
-            int currentNodeIndex = Vehicle_->departNode_->nodeIndex_;
-
-            while (currentNodeIndex != Vehicle_->sinkNode_->nodeIndex_) {
-                for (int i = 0; i < nbNodes_; ++i) {
-                    if (xVal[currentNodeIndex][i] > 0.5) {
-                        PNode nodeSelected = pInst->instGraph_->nodes_[getNode(pInst, Vehicle_->vehicleID_,i, nbRequests_)];
-                        if (nodeSelected->nodeIndex_ != Vehicle_->sinkNode_->nodeIndex_)
-                            newRoute->addNode(nodeSelected);
-                        currentNodeIndex = i;
-                        break;
-                    }
-                }
-            }
-            availableRoutes.push_back(newRoute);
         }
-        /*std::cout.rdbuf(coutBuffer);
-        logFile.close();*/
+
         Cplex_.clearModel();
     }
     catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
-        std::cout << e << std::endl;
+        std::cout << "Error in solveModel: " << e << std::endl;
     }
 }
 
@@ -351,5 +408,327 @@ std::string CPLEXSubProblem::toString() const {
 }
 
 
+// Method to extract pool solutions
+void CPLEXSubProblem::extractPoolSolutions(PInstance &pInst, std::vector<PRoute> &availableRoutes) {
+    int maxRoutes = 10;
+    int routesExtracted = 1;  // Already extracted optimal
+
+ //   std::cout << "Solution pool contains " << Cplex_.getSolnPoolNsolns() << " solutions" << std::endl;
+
+    for (int s = 0; s < Cplex_.getSolnPoolNsolns() && routesExtracted < maxRoutes; ++s) {
+        double objValue = Cplex_.getObjValue(s);
+
+        // Only extract solutions with negative reduced cost
+        if (objValue < -0.001 && objValue > bestObjectiveValue_ + 0.001) {
+            extractSingleSolution(pInst, availableRoutes, s);
+            routesExtracted++;
+        }
+    }
+
+ //   std::cout << "Extracted " << routesExtracted << " routes with negative reduced cost" << std::endl;
+}
+
+// Updated extraction method
+void CPLEXSubProblem::extractSingleSolution(PInstance &pInst, std::vector<PRoute> &availableRoutes, int solutionIndex) {
+    try {
+        IloNumArray uVal(env_);
+        IloNumArray wVal(env_);
+
+        int nbNodes = nbRequests_ * 2 + 2 + Vehicle_->onboards_.size();
+        IloNum2D xVal(env_, nbNodes);
+
+        double objValue;
+
+        // Get values for specific solution
+        if (solutionIndex == -1) {  // Incumbent solution
+            Cplex_.getValues(uVal, U_);
+            Cplex_.getValues(wVal, W_);
+            objValue = Cplex_.getObjValue();
+
+            for (int i = 0; i < nbNodes; ++i) {
+                xVal[i] = IloNumArray(env_);
+                Cplex_.getValues(xVal[i], X_[i]);
+            }
+        } else {  // Solution from pool
+            Cplex_.getValues(uVal, U_, solutionIndex);
+            Cplex_.getValues(wVal, W_, solutionIndex);
+            objValue = Cplex_.getObjValue(solutionIndex);
+
+            for (int i = 0; i < nbNodes; ++i) {
+                xVal[i] = IloNumArray(env_);
+                Cplex_.getValues(xVal[i], X_[i], solutionIndex);
+            }
+        }
+
+        // Create route
+        PRoute newRoute = std::make_shared<Route>(Vehicle_->vehicleID_);
+        newRoute->reducedCost_ = objValue;
+
+        // Build the route
+        newRoute->addSource(Vehicle_->departNode_, Vehicle_->departTime_,
+                           Vehicle_->numPassengers_);
+
+        int currentNodeIndex = Vehicle_->departNode_->nodeIndex_;
+        int maxIterations = nbNodes_;  // Prevent infinite loops
+        int iterations = 0;
+
+        while (currentNodeIndex != Vehicle_->sinkNode_->nodeIndex_ && iterations < maxIterations) {
+            bool found = false;
+            for (int i = 0; i < nbNodes_; ++i) {
+                if (xVal[currentNodeIndex][i] > 0.5) {
+                    PNode nodeSelected = pInst->instGraph_->nodes_[
+                        getNode(pInst, Vehicle_->vehicleID_, i, nbRequests_)];
+
+                    if (nodeSelected->nodeIndex_ != Vehicle_->sinkNode_->nodeIndex_) {
+                        newRoute->addNode(nodeSelected);
+                    }
+
+                    currentNodeIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                std::cout << "Warning: Route construction failed - no outgoing arc from node "
+                          << currentNodeIndex << std::endl;
+                return;
+            }
+
+            iterations++;
+        }
+
+        if (iterations >= maxIterations) {
+            std::cout << "Warning: Route construction failed - maximum iterations reached" << std::endl;
+            return;
+        }
+
+        availableRoutes.push_back(newRoute);
+
+        // Clean up
+        for (int i = 0; i < nbNodes; ++i) {
+            xVal[i].end();
+        }
+        uVal.end();
+        wVal.end();
+    }
+    catch (IloException& e) {
+        std::cout << "Error in solution extraction: " << e << std::endl;
+    }
+}
+
+void CPLEXSubProblem::solveForColumnGeneration(PInstance &pInst, std::vector<PRoute> &availableRoutes) {
+    try {
+        Cplex_ = IloCplex(SubProModel_);
+        // Output settings
+        Cplex_.setOut(env_.getNullStream());  // Disable output for speed
+        Cplex_.setOut(std::cout);  // Enable this for debugging
+
+        // Special parameters for column generation subproblems
+    //    Cplex_.setParam(IloCplex::Param::MIP::Tolerances::UpperCutoff, -0.01);
+        Cplex_.setParam(IloCplex::Param::Threads, 8);
+
+        // First, try to find ANY negative reduced cost solution quickly
+        Cplex_.setParam(IloCplex::Param::TimeLimit, 50);  // Quick attempt
+  //      Cplex_.setParam(IloCplex::Param::Emphasis::MIP, 1);  // Feasibility
+        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.5);  // Allow 50% gap
+  //      addSmartMIPStart();
+        double startTime = Cplex_.getCplexTime();
+        bool foundNegative = false;
+        if (Cplex_.solve()) {
+            foundNegative = true;
+            extractSingleSolution(pInst, availableRoutes, -1);
+            bestObjectiveValue_ = Cplex_.getObjValue();
+
+            // Now try to find better solutions
+            Cplex_.setParam(IloCplex::Param::TimeLimit, 1000);  // More time
+            Cplex_.setParam(IloCplex::Param::Emphasis::MIP, 2);  // Optimality
+            Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.01);  // Tighter gap
+            Cplex_.setParam(IloCplex::Param::Preprocessing::Reduce, 3);  // Aggressive
+            // Algorithm settings
+            Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);  // Dual simplex
+            Cplex_.setParam(IloCplex::Param::NodeAlgorithm, 2);  // Dual simplex
+
+            // Node selection strategy
+            Cplex_.setParam(IloCplex::Param::MIP::Strategy::NodeSelect, 2);  // Best estimate
+
+            // Continue solving from current state
+            if (Cplex_.solve()) {
+                if (Cplex_.getObjValue() < availableRoutes.back()->reducedCost_) {
+  //                  availableRoutes.clear();  // Replace with better solution
+                    extractSingleSolution(pInst, availableRoutes, -1);
+                    bestObjectiveValue_ = Cplex_.getObjValue();
+                }
+            }
+        }
+
+        // If we found negative reduced cost, populate pool
+        double elapsedTime = Cplex_.getCplexTime() - startTime;
+        if (foundNegative) {
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::Capacity, 10);
+            Cplex_.setParam(IloCplex::Param::MIP::Pool::RelGap, 0.5);
+            Cplex_.setParam(IloCplex::Param::TimeLimit, 500);
+
+            Cplex_.populate();
+            extractPoolSolutions(pInst, availableRoutes);
+        }
+        std::cout << "Vehicle: " << Vehicle_->vehicleID_ << " objective: " << bestObjectiveValue_ << " runtime:" << elapsedTime << std::endl;
+        Cplex_.clearModel();
+    }
+    catch (IloException& e) {
+        std::cout << "Error: " << e << std::endl;
+    }
+}
+
+
+void CPLEXSubProblem::setInitialIncumbent() {
+    try {
+        // Create arrays for the solution
+        IloNumArray xStart(env_);
+        IloNumArray uStart(env_);
+        IloNumArray wStart(env_);
+
+        int nbNodes = nbRequests_ * 2 + 2 + Vehicle_->onboards_.size();
+
+        // Initialize all variables
+        for (int i = 0; i < nbNodes_; ++i) {
+            for (int j = 0; j < nbNodes_; ++j) {
+                xStart.add(0.0);
+            }
+        }
+
+        // Create a simple feasible solution: source -> sink
+        int sourceIdx = Vehicle_->departNode_->nodeIndex_;
+        int sinkIdx = Vehicle_->sinkNode_->nodeIndex_;
+
+        // Set X variable for direct route
+        xStart[sourceIdx * nbNodes_ + sinkIdx] = 1.0;
+
+        // Set time variables
+        for (int i = 0; i < nbNodes_; ++i) {
+            if (i == sourceIdx) {
+                uStart.add(Vehicle_->departTime_);
+            } else if (i == sinkIdx) {
+                uStart.add(Vehicle_->departTime_ + 1);  // Just after start
+            } else {
+                uStart.add(0.0);
+            }
+        }
+
+        // Set load variables
+        for (int i = 0; i < nbNodes_; ++i) {
+            wStart.add(Vehicle_->numPassengers_);
+        }
+
+        // Create solution object
+        IloCplex::MIPStartEffort effort = IloCplex::MIPStartNoCheck;  // Skip feasibility check
+
+        // Add the MIP start
+        Cplex_.addMIPStart(IloNumVarArray(env_), IloNumArray(env_), effort, "DummyStart");
+
+        // Alternatively, set a solution value directly
+       // Cplex_.setParam(IloCplex::Param::MIP::Strategy::StartAlgorithm, 1);
+
+    } catch (IloException& e) {
+        std::cout << "Could not set initial incumbent: " << e << std::endl;
+    }
+}
+
+void CPLEXSubProblem::addSimpleMIPStart() {
+    try {
+        IloNumVarArray startVars(env_);
+        IloNumArray startVals(env_);
+
+        // Only set the critical variables for a simple feasible path
+        int sourceIdx = Vehicle_->departNode_->nodeIndex_;
+        int sinkIdx = Vehicle_->sinkNode_->nodeIndex_;
+
+        // Just specify the direct arc from source to sink
+        startVars.add(X_[sourceIdx][sinkIdx]);
+        startVals.add(1.0);
+
+        // Set arrival times for source and sink only
+        startVars.add(U_[sourceIdx]);
+        startVals.add(Vehicle_->departTime_);
+
+
+        // Set load variables
+        startVars.add(W_[sourceIdx]);
+        startVals.add(Vehicle_->numPassengers_);
+
+        startVars.add(W_[sinkIdx]);
+        startVals.add(Vehicle_->numPassengers_);
+
+        // Let CPLEX complete the rest
+        Cplex_.addMIPStart(startVars, startVals, IloCplex::MIPStartAuto, "PartialStart");
+
+        startVars.end();
+        startVals.end();
+
+    } catch (IloException& e) {
+        // Silently ignore if it fails
+    }
+}
+
+void CPLEXSubProblem::addSmartMIPStart() {
+    try {
+        IloNumVarArray startVars(env_);
+        IloNumArray startVals(env_);
+
+        // Find the best request to include based on dual values
+        int pickupIdx = -1;
+        int dropoffIdx = -1;
+        double bestDualValue = -1e9;
+
+        // Check all requests
+        for (auto & pickNode : subGraph_->pickNodes_) {
+
+            // Check if request is feasible (time windows, capacity)
+            if (pickNode->related_Request_->dual_ > bestDualValue) {
+                bestDualValue = pickNode->related_Request_->dual_;
+                pickupIdx = pickNode->nodeIndex_;
+                dropoffIdx = pickNode->pairNode_->nodeIndex_;
+            }
+        }
+
+        if (pickupIdx == -1) {
+            // No feasible request, fall back to direct route
+            addSimpleMIPStart();
+            return;
+        }
+
+        // Build route: source -> pickup -> dropoff -> sink
+        int sourceIdx = Vehicle_->departNode_->nodeIndex_;
+        int sinkIdx = Vehicle_->sinkNode_->nodeIndex_;
+
+        // Set X variables for the path
+        startVars.add(X_[sourceIdx][pickupIdx]);
+        startVals.add(1.0);
+
+        startVars.add(X_[pickupIdx][dropoffIdx]);
+        startVals.add(1.0);
+
+        startVars.add(X_[dropoffIdx][sinkIdx]);
+        startVals.add(1.0);
+
+
+        // Set W variables (load)
+        startVars.add(W_[sourceIdx]);
+        startVals.add(Vehicle_->numPassengers_);
+
+
+        // Add the MIP start
+        Cplex_.addMIPStart(startVars, startVals, IloCplex::MIPStartAuto, "SmartStart");
+
+
+        startVars.end();
+        startVals.end();
+
+    } catch (IloException& e) {
+        std::cout << "Warning: Could not add smart MIP start: " << e.getMessage() << std::endl;
+        // Fall back to simple start
+        addSimpleMIPStart();
+    }
+}
 
 

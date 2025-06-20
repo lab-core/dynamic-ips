@@ -192,14 +192,18 @@ void ReducedProblem::solveModelInt(const PInstance &pInst, vector<PRequest> &zSo
                 convR.end();
                 convZ.end();
 
-  //              std::cout << "Route,vehicle,index,RC,Committed,nbRequets,waitScore" << std::endl;
+                // std::cout << "Route,vehicle,index,RC,Committed,nbRequets,waitScore,duals,totalDealy" << std::endl;
                 for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
-                        /*if (compRoutes_[r]->createTime_ > 100) {
-                            std::cout << compRoutes_[r]->getRouteId() << "," ;
-                            std::cout << compRoutes_[r]->vehicleID_ << "," << compRoutes_[r]->createTime_ << "," ;
-                            std::cout << compRoutes_[r]->reducedCost_ << "," << compRoutes_[r]->nbCommitted_ << ","<< compRoutes_[r]->routeRequests_.size() << ","<< compRoutes_[r]->waitScore_ << std::endl;
-                        }*/
+                        /*float duals = pInst->vehicles_[compRoutes_[r]->vehicleID_]->dual_;
+                        for (int i = 0; i < compRoutes_[r]->routeRequests_.size(); ++i) {
+                            duals += compRoutes_[r]->routeRequests_[i]->dual_;
+                        }
+                        std::cout << compRoutes_[r]->getRouteId() << "," ;
+                        std::cout << compRoutes_[r]->vehicleID_ << "," << compRoutes_[r]->createTime_ << "," ;
+                        std::cout << compRoutes_[r]->reducedCost_ << "," << compRoutes_[r]->nbCommitted_ << ",";
+                        std::cout << compRoutes_[r]->routeRequests_.size() << ","<< compRoutes_[r]->waitScore_ << ",";
+                        std::cout << duals << ","<< compRoutes_[r]->totalDelay_ << std::endl;*/
                         routeSolution.push_back(compRoutes_[r]);
                         routeSolutionIndex_.push_back(static_cast<int>(r));
  //                       pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);

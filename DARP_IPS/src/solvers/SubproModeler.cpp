@@ -72,5 +72,23 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
     subGraph_->nbNodes_ = static_cast<int>(subGraph_->pickNodes_.size() + subGraph_->dropNodes_.size() + subGraph_->onboards_.size() + 2);
 }
 
+void SubproModeler::setNodeIndices() const {
+    for (int i = 0; i < subGraph_->pickNodes_.size(); ++i) {
+        PNode nodeObj = subGraph_->pickNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(subGraph_->pickNodes_.size()));
+    }
+    for (int i = 0; i < subGraph_->dropNodes_.size(); ++i) {
+        PNode nodeObj = subGraph_->dropNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(subGraph_->dropNodes_.size()));
+    }
+
+    Vehicle_->departNode_->nodeIndex_ = getIndex(Vehicle_->departNode_, 0, static_cast<int>(Vehicle_->onboards_.size()));
+    Vehicle_->sinkNode_->nodeIndex_ = getIndex(Vehicle_->sinkNode_, 0, static_cast<int>(Vehicle_->onboards_.size()));
+    for (int i = 0; i < Vehicle_->onboards_.size(); ++i) {
+        PNode nodeObj = subGraph_->nodes_[ Vehicle_->onboards_[i]];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(subGraph_->dropNodes_.size()));
+    }
+}
+
 
 

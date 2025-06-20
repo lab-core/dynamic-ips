@@ -69,6 +69,8 @@ public:
 
     // this function is to solve the epoch instance with CG using ISUD
     void solveCG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
+
+    void solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths);
     // this function is to solve the main instance in anytime mode
     void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime);
 
