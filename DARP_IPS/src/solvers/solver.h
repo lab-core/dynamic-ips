@@ -16,7 +16,7 @@
 //  Main algorithms to solve the problem in anytime, fixed epoch or static mode
 //-----------------------------------------------------------------------------
 
-class solver {
+class Solver {
 public:
     float elapsedTime_;
     float avgEpochRuntime_;
@@ -61,9 +61,9 @@ public:
 //    Tools::LogOutput* pLogSolutionChange_;
 
 
-    solver(const PInstance & mainInst, InputPaths &inputPaths);
+    Solver(const PInstance & mainInst, InputPaths &inputPaths);
 
-    virtual ~solver();
+    virtual ~Solver();
 
     static void selectVehiclesForSubproblem(const PInstance &EpochInst, int iter);
 
@@ -72,10 +72,10 @@ public:
 
     void solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths);
     // this function is to solve the main instance in anytime mode
-    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave, float saveTime);
+    void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 
     // this function is to solve the main instance in static mode
-    void staticSolver(PInstance & mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime);
+    void staticSolver(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
     // this function is to solve the main instance in dynamic mode iteratively with fixed epoch
     void dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 
@@ -94,6 +94,7 @@ public:
 
     // Display results
     std::string toString(const PInstance & mainInst) const;
+    void solve(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 };
 
 

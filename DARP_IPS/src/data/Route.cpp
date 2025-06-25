@@ -162,7 +162,7 @@ std::string Route::toString() const {
         if (routeNodes_[i]->initialType_ == SINK)
             repStr << std::left << std::setw(23) << "(SINK   ) return   ";
         else {
-            repStr << "(" << NodeTypeStr[routeNodes_[i]->initialType_] << ") REQ ";
+            repStr << "(" << eu::toString(routeNodes_[i]->initialType_) << ") REQ ";
             repStr << std::left << std::setw(9) << routeNodes_[i]->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;

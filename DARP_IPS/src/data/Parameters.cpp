@@ -11,13 +11,13 @@
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                        int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       int numIter, bool greedyReOptimize, int saveScratch, bool vehicleReturn, float timeWindow,
+                       int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                        float WaitForReturn, int numVehicleSwitch,
-                       warmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
+                       WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel,
-                       bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
-                       bool isDominanceReleased, bool isDropPickPossible, SubProSolveMode subproSolveMode,
-                       LabelingStrategy LabelingStrategy, subproblemAlgorithm subAlgorithm, bool constPortion,
+                       bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
+                       bool isDominanceReleased, bool isDropPickPossible,
+                       LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                        bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
                        int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
@@ -25,15 +25,15 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
-        greedyReOptimize_(greedyReOptimize), saveScratch_(saveScratch),
-        savePartial_(false), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
+        greedyReOptimize_(greedyReOptimize), saveScratch_(0),
+        vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
         WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
         minImp_(minImp), useZoom_(useZoom),
         nbColumn_(nbColumn), isTruncated_(isTruncated),
-        MaxLabel_(maxLabel), isDominanceReleased_(isDominanceReleased), isSuccessorsLimited_(isSuccessorsLimited),
+        MaxLabel_(maxLabel), isDominanceReleased_(isDominanceReleased),
         pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), discardSuboptimalPath_(discardSuboptimalPath),
-        isDropPickPossible_(isDropPickPossible), SubproSolveMode_(subproSolveMode), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm) ,
+        isDropPickPossible_(isDropPickPossible), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm) ,
         constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
         routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick),
         sortPath_(sortPath), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
@@ -46,7 +46,7 @@ std::string Parameters::toString() const {
     std::stringstream repStr;
     repStr << "# MODEL PARAMETERS" << std::endl;
     repStr << "#" << std::endl;
-    int setwLength = 30;
+    int setwLength = 35;
     repStr << std::left << std::fixed << std::setprecision(1) << std::boolalpha;
     repStr << std::setw(setwLength) << "# alpha Parameter " << " = " << alphaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
@@ -57,14 +57,13 @@ std::string Parameters::toString() const {
         repStr << std::setw(setwLength) << "# time to commit stops " << " = " << committedTime_ << " (s)" << std::endl;
     repStr << std::setw(setwLength) << "# penalty epoch Length " << " = " << penaltyL_ << std::endl;
     repStr << std::setw(setwLength) << "# number of threads " << " = " << nbThreads_ << std::endl;
-    repStr << std::setw(setwLength) << "# initial dual solution " << " = " << InitialDualName[initialDual_] << std::endl;
-    repStr << std::setw(setwLength) << "# main algorithm " << " = " << mainAlgorithmName[mainAlgorithm_] << std::endl;
-    repStr << std::setw(setwLength) << "# solution mode " << " = " << solutionModeName[solutionMode_] << std::endl;
+    repStr << std::setw(setwLength) << "# initial dual solution " << " = " << eu::toString(initialDual_) << std::endl;
+    repStr << std::setw(setwLength) << "# main algorithm " << " = " << eu::toString(mainAlgorithm_) << std::endl;
+    repStr << std::setw(setwLength) << "# solution mode " << " = " << eu::toString(solutionMode_) << std::endl;
     repStr << std::setw(setwLength) << "# Number of iter per epoch " << " = " << numIter_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Greedy Re-Optimized " << " = " << greedyReOptimize_ << std::endl;
-    repStr << std::setw(setwLength) << "# drop first hour " << " = " << savePartial_ << std::endl;
     repStr << std::setw(setwLength) << "# Idle vehicles return " << " = " << vehicleReturn_ << std::endl;
-    repStr << std::setw(setwLength) << "# vehicle return method " << " = " << ReturnTypeName[returnPolicy_] << std::endl;
+    repStr << std::setw(setwLength) << "# vehicle return method " << " = " << eu::toString(returnPolicy_) << std::endl;
     repStr << std::setw(setwLength) << "# Waiting time window " << " = " << timeWindow_ << std::endl;
     repStr << std::setw(setwLength) << "# Wait before return time " << " = " << WaitForReturn_ << std::endl;
     repStr << std::setw(setwLength) << "# Maximum vehicle switch  " << " = " << numVehicleSwitch_ << std::endl;
@@ -75,7 +74,7 @@ std::string Parameters::toString() const {
 
     repStr << "# ISUD PARAMETERS" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(setwLength) << "# warm start " << " = " << warmStartName[initialStart_] << std::endl;
+    repStr << std::setw(setwLength) << "# warm start " << " = " << eu::toString(initialStart_) << std::endl;
     repStr << std::setw(setwLength) << "# Zoom max MIP Inc. degree " << " = " << MIP_maxIncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# max CP Inc. degree " << " = " << CP_IncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# use Multi stage " << " = " << useMultiStage_ << std::endl;
@@ -89,14 +88,12 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
-    repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Nodes from graph " << " = " << pruneNodes_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Arcs from graph " << " = " << pruneArcs_ << std::endl;
     repStr << std::setw(setwLength) << "# Remove suboptimal labels " << " = " << discardSuboptimalPath_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
-    repStr << std::setw(setwLength) << "# Restrict Route Length " << " = " << SubProSolveStartName[SubproSolveMode_] << std::endl;
-    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
-    repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << subAlgorithmName[subAlgorithm_] << std::endl;
+    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << eu::toString(LabelingStrategy_) << std::endl;
+    repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << eu::toString(subAlgorithm_) << std::endl;
     repStr << std::setw(setwLength) << "# portion of constraints for MP " << " = " << constPortion_ << std::endl;
     repStr << std::setw(setwLength) << "# solve for vehicle portion " << " = " << vehiclePortion_ << std::endl;
     repStr << std::setw(setwLength) << "# use Dynamic Pricing " << " = " << dynamicPricing_ << std::endl;
@@ -104,8 +101,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Recycle Routes " << " = " << routeRecycle_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
-    repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << SortPathsName[sortPath_] << std::endl;
-    repStr << std::setw(setwLength) << "# Sorting mode of columns " << " = " << SortColumnsName[sortColumn_] << std::endl;
+    repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << eu::toString(sortPath_) << std::endl;
+    repStr << std::setw(setwLength) << "# Sorting mode of columns " << " = " << eu::toString(sortColumn_) << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
@@ -131,14 +128,14 @@ std::string Parameters::toStr() const {
     repStr << pickupDeviationWindow_ << ",";
     repStr << maxWait_ << ",";
     repStr << nbThreads_ << ",";
-    repStr << InitialDualName[initialDual_] << ",";
-    repStr << warmStartName[initialStart_] << ",";
-    repStr << mainAlgorithmName[mainAlgorithm_] << ",";
-    repStr << solutionModeName[solutionMode_] << ",";
+    repStr << eu::toString(initialDual_) << ",";
+    repStr << eu::toString(initialStart_) << ",";
+    repStr << eu::toString(mainAlgorithm_) << ",";
+    repStr << eu::toString(solutionMode_) << ",";
     repStr << numIter_ << ",";
     repStr << boolToString(greedyReOptimize_) << ",";
     repStr << boolToString(vehicleReturn_) << ",";
-    repStr << ReturnTypeName[returnPolicy_] << ",";
+    repStr << eu::toString(returnPolicy_) << ",";
     repStr << MIP_maxIncDegree_ << ",";
     repStr << CP_IncDegree_ << ",";
     repStr << boolToString(useMultiStage_) << ",";
@@ -148,18 +145,17 @@ std::string Parameters::toStr() const {
     repStr << MaxLabel_ << ",";
     repStr << boolToString(isDominanceReleased_) << ",";
     repStr << boolToString(isDropPickPossible_) << ",";
-    repStr << boolToString(isSuccessorsLimited_) << ",";
     repStr << boolToString(pruneNodes_) << ",";
     repStr << boolToString(pruneArcs_) << ",";
     repStr << boolToString(discardSuboptimalPath_) << ",";
-    repStr << LabelingStrategyName[LabelingStrategy_] << ",";
+    repStr << eu::toString(LabelingStrategy_) << ",";
     repStr << boolToString(vehiclePortion_) << ",";
     repStr << boolToString(dynamicPricing_) << ",";
     repStr << boolToString(partialPricing_) << ",";
     repStr << boolToString(routeRecycle_) << ",";
     repStr << nbPick_ << ",";
-    repStr << SortPathsName[sortPath_] << ",";
-    repStr << SortColumnsName[sortColumn_] << ",";
+    repStr << eu::toString(sortPath_) << ",";
+    repStr << eu::toString(sortColumn_) << ",";
     repStr << MIPGap_ << "\n";
     return repStr.str();
 }
@@ -173,7 +169,7 @@ solverOption::solverOption(bool isTruncated, int maxLabel, bool isDominanceRelea
                            SortPaths pathSort, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
                            bool discardSuboptimalPath, bool isDropPickPossible,
                            LabelingStrategy labelingStrategy) :
-        isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased), isSuccessorsLimited_(isSuccessorsLimited),
+        isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased),
         pruneNodes_(pruneNodes), pruneArcs_(pruneArcs),
         discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), LabelingStrategy_(labelingStrategy),
         MaxLabel_(maxLabel), usePick_(false),
@@ -184,7 +180,6 @@ solverOption::~solverOption() = default;
 void solverOption::disableHeuristics() {
     isTruncated_ = false;
     isDominanceReleased_ = false;
-    isSuccessorsLimited_ = false;
 }
 
 solverOption::solverOption(const PParameters &MainParams) {
@@ -192,7 +187,6 @@ solverOption::solverOption(const PParameters &MainParams) {
     MaxLabel_ = MainParams->MaxLabel_;
     isDominanceReleased_ = MainParams->isDominanceReleased_;
     LabelingStrategy_ = MainParams->LabelingStrategy_;
-    isSuccessorsLimited_ = MainParams->isSuccessorsLimited_;
     isDropPickPossible_ = MainParams->isDropPickPossible_;
     usePick_ = MainParams->usePick_;
     nbPick_ = MainParams->nbPick_;
@@ -200,14 +194,6 @@ solverOption::solverOption(const PParameters &MainParams) {
     pruneNodes_ = MainParams->pruneNodes_;
     pruneArcs_ = MainParams->pruneArcs_;
     discardSuboptimalPath_ = MainParams->discardSuboptimalPath_;
-}
-
-
-bool solverOption::areHeuristicsDisabled() const {
-    if (isTruncated_ || isSuccessorsLimited_ || isDominanceReleased_ || !isDropPickPossible_)
-        return false;
-    else
-        return true;
 }
 
 // Display function
@@ -220,12 +206,11 @@ std::string solverOption::toString() const {
     repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
-    repStr << std::setw(setwLength) << "# Restrict outgoing arcs " << " = " << isSuccessorsLimited_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Nodes from graph " << " = " << pruneNodes_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Arcs from graph " << " = " << pruneArcs_ << std::endl;
     repStr << std::setw(setwLength) << "# Remove suboptimal labels " << " = " << discardSuboptimalPath_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
-    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << LabelingStrategyName[LabelingStrategy_] << std::endl;
+    repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << eu::toString(LabelingStrategy_) << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
 

@@ -3,7 +3,9 @@ set(SOURCE_FILES
         InputPaths.cpp
         MyTools.cpp
         ReadWrite.cpp
-        Tools.cpp)
+        Tools.cpp
+        ConfigParser.cpp
+        Types.h)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})

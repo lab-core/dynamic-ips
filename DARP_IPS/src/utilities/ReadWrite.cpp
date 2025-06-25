@@ -230,7 +230,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 // the starting time of the instance is 16pm
                 // deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
-                                                                            nbPassengers, static_cast<float>(ServiceTime),
+                                                                            nbPassengers, static_cast<float>(SERVICE_TIME),
                                                                             pickZoneID, dropZoneID));
                 pInstance->requests_.back()->requestStatus_ = ON_BOARD;
                 pInstance->requests_.back()->pickTime_ = pickTime;
@@ -302,7 +302,7 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 else
                     requestTime = earlyPick;
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, requestTime,
-                    earlyPick, nbPassengers, static_cast<float>(ServiceTime), pickZoneID, dropZoneID));
+                    earlyPick, nbPassengers, static_cast<float>(SERVICE_TIME), pickZoneID, dropZoneID));
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -367,7 +367,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> dropPosition;
 
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick,
-                    earlyPick, nbPassengers, static_cast<float>(ServiceTime), pickZoneID, dropZoneID));
+                    earlyPick, nbPassengers, static_cast<float>(SERVICE_TIME), pickZoneID, dropZoneID));
                 pInstance->nameToRequest_.insert(
                         std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
                                                          pInstance->requests_.back()));
@@ -464,12 +464,11 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     float informTimeLimit = -1, pickupDeviationWindow = -1, timeWindows = -1, mipGap = -1, maxWait = -1;
     int penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
     int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
-    bool isTruncated = false, isSuccessorsLimited = false, pruneNodes = false, pruneArcs = false;
+    bool isTruncated = false, pruneNodes = false, pruneArcs = false, constPortion = false;
     bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
     bool useMultiStage = false, vehiclePortion = false, usePick = false, greedyReOptimize = false;
     bool vehicleReturn = false, dynamicPricing = false, partialPricing = false, routeRecycle = false;
-    bool constPortion = false;
-    int subAlgorithm = -1, subproSolveStartState = -1 , mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
+    int subAlgorithm = -1, mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1, numIter = -1;
     int returnType = -1;
 
@@ -570,8 +569,6 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "isDominanceReleased "))
             file >> isDominanceReleased;
 
-        else if (strEndWith(title, "isSuccessorsLimited "))
-            file >> isSuccessorsLimited;
 
         else if (strEndWith(title, "pruneNodes "))
             file >> pruneNodes;
@@ -584,9 +581,6 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
 
         else if (strEndWith(title, "isDropPickPossible "))
             file >> isPickDropPossible;
-
-        else if (strEndWith(title, "SubproSolveStartState "))
-            file >> subproSolveStartState;
 
         else if (strEndWith(title, "LabelingStrategy "))
             file >> strategy;
@@ -641,16 +635,15 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           penaltyL, committedTime, nbThreads,
                                                           static_cast<InitialDual>(initialDual),
                                                           static_cast<MainAlgorithm>(mainAlgorithm), numIter,
-                                                          greedyReOptimize, saveScratch, vehicleReturn, timeWindows,
+                                                          greedyReOptimize, vehicleReturn, timeWindows,
                                                           WaitForReturn, numVehicleSwitch,
-                                                          static_cast<warmStart>(initialStart),
+                                                          static_cast<WarmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-                                                          useZoom, nbColumns, isTruncated, maxLabel, isSuccessorsLimited,
+                                                          useZoom, nbColumns, isTruncated, maxLabel,
                                                           pruneNodes, pruneArcs, discardSuboptimalPath,
                                                           isDominanceReleased, isPickDropPossible,
-                                                          static_cast<SubProSolveMode>(subproSolveStartState),
                                                           static_cast<LabelingStrategy>(strategy),
-                                                          static_cast<subproblemAlgorithm>(subAlgorithm),
+                                                          static_cast<SubproblemAlgorithm>(subAlgorithm),
                                                           constPortion, vehiclePortion, dynamicPricing, partialPricing,
                                                           routeRecycle, usePick, nbPick,
                                                           static_cast<SortPaths>(sortPath),
@@ -661,6 +654,251 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           static_cast<ReturnType>(returnType), maxWait);
 }
 
+void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInstance) {
+    // open the JSON file
+    std::ifstream file(inputPaths.getInputParamFile());
+    std::cout << "Reading << " << inputPaths.getInputParamFile() << " >>" << std::endl;
+
+    if (!file.is_open()) {
+        std::cout << "While trying to read the file " << inputPaths.getInputParamFile() << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    // Parse JSON
+    json j;
+    try {
+        file >> j;
+    } catch (const json::parse_error& e) {
+        std::cout << "JSON parse error: " << e.what() << std::endl;
+        throw myTools::myException("Failed to parse JSON file!", __LINE__);
+    }
+
+
+    // Model Parameters
+    auto modelParams = j["modelParameters"];
+    float alphaParam = modelParams.value("alphaParam", -1.0f);
+    float betaParam = modelParams.value("betaParam", -1.0f);
+    float deltaPram = modelParams.value("deltaPram", -1.0f);
+    float epochLength = modelParams.value("epochLength", -1.0f);
+    int penaltyL = modelParams.value("penaltyL", -1);
+    float committedTime = modelParams.value("committedTime", -1.0f);
+    int nbThreads = modelParams.value("nbThreads", -1);
+    int mainAlgorithm = modelParams.value("mainAlgorithm", -1);
+    int solutionMode = modelParams.value("solutionMode", -1);
+    bool greedyReOptimize = modelParams.value("GreedyReOptimize", 0) != 0;
+    bool vehicleReturn = modelParams.value("vehicleReturn", 0) != 0;
+    float timeWindows = modelParams.value("timeWindows", -1.0f);
+    int WaitForReturn = modelParams.value("WaitForReturn", -1);
+    float maxWait = modelParams.value("MaxWait", -1.0f);
+    int returnType = modelParams.value("returnType", -1);
+    int numVehicleSwitch = modelParams.value("numVehicleSwitch", -1);
+    float informTimeLimit = modelParams.value("informTimeLimit", -1.0f);
+    float pickupDeviationWindow = modelParams.value("pickupDeviationWindow", -1.0f);
+
+    // Parse MP_Parameters
+    auto mpParams = j["MP_Parameters"];
+    int initialDual = mpParams.value("InitialDual", -1);
+    int initialStart = mpParams.value("warmStart", -1);
+    int numIter = mpParams.value("NumIter", -1);
+    int MIP_maxIncDegree = mpParams.value("MIP_maxIncDegree", -1);
+    int CP_IncDegree = mpParams.value("CP_IncDegree", -1);
+    bool useMultiStage = mpParams.value("useMultiStage", 0) != 0;
+    float minImp = mpParams.value("minImp", -1.0f);
+    bool useZoom = mpParams.value("useZoom", 0) != 0;
+    int nbColumns = mpParams.value("NumColumn", -1);
+
+    // Parse SP_Parameters
+    auto spParams = j["SP_Parameters"];
+    bool isTruncated = spParams.value("isTruncated", 0) != 0;
+    int maxLabel = spParams.value("MaxLabel", -1);
+    bool isDominanceReleased = spParams.value("isDominanceReleased", 0) != 0;
+    bool pruneNodes = spParams.value("pruneNodes", 0) != 0;
+    bool pruneArcs = spParams.value("pruneArcs", 0) != 0;
+    bool discardSuboptimalPath = spParams.value("discardSuboptimalPath", 0) != 0;
+    bool isPickDropPossible = spParams.value("isDropPickPossible", 0) != 0;
+    int strategy = spParams.value("LabelingStrategy", -1);
+    int subAlgorithm = spParams.value("subproblemAlgorithm", -1);
+    bool constPortion = spParams.value("constPortion", 0) != 0;
+    bool vehiclePortion = spParams.value("Vehicle_portion", 0) != 0;
+    bool dynamicPricing = spParams.value("Dynamic_Pricing", 0) != 0;
+    bool partialPricing = spParams.value("Partial_Pricing", 0) != 0;
+    bool routeRecycle = spParams.value("Route_Recycle", 0) != 0;
+    bool usePick = spParams.value("usePick", 0) != 0;
+    int nbPick = spParams.value("nbPick", -1);
+    int sortPath = spParams.value("sortPath", -1);
+    int sortColumn = spParams.value("sortColumn", -1);
+
+    // Parse cplexParameters
+    auto cplexParams = j["cplexParameters"];
+    int bigM = cplexParams.value("BigM", -1);
+    int solveTimeLimit = cplexParams.value("solveTimeLimit", -1);
+    int populateTimeLimit = cplexParams.value("populateTimeLimit", -1);
+    float mipGap = cplexParams.value("MIPGap", -1.0f);
+
+    // Validate parameters
+    if (dynamicPricing && partialPricing) {
+        std::cout << "It is not possible to activate dynamic and partial pricing simultaneously!" << std::endl;
+        throw myTools::myException("Parameters are not valid!!", __LINE__);
+    }
+
+    // Create Parameters object
+    pInstance->parameters_ = std::make_shared<Parameters>(
+        alphaParam, betaParam, deltaPram, epochLength,
+        penaltyL, committedTime, nbThreads,
+        static_cast<InitialDual>(initialDual),
+        static_cast<MainAlgorithm>(mainAlgorithm), numIter,
+        greedyReOptimize, vehicleReturn, timeWindows,
+        WaitForReturn, numVehicleSwitch,
+        static_cast<WarmStart>(initialStart),
+        MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
+        useZoom, nbColumns, isTruncated, maxLabel,
+        pruneNodes, pruneArcs, discardSuboptimalPath,
+        isDominanceReleased, isPickDropPossible,
+        static_cast<LabelingStrategy>(strategy),
+        static_cast<SubproblemAlgorithm>(subAlgorithm),
+        constPortion, vehiclePortion, dynamicPricing, partialPricing,
+        routeRecycle, usePick, nbPick,
+        static_cast<SortPaths>(sortPath),
+        static_cast<SortColumns>(sortColumn),
+        bigM, solveTimeLimit, populateTimeLimit,
+        static_cast<SolutionMode>(solutionMode), mipGap,
+        informTimeLimit, pickupDeviationWindow,
+        static_cast<ReturnType>(returnType), maxWait
+    );
+}
+void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName) {
+    // open the JSON file
+    std::ifstream file(strParamFile);
+    std::cout << "Reading << " << strParamFile << " >>" << std::endl;
+
+    if (!file.is_open()) {
+        std::cout << "While trying to read the file " << strParamFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    // Parse JSON
+    json j;
+    try {
+        file >> j;
+    } catch (const json::parse_error& e) {
+        std::cout << "JSON parse error: " << e.what() << std::endl;
+        throw myTools::myException("Failed to parse JSON file!", __LINE__);
+    }
+
+    // ==================== READ DEFAULT PARAMETERS ====================
+    auto defaultParams = j["defaultParameters"];
+
+    // Default Parameters (stable parameters that rarely change)
+    float alphaParam = defaultParams.value("alphaParam", -1.0f);
+    float betaParam = defaultParams.value("betaParam", -1.0f);
+    float deltaPram = defaultParams.value("deltaPram", -1.0f);
+    float epochLength = defaultParams.value("epochLength", -1.0f);
+    int penaltyL = defaultParams.value("penaltyL", -1);
+    float committedTime = defaultParams.value("committedTime", -1.0f);
+    int nbThreads = defaultParams.value("nbThreads", -1);
+    int mainAlgorithm = defaultParams.value("mainAlgorithm", -1);
+    int solutionMode = defaultParams.value("solutionMode", -1);
+    bool greedyReOptimize = defaultParams.value("GreedyReOptimize", 0) != 0;
+    float timeWindows = defaultParams.value("timeWindows", -1.0f);
+    int MIP_maxIncDegree = defaultParams.value("MIP_maxIncDegree", -1);
+    int CP_IncDegree = defaultParams.value("CP_IncDegree", -1);
+    bool useMultiStage = defaultParams.value("useMultiStage", 0) != 0;
+    float minImp = defaultParams.value("minImp", -1.0f);
+    bool useZoom = defaultParams.value("useZoom", 0) != 0;
+    bool isDominanceReleased = defaultParams.value("isDominanceReleased", 0) != 0;
+    int strategy = defaultParams.value("LabelingStrategy", -1);
+    int subAlgorithm = defaultParams.value("subproblemAlgorithm", -1);
+    bool constPortion = defaultParams.value("constPortion", 0) != 0;
+    bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
+    bool routeRecycle = defaultParams.value("Route_Recycle", 0) != 0;
+    bool usePick = defaultParams.value("usePick", 0) != 0;
+    int bigM = defaultParams.value("BigM", -1);
+    int solveTimeLimit = defaultParams.value("solveTimeLimit", -1);
+    int populateTimeLimit = defaultParams.value("populateTimeLimit", -1);
+    float mipGap = defaultParams.value("MIPGap", -1.0f);
+
+    // ==================== READ SCENARIO PARAMETERS ====================
+    json scenarioParams;
+
+    if (!scenarioName.empty()) {
+        // Check if scenarios section exists
+        if (j.find("scenarios") == j.end()) {
+            std::cout << "Warning: No 'scenarios' section found in JSON file." << std::endl;
+            throw myTools::myException("No scenarios section found!", __LINE__);
+        }
+
+        auto scenarios = j["scenarios"];
+        if (scenarios.find(scenarioName) == scenarios.end()) {
+            std::cout << "Error: Scenario '" << scenarioName << "' not found in scenarios section!" << std::endl;
+            throw myTools::myException("Requested scenario not found!", __LINE__);
+        }
+
+        scenarioParams = scenarios[scenarioName];
+        std::cout << "Loading scenario: " << scenarioName << std::endl;
+    } else {
+        std::cout << "No scenario specified, using default scenario parameters would be needed." << std::endl;
+        throw myTools::myException("Scenario name is required!", __LINE__);
+    }
+
+    // Scenario Parameters (read from the selected scenario)
+    bool vehicleReturn = scenarioParams.value("vehicleReturn", 0) != 0;
+    int WaitForReturn = scenarioParams.value("WaitForReturn", -1);
+    float maxWait = scenarioParams.value("MaxWait", -1.0f);
+    int returnType = scenarioParams.value("returnType", -1);
+    int numVehicleSwitch = scenarioParams.value("numVehicleSwitch", -1);
+    float informTimeLimit = scenarioParams.value("informTimeLimit", -1.0f);
+    float pickupDeviationWindow = scenarioParams.value("pickupDeviationWindow", -1.0f);
+    int initialDual = scenarioParams.value("InitialDual", -1);
+    int initialStart = scenarioParams.value("warmStart", -1);
+    int numIter = scenarioParams.value("NumIter", -1);
+    int nbColumns = scenarioParams.value("NumColumn", -1);
+    bool isTruncated = scenarioParams.value("isTruncated", 0) != 0;
+    int maxLabel = scenarioParams.value("MaxLabel", -1);
+    bool pruneNodes = scenarioParams.value("pruneNodes", 0) != 0;
+    bool pruneArcs = scenarioParams.value("pruneArcs", 0) != 0;
+    bool discardSuboptimalPath = scenarioParams.value("discardSuboptimalPath", 0) != 0;
+    bool isPickDropPossible = scenarioParams.value("isDropPickPossible", 0) != 0;
+    bool dynamicPricing = scenarioParams.value("Dynamic_Pricing", 0) != 0;
+    bool partialPricing = scenarioParams.value("Partial_Pricing", 0) != 0;
+    int nbPick = scenarioParams.value("nbPick", -1);
+    int sortPath = scenarioParams.value("sortPath", -1);
+    int sortColumn = scenarioParams.value("sortColumn", -1);
+
+    // ==================== VALIDATION ====================
+    if (dynamicPricing && partialPricing) {
+        std::cout << "It is not possible to activate dynamic and partial pricing simultaneously!" << std::endl;
+        throw myTools::myException("Parameters are not valid!!", __LINE__);
+    }
+
+    // ==================== CREATE PARAMETERS OBJECT ====================
+    pInstance->parameters_ = std::make_shared<Parameters>(
+        alphaParam, betaParam, deltaPram, epochLength,
+        penaltyL, committedTime, nbThreads,
+        static_cast<InitialDual>(initialDual),
+        static_cast<MainAlgorithm>(mainAlgorithm), numIter,
+        greedyReOptimize, vehicleReturn, timeWindows,
+        WaitForReturn, numVehicleSwitch,
+        static_cast<WarmStart>(initialStart),
+        MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
+        useZoom, nbColumns, isTruncated, maxLabel,
+        pruneNodes, pruneArcs, discardSuboptimalPath,
+        isDominanceReleased, isPickDropPossible,
+        static_cast<LabelingStrategy>(strategy),
+        static_cast<SubproblemAlgorithm>(subAlgorithm),
+        constPortion, vehiclePortion, dynamicPricing, partialPricing,
+        routeRecycle, usePick, nbPick,
+        static_cast<SortPaths>(sortPath),
+        static_cast<SortColumns>(sortColumn),
+        bigM, solveTimeLimit, populateTimeLimit,
+        static_cast<SolutionMode>(solutionMode), mipGap,
+        informTimeLimit, pickupDeviationWindow,
+        static_cast<ReturnType>(returnType), maxWait
+    );
+
+    std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
+}
 void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance) {
 // open the file
     std::fstream file;
@@ -703,6 +941,7 @@ void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance)
 
 // function that opens all input files and update main instance data
 void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile) {
+    readZones(inputPaths.getInputZones(), pInstance);
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
     if (pInstance->nbOnboards_ > 0){
@@ -738,17 +977,16 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     }
 
     if (!solveEpoch) {
-        ReadWrite::readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
+        readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
         pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
-        pInstance->nbNewRequests_ += pInstance->nbWaiting_;
     }
     else{
         pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
-        pInstance->nbNewRequests_ = pInstance->nbWaiting_;
     }
+    pInstance->nbNewRequests_ = pInstance->nbRequests_ - pInstance->nbOnboards_;
 
-    inputPaths.initializeOutputs(mainAlgorithmName[pInstance->parameters_->mainAlgorithm_],
-                                 solutionModeName[pInstance->parameters_->solutionMode_],
+    inputPaths.initializeOutputs(eu::toString(pInstance->parameters_->mainAlgorithm_),
+                                 eu::toString(pInstance->parameters_->solutionMode_),
                                  saveScratch, pInstance->nbVehicles_, paramFile);
 
     // write the parameters in file
@@ -762,12 +1000,13 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         "maxWait,nbThreads,InitialDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
                         "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
                         "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,"
-                        "isDropPickPossible,isSuccessorsLimited,pruneNodes,pruneArcs,discardSuboptimalPath,"
+                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,"
                         "LabelingStrategy,Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
     parametersStream.close();
+    std::cout << pInstance->toString();
 }
 
 // Parsing functions

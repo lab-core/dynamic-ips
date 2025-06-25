@@ -30,7 +30,8 @@ public:
 
     int nbRequests_;                                    // Number of requests
     int nbRejected_;
-    int nbOnboards_;                                    // Number of initial onboard requests
+    int nbInitialOnboards_;
+    int nbOnboards_;                                    // Number of onboard requests
     int nbWaiting_;                                     // Number of requests at the initial state
     int nbNewRequests_;                                 // Number of requests added after each epoch
     int nbLocations_;                                   // Number of stop locations
@@ -71,6 +72,7 @@ public:
     // initializing vehicles empty route and current route
     // initialize the departure time of the vehicle (2 * epochLength)
     void setInitialTimes() const;
+    void adjustParameters(const PConfig& config);
 
     // function to sort vehicles based on ID
     void resetVehicleOrder();
@@ -90,6 +92,7 @@ public:
     std::string saveSolutionRoutes() const;
     std::string saveRequestsResults() const;
     std::string saveVehicleResults() const;
+    void writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config);
     // save the solution route of the vehicles (current solution of ISUD)
     std::string saveEpochRoutes(int epoch) const;
 
@@ -102,6 +105,8 @@ public:
 
     std::string saveReqDuals(int epoch, int isudIter, const string& model) const;
     std::string saveVehDuals(int epoch, int isudIter, const string& model) const;
+
+
     void resetAssignedVehicles() const;
     void setAssignedEpochVehicles(float assignTime) const;
     void setNodeIndices() const;

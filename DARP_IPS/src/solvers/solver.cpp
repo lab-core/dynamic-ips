@@ -2,11 +2,11 @@
 // Created by Elahe Amiri on 2022-10-26.
 //
 
-#include "solver.h"
+#include "Solver.h"
 #include "solvers/LabelingSubProblem.h"
 #include "solvers/CPLEXSubProblem.h"
 
-solver::solver(const PInstance & mainInst, InputPaths &inputPaths) {
+Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     elapsedTime_ = 0;
     SubproEpochTime_ = 0;
     epoch_ = 0;
@@ -64,7 +64,7 @@ solver::solver(const PInstance & mainInst, InputPaths &inputPaths) {
                               "#Inc(1 deg.),#Inc(2 deg.),#Inc(3 deg.),#Inc(4 deg.),#Inc(5 deg.),#Inc(total)" << std::endl;*/
 }
 
-solver::~solver() {
+Solver::~Solver() {
     delete simulationTime_;
     delete subProblemTime_;
     delete preprocessTime_;
@@ -79,7 +79,7 @@ solver::~solver() {
 //    delete pLogSolutionChange_;
 }
 
-void solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
+void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
     if (!EpochInst->parameters_->vehiclePortion_ || iter == 1) {
         // The subproblems are solved for all the vehicles
         EpochInst->selectedVehicles_.assign(EpochInst->nbVehicles_, iter);
@@ -94,7 +94,7 @@ void solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
         }
     }
 }
-void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
+void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
  //   std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
@@ -360,7 +360,7 @@ void solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 }
 
 
-void solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
+void Solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
     // Set available time
@@ -598,7 +598,7 @@ void solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, Inp
 }
 
 
-void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const std::string& instNum, bool middleSave,
+void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave,
                            float saveTime) {
     // define required variables
     epoch_ = 0;
@@ -698,7 +698,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
             }
             /*inputPaths.makeInstanceOutput(instNum);
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,1.5 * mainInst->parameters_->epochLength_);*/
-            inputPaths.makeInstanceOutput(instNum);
+            inputPaths.makeInstanceOutput("1");
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,3600*5);
             break;
         }
@@ -756,7 +756,7 @@ void solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, const st
     rebalancingTime_->stop();
 }
 
-void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::string& instNum, bool middleSave, float saveTime) {
+void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
 
@@ -811,7 +811,7 @@ void solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, std::stri
     }
 }
 
-void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
+void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
     // define required variables
     epoch_ = 0;
     rebalancingTime_->start();
@@ -953,7 +953,7 @@ void solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 }
 
 // function to print epoch runTime to file
-std::string solver::saveRuntimes(const PInstance &EpochInst) {
+std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     std::stringstream repStr;
     epochRuntime_ = simulationTime_->dSinceStart().count();
     avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
@@ -1012,11 +1012,11 @@ std::string solver::saveRuntimes(const PInstance &EpochInst) {
     return repStr.str();
 }
 
-std::string solver::toString(const PInstance & mainInst) const {
+std::string Solver::toString(const PInstance & mainInst) const {
     std::stringstream repStr;
     repStr << "*************************************************************************************" << std::endl;
     repStr << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch_ << " EPOCHS " << std::endl;
-    repStr << "                                    " <<  solutionModeName[mainInst->parameters_->solutionMode_] << " MODE" << std::endl;
+    repStr << "                                    " <<  eu::toString(mainInst->parameters_->solutionMode_) << " MODE" << std::endl;
     repStr << "*************************************************************************************" << std::endl;
     repStr << std::endl << std::endl;
     repStr << std::left << std::fixed << std::setprecision(2);
@@ -1039,13 +1039,13 @@ std::string solver::toString(const PInstance & mainInst) const {
     repStr << mainInst->solutionToString();
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << masterModel_->toStringTimersTotal();
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << masterModel_->toStringTimersAvg(epoch_);
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     mainInst->instRepStr_ << epoch_-1 << "," << masterModel_->LPIter_ << "," << masterModel_->MIPIter_ << ",";
     mainInst->instRepStr_ << masterModel_->RPIter_ << "," << masterModel_->CPIter_ << ",";
     mainInst->instRepStr_ << masterModel_->ZoomIter_ << ",";
@@ -1075,7 +1075,37 @@ std::string solver::toString(const PInstance & mainInst) const {
     return repStr.str();
 }
 
-void solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes, const PInstance &pInst,
+void Solver::solve(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
+    try {
+        switch (mainInst->parameters_->solutionMode_) {
+            case DYNAMIC:
+                dynamicSolver(mainInst, inputPaths, middleSave, saveTime);
+                break;
+
+            case ANYTIME:
+                anyTimeSolver(mainInst, inputPaths, middleSave, saveTime);
+                break;
+
+            case STATIC:
+                staticSolver(mainInst, inputPaths, middleSave, saveTime);
+                break;
+
+            default:
+                throw std::runtime_error("Unsupported solution mode: " +
+                                       std::to_string(mainInst->parameters_->solutionMode_));
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error in " << eu::toString(mainInst->parameters_->solutionMode_)
+                  << " solver: " << e.what() << std::endl;
+        throw; // Re-throw to allow caller to handle
+    } catch (...) {
+        std::cerr << "Unknown error in " << eu::toString(mainInst->parameters_->solutionMode_)
+                  << " solver" << std::endl;
+        throw std::runtime_error("Unknown solver error");
+    }
+}
+
+void Solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes, const PInstance &pInst,
                                  const PInstance &EpochInst, int &nbNegative) {
     for (auto & requestObj : EpochInst->requests_) {
         PRoute newRoute = std::make_shared<Route>(vehicle->vehicleID_);
@@ -1100,7 +1130,7 @@ void solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availa
 }
 
 
-void solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes) {
+void Solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes) {
     for (auto &vehicleRoutes : availableRoutes) {
         // Remove routes with overlapping requests or empty route requests
         vehicleRoutes.erase(
@@ -1113,7 +1143,7 @@ void solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vec
     }
 }
 
-void solver::returnVehicles(const PInstance & EpochInst) const {
+void Solver::returnVehicles(const PInstance & EpochInst) const {
     float lastEpoch = 0;
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
         lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
@@ -1137,7 +1167,7 @@ void solver::returnVehicles(const PInstance & EpochInst) const {
 }
 
 
-void solver::returnVehiclesZone(const PInstance & EpochInst) const {
+void Solver::returnVehiclesZone(const PInstance & EpochInst) const {
     if (EpochInst->parameters_->vehicleReturn_) {
         float lastEpoch = 0;
         if (EpochInst->parameters_->solutionMode_ == ANYTIME)
@@ -1201,7 +1231,7 @@ void solver::returnVehiclesZone(const PInstance & EpochInst) const {
 }
 
 
-void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
+void Solver::returnVehiclesAssign(const PInstance & EpochInst) const {
     if (!EpochInst->parameters_->vehicleReturn_) return;
     /* ---------- 1. reference time for “idle” test ---------- */
 
@@ -1322,7 +1352,7 @@ void solver::returnVehiclesAssign(const PInstance & EpochInst) const {
     env.end();
 }
 
-void solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
+void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
     rebalancingTime_->stop();
     if (!EpochInst->lastCommittedRequests_.empty()) {
         /* ---------- 1. reference time for “idle” test ---------- */

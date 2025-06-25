@@ -1,0 +1,59 @@
+{
+  "modelParameters": {
+    "alphaParam": 1.5,
+    "betaParam": 240,
+    "deltaPram": 420,
+    "epochLength": 30,
+    "penaltyL": 30,
+    "committedTime": 30,
+    "nbThreads": 16,
+    "mainAlgorithm": 0,
+    "solutionMode": 2,
+    "GreedyReOptimize": 0,
+    "timeWindows": 0,
+    "vehicleReturn": 0,
+    "WaitForReturn": 120,
+    "MaxWait": 9999999,
+    "returnType": 2,
+    "numVehicleSwitch": 1000,
+    "informTimeLimit": 9999999,
+    "pickupDeviationWindow": 9999999
+  },
+  "MP_Parameters": {
+    "InitialDual": 0,
+    "warmStart": 2,
+    "NumIter": 40,
+    "MIP_maxIncDegree": 2,
+    "CP_IncDegree": 10,
+    "useMultiStage": 0,
+    "minImp": 0.0025,
+    "useZoom": 0,
+    "NumColumn": 50
+  },
+  "SP_Parameters": {
+    "isTruncated": 1,
+    "MaxLabel": 15,
+    "isDominanceReleased": 0,
+    "pruneNodes": 1,
+    "pruneArcs": 1,
+    "discardSuboptimalPath": 1,
+    "isDropPickPossible": 0,
+    "LabelingStrategy": 1,
+    "subproblemAlgorithm": 1,
+    "constPortion": 0,
+    "Vehicle_portion": 0,
+    "Dynamic_Pricing": 0,
+    "Partial_Pricing": 0,
+    "Route_Recycle": 0,
+    "usePick": 1,
+    "nbPick": 4,
+    "sortPath": 0,
+    "sortColumn": 1
+  },
+  "cplexParameters": {
+    "BigM": 27000,
+    "solveTimeLimit": 300,
+    "populateTimeLimit": 200,
+    "MIPGap": 0.001
+  }
+}

@@ -20,164 +20,23 @@
 #include <boost/dynamic_bitset.hpp>
 #include <ilcplex/ilocplex.h>
 #include <unordered_map>
+#include "json.hpp"
+#include "Types.h"
+
+using json = nlohmann::json;
+namespace eu = enum_utils;
+using namespace eu;
+using namespace constants;
 
 using std::string;
 using std::vector;
 using std::chrono::high_resolution_clock;
 extern std::vector<std::vector<float>> durationMatrix_;
 //-----------------------------------------------------------------------------
-//  Definition of useful tools and data types
+//  Useful tools and data types
 //-----------------------------------------------------------------------------
 
-// useful types
-class Instance;
-typedef std::shared_ptr<Instance> PInstance;
-class Request;
-typedef std::shared_ptr<Request> PRequest;
-class Vehicle;
-typedef std::shared_ptr<Vehicle> PVehicle;
-class Graph;
-typedef std::shared_ptr<Graph> PGraph;
-class Node;
-typedef std::shared_ptr<Node> PNode;
-class Route;
-typedef std::shared_ptr<Route> PRoute;
-class Zone;
-typedef std::shared_ptr<Zone> PZone;
-class ReducedProblem;
-typedef std::shared_ptr<ReducedProblem> PReducedProblem;
-class ComplementPro;
-typedef std::shared_ptr<ComplementPro> PComplementPro;
-class DualAuxSolver;
-typedef std::shared_ptr<DualAuxSolver> PDualAuxSolver;
-class Label;
-typedef std::shared_ptr<Label> PLabel;
-struct Parameters;
-typedef std::shared_ptr<Parameters> PParameters;
-struct solverOption;
-typedef std::shared_ptr<solverOption> PSolverOption;
-class StopLabel;
-typedef std::shared_ptr<StopLabel> PStopLabel;
-class GreedyRoute;
-typedef std::shared_ptr<GreedyRoute> PGreedyRoute;
-class GreedyModeler;
-typedef std::shared_ptr<GreedyModeler> PGreedyModeler;
-struct insertPosition;
-typedef std::shared_ptr<insertPosition> PInsertPosition;
-class MIPMasterProblem;
-typedef std::shared_ptr<MIPMasterProblem> PMasterPro;
-class LabelingSubProblem;
-typedef std::shared_ptr<LabelingSubProblem> PLabelingSubPro;
-
-class CPLEXSubProblem;
-typedef std::shared_ptr<CPLEXSubProblem> PCplexSubPro;
-
-// extern PTravelTime travelMat;
-
-// SubProblem solution status
-enum SubProSolveMode {NOT_RESTRICTED = 0, TIME_RESTRICTED = 1, NUM_PICK_RESTRICTED = 2};
-enum LabelingStrategy { PUSHING = 0, PULLING = 1};
-enum subproblemAlgorithm { CPLEX = 0, LABEL_SETTING = 1};
-enum MainAlgorithm {GREEDY = 0, MIP_CPLEX = 1, RT_CG = 2, MP_ISUD = 3, MP_MIP = 4, MP_CP = 5, A_CG = 6};
-enum SolutionMode {STATIC = 0, DYNAMIC = 1, ANYTIME = 2};
-enum warmStart {GREEDY_START = 0, PRE_SOLUTION = 1, EMPTY_ROUTES = 2, IP_SOLUTION = 3};
-enum InitialDual {PENALTIES = 0, LMP = 1, AUX_D = 2, AUX_P = 3, AUX_box = 4, LP_CP = 5};
-enum NodeStatus { DEFINED = 0, PLANNED = 1, DONE = 2 , COMMITTED = 3};
-enum SortVehicle { DUAL = 0, DEPART_TIME = 1, ROURE_SIZE = 2, BEST_REDUCE_COST = 3, SCORE = 4};
-enum LabelStatus { ACTIVE = 0, DOMINATED = 1, INACTIVE = 2, OUTBOUND = 3, TERMINATED = 4};
-enum selectionMode { NR = 0, RP = 1, CP = 2};
-enum SortPaths {L_SCORE = 0, RD_COST = 1, LAMBDA = 2};
-enum SortColumns {NORMAL_RC = 0, RC = 1, LAMBDA_S = 2, COMP_C = 3, WAIT_S = 4};
-enum VarSign { POSITIVE, NEGATIVE };
-enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
-enum RequestStatus {NO_ACTION = 0, ON_BOARD = 1, COMPLETED = 2, REJECTED = 3};
-enum ReturnType {TO_SOURCE = 0, ZONE = 1, ASSIGN = 2};
-static const std::vector<std::string> reqStatusName = {
-        "NO_ACTION", "ON_BOARD ", "COMPLETED" };
-
-static const std::vector<std::string> SortColumnsName = {
-    "PATH_SCORE  ",
-    "REDUCED_COST",
-    "LAMBDA_SCORE",
-    "COMP_SCORE",
-    "WAIT_SCORE"};
-
-static const std::vector<std::string> SortPathsName = {
-        "PATH_SCORE  ",
-        "REDUCED_COST",
-        "LAMBDA_SCORE"};
-
-static const std::vector<std::string> ReturnTypeName = {
-    "TO_SOURCE",
-    "ZONE     ",
-    "ASSIGN   "};
-
-
-static const std::vector<std::string> LabelingStrategyName = {
-        "PUSHING",
-        "PULLING" };
-
-static const std::vector<std::string> subAlgorithmName = {
-        "CPLEX        ",
-        "LABEL_SETTING" };
-
-static const std::vector<std::string> mainAlgorithmName = {
-        "GREEDY",
-        "MIP_CPLEX",
-        "RT_CG",
-        "MP_ISUD",
-        "MP_MIP",
-        "MP_CP",
-        "A_CG"};
-
-static const std::vector<std::string> warmStartName = {
-        "GREEDY_START",
-        "PRE_SOLUTION",
-        "EMPTY_START ",
-        "IP_SOLUTION"};
-
-static const std::vector<std::string> solutionModeName = {
-        "STATIC",
-        "DYNAMIC",
-        "ANYTIME"};
-
-static const std::vector<std::string> InitialDualName = {
-        "PENALTY",
-        "LINEAR_LP",
-        "AUX_DUAL",
-        "AUX_MP",
-        "AUX_BOX",
-        "LP_CP"};
-
-static const std::vector<std::string> SubProSolveStartName = {
-        "NOT_RESTRICTED     ",
-        "TIME_RESTRICTED    ",
-        "NUM_PICK_RESTRICTED"};
-
-// Different node types and their names
-enum NodeType { SOURCE, SINK, PICKUP, DROPOFF };
-static const char *NodeTypeStr[] = {
-        "SOURCE ",
-        "SINK   ",
-        "PICKUP ",
-        "DROPOFF"
-};
-
-#define LARGE_CONSTANT 9999999
-constexpr int MAX_BIT_SIZE = 3000;
-constexpr int LABEL_BIT_SIZE = 1000;
-constexpr int MAX_ZONE = 350;
-
-static constexpr int sentenceSize = 47;
-static constexpr int ServiceTime = 30;
 extern bool solveEpoch;
-
-// Definition of useful types
-template<class T> using vector2D = std::vector<std::vector<T>>;
-
-typedef IloArray<IloNumVarArray> IloNumVar2D;		// 2-dim array of variables
-typedef IloArray<IloNumVar2D> IloNumVar3D;          // 3-dim array of variables
-typedef IloArray<IloNumArray> IloNum2D;		        // 2-dim array of variables
 
 // Function template to concatenate two vectors of the same type
 template <typename T>

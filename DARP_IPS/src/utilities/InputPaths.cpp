@@ -12,17 +12,16 @@
 //  Instances of this class contain the paths of the inputs
 //-----------------------------------------------------------------------------
 
-InputPaths::InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder,
-    const std::string& paramFile) : dataDir_(std::move(datadir)){
+InputPaths::InputPaths(std::string  datadir, PConfig& config) : dataDir_(std::move(datadir)){
     input_TripData_ = "";
     input_InstanceData_ = "";
     instanceName_ = "";
     instanceDir_ = "";
     input_durationData_ = "";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + paramFile + ".txt";
+    input_paramFile_ = dataDir_ + config->paramFile_ + ".json";
     input_zones_ = dataDir_ + "Zones.txt";
-    input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
+    input_vehicleFileGeneral_ = dataDir_ + config->vehicleFolder_ + "/" + config->vehicleFileName_ + ".txt";
 }
 
 InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
@@ -36,7 +35,7 @@ InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, cons
     input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
     //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + paramFile  + ".txt";
+    input_paramFile_ = dataDir_ + paramFile  + ".json";
     input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
     input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
@@ -93,7 +92,7 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
 }
 
 void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
-                                   int nbVehicles, const std::string& paramFile) {
+                                   int nbVehicles, const std::string& scenario) {
     // create directory for results
     if (saveScratch > 0) {
         std::string instFolder;
@@ -121,27 +120,27 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         tm *curr_tm = localtime(&now);
         char resultFolder[100];
         strftime(resultFolder, 50, "%m%d-%I%M%S", curr_tm);
-        std::string folder_name = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + paramFile +"_" + resultFolder + "_" +
+        std::string folder_name = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + scenario +"_" + resultFolder + "_" +
                                   std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
         int check = mkdir(path, 0777);
         if (check == -1)
             throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
-        outputDir_ = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + paramFile + "_" + resultFolder + "_" +
+        outputDir_ = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + scenario + "_" + resultFolder + "_" +
                      std::to_string(nbVehicles) + "/";
     } else {
         time_t now = time(nullptr);
         tm *curr_tm = localtime(&now);
         char resultFolder[100];
         strftime(resultFolder, 50, "%m%d-%I%M%S", curr_tm);
-        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + paramFile + "_"+ resultFolder + "_" +
+        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + scenario + "_"+ resultFolder + "_" +
                                   std::to_string(nbVehicles);
         char *path = const_cast<char *>(folder_name.c_str());
         if (mkdir(path, 0777) != 0) {
             std::cout << "Output directory can not be created!!!" << std::endl;
             throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
         }
-        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + paramFile + "_" + resultFolder + "_" +
+        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + scenario + "_" + resultFolder + "_" +
                      std::to_string(nbVehicles) + "/";
     }
     prefix_ = solutionMode[0];

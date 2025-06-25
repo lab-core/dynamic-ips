@@ -22,6 +22,9 @@ if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 endif()
 
+######## JSON Library - Local header
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 ######## Cplex Dependency
 find_package(CPLEX REQUIRED)
 if(CPLEX_FOUND)

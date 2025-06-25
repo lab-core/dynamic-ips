@@ -134,7 +134,7 @@ public:
     std::string toStringTimersAvg(int epoch) const;
 
     // function to evaluate available routes and find proper ones to be added to the models
-    void updateRoutesToAdd(selectionMode selectMode, const PInstance &pInst);
+    void updateRoutesToAdd(SelectionMode selectMode, const PInstance &pInst);
     void updateRoutesToAddZoom() const;
 
     // function to save the reduced costs and incompatibility degree of the created routes

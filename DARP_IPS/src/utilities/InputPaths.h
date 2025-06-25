@@ -7,6 +7,7 @@
 
 #include <string>
 #include <fstream>
+#include "utilities/ConfigParser.h"
 
 
 
@@ -66,7 +67,7 @@ protected:
 public:
 
     // Constructors
-    explicit InputPaths(std::string  datadir, const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile);
+    explicit InputPaths(std::string  datadir, PConfig& config);
     InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
                const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile);
 
@@ -111,7 +112,7 @@ public:
 
     // this function defines the path to outputs
     void initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
-        int nbVehicles, const std::string& paramFile);
+        int nbVehicles, const std::string& scenario);
 
     // this function creates a directory to build a new instance
     void makeInstanceOutput(const std::string& instNum);

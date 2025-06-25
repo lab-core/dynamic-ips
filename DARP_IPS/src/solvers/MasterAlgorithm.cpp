@@ -136,7 +136,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
             }
         }
         float box = 1;
-        if (pInst->parameters_->initialDual_ == AUX_box)
+        if (pInst->parameters_->initialDual_ == AUX_BOX)
             box = 0.8;
         for (int i = pInst->nbRequests_ - pInst->nbNewRequests_; i < pInst->nbRequests_; ++i){
             if (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
@@ -938,7 +938,7 @@ void MasterAlgorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputP
             (*pLogIsudResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
         }
-        else if (pInst->parameters_->initialDual_ == AUX_box) {
+        else if (pInst->parameters_->initialDual_ == AUX_BOX) {
             MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
             setCurrentRoutes(pInst);
@@ -1286,10 +1286,10 @@ std::string MasterAlgorithm::toStringTimersTotal() const {
     repStr << "#" << std::endl;
     repStr << "# -------------------   TOTAL MP RUN TIMES   -------------------" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count() << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() << " (s)" << std::endl;
 
     return repStr.str();
 }
@@ -1300,15 +1300,15 @@ std::string MasterAlgorithm::toStringTimersAvg(int epoch) const {
     repStr << "#" << std::endl;
     repStr << "# -------------   AVERAGE MP RUN TIMES PER EPOCH   -------------" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() / static_cast<float>(epoch) << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count()/static_cast<float>(epoch) << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count()/static_cast<float>(epoch) << " (s)" << std::endl;
-    repStr << std::setw(sentenceSize) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() / static_cast<float>(epoch) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON MP IMPROVEMENT" << " = " << masterTime_->dSinceInit().count() / static_cast<float>(epoch) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON RP IMPROVEMENT" << " = " << RPTime_->dSinceInit().count()/static_cast<float>(epoch) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON CP IMPROVEMENT" << " = " << CPTime_->dSinceInit().count()/static_cast<float>(epoch) << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ZOOM ISUD" << " = " << ZOOMTime_->dSinceInit().count() / static_cast<float>(epoch) << " (s)" << std::endl;
 
     return repStr.str();
 }
 
-void MasterAlgorithm::updateRoutesToAdd(selectionMode selectMode, const PInstance &pInst){
+void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, const PInstance &pInst){
     updateReducedCosts(pInst);
     if (selectMode == CP || selectMode == RP) {
         updateIncDegreesM(pInst);

@@ -462,7 +462,7 @@ std::string GreedyRoute::toString() const {
         if (curr->child_->currentNode_->type_ == SINK)
             repStr << std::left << std::setw(27) << "(SINK   ) return";
         else {
-            repStr << "(" << NodeTypeStr[curr->child_->currentNode_->type_] << ") Request_ID ";
+            repStr << "(" << eu::toString(curr->child_->currentNode_->type_) << ") Request_ID ";
             repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
         }
         repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
