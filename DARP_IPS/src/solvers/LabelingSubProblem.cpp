@@ -271,7 +271,7 @@ bool LabelingSubProblem::solveDynamic_pulling1(float availableTime) {
 
                 // decrease the number of active labels if truncated strategy is used
                 else if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, labelPool_);
+                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_, labelPool_);
                 }
 
             }
@@ -336,7 +336,7 @@ bool LabelingSubProblem::solveDynamic_pulling(float availableTime) {
 
                 // decrease the number of active labels if truncated strategy is used
                 if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, labelPool_);
+                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_, labelPool_);
                 }
             }
         }
@@ -393,7 +393,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
 
                 // decrease the number of active labels if truncated strategy is used
                 if (solverOptions_->isTruncated_ && currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_){
-                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, labelPool_);
+                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_, labelPool_);
                 }
             }
         }
@@ -421,7 +421,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave(float availableTime) {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_,labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -491,7 +491,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
 
                 // decrease the number of active labels if truncated strategy is used
                 if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_, labelPool_);
+                    truncateLabelList(&(*currentNode), solverOptions_->MaxLabel_,solverOptions_->MaxCommittedLabel_, labelPool_);
                 }
             }
         }
@@ -521,7 +521,7 @@ bool LabelingSubProblem::solveDynamic_pullingWave1(float availableTime) {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_,labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -562,7 +562,7 @@ bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_,labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -615,7 +615,7 @@ bool LabelingSubProblem::solveDynamic_pushingDrop(float availableTime) {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_,solverOptions_->MaxCommittedLabel_, labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -670,7 +670,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_, labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -717,7 +717,7 @@ void LabelingSubProblem::solveDynamic_pushingWave() {
 
             // decrease the number of active labels if truncated strategy is used
             if ((solverOptions_->isTruncated_) && (currentNode->nbActiveLabels_ > solverOptions_->MaxLabel_)){
-                truncateLabelList(currentNode, solverOptions_->MaxLabel_, labelPool_);
+                truncateLabelList(currentNode, solverOptions_->MaxLabel_, solverOptions_->MaxCommittedLabel_,labelPool_);
             }
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 if (currentNode->activeLabels_[j]->status_ == ACTIVE) {
@@ -857,7 +857,7 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     return repStr.str();
 }
 
-void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool) const {
+void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const {
     if (solverOptions_->pathSort_ == RD_COST) {
         std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
                          [](const PLabel &lhs, const PLabel &rhs) {
@@ -874,24 +874,41 @@ void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector
         std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
             return lhs->labelScore_ < rhs->labelScore_;});
     }
-    int nbLabelsWithCommit = 0;
 
-    for (int i = node->activeLabels_.size()-1; i >=0; i--){
-        if (node->nbActiveLabels_ - nbLabelsWithCommit <= MaxLabel)
-            break;
-        if (node->activeLabels_[i]->nbCommitted_ > 0) {
-            nbLabelsWithCommit++;
+    int keptCommittedLabels = 0;
+    int keptNonCommittedLabels = 0;
+
+    // Iterate from best to worst (forward order after sorting)
+    for (int i = 0; i < node->activeLabels_.size(); i++){
+        if (node->activeLabels_[i]->status_ != ACTIVE) {
             continue;
         }
-        if (node->activeLabels_[i]->status_ == ACTIVE){
+
+        bool shouldKeep = false;
+
+        if (node->activeLabels_[i]->nbCommitted_ > 0) {
+            // This is a committed label
+            if (keptCommittedLabels < MaxCommittedLabel) {
+                shouldKeep = true;
+                keptCommittedLabels++;
+            }
+        } else {
+            // This is a non-committed label
+            if (keptNonCommittedLabels < MaxLabel) {
+                shouldKeep = true;
+                keptNonCommittedLabels++;
+            }
+        }
+
+        if (!shouldKeep) {
             node->nbActiveLabels_--;
             node->activeLabels_[i]->status_ = DOMINATED;
             labelPool.push_back(std::move(node->activeLabels_[i]));
             node->activeLabels_.erase(node->activeLabels_.begin() + i);
+            i--; // Adjust index since we removed an element
         }
     }
 }
-
 void LabelingSubProblem::removeDominated(Node *node, std::vector<PLabel> &labelPool) const {
     // Sort labels by increasing reduced cost
     std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),

@@ -188,6 +188,15 @@ std::string Route::toString() const {
     return repStr.str();
 }
 
+std::string Route::routeMetricsToString(int epoch, int RMPCounter) const {
+    std::stringstream repStr;
+    repStr << routeID_ << "," << epoch << "," << RMPCounter << "," << vehicleID_ << ","
+           << totalDelay_ << "," << incompatibilityDegree_ << "," << reducedCost_ << ","
+           << lambda_ << "," << score_ << "," << IncScoreRatio_ << "," << waitScore_ << ","
+           << nbCommitted_ << "," << createTime_ << "," << routeRequests_.size() <<"\n";
+    return repStr.str();
+}
+
 // this function is for testing the validation of the route
 void Route::testRoute(const PVehicle & vehicle) {
     PRoute testRoute = std::make_shared<Route>(vehicleID_);
@@ -283,7 +292,6 @@ void Route::resetRoute() const {
 }
 
 void Route::createColumn(int nbRequests) {
-//    column_ = std::make_shared<myTools::BitVector>(size);
     column_.resize(nbRequests);
     column_.reset();
     /*for (auto & requestObj: routeRequests_)

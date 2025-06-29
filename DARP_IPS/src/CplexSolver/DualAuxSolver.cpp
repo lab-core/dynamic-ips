@@ -102,7 +102,7 @@ void DualAuxSolver::solveModel(const PInstance &pInst, const InputPaths &inputPa
         Model_.add(zConst_);
         Cplex_.extract(Model_);
 
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "AUX Dual");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "AUX Dual");
         Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
         Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
         Cplex_.setParam(IloCplex::Param::NodeAlgorithm, 2);

@@ -56,8 +56,13 @@ endif()
 
 
 ######## GUROBI Dependency
-#find_package(GUROBI REQUIRED)
-#include_directories(${GUROBI_INCLUDE_DIRS})
+find_package(GUROBI REQUIRED)
+if(GUROBI_FOUND)
+    message("-----GUROBI IS FOUND-----")
+    include_directories(${GUROBI_INCLUDE_DIRS})
+    link_directories(${GUROBI_LIBRARIES})
+endif()
+
 ######## Eigen Dependency
 if (UNIX)
     if (APPLE)
@@ -87,7 +92,9 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-SET(LIBS cplex-library cplex-concert ilocplex -lpthread)
+SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread)
+
+
 
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)

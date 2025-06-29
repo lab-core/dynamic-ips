@@ -65,6 +65,7 @@ public:
 
     // Display function
     std::string toString() const;
+    std::string routeMetricsToString(int epoch, int RMPCounter) const;
 
     // this function is for testing the validation of the route
     void testRoute(const PVehicle & vehicle);

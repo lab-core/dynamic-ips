@@ -49,6 +49,15 @@ struct Parameters;
 struct solverOption;
 struct insertPosition;
 struct ProgramConfig;
+struct RuntimeMetrics;
+class MP_Gurobi;
+class RP_Gurobi;
+class CP_Gurobi;
+class GurobiModeler;
+class MasterAlgorithm;
+class CG_Algorithm;
+class ISUD_Algorithm;
+class MIPSolver;
 
 //-----------------------------------------------------------------------------
 //  Smart Pointer Type Aliases
@@ -74,7 +83,15 @@ using PParameters = std::shared_ptr<Parameters>;
 using PSolverOption = std::shared_ptr<solverOption>;
 using PInsertPosition = std::shared_ptr<insertPosition>;
 using PConfig = std::unique_ptr<ProgramConfig>;
-
+using PMP_Gurobi = std::shared_ptr<MP_Gurobi>;
+using PRP_Gurobi = std::shared_ptr<RP_Gurobi>;
+using PGurobiModeler = std::shared_ptr<GurobiModeler>;
+using PCP_Gurobi = std::shared_ptr<CP_Gurobi>;
+using PMasterAlgorithm = std::shared_ptr<MasterAlgorithm>;
+using PCG_Algorithm = std::unique_ptr<CG_Algorithm>;
+using PISUD_Algorithm = std::unique_ptr<ISUD_Algorithm>;
+using PMIPSolver = std::unique_ptr<MIPSolver>;
+using PRuntimeMetrics = std::unique_ptr<RuntimeMetrics>;
 //-----------------------------------------------------------------------------
 //  Container Type Aliases
 //-----------------------------------------------------------------------------
@@ -92,7 +109,7 @@ enum LabelingStrategy : int {
 };
 
 enum SubproblemAlgorithm : int {
-    CPLEX = 0,
+    CPLEX_SUB = 0,
     LABEL_SETTING = 1
 };
 
@@ -104,6 +121,12 @@ enum MainAlgorithm : int {
     MP_MIP = 4,
     MP_CP = 5,
     A_CG = 6
+};
+
+enum Approach : int {
+    ISUD = 0,
+    CG = 1,
+    Greedy = 2
 };
 
 enum SolutionMode : int {
@@ -204,6 +227,11 @@ enum NodeType : int {
     DROPOFF = 3
 };
 
+enum ModelSOLVER: int {
+    CPLEX = 0,
+    GUROBI = 1
+};
+
 //-----------------------------------------------------------------------------
 //  String Mappings for Enums
 //-----------------------------------------------------------------------------
@@ -275,6 +303,15 @@ namespace enum_strings {
     constexpr std::array<const char*, 4> nodeTypeNames = {
         "SOURCE ", "SINK   ", "PICKUP ", "DROPOFF"
     };
+
+    constexpr std::array<const char*, 2> modelSolverNames = {
+        "CPLEX ", "GUROBI"
+    };
+
+    constexpr std::array<const char*, 3> approachNames = {
+        "ISUD ", "CG  ", "Greedy"
+    };
+
 }
 
 //-----------------------------------------------------------------------------
@@ -403,6 +440,20 @@ namespace enum_utils {
         auto index = static_cast<size_t>(value);
         return (index < enum_strings::nodeTypeNames.size()) ?
                enum_strings::nodeTypeNames[index] : "UNKNOWN";
+    }
+
+    template<>
+    inline const char* toString<ModelSOLVER>(ModelSOLVER value) {
+        auto index = static_cast<size_t>(value);
+        return (index < enum_strings::modelSolverNames.size()) ?
+               enum_strings::modelSolverNames[index] : "UNKNOWN";
+    }
+
+    template<>
+    inline const char* toString<Approach>(Approach value) {
+        auto index = static_cast<size_t>(value);
+        return (index < enum_strings::approachNames.size()) ?
+               enum_strings::approachNames[index] : "UNKNOWN";
     }
 
     // Stream operators for convenient output

@@ -60,19 +60,6 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, const PRoute &newRoute,
     }
 }
 
-void ComplementPro::addAuxVar(const PInstance &pInst, float cost, int nbVehicles) {
-
-    IloNumArray columnVar(env_, nbRequestTask_);
-    for (auto & requestObj : pInst->requests_)
-        columnVar[requestObj->taskIndex_] = -1;
-
-    IloNumArray vehicleVar(env_, nbVehicles);
-    for (int v = 0; v < nbVehicles; ++v)
-        vehicleVar[v] = -1;
-
-    auxVar_ = IloNumVar(objFunction_(-cost) + requestConst_(columnVar)+ vehicleConst_(vehicleVar));
-    auxVar_.setName("aux");
-}
 
 // this function builds the model at each iteration
 void ComplementPro::buildModel(const PInstance &pInst, const vector<PRequest> &zSolution, const vector<PRoute> &routeSolution,
@@ -134,47 +121,7 @@ void ComplementPro::repairModel(const PInstance &pInst, const vector<PRequest> &
         addZVar(zSolVar_, zSol, NEGATIVE);
     }
 }
-void ComplementPro::buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
-                                          int nbVehicles, float preObj) {
-    // model initialization (defining an empty set of constraints and adding the objective function)
-    initializeCPModel(pInst, nbVehicles);
 
-    // adding solution route columns
-    for (auto & routeObj : routeSolution) {
-        if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1) {
-            addRouteVar(routeIncVar_, routeObj, POSITIVE, pInst);
-            routeObj->cpAdded_ = true;
-        }
-    }
-
-
-    // adding incompatible route columns
-    for (auto & routeAdd: routesToAdd_) {
-        if (pInst->vehicles_[routeAdd->vehicleID_]->vehicleIndex_ > -1) {
-            addRouteVar(routeIncVar_, routeAdd, POSITIVE, pInst);
-            routeAdd->cpAdded_ = true;
-        }
-    }
-
-    // adding z columns
-    for (auto & zSol: zSolution) {
-        addZVar(zIncVar_, zSol, POSITIVE);
-    }
-    // adding z columns out of the basis
-    for (int i = 0; i < pInst->nbRequests_; ++i) {
-        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT)
-            addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
-    }
-
-    for (int v = 0; v < pInst->nbVehicles_; ++v) {
-        if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
-            !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
-            addRouteVar(routeIncVar_, pInst->vehicles_[v]->emptyRoute_, POSITIVE, pInst);
-            pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
-        }
-    }
-    addAuxVar(pInst, preObj, nbVehicles);
-}
 
 // this function updates the model and variables
 void ComplementPro::updateModel(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution) {
@@ -192,7 +139,7 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
                                  InputPaths &inputPaths) {
     try {
         Cplex_.extract(Model_);
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "CP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "CP");
         solveTime_->start();
         if (!Cplex_.solve()) {
             Cplex_.clearModel();
@@ -327,11 +274,61 @@ void ComplementPro::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolut
     }
 }
 
+// Display function
+std::string ComplementPro::toString() const {
+    std::stringstream repStr;
+    repStr << std::endl;
+    repStr << "# ====================  COMPLEMENTARY PROBLEM SOLVED  ==================== " << std::endl;
+    repStr << "# COMPLEMENTARY PROBLEM SOLVED: " << std::endl;
+    repStr << CplexModeler::toString();
+    return repStr.str();
+}
+
+void ComplementPro::ResetCPModel() {
+    try {
+
+        bool isModelExist = false;
+        if (routeSolVar_.getSize() > 0)
+            isModelExist = true;
+        if (isModelExist) {
+            routeSolVar_.endElements();
+            routeSolVar_.clear();
+            //        SolRoute_.clear();
+            zSolVar_.endElements();
+            zSolVar_.clear();
+            routeIncVar_.endElements();
+            routeIncVar_.clear();
+            IncRoute_.clear();
+            //            solIndexes_.clear();
+            zIncVar_.endElements();
+            zIncVar_.clear();
+            Model_.remove(requestConst_);
+            Model_.remove(vehicleConst_);
+            Model_.remove(normalConst_);
+        }
+
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}
+
+void ComplementPro::restartCp() {
+    env_.end();
+    routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
+    zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
+    status_ = NOT_SOLVED;
+}
+
+
 void ComplementPro::solveCP2Model(const PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                                  const InputPaths &inputPaths) {
     try {
         Cplex_.extract(Model_);
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "CP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "CP");
 
         solveTime_->start();
         if (!Cplex_.solve()) {
@@ -504,59 +501,87 @@ bool ComplementPro::isColumnDisjointFast(const vector<PRequest>& zResults, const
     return true;
 }
 
+bool ComplementPro::isColumnDisjoint(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults,
+const PInstance &pInst) {
+    boost::dynamic_bitset<> requestUnion(pInst->nbRequests_);
 
-// Display function
-std::string ComplementPro::toString() const {
-    std::stringstream repStr;
-    repStr << std::endl;
-    repStr << "# ====================  COMPLEMENTARY PROBLEM SOLVED  ==================== " << std::endl;
-    repStr << "# COMPLEMENTARY PROBLEM SOLVED: " << std::endl;
-    repStr << CplexModeler::toString();
-    return repStr.str();
-}
-
-void ComplementPro::ResetCPModel() {
-    try {
-
-        bool isModelExist = false;
-        if (routeSolVar_.getSize() > 0)
-            isModelExist = true;
-        if (isModelExist) {
-            routeSolVar_.endElements();
-            routeSolVar_.clear();
-//        SolRoute_.clear();
-            zSolVar_.endElements();
-            zSolVar_.clear();
-            routeIncVar_.endElements();
-            routeIncVar_.clear();
-            IncRoute_.clear();
-//            solIndexes_.clear();
-            zIncVar_.endElements();
-            zIncVar_.clear();
-            Model_.remove(requestConst_);
-            Model_.remove(vehicleConst_);
-            Model_.remove(normalConst_);
+    // Process individual requests
+    for (const auto& request : zResults) {
+        const size_t taskIndex = request->taskIndex_;
+        if (requestUnion.test(taskIndex)) {
+            return false; // Early exit on conflict
         }
+        requestUnion.set(taskIndex);
+    }
 
+    // Process routes - BLAZING FAST with precomputed columns
+    for (const auto& route : routeResults) {
+        if ((requestUnion & route->column_).any()) {
+            return false; // Early exit on conflict
+        }
+        requestUnion |= route->column_;
     }
-    catch (IloException& e) {
-        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
-        std::cout << e << std::endl;
-    }
+
+    return true; // No conflicts found
+
 }
 
-void ComplementPro::restartCp() {
-    env_.end();
-    routeIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
-    zIncVar_ = IloNumVarArray(env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
-    routeSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity, ILOFLOAT);
-    zSolVar_ = IloNumVarArray (env_, 0.0, 0.0, IloInfinity,ILOFLOAT);
-    status_ = NOT_SOLVED;
+
+void ComplementPro::buildModelCP_improved(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
+                                          int nbVehicles, float preObj) {
+    // model initialization (defining an empty set of constraints and adding the objective function)
+    initializeCPModel(pInst, nbVehicles);
+
+    // adding solution route columns
+    for (auto & routeObj : routeSolution) {
+        if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1) {
+            addRouteVar(routeIncVar_, routeObj, POSITIVE, pInst);
+            routeObj->cpAdded_ = true;
+        }
+    }
+
+
+    // adding incompatible route columns
+    for (auto & routeAdd: routesToAdd_) {
+        if (pInst->vehicles_[routeAdd->vehicleID_]->vehicleIndex_ > -1) {
+            addRouteVar(routeIncVar_, routeAdd, POSITIVE, pInst);
+            routeAdd->cpAdded_ = true;
+        }
+    }
+
+    // adding z columns
+    for (auto & zSol: zSolution) {
+        addZVar(zIncVar_, zSol, POSITIVE);
+    }
+    // adding z columns out of the basis
+    for (int i = 0; i < pInst->nbRequests_; ++i) {
+        if (pInst->requests_[i]->solVehicleID_ < LARGE_CONSTANT && pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT)
+            addZVar(zIncVar_, pInst->requests_[i], POSITIVE);
+    }
+
+    for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        if (pInst->vehicles_[v]->vehicleIndex_>-1 && !pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
+            !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
+            addRouteVar(routeIncVar_, pInst->vehicles_[v]->emptyRoute_, POSITIVE, pInst);
+            pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
+            }
+    }
+    addAuxVar(pInst, preObj, nbVehicles);
 }
 
+void ComplementPro::addAuxVar(const PInstance &pInst, float cost, int nbVehicles) {
 
+    IloNumArray columnVar(env_, nbRequestTask_);
+    for (auto & requestObj : pInst->requests_)
+        columnVar[requestObj->taskIndex_] = -1;
 
+    IloNumArray vehicleVar(env_, nbVehicles);
+    for (int v = 0; v < nbVehicles; ++v)
+        vehicleVar[v] = -1;
 
+    auxVar_ = IloNumVar(objFunction_(-cost) + requestConst_(columnVar)+ vehicleConst_(vehicleVar));
+    auxVar_.setName("aux");
+}
 
 
 

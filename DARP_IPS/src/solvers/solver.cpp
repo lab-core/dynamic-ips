@@ -2,21 +2,27 @@
 // Created by Elahe Amiri on 2022-10-26.
 //
 
+#include "CG_Algorithm.h"
+#include "ISUD_Algorithm.h"
 #include "Solver.h"
 #include "solvers/LabelingSubProblem.h"
-#include "solvers/CPLEXSubProblem.h"
+#include "../CplexSolver/CPLEXSubProblem.h"
 
 Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     elapsedTime_ = 0;
-    SubproEpochTime_ = 0;
     epoch_ = 0;
     nbOnePick_ = 0;
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
-    nbRecycledColumns_ = 0;
+
     greedyRebalanceTime_ = 0;
 
-    masterModel_ = std::make_shared<MasterAlgorithm>(inputPaths);
+    if (mainInst->parameters_->approach_ == ISUD)
+        ISUD_Model_ = std::make_unique<ISUD_Algorithm>(inputPaths, mainInst->parameters_->modelSolver_);
+    else if (mainInst->parameters_->approach_ == CG)
+        CG_Model_ = std::make_unique<CG_Algorithm>(inputPaths, mainInst->parameters_->modelSolver_);
+
+
     GreedyModel_ = std::make_shared<GreedyModeler>();
     subProOptions_ = std::make_shared<solverOption>(mainInst->parameters_);
 
@@ -25,23 +31,10 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
     rebalancingTime_ = new myTools::Timer(); rebalancingTime_->init();
 
-    masterEpochTime_ = 0;
-    RPEpochTime_ = 0;
-    CPEpochTime_ = 0;
-    RPEpochBuildTime_ = 0;
-    CPEpochBuildTime_ = 0;
-    isudMIPEpochTime_ = 0;
+    runtimeMetrics_ = std::make_unique<RuntimeMetrics>();
+    objValue_ = 0;
     avgEpochRuntime_ = 0;
-    epochRuntime_ = 0;
-    GreedyTime_ = 0;
-    AssignTime_ = 0;
 
-    nbGenerated_ = 0;
-    nbDominated_ = 0;
-    nbEliminated_ = 0;
-    nbPrunedArcs_ = 0;
-    nbPrunedPath_ = 0;
-    nbNegativeFound_ = 0;
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
 
@@ -49,10 +42,10 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
     (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
                               "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
-                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,destructTime,SubAssignTime,"
-                              "GreedyTime,#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
+                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
+                              "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                               " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                              "LinearObjective,waitTime,#Return,#Idle,#PotentialIdle,#StateChanged,nbOnePick,nbTwoPick,nbThreePick" << std::endl;
+                              "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#PotentialIdle,#StateChanged,nbOnePick,nbTwoPick,nbThreePick" << std::endl;
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
@@ -95,197 +88,89 @@ void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
     }
 }
 void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
- //   std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
     // Set available time
-    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
+    CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
     EpochInst->updateTaskIndexLabeling();
-    masterModel_->initialization(EpochInst, inputPaths, GreedyModel_);
+    if (mainInst->parameters_->modelSolver_ == CPLEX)
+        CG_Model_->initializationCPLEX(EpochInst, inputPaths, GreedyModel_);
+    else
+        CG_Model_->initializationGurobi(EpochInst, inputPaths, GreedyModel_);
 
-    // define required variables
-
+    // Initialize variables
     int iter = 0;
     bool subProBreak = false;
-    masterModel_->RMPCounter_ ++;
-    masterModel_->nbRoutes_ = 0;
-    SubproEpochTime_ = 0;
-    masterModel_->lpObjValue_ = masterModel_->objValue_;
+    CG_Model_->RMPCounter_++;
+    CG_Model_->nbRoutes_ = 0;
+
+    CG_Model_->lpObjValue_ = CG_Model_->objValue_;
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
-    nbNegativeFound_ = 0;
-    nbGenerated_ = 0;
-    nbDominated_ = 0;
-    nbPrunedArcs_ = 0;
-    nbPrunedPath_ = 0;
-    nbEliminated_ = 0;
-    nbRecycledColumns_ = 0;
+    runtimeMetrics_->resetSubproblemMetrics();
+    CG_Model_->availableRoutes_.clear();
+    CG_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
 
-
+    // Main column generation loop
     while (true) {
-        nbOnePick_ = 0;
-        nbTwoPick_ = 0;
-        nbThreePick_ = 0;
-
-        // Set available time
         iter++;
-        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+        CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         int nbNegativeFound = 0;
-        float previousObj = masterModel_->objValue_;
-
+        float previousObj = CG_Model_->objValue_;
 
         //***********************************************************************************//
-        //                    LABEL SETTING METHOD
+        //                    Solve subproblems using the extracted function
         //***********************************************************************************//
-        // start the subproblems timer
-        subProblemTime_->start();
+        if (mainInst->parameters_->subAlgorithm_ == LABEL_SETTING)
+            subProBreak = solve_SP_Label(EpochInst, mainInst, iter, nbNegativeFound,
+                CG_Model_->availableRoutes_, CG_Model_->availableTime_, CG_Model_->nbRoutes_);
+        else
+            subProBreak = solve_SP_CPLEX(EpochInst, mainInst, iter, nbNegativeFound,
+                CG_Model_->availableRoutes_, CG_Model_->availableTime_, CG_Model_->nbRoutes_);
 
-        // defining subproblems
-        std::vector<PLabelingSubPro> subProSolve;
-        selectVehiclesForSubproblem(EpochInst, iter);
-
-        // create subproblems
-        int num = 0;
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            vehicleObj->bestReducedCost_ = INFINITY;
-
-            if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
-                num++;
-                subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
-                if (EpochInst->parameters_->partialPricing_) {
-                    if (vehicleObj->currentRoute_->routeRequests_.size() >= 2){
-                        vehicleObj->numPickup_ = 2;
-                        nbThreePick_ ++;
-                    }
-                    else if (!vehicleObj->currentRoute_->routeRequests_.empty()){
-                        vehicleObj->numPickup_ = 2;
-                        nbTwoPick_ ++;
-                    }
-                    else {
-                        vehicleObj->numPickup_ = 1;
-                        nbOnePick_ ++;
-                    }
-                    subProSolve.back()->maxPickup_= vehicleObj->numPickup_;
-                    vehicleObj->preSolvePick_ = subProSolve.back()->maxPickup_;
-                }
-                else if (EpochInst->parameters_->dynamicPricing_) {
-                    subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
-                    // if (iter >= 5) {
-                    //     subProSolve.back()->solverOptions_->isTruncated_ = false;
-                    //     subProSolve.back()->solverOptions_->isDropPickPossible_ = true;
-                    // }
-                }
-                else
-                    subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
- //                   subProSolve.back()->maxPickup_ = (epoch_ % 2 == 0) ? 1 : 2;
-
-                if (EpochInst->parameters_->routeRecycle_)
-                    subProSolve.back()->availableRoutes_ = masterModel_->availableRoutes_[vehicleObj->vehicleID_];
-                masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
-            }
-        }
-        // solving subproblems
-        for (auto &subProblem: subProSolve) {
-            if (subProBreak) break;
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
-                masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 0 && iter > 1) {
-                subProBreak = true;
-                break;
-            }
-            Tools::Job job([&]() {
-                subProblem->initSubGraph(EpochInst);
-                subProblem->labelPool_ = std::move(labelsPool_.pop_data());
-                if (!subProblem->subRequests_.empty()) {
-                    if (subProblem->solveDynamic(
-                            masterModel_->availableTime_ - subProblemTime_->dSinceStart().count())) {
-                        subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
-                                                     masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_],
-                                                     mainInst, EpochInst->nbRequests_);
-                    } else {
-                        subProblem->CollectLabels();
-                        subProBreak = true;
-                    }
-                }
-                labelsPool_.push_data(std::move(subProblem->labelPool_));
-            });
-            pPool->run(job);
-        }
-        while(true){
-            if (!pPool->wait())
-                break;
-        }
-
-        for (auto &subProblem: subProSolve) {
-            masterModel_->nbRoutes_ += static_cast<int>(masterModel_->availableRoutes_[(subProblem->Vehicle_)->vehicleID_].size());
-            nbNegativeFound = nbNegativeFound + subProblem->nbNegativeColumns_;
-            nbNegativeFound_ += subProblem->nbNegativeColumns_;
-            nbGenerated_ += subProblem->nbGenerated_;
-            nbDominated_ += subProblem->nbDominated_;
-            nbEliminated_ += subProblem->nbEliminated_;
-            nbPrunedPath_ += subProblem->nbPrunedPath_;
-            nbPrunedArcs_ += subProblem->nbPrunedArcs_;
-            nbRecycledColumns_ += subProblem->nbRecycledColumns_;
-            (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
-        }
-        preprocessTime_->start();
-        subProSolve.clear();
-        preprocessTime_->stop();
-
-
-        subProblemTime_->stop();
-        SubproEpochTime_ += subProblemTime_->dSinceStart().count();
         if (subProBreak) {
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
             break;
         }
-        masterModel_->SPIters_++;
-        masterModel_->SPIter_++;
+
+        CG_Model_->SPIters_++;
+        CG_Model_->SPIter_++;
 
         if (nbNegativeFound == 0) {
-            masterModel_->CGSuccess_++;
+            CG_Model_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
             break;
-        }
-        else {
+        } else {
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
-            if (masterModel_->availableTime_ <= 0){
+            CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+            if (CG_Model_->availableTime_ <= 0){
                 break;
             }
-            masterModel_->timeLimit_ = masterModel_->availableTime_;
-            //solve the restricted Mater Problem
-            masterModel_->epochTime_ += subProblemTime_->dSinceStart().count();
-            if (iter == 1)
-                EpochInst->resetDuals();
-            switch(EpochInst->parameters_->mainAlgorithm_) {
-                case RT_CG:
-                    masterModel_->solveRLMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case A_CG:
-                    masterModel_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case MP_MIP:
-                    masterModel_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case MP_CP:
-                    masterModel_->solveMP_CP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                default: // MP_ISUD:
-                    masterModel_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-            }
+            CG_Model_->timeLimit_ = CG_Model_->availableTime_;
+
+            //***********************************************************************************//
+            //                    Solve the Restricted Master Problem
+            //***********************************************************************************//
+            CG_Model_->epochTime_ += subProblemTime_->dSinceStart().count();
+ //           if (iter == 1)
+ //               EpochInst->resetDuals();
+            if (EpochInst->parameters_->mainAlgorithm_ == RT_CG)
+                CG_Model_->solveRMP_LP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+            else if (EpochInst->parameters_->mainAlgorithm_ == A_CG)
+                CG_Model_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+
             // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+            CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
             if (mainInst->parameters_->numIter_ == iter){
                 break;
             }
         }
-        if (masterModel_->availableTime_ <= 0)
+        if (CG_Model_->availableTime_ <= 0)
             break;
 
-        if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
-            masterModel_->CGSuccess_++;
+        if (EpochInst->parameters_->mainAlgorithm_ == A_CG && previousObj == CG_Model_->objValue_) {
+            CG_Model_->CGSuccess_++;
             std::cout << "No changes in Objective" << std::endl;
             break;
         }
@@ -293,45 +178,21 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
     }  // end of CG while
 
-    masterModel_->setObjValue();
+    CG_Model_->setObjValue();
 
     if (EpochInst->parameters_->mainAlgorithm_ == RT_CG) {
-        masterModel_->availableTime_ = EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count();
-        masterModel_->timeLimit_ = std::max(masterModel_->availableTime_, 10.0f);
+        CG_Model_->availableTime_ = EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count();
+        CG_Model_->timeLimit_ = std::max(CG_Model_->availableTime_, 10.0f);
 
-        masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+        CG_Model_->solveRMP_IP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
     }
 
-    // reset MP models
-    if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD){
-        masterModel_->CompPro_.reset();
-        masterModel_->ReducedPro_.reset();
-    }
-    else {
-        masterModel_->MasterPro_.reset();
-        if (EpochInst->parameters_->initialDual_ == AUX_D)
-            masterModel_->DualAuxSolver_.reset();
-    }
+    CG_Model_->MasterPro_.reset();
+    CG_Model_->MPGurobiPro_.reset();
 
-    /*int lastEpoch = 0;
-    if (mainInst->parameters_->solutionMode_ == ANYTIME)
-        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - mainInst->parameters_->committedTime_;
-    else
-        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_ * EpochInst->parameters_->epochLength_) - mainInst->parameters_->epochLength_;
+    if (EpochInst->parameters_->initialDual_ == AUX_D)
+        CG_Model_->DualAuxSolver_.reset();
 
-    // Return Idle Vehicles
-    if (EpochInst->parameters_->vehicleReturn_) {
-        for (auto &vehicleObj: EpochInst->vehicles_){
-            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
-                if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
-                    vehicleObj->currentRoute_->addSink(vehicleObj->sinkNode_);
-                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
-                }
-            }
-        }
-    }*/
     if (EpochInst->parameters_->vehicleReturn_) {
         if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
@@ -351,83 +212,289 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
+    objValue_ = CG_Model_->objValue_;
+    std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
+}
+
+void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPaths &inputPaths) {
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
+
+    // Set available time
+    ISUD_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
+    EpochInst->updateTaskIndexLabeling();
+    if (mainInst->parameters_->modelSolver_ == CPLEX)
+        ISUD_Model_->initializationCPLEX(EpochInst, inputPaths, GreedyModel_);
+    else
+        ISUD_Model_->initializationGurobi(EpochInst, inputPaths, GreedyModel_);
+
+    // Initialize variables
+    int iter = 0;
+    bool subProBreak = false;
+    ISUD_Model_->RMPCounter_ ++;
+    ISUD_Model_->nbRoutes_ = 0;
+
+    ISUD_Model_->lpObjValue_ = ISUD_Model_->objValue_;
+    EpochInst->selectedVehicles_.clear();
+    EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
+    runtimeMetrics_->resetSubproblemMetrics();
+    ISUD_Model_->availableRoutes_.clear();
+    ISUD_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
+
+
+    while (true) {
+        iter++;
+        ISUD_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+        int nbNegativeFound = 0;
+        float previousObj = ISUD_Model_->objValue_;
+
+        //***********************************************************************************//
+        //                    Solve subproblems using the extracted function
+        //***********************************************************************************//
+        if (mainInst->parameters_->subAlgorithm_ == LABEL_SETTING)
+            subProBreak = solve_SP_Label(EpochInst, mainInst, iter, nbNegativeFound,
+                ISUD_Model_->availableRoutes_, ISUD_Model_->availableTime_, ISUD_Model_->nbRoutes_);
+        else
+            subProBreak = solve_SP_CPLEX(EpochInst, mainInst, iter, nbNegativeFound,
+                ISUD_Model_->availableRoutes_, ISUD_Model_->availableTime_, ISUD_Model_->nbRoutes_);
+
+        if (subProBreak) {
+            std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
+            break;
+        }
+
+        ISUD_Model_->SPIters_++;
+        ISUD_Model_->SPIter_++;
+
+        if (nbNegativeFound == 0) {
+            ISUD_Model_->CGSuccess_++;
+            std::cout << "Terminate CG-> No negative column " << std::endl;
+            break;
+        }else {
+            // Update available time
+            ISUD_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+            if (ISUD_Model_->availableTime_ <= 0){
+                break;
+            }
+            ISUD_Model_->timeLimit_ = ISUD_Model_->availableTime_;
+
+            //***********************************************************************************//
+            //                    Solve the Restricted Master Problem with ISUD
+            //***********************************************************************************//
+            ISUD_Model_->epochTime_ += subProblemTime_->dSinceStart().count();
+ //           if (iter == 1)
+ //               EpochInst->resetDuals();
+            if(EpochInst->parameters_->mainAlgorithm_ == MP_ISUD)
+                ISUD_Model_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
+
+            // Update available time
+            ISUD_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
+            if (mainInst->parameters_->numIter_ == iter){
+                break;
+            }
+        }
+        if (ISUD_Model_->availableTime_ <= 0)
+            break;
+
+        if (previousObj == ISUD_Model_->objValue_) {
+            ISUD_Model_->CGSuccess_++;
+            std::cout << "No changes in Objective" << std::endl;
+            break;
+        }
+
+        std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
+    }  // end of CG while
+
+    ISUD_Model_->setObjValue();
+
+    // reset MP models
+    ISUD_Model_->CompPro_.reset();
+    ISUD_Model_->ReducedPro_.reset();
+    ISUD_Model_->CPGurobiPro_.reset();
+    ISUD_Model_->RPGurobiPro_.reset();
+
+    if (EpochInst->parameters_->vehicleReturn_) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+            if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+                returnVehicles(EpochInst);
+            else if (EpochInst->parameters_->returnPolicy_ == ZONE)
+                returnVehiclesZone(EpochInst);
+            else
+                returnVehiclesAlonso(mainInst);
+        }
+    }
+
+    if (EpochInst->parameters_->solutionMode_ == ANYTIME){
+        for (auto &vehicleObj: EpochInst->vehicles_){
+            if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
+                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+            }
+        }
+    }
     /*if (labelsPool_.getSize() > 70000) {
         labelsPool_.clear();
         labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     }*/
-
+    objValue_ = ISUD_Model_->objValue_;
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
+void Solver::solve_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPaths &inputPaths) {
+    if (EpochInst->parameters_->approach_ == ISUD)
+        solveICG_Epoch(EpochInst, mainInst, inputPaths);
+    else if (EpochInst->parameters_->approach_ == CG)
+        solveCG_Epoch(EpochInst, mainInst, inputPaths);
+}
 
-void Solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
+bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int iter, int &nbNegativeFound,
+                            vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes) {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
-    // Set available time
-    masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
-    EpochInst->updateTaskIndexLabeling();
-    masterModel_->initialization(EpochInst, inputPaths, GreedyModel_);
-
-    // Define required variables
-    int iter = 0;
     bool subProBreak = false;
-    masterModel_->RMPCounter_++;
-    masterModel_->nbRoutes_ = 0;
-    SubproEpochTime_ = 0;
-    masterModel_->lpObjValue_ = masterModel_->objValue_;
-    EpochInst->selectedVehicles_.clear();
-    EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
-    nbNegativeFound_ = 0;
-    nbGenerated_ = 0;
-    nbDominated_ = 0;
-    nbPrunedArcs_ = 0;
-    nbPrunedPath_ = 0;
-    nbEliminated_ = 0;
-    nbRecycledColumns_ = 0;
+    nbOnePick_ = 0;
+    nbTwoPick_ = 0;
+    nbThreePick_ = 0;
 
-    while (true) {
-        nbOnePick_ = 0;
-        nbTwoPick_ = 0;
-        nbThreePick_ = 0;
+    // Start the subproblems timer
+    subProblemTime_->start();
 
-        // Set available time
-        iter++;
-        masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
-        int nbNegativeFound = 0;
-        float previousObj = masterModel_->objValue_;
+    // Define subproblems
+    std::vector<PLabelingSubPro> subProSolve;
+    selectVehiclesForSubproblem(EpochInst, iter);
 
-        //***********************************************************************************//
-        //                    CPLEX SUBPROBLEM METHOD
-        //***********************************************************************************//
-        // Start the subproblems timer
-        subProblemTime_->start();
+    // create subproblems
+    int num = 0;
 
-        // Define CPLEX subproblems
-        std::vector<PCplexSubPro> subProSolve;
-        selectVehiclesForSubproblem(EpochInst, iter);
+    for (auto &vehicleObj: EpochInst->vehicles_) {
+        vehicleObj->bestReducedCost_ = INFINITY;
 
-        // Create CPLEX subproblems
-        int num = 0;
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            vehicleObj->bestReducedCost_ = INFINITY;
+        if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
+            num++;
+            subProSolve.emplace_back(std::make_shared<LabelingSubProblem>(vehicleObj, subProOptions_));
 
-            if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
-                num++;
-                subProSolve.emplace_back(std::make_shared<CPLEXSubProblem>(vehicleObj));
-                masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
+            // Handle partial pricing
+            if (EpochInst->parameters_->partialPricing_) {
+                if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
+                    vehicleObj->numPickup_ = 2;
+                    nbThreePick_++;
+                } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
+                    vehicleObj->numPickup_ = 2;
+                    nbTwoPick_++;
+                } else {
+                    vehicleObj->numPickup_ = 1;
+                    nbOnePick_++;
+                }
+                subProSolve.back()->maxPickup_ = vehicleObj->numPickup_;
+                vehicleObj->preSolvePick_ = subProSolve.back()->maxPickup_;
             }
+            // Handle dynamic pricing
+            else if (EpochInst->parameters_->dynamicPricing_) {
+                subProSolve.back()->maxPickup_ = std::min(iter, EpochInst->parameters_->nbPick_);
+            }
+            // Default pricing
+            else {
+                subProSolve.back()->maxPickup_ = EpochInst->parameters_->nbPick_;
+            }
+
+            // Handle route recycling
+            if (EpochInst->parameters_->routeRecycle_) {
+                subProSolve.back()->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
+            }
+            availableRoutes[vehicleObj->vehicleID_].clear();
         }
-
-        // Solve CPLEX subproblems
-        for (auto &subProblem: subProSolve) {
-            if (subProBreak) break;
-            if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
-                masterModel_->availableTime_ - subProblemTime_->dSinceStart().count() <= 0 && iter > 1) {
-                subProBreak = true;
-                break;
+    }
+    // solving subproblems
+    for (auto &subProblem: subProSolve) {
+        if (subProBreak) break;
+        // Check time constraint for dynamic mode
+        if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
+            availableTime - subProblemTime_->dSinceStart().count() <= 0 && iter > 1) {
+            subProBreak = true;
+            break;
+        }
+        Tools::Job job([&]() {
+            subProblem->initSubGraph(EpochInst);
+            subProblem->labelPool_ = std::move(labelsPool_.pop_data());
+            if (!subProblem->subRequests_.empty()) {
+                if (subProblem->solveDynamic(
+                        availableTime - subProblemTime_->dSinceStart().count())) {
+                    subProblem->SolutionToRoutes(EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
+                                                 availableRoutes[(subProblem->Vehicle_)->vehicleID_],
+                                                 mainInst, EpochInst->nbRequests_);
+                } else {
+                    subProblem->CollectLabels();
+                    subProBreak = true;
+                }
             }
+            labelsPool_.push_data(std::move(subProblem->labelPool_));
+        });
+        pPool->run(job);
+    }
+    // Wait for all jobs to complete
+    while (true) {
+        if (!pPool->wait())
+            break;
+    }
 
-            Tools::Job job([&]() {
+    // Collect results from subproblems
+    nbNegativeFound = 0;
+    for (auto &subProblem: subProSolve) {
+        nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
+        nbNegativeFound += subProblem->nbNegativeColumns_;
+        runtimeMetrics_->updateSubproblemMetrics(subProblem);
+        (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+    }
+
+
+    // Clean up
+    preprocessTime_->start();
+    subProSolve.clear();
+    preprocessTime_->stop();
+
+    subProblemTime_->stop();
+    runtimeMetrics_->subproEpochTime_ += subProblemTime_->dSinceStart().count();
+
+    return subProBreak;
+}
+
+bool Solver::solve_SP_CPLEX(PInstance &EpochInst, PInstance &mainInst, int iter, int &nbNegativeFound,
+    vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes) {
+    Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
+
+    bool subProBreak = false;
+    nbOnePick_ = 0;
+    nbTwoPick_ = 0;
+    nbThreePick_ = 0;
+
+    // Start the subproblems timer
+    subProblemTime_->start();
+
+    // Define subproblems
+    std::vector<PCplexSubPro> subProSolve;
+    selectVehiclesForSubproblem(EpochInst, iter);
+
+    // create subproblems
+    int num = 0;
+
+    for (auto &vehicleObj: EpochInst->vehicles_) {
+        vehicleObj->bestReducedCost_ = INFINITY;
+
+        if (EpochInst->selectedVehicles_[vehicleObj->vehicleID_] >= 1) {
+            num++;
+            subProSolve.emplace_back(std::make_shared<CPLEXSubProblem>(vehicleObj));
+            availableRoutes[vehicleObj->vehicleID_].clear();
+        }
+    }
+
+    // Solve CPLEX subproblems
+    for (auto &subProblem: subProSolve) {
+        if (subProBreak) break;
+        // Check time constraint for dynamic mode
+        if (EpochInst->parameters_->solutionMode_ == DYNAMIC &&
+            availableTime - subProblemTime_->dSinceStart().count() <= 0 && iter > 1) {
+            subProBreak = true;
+            break;
+        }
+        Tools::Job job([&]() {
                 try {
                     subProblem->initSubGraph(EpochInst);
                     // Initialize the CPLEX model
@@ -436,7 +503,6 @@ void Solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, Inp
                     // Build the optimization model
                     subProblem->buildModel(EpochInst);
 
-
                     // Solve the subproblem
                     std::vector<PRoute> newRoutes;
                     subProblem->solveModel(EpochInst, newRoutes);
@@ -444,7 +510,7 @@ void Solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, Inp
                     // Store generated routes
                     for (auto &route : newRoutes) {
                         if (route->reducedCost_ < -1e-6) { // Negative reduced cost threshold
-                            masterModel_->availableRoutes_[subProblem->Vehicle_->vehicleID_].push_back(route);
+                            availableRoutes[subProblem->Vehicle_->vehicleID_].push_back(route);
                             subProblem->nbNegativeColumns_++;
                         }
                         subProblem->nbGenerated_++;
@@ -467,134 +533,31 @@ void Solver::solveCG_Epoch_CPLEX(PInstance &EpochInst, PInstance & mainInst, Inp
                     subProBreak = true;
                 }
             });
-            pPool->run(job);
-        }
-
-        // Wait for all threads to complete
-        while(true) {
-            if (!pPool->wait())
-                break;
-        }
-
-        // Collect results from subproblems
-        for (auto &subProblem: subProSolve) {
-            masterModel_->nbRoutes_ += static_cast<int>(masterModel_->availableRoutes_[subProblem->Vehicle_->vehicleID_].size());
-            nbNegativeFound += subProblem->nbNegativeColumns_;
-            nbNegativeFound_ += subProblem->nbNegativeColumns_;
-            nbGenerated_ += subProblem->nbGenerated_;
-        }
-
-        preprocessTime_->start();
-        subProSolve.clear();
-        preprocessTime_->stop();
-
-        subProblemTime_->stop();
-        SubproEpochTime_ += subProblemTime_->dSinceStart().count();
-
-        if (subProBreak) {
-            std::cout << "Terminate CG-> CPLEX subproblem solver interrupted! " << std::endl;
+        pPool->run(job);
+    }
+    // Wait for all jobs to complete
+    while (true) {
+        if (!pPool->wait())
             break;
-        }
-
-        masterModel_->SPIters_++;
-        masterModel_->SPIter_++;
-
-        if (nbNegativeFound == 0) {
-            masterModel_->CGSuccess_++;
-            std::cout << "Terminate CG-> No negative column found by CPLEX" << std::endl;
-            break;
-        }
-        else {
-            // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
-            if (masterModel_->availableTime_ <= 0) {
-                break;
-            }
-            masterModel_->timeLimit_ = masterModel_->availableTime_;
-
-            // Solve the restricted Master Problem
-            masterModel_->epochTime_ += subProblemTime_->dSinceStart().count();
-            if (iter == 1)
-                EpochInst->resetDuals();
-
-            switch(EpochInst->parameters_->mainAlgorithm_) {
-                case RT_CG:
-                    masterModel_->solveRLMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case A_CG:
-                    masterModel_->solveMP_CG(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case MP_MIP:
-                    masterModel_->solveMP_MIP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                case MP_CP:
-                    masterModel_->solveMP_CP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-                default: // MP_ISUD:
-                    masterModel_->solveISUD(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
-                    break;
-            }
-
-            // Update available time
-            masterModel_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
-            if (mainInst->parameters_->numIter_ == iter) {
-                break;
-            }
-        }
-
-        if (masterModel_->availableTime_ <= 0)
-            break;
-
-        if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD && previousObj == masterModel_->objValue_) {
-            masterModel_->CGSuccess_++;
-            std::cout << "No changes in Objective" << std::endl;
-            break;
-        }
-
-        std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
-    }  // end of CG while
-
-    masterModel_->setObjValue();
-
-    if (EpochInst->parameters_->mainAlgorithm_ == RT_CG) {
-        masterModel_->availableTime_ = EpochInst->parameters_->epochLength_ - simulationTime_->dSinceStart().count();
-        masterModel_->timeLimit_ = std::max(masterModel_->availableTime_, 10.0f);
-        masterModel_->solveRMP(EpochInst, epoch_, inputPaths, subProblemTime_->dSinceStart().count());
     }
 
-    // Reset MP models
-    if (EpochInst->parameters_->mainAlgorithm_ == MP_ISUD) {
-        masterModel_->CompPro_.reset();
-        masterModel_->ReducedPro_.reset();
-    }
-    else {
-        masterModel_->MasterPro_.reset();
-        if (EpochInst->parameters_->initialDual_ == AUX_D)
-            masterModel_->DualAuxSolver_.reset();
+    // Collect results from subproblems
+    nbNegativeFound = 0;
+    for (auto &subProblem: subProSolve) {
+        nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
+        nbNegativeFound += subProblem->nbNegativeColumns_;
+        runtimeMetrics_->updateSubproblemMetrics(subProblem);
     }
 
-    // Vehicle return logic (unchanged from original)
-    if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ ||
-            EpochInst->parameters_->solutionMode_ == DYNAMIC) {
-            if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
-                returnVehicles(EpochInst);
-            else if (EpochInst->parameters_->returnPolicy_ == ZONE)
-                returnVehiclesZone(EpochInst);
-            else
-                returnVehiclesAlonso(mainInst);
-        }
-    }
 
-    if (EpochInst->parameters_->solutionMode_ == ANYTIME) {
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_) {
-                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceStart().count());
-            }
-        }
-    }
+    // Clean up
+    preprocessTime_->start();
+    subProSolve.clear();
+    preprocessTime_->stop();
 
-    std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
+    subProblemTime_->stop();
+    runtimeMetrics_->subproEpochTime_ += subProblemTime_->dSinceStart().count();
+    return subProBreak;
 }
 
 
@@ -605,7 +568,6 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
     greedyRebalanceTime_ = 0;
     rebalancingTime_->start();
     std::vector<float> EpochTime = {1,1,1};
-//    int commitTime = mainInst->parameters_->epochLength_;
 
     // start simulation timer
     mainInst->setInitialTimes();
@@ -618,31 +580,32 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
-    float preObjective = masterModel_->objValue_;
+    float preObjective = objValue_;
     bool skip = false;
-    masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
-    while (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty()) {
+    while (nbReceivedRequest < mainInst->nbRequests_ ||
+        (CG_Model_ && !CG_Model_->zSolution_.empty())||
+        (ISUD_Model_ && !ISUD_Model_->zSolution_.empty())) {
         nextEpoch:
         simulationTime_->start();
         //       preprocessTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
         std::cout << "---------------------"<< std::endl;
         std::cout << " ELAPSED TIME: " << elapsedTime_ << std::endl;
-        std::cout << " PRE EPOCH TIME: " << epochRuntime_ << std::endl;
+        std::cout << " PRE EPOCH TIME: " << runtimeMetrics_->epochRuntime_ << std::endl;
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        std::ofstream logFile(inputPaths.getOutputSolverLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
         logFile << " EPOCH: " << epoch_ << std::endl;
         logFile.close();
-        EpochTime[epoch_ % EpochTime.size()] = epochRuntime_;
+        EpochTime[epoch_ % EpochTime.size()] = runtimeMetrics_->epochRuntime_;
         float avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0.0f) / static_cast<float>(EpochTime.size()));
         if (mainInst->parameters_->committedTime_ > std::max(avg, mainInst->parameters_->epochLength_)) {
             mainInst->parameters_->committedTime_ = std::max(avg, mainInst->parameters_->epochLength_);
             std::cout << "dec commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
-        if (mainInst->parameters_->committedTime_ < epochRuntime_) {
-            mainInst->parameters_->committedTime_ = ceil(epochRuntime_ + 2);
+        if (mainInst->parameters_->committedTime_ < runtimeMetrics_->epochRuntime_) {
+            mainInst->parameters_->committedTime_ = ceil(runtimeMetrics_->epochRuntime_ + 2);
             std::cout << "inc commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
 
@@ -657,26 +620,14 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
-        if (mainInst->parameters_->routeRecycle_) {
-            for (auto &vehicleObj: mainInst->vehicles_) {
-                if (vehicleObj->stateChanged_)
-                    masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
-            }
-            if (removedRequests.count()) {
-                updateAvailableRoutes(removedRequests, masterModel_->availableRoutes_);
-            }
-        }
-        else {
-            masterModel_->availableRoutes_.clear();
-            masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
-        }
-
-        masterModel_->nbRoutes_ = 0;
 
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
-        EpochInst->buildPartialData(mainInst, masterModel_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        if (mainInst->parameters_->approach_ == ISUD)
+            EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        else if (mainInst->parameters_->approach_ == CG)
+            EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
             vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
             vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
@@ -704,17 +655,13 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         }
         std::cout << "# TOTAL NUMBER OF NEW REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
         if (EpochInst->nbNewRequests_ == 0 && skip) {
-            //           std::cout << "next event" << std::endl;
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
-            //           preprocessTime_->stop();
-            //           (*pLogRunTimesStream_) << saveRuntimes(EpochInst);
- //           epoch_++;
             goto nextEpoch;
         }
 //        preprocessTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-            solveCG_Epoch(EpochInst, mainInst, inputPaths);
+            solve_Epoch(EpochInst, mainInst, inputPaths);
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
             if (EpochInst->parameters_->vehicleReturn_) {
@@ -737,12 +684,12 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 }
             }
         }
-        if (preObjective != masterModel_->objValue_)
+        if (preObjective != objValue_)
             skip = false;
         else
             skip = true;
 
-        preObjective = masterModel_->objValue_;
+        preObjective = objValue_;
         EpochInst->setAssignedEpochVehicles(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceInit().count());
         simulationTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
@@ -775,8 +722,6 @@ void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool midd
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst, nbReceivedRequest);
 
-
-    masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
     for (auto &vehicleObj: mainInst->vehicles_){
         vehicleObj->currentRoute_->createColumn(StaticInst->nbRequests_);
     }
@@ -786,7 +731,7 @@ void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool midd
 //    preprocessTime_->stop();
     switch(StaticInst->parameters_->mainAlgorithm_) {
         case MIP_CPLEX :
-            MIPModel_ = std::make_shared<MIPSolver>();
+            MIPModel_ = std::make_unique<MIPSolver>();
             MIPModel_->SolveMIP(StaticInst, inputPaths);
             MIPModel_.reset();
             break;
@@ -798,7 +743,7 @@ void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool midd
             std::cout << "# TIME SPENT ON GREEDY " << "=" << GreedyModel_->greedyTime_->dSinceInit().count() << " (seconds)" << std::endl;
             break;
         default: // CG_CPLEX and CG_ISUD
-            solveCG_Epoch(StaticInst, mainInst, inputPaths);
+            solve_Epoch(StaticInst, mainInst, inputPaths);
             break;
     }
     StaticInst->setAssignedEpochVehicles(simulationTime_->dSinceInit().count());
@@ -841,7 +786,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         std::cout << " EPOCH: " << epoch_ << std::endl;
         std::cout << "---------------------"<< std::endl;
 
-        std::ofstream logFile(inputPaths.getOutputCplexLog(), std::ofstream::app);
+        std::ofstream logFile(inputPaths.getOutputSolverLog(), std::ofstream::app);
         logFile << "---------------------------------------------------"<< std::endl;
         logFile << " EPOCH: " << epoch_ << std::endl;
         logFile.close();
@@ -849,33 +794,24 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         mainInst->nbOnboards_ = 0;
         boost::dynamic_bitset<> removedRequests;
         removedRequests.resize(EpochInst->nbRequests_);
-        if (mainInst->parameters_->routeRecycle_) {
-            if (removedRequests.count()) {
-                for (auto &vehicleObj: mainInst->vehicles_) {
-                    if (vehicleObj->stateChanged_)
-                        masterModel_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                }
-                updateAvailableRoutes(removedRequests, masterModel_->availableRoutes_);
-            }
-        }
-        else {
-            masterModel_->availableRoutes_.clear();
-            masterModel_->availableRoutes_.resize(mainInst->nbVehicles_);
-        }
+
         for (auto &vehicleObj: mainInst->vehicles_) {
             vehicleObj->updateStateTime(mainInst, static_cast<float>(mainInst->simulationStartTime_) +
                                         static_cast<float>(epoch_) * mainInst->parameters_->epochLength_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
-        masterModel_->nbRoutes_ = 0;
 
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
 
-        EpochInst->buildPartialData(mainInst, masterModel_->zSolution_,
-                                    static_cast<float>(epoch_) * mainInst->parameters_->epochLength_,
-                                    nbReceivedRequest);
+        if (mainInst->parameters_->approach_ == ISUD)
+            EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , static_cast<float>(epoch_) *
+                mainInst->parameters_->epochLength_, nbReceivedRequest);
+        else if (mainInst->parameters_->approach_ == CG)
+            EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , static_cast<float>(epoch_) *
+            mainInst->parameters_->epochLength_, nbReceivedRequest);
+
         for (auto &vehicleObj: mainInst->vehicles_){
             vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
             vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
@@ -923,15 +859,15 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 }
                 break;
             case MIP_CPLEX:
-                MIPModel_ = std::make_shared<MIPSolver>();
+                MIPModel_ = std::make_unique<MIPSolver>();
                 MIPModel_->SolveMIP(EpochInst, inputPaths);
-                masterModel_->zSolution_ = MIPModel_->zSolution_;
-                masterModel_->routeSolution_ = MIPModel_->routeSolution_;
+  //              masterModel_->zSolution_ = MIPModel_->zSolution_;
+  //              masterModel_->routeSolution_ = MIPModel_->routeSolution_;
                 MIPModel_.reset();
                 break;
             default:
   //              solveCG_Epoch_CPLEX(EpochInst, mainInst, inputPaths);
-                solveCG_Epoch(EpochInst, mainInst, inputPaths);
+                solve_Epoch(EpochInst, mainInst, inputPaths);
                 break;
         }
 
@@ -955,60 +891,32 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 // function to print epoch runTime to file
 std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     std::stringstream repStr;
-    epochRuntime_ = simulationTime_->dSinceStart().count();
+    runtimeMetrics_->epochRuntime_ = simulationTime_->dSinceStart().count();
     avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
 
     repStr << epoch_ << ",";
     repStr << EpochInst->nbRequests_ << ",";
     repStr << EpochInst->nbNewRequests_ << ",";
     repStr << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ",";
-    repStr << epochRuntime_ << ",";
+    repStr << runtimeMetrics_->epochRuntime_ << ",";
     repStr << simulationTime_->dSinceInit().count() << ",";
 
     // master problem Times
-    repStr << masterModel_->masterTime_->dSinceInit().count() - masterEpochTime_ << ",";
-    repStr << masterModel_->RPTime_->dSinceInit().count() - RPEpochTime_ << ",";
-    repStr << masterModel_->MPBuildTime_->dSinceInit().count() - RPEpochBuildTime_ << ",";
-    repStr << masterModel_->MPEpochSolveTime_ << ",";
-    repStr << masterModel_->CPTime_->dSinceInit().count() - CPEpochTime_ << ",";
-    repStr << masterModel_->CPBuildTime_->dSinceInit().count() - CPEpochBuildTime_ << ",";
-    repStr << masterModel_->CPEpochSolveTime_ << ",";
-    repStr << masterModel_->ZOOMTime_->dSinceInit().count() - isudMIPEpochTime_ << ",";
+    if (EpochInst->parameters_->approach_ == CG)
+        repStr << CG_Model_->runtimesToString(runtimeMetrics_);
+    else if (EpochInst->parameters_->approach_ == ISUD)
+        repStr << ISUD_Model_->runtimesToString(runtimeMetrics_);
 
-    masterEpochTime_ = masterModel_->masterTime_->dSinceInit().count();
-    RPEpochTime_ = masterModel_->RPTime_->dSinceInit().count();
-    RPEpochBuildTime_ = masterModel_->MPBuildTime_->dSinceInit().count();
-    CPEpochTime_ = masterModel_->CPTime_->dSinceInit().count();
-    CPEpochBuildTime_ = masterModel_->CPBuildTime_->dSinceInit().count();
-    isudMIPEpochTime_ = masterModel_->ZOOMTime_->dSinceInit().count();
-
-    repStr << SubproEpochTime_ << ",";
-    repStr << preprocessTime_ ->dSinceStart().count()<< ",";
-    repStr << GreedyModel_->greedyAssignTime_->dSinceInit().count() - AssignTime_ << ",";
-    repStr << GreedyModel_->greedyTime_->dSinceInit().count() - GreedyTime_ << ",";
-    AssignTime_ = GreedyModel_->greedyAssignTime_->dSinceInit().count();
-    GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
-    repStr << masterModel_->SPIter_ << ",";
-    repStr << masterModel_->nbRoutes_ << ",";
-    repStr << nbGenerated_ << ",";
-    repStr << nbDominated_ << ",";
-    repStr << nbEliminated_ << ",";
-    repStr << nbPrunedArcs_ << ",";
-    repStr << nbPrunedPath_ << ",";
-    repStr << nbNegativeFound_ << ",";
-    repStr << masterModel_->nbColumnsAdded_ << ",";
-    repStr << nbRecycledColumns_ << ",";
-    repStr << masterModel_->GreedyObjValue_ << ",";
-    repStr << masterModel_->objValue_ << ",";
-    repStr << masterModel_->lpObjValue_ << ",";
-    repStr << masterModel_->totalWaitTime_ << ",";
-    repStr << EpochInst->nbReturn_ << ",";
-    repStr << EpochInst->nbIdle_ << ",";
-    repStr << EpochInst->nbPotentialIdle_ << ",";
-    repStr << EpochInst->nbStateChanged_ << ",";
-    repStr << nbOnePick_ << ",";
-    repStr << nbTwoPick_ << ",";
-    repStr << nbThreePick_ << "\n";
+    repStr << preprocessTime_ ->dSinceStart().count()<< ","
+           << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ","
+           << EpochInst->nbReturn_ << ","
+           << EpochInst->nbIdle_ << ","
+           << EpochInst->nbPotentialIdle_ << ","
+           << EpochInst->nbStateChanged_ << ","
+           << nbOnePick_ << ","
+           << nbTwoPick_ << ","
+           << nbThreePick_ << "\n";
+    runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }
 
@@ -1038,40 +946,27 @@ std::string Solver::toString(const PInstance & mainInst) const {
     repStr << "#" << std::endl;
     repStr << mainInst->solutionToString();
     repStr << std::left << std::fixed << std::setprecision(2);
-    repStr << masterModel_->toStringTimersTotal();
+    if (mainInst->parameters_->approach_ == CG)
+        repStr << CG_Model_->toStringTimersTotal();
+    else if (mainInst->parameters_->approach_ == ISUD)
+        repStr << ISUD_Model_->toStringTimersTotal();
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << masterModel_->toStringTimersAvg(epoch_);
+    if (mainInst->parameters_->approach_ == CG)
+        repStr << CG_Model_->toStringTimersAvg(epoch_);
+    else if (mainInst->parameters_->approach_ == ISUD)
+        repStr << ISUD_Model_->toStringTimersAvg(epoch_);
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    mainInst->instRepStr_ << epoch_-1 << "," << masterModel_->LPIter_ << "," << masterModel_->MIPIter_ << ",";
-    mainInst->instRepStr_ << masterModel_->RPIter_ << "," << masterModel_->CPIter_ << ",";
-    mainInst->instRepStr_ << masterModel_->ZoomIter_ << ",";
-    mainInst->instRepStr_ << masterModel_->SPIters_ << ",";
-    mainInst->instRepStr_ << masterModel_->masterTime_->dSinceInit().count() << ",";
-    mainInst->instRepStr_ << masterModel_->RPTime_->dSinceInit().count() << ",";
-    mainInst->instRepStr_<< masterModel_->CPTime_->dSinceInit().count() << ",";
-    mainInst->instRepStr_ << masterModel_->ZOOMTime_->dSinceInit().count() << ",";
-    mainInst->instRepStr_ << subProblemTime_->dSinceInit().count() << "," << GreedyModel_->greedyTime_->dSinceInit().count() << ",";
-    mainInst->instRepStr_ << GreedyModel_->greedyAssignTime_->dSinceInit().count() << ",";
-    float TotalTime = masterModel_->masterTime_->dSinceInit().count() + subProblemTime_->dSinceInit().count() +
-                      GreedyModel_->greedyTime_->dSinceInit().count();
-    mainInst->instRepStr_ << TotalTime << ",";
-    if (masterModel_->masterTime_->dSinceInit().count() > 0 ){
-        mainInst->instRepStr_ << masterModel_->RPTime_->dSinceInit().count() / masterModel_->masterTime_->dSinceInit().count() << ",";
-        mainInst->instRepStr_ << masterModel_->CPTime_->dSinceInit().count() / masterModel_->masterTime_->dSinceInit().count() << ",";
-    }
-    else{
-        mainInst->instRepStr_ << 0 << "," << 0 << ",";
-    }
-    mainInst->instRepStr_ << masterModel_->masterTime_->dSinceInit().count() / TotalTime << ",";
-    mainInst->instRepStr_ << subProblemTime_->dSinceInit().count()/TotalTime << ",";
-    mainInst->instRepStr_ << GreedyModel_->greedyTime_->dSinceInit().count()/TotalTime << ",";
-    mainInst->instRepStr_ << masterModel_->CPSuccess_ << ",";
-    mainInst->instRepStr_ << masterModel_->CPFails_ << ",";
-    mainInst->instRepStr_ << masterModel_->CGSuccess_ << ",";
+    mainInst->instRepStr_ << epoch_-1 << "," ;
+    if (mainInst->parameters_->approach_ == CG)
+        CG_Model_->createFinalOutputString(mainInst, subProblemTime_->dSinceInit().count(),
+            GreedyModel_->greedyTime_->dSinceInit().count());
+    else if (mainInst->parameters_->approach_ == ISUD)
+        ISUD_Model_->createFinalOutputString(mainInst, subProblemTime_->dSinceInit().count(),
+            GreedyModel_->greedyTime_->dSinceInit().count());
     return repStr.str();
 }
 
@@ -1103,6 +998,32 @@ void Solver::solve(PInstance &mainInst, InputPaths &inputPaths, bool middleSave,
                   << " solver" << std::endl;
         throw std::runtime_error("Unknown solver error");
     }
+}
+
+void RuntimeMetrics::resetSubproblemMetrics() {
+    subproEpochTime_ = 0;
+    nbNegativeFound_ = 0;
+    nbGenerated_ = 0;
+    nbDominated_ = 0;
+    nbPrunedArcs_ = 0;
+    nbPrunedPath_ = 0;
+    nbEliminated_ = 0;
+    nbRecycledColumns_ = 0;
+}
+
+void RuntimeMetrics::updateSubproblemMetrics(PLabelingSubPro &subProblem) {
+    nbNegativeFound_ += subProblem->nbNegativeColumns_;
+    nbGenerated_ += subProblem->nbGenerated_;
+    nbDominated_ += subProblem->nbDominated_;
+    nbEliminated_ += subProblem->nbEliminated_;
+    nbPrunedPath_ += subProblem->nbPrunedPath_;
+    nbPrunedArcs_ += subProblem->nbPrunedArcs_;
+    nbRecycledColumns_ += subProblem->nbRecycledColumns_;
+}
+
+void RuntimeMetrics::updateSubproblemMetrics(PCplexSubPro &subProblem) {
+    nbNegativeFound_ += subProblem->nbNegativeColumns_;
+    nbGenerated_ += subProblem->nbGenerated_;
 }
 
 void Solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availableRoutes, const PInstance &pInst,

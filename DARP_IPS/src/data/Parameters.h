@@ -35,6 +35,8 @@ public:
     float pickupDeviationWindow_;
     ReturnType returnPolicy_;
     float maxWait_;
+    ModelSOLVER modelSolver_;
+    Approach approach_;
 
     // ISUD parameters
     WarmStart initialStart_;
@@ -49,6 +51,7 @@ public:
     // label setting strategies
     bool isTruncated_{};
     int MaxLabel_{};
+    int MaxCommittedLabel_{};
     bool isDominanceReleased_{};
     bool pruneNodes_{};
     bool pruneArcs_{};
@@ -78,13 +81,13 @@ public:
                bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                float WaitForReturn, int numVehicleSwitch, WarmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
-               int nbColumn, bool isTruncated, int maxLabel, bool pruneNodes, bool pruneArcs,
+               int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait);
+               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver);
 
     virtual ~Parameters();
 
@@ -108,13 +111,14 @@ struct solverOption {
     bool isDropPickPossible_;
     LabelingStrategy LabelingStrategy_;
     int MaxLabel_;
+    int MaxCommittedLabel_;
     bool usePick_;
     int nbPick_;
     SortPaths pathSort_;
 
     // Constructor and Destructor
-    solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick, SortPaths pathSort,
-                 bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+    solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
+                 SortPaths pathSort, bool pruneNodes, bool pruneArcs,
                  bool discardSuboptimalPath, bool isDropPickPossible, LabelingStrategy labelingStrategy);
 
     explicit solverOption(const PParameters &MainParams);

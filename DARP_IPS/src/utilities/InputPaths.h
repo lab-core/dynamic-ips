@@ -58,7 +58,7 @@ protected:
 
     std::string output_incDegree_RDCost_;       // save the reduced cost at each epoch
     std::string output_subproSize_;             // save the information of solving subproblems, nb generated, dominated,...
-    std::string output_cplexLog_;               // save cplex log file
+    std::string output_solverLog_;               // save cplex log file
     std::string output_reqDuals_;               // save requests duals after each iteration of solving MP
     std::string output_vehDuals_;               // save vehicles duals after each iteration of solving MP
     std::string output_solutionChange_;         // save the changes in incompatibility degree at each epoch
@@ -99,7 +99,7 @@ public:
     const std::string &getInstanceNameOut() const;
     const std::string &getOutputTrip() const;
     const std::string &getOutputSubproSize() const;
-    const std::string &getOutputCplexLog() const;
+    const std::string &getOutputSolverLog() const;
     const std::string &getOutputReqDuals() const;
     const std::string &getOutputVehDuals() const;
 

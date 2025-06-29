@@ -9,7 +9,7 @@
 #include "data/Instance.h"
 
 //-----------------------------------------------------------------------------
-// General class for modeling and solving the ISUD components
+// General class for modeling and solving the MP components with Cplex
 // Reduced problem and Complementary problem
 //-----------------------------------------------------------------------------
 

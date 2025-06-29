@@ -103,7 +103,7 @@ void ReducedProblem::buildModel(PInstance &pInst, std::vector<PRoute> &routeSolu
 
 void ReducedProblem::solveModelLP(const PInstance &pInst, const InputPaths &inputPaths) {
     try {
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "LMP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LMP");
 
         Cplex_.extract(Model_);
         solveTime_->start();
@@ -162,7 +162,7 @@ void ReducedProblem::solveModelInt(const PInstance &pInst, vector<PRequest> &zSo
 
         Cplex_.extract(Model_);
 
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
 //        setParameters(pInst, availableTime);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
@@ -231,7 +231,7 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
     try {
 
         // Solve the Linear Relaxation
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
 
         Cplex_.extract(Model_);
         solveTime_->start();
@@ -338,17 +338,6 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
     }
 }
 
-//************************************************************************
-// Display function
-//************************************************************************
-std::string ReducedProblem::toString() const {
-    std::stringstream repStr;
-    repStr << std::endl;
-    repStr << "# =======================  REDUCED PROBLEM SOLVED  ======================= " << std::endl;
-    repStr << CplexModeler::toString();
-    return repStr.str();
-}
-
 void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                                       const InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
     try {
@@ -359,7 +348,7 @@ void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest>
         Model_.add(convR);
 
         Cplex_.extract(Model_);
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
 //        setParameters(pInst, availableTime);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
@@ -490,6 +479,17 @@ void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest>
     }
 }
 
+//************************************************************************
+// Display function
+//************************************************************************
+std::string ReducedProblem::toString() const {
+    std::stringstream repStr;
+    repStr << std::endl;
+    repStr << "# =======================  REDUCED PROBLEM SOLVED  ======================= " << std::endl;
+    repStr << CplexModeler::toString();
+    return repStr.str();
+}
+
 void ReducedProblem::solveModelInt_box(const PInstance &pInst, vector<PRequest> &zSolution, vector<PRoute> &routeSolution,
                           const InputPaths &inputPaths, float availableTime, float preObj, float lpObj) {
     try {
@@ -500,7 +500,7 @@ void ReducedProblem::solveModelInt_box(const PInstance &pInst, vector<PRequest> 
         Model_.add(convR);
 
         Cplex_.extract(Model_);
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
  //       setParameters(pInst, availableTime);
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
@@ -626,7 +626,7 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
         Model_.add(convR);
 
         Cplex_.extract(Model_);
-        myTools::CoutRedirector redirector(inputPaths.getOutputCplexLog(), "MP");
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
         Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
         solveTime_->start();

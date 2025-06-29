@@ -463,14 +463,14 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
     float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, epochLength = -1;
     float informTimeLimit = -1, pickupDeviationWindow = -1, timeWindows = -1, mipGap = -1, maxWait = -1;
     int penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
-    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
+    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, maxCommittedLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
     bool isTruncated = false, pruneNodes = false, pruneArcs = false, constPortion = false;
     bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
     bool useMultiStage = false, vehiclePortion = false, usePick = false, greedyReOptimize = false;
     bool vehicleReturn = false, dynamicPricing = false, partialPricing = false, routeRecycle = false;
     int subAlgorithm = -1, mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
     int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1, numIter = -1;
-    int returnType = -1;
+    int returnType = -1, modelSolver = -1;
 
     while (file.good()) {
         readUntilOneOfTwoChar(file, '=','\n', title);
@@ -566,6 +566,9 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
         else if (strEndWith(title, "MaxLabel "))
             file >> maxLabel;
 
+        else if (strEndWith(title, "MaxCommittedLabel "))
+            file >> maxCommittedLabel;
+
         else if (strEndWith(title, "isDominanceReleased "))
             file >> isDominanceReleased;
 
@@ -639,7 +642,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           WaitForReturn, numVehicleSwitch,
                                                           static_cast<WarmStart>(initialStart),
                                                           MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-                                                          useZoom, nbColumns, isTruncated, maxLabel,
+                                                          useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
                                                           pruneNodes, pruneArcs, discardSuboptimalPath,
                                                           isDominanceReleased, isPickDropPossible,
                                                           static_cast<LabelingStrategy>(strategy),
@@ -651,7 +654,7 @@ void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInst
                                                           bigM, solveTimeLimit, populateTimeLimit,
                                                           static_cast<SolutionMode>(solutionMode), mipGap,
                                                           informTimeLimit, pickupDeviationWindow,
-                                                          static_cast<ReturnType>(returnType), maxWait);
+                                                          static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver));
 }
 
 void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInstance) {
@@ -677,6 +680,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
 
     // Model Parameters
     auto modelParams = j["modelParameters"];
+    int modelSolver = modelParams.value("ModelSolver", -1);
     float alphaParam = modelParams.value("alphaParam", -1.0f);
     float betaParam = modelParams.value("betaParam", -1.0f);
     float deltaPram = modelParams.value("deltaPram", -1.0f);
@@ -712,6 +716,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     auto spParams = j["SP_Parameters"];
     bool isTruncated = spParams.value("isTruncated", 0) != 0;
     int maxLabel = spParams.value("MaxLabel", -1);
+    int maxCommittedLabel = spParams.value("MaxCommittedLabel", -1);
     bool isDominanceReleased = spParams.value("isDominanceReleased", 0) != 0;
     bool pruneNodes = spParams.value("pruneNodes", 0) != 0;
     bool pruneArcs = spParams.value("pruneArcs", 0) != 0;
@@ -752,7 +757,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         WaitForReturn, numVehicleSwitch,
         static_cast<WarmStart>(initialStart),
         MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-        useZoom, nbColumns, isTruncated, maxLabel,
+        useZoom, nbColumns, isTruncated, maxLabel, maxCommittedLabel,
         pruneNodes, pruneArcs, discardSuboptimalPath,
         isDominanceReleased, isPickDropPossible,
         static_cast<LabelingStrategy>(strategy),
@@ -764,7 +769,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         bigM, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
-        static_cast<ReturnType>(returnType), maxWait
+        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
     );
 }
 void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName) {
@@ -818,6 +823,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int solveTimeLimit = defaultParams.value("solveTimeLimit", -1);
     int populateTimeLimit = defaultParams.value("populateTimeLimit", -1);
     float mipGap = defaultParams.value("MIPGap", -1.0f);
+    int modelSolver = defaultParams.value("ModelSolver", -1);
 
     // ==================== READ SCENARIO PARAMETERS ====================
     json scenarioParams;
@@ -856,6 +862,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int nbColumns = scenarioParams.value("NumColumn", -1);
     bool isTruncated = scenarioParams.value("isTruncated", 0) != 0;
     int maxLabel = scenarioParams.value("MaxLabel", -1);
+    int maxCommittedLabel = scenarioParams.value("MaxCommittedLabel", -1);
     bool pruneNodes = scenarioParams.value("pruneNodes", 0) != 0;
     bool pruneArcs = scenarioParams.value("pruneArcs", 0) != 0;
     bool discardSuboptimalPath = scenarioParams.value("discardSuboptimalPath", 0) != 0;
@@ -882,7 +889,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         WaitForReturn, numVehicleSwitch,
         static_cast<WarmStart>(initialStart),
         MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-        useZoom, nbColumns, isTruncated, maxLabel,
+        useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
         pruneNodes, pruneArcs, discardSuboptimalPath,
         isDominanceReleased, isPickDropPossible,
         static_cast<LabelingStrategy>(strategy),
@@ -894,7 +901,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         bigM, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
-        static_cast<ReturnType>(returnType), maxWait
+        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -996,10 +1003,10 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
+    parametersStream << "Instance,ModelSolver,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
                         "maxWait,nbThreads,InitialDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
                         "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
-                        "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,isDominanceReleased,"
+                        "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
                         "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,"
                         "LabelingStrategy,Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";

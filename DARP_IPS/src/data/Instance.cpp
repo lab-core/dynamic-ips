@@ -484,6 +484,12 @@ void Instance::adjustParameters(const PConfig &config) {
     parameters_->saveScratch_ = config->saveScratch_;
     parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
     parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
+    if (parameters_->mainAlgorithm_ == MP_ISUD)
+        parameters_->approach_ = ISUD;
+    else if (parameters_->mainAlgorithm_ == GREEDY)
+        parameters_->approach_ = Greedy;
+    else
+        parameters_->approach_ = CG;
 }
 
 // function to sort vehicles based on ID
@@ -655,7 +661,7 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
             Tools::LogOutput solutionRoutesStream(inputPaths.getOutputFinalRoutes());
             solutionRoutesStream << saveSolutionRoutes();
             solutionRoutesStream.close();
-            std::cout << "✓ Solution routes written" << std::endl;
+      //      std::cout << "✓ Solution routes written" << std::endl;
         }
 
         // Write request results CSV
@@ -663,7 +669,7 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
             Tools::LogOutput requestResultsStream(inputPaths.getOutputFinalRequests());
             requestResultsStream << saveRequestsResults();
             requestResultsStream.close();
-            std::cout << "✓ Request results written" << std::endl;
+     //       std::cout << "✓ Request results written" << std::endl;
         }
 
         // Write vehicle results CSV
@@ -671,7 +677,7 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
             Tools::LogOutput vehiclesResultsStream(inputPaths.getOutputFinalVehicles());
             vehiclesResultsStream << saveVehicleResults();
             vehiclesResultsStream.close();
-            std::cout << "✓ Vehicle results written" << std::endl;
+     //       std::cout << "✓ Vehicle results written" << std::endl;
         }
 
         // Write summary CSV (with header if file doesn't exist)
@@ -682,14 +688,14 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
                         << "VehicleFile,paramFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,"
                            "customer Group,#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,idle time/vehicle,"
                            "#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,#RP Iter,#CP Iter,"
-                           "#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Assign time,"
-                           "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,Greedy/Total,CPSuccess,CPFails,CGSuccess\n";
+                           "#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,"
+                           "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,CPSuccess,CPFails,CGSuccess\n";
 
             // Write data row
             finalInstanceStream << config->vehicleFolder_ << "," << config->scenario_ << ",";
             finalInstanceStream << instRepStr_.str();
             finalInstanceStream.close();
-            std::cout << "✓ Summary written" << std::endl;
+     //       std::cout << "✓ Summary written" << std::endl;
         }
 
     } catch (const std::exception& e) {
@@ -697,11 +703,11 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
         allSuccessful = false;
     }
 
-    if (allSuccessful) {
+    /*if (allSuccessful) {
         std::cout << "All instance files written successfully!" << std::endl;
     } else {
         std::cerr << "Some output operations failed" << std::endl;
-    }
+    }*/
 }
 
 

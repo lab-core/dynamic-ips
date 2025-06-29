@@ -5,7 +5,7 @@
 #ifndef DARP_IPS_MIPMASTERPROBLEM_H
 #define DARP_IPS_MIPMASTERPROBLEM_H
 
-#include "solvers/ReducedProblem.h"
+#include "ReducedProblem.h"
 
 class MIPMasterProblem : public ReducedProblem {
 public:

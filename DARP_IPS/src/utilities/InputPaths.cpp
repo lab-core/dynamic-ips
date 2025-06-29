@@ -71,7 +71,7 @@ const std::string &InputPaths::getOutputEpochRunTime() const {return output_epoc
 const std::string &InputPaths::getOutputTrip() const {return output_trip_;}
 const std::string &InputPaths::getInstanceNameOut() const {return instanceNameOut_;}
 const std::string &InputPaths::getOutputSubproSize() const {return output_subproSize_;}
-const std::string &InputPaths::getOutputCplexLog() const {return output_cplexLog_;}
+const std::string &InputPaths::getOutputSolverLog() const {return output_solverLog_;}
 const std::string &InputPaths::getOutputReqDuals() const { return output_reqDuals_; }
 const std::string &InputPaths::getOutputVehDuals() const { return output_vehDuals_; }
 const std::string &InputPaths::getOutputSolutionChange() const {return output_solutionChange_;}
@@ -159,7 +159,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_epochRunTime_ = outputDir_ + "epochRuntime_" + prefix_ + ".csv";
     output_epochResults_ = outputDir_ + "epochResults_" + prefix_ + ".csv";
     output_subproSize_ = outputDir_ + "epochSubRunTimes_" + prefix_ + ".csv";
-    output_cplexLog_ = outputDir_ + "LogCplex_" + prefix_ + ".txt";
+    output_solverLog_ = outputDir_ + "LogSolver_" + prefix_ + ".txt";
     output_solutionChange_ = outputDir_ + "solutionChange_" + prefix_ + ".csv";
     output_summary_ = outputDir_ + "summary_" + prefix_ + ".csv";
 
@@ -169,7 +169,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     myFile << "RouteID,Epoch,MPIter,VehicleID,TotalDelay,IncDegree,ReducedCost,LambdaScore,NormalScore,IncScore,WaitScore,nbCommitted,index,nbRequests" << std::endl;
     myFile.close();
 
-    myFile.open(output_cplexLog_);
+    myFile.open(output_solverLog_);
     myFile << instanceName_ << " solved in " << solutionMode << " mode by " << algorithm << std::endl;
     myFile.close();
 }

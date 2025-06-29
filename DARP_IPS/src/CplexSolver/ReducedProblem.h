@@ -5,8 +5,8 @@
 #ifndef DARP_IPS_REDUCEDPROBLEM_H
 #define DARP_IPS_REDUCEDPROBLEM_H
 
-#include "solvers/CplexModeler.h"
-#include "solvers/DualAuxSolver.h"
+#include "CplexModeler.h"
+#include "DualAuxSolver.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class

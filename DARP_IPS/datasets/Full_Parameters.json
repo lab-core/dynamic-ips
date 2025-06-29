@@ -33,6 +33,7 @@
   "SP_Parameters": {
     "isTruncated": 1,
     "MaxLabel": 15,
+    "MaxCommittedLabel": 15,
     "isDominanceReleased": 0,
     "pruneNodes": 1,
     "pruneArcs": 1,

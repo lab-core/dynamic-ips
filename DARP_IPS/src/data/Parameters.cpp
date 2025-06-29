@@ -14,30 +14,31 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                        float WaitForReturn, int numVehicleSwitch,
                        WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
-                       float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel,
+                       float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
                        bool isDominanceReleased, bool isDropPickPossible,
                        LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                        bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
                        int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-                       int pickupDeviationWindow, ReturnType returnPolicy, float maxWait):
+                       int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
-        greedyReOptimize_(greedyReOptimize), saveScratch_(0),
-        vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
+        greedyReOptimize_(greedyReOptimize), saveScratch_(0), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
         WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
-        pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree), CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage),
-        minImp_(minImp), useZoom_(useZoom),
-        nbColumn_(nbColumn), isTruncated_(isTruncated),
-        MaxLabel_(maxLabel), isDominanceReleased_(isDominanceReleased),
-        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), discardSuboptimalPath_(discardSuboptimalPath),
-        isDropPickPossible_(isDropPickPossible), LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm) ,
-        constPortion_(constPortion), vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
-        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick),
-        sortPath_(sortPath), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
-        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait){}
+        pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
+        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
+        nbColumn_(nbColumn), isTruncated_(isTruncated), MaxLabel_(maxLabel), MaxCommittedLabel_(MaxCommittedLabel),
+        isDominanceReleased_(isDominanceReleased), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs),
+        discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible),
+        LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), constPortion_(constPortion),
+        vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
+        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath),
+        sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), modelSolver_(modelSolver),
+        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait) {
+
+}
 
 Parameters::~Parameters() = default;
 
@@ -72,7 +73,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Max request wait time" << " = " << maxWait_ << " (s)" << std::endl;
     repStr << std::endl;
 
-    repStr << "# ISUD PARAMETERS" << std::endl;
+    repStr << "# MP PARAMETERS" << std::endl;
     repStr << "#" << std::endl;
     repStr << std::setw(setwLength) << "# warm start " << " = " << eu::toString(initialStart_) << std::endl;
     repStr << std::setw(setwLength) << "# Zoom max MIP Inc. degree " << " = " << MIP_maxIncDegree_ << std::endl;
@@ -81,12 +82,14 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
     repStr << std::setw(setwLength) << "# is Zooming used " << " = " << useZoom_ << std::endl;
     repStr << std::setw(setwLength) << "# Column added to MP " << " = " << nbColumn_ << std::endl;
+    repStr << std::setw(setwLength) << "# MIP model solver " << " = " << eu::toString(modelSolver_) << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;
     repStr << "#" << std::endl;
     repStr << std::setw(setwLength) << "# Use Truncated Labeling " << " = " << isTruncated_ << std::endl;
     repStr << std::setw(setwLength) << "# MaxLabel in Truncating " << " = " << MaxLabel_ << std::endl;
+    repStr << std::setw(setwLength) << "# MaxCommitLabel in Truncating " << " = " << MaxCommittedLabel_ << std::endl;
     repStr << std::setw(setwLength) << "# Release Dominance Rule " << " = " << isDominanceReleased_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Nodes from graph " << " = " << pruneNodes_ << std::endl;
     repStr << std::setw(setwLength) << "# Prune Arcs from graph " << " = " << pruneArcs_ << std::endl;
@@ -119,6 +122,7 @@ std::string Parameters::toString() const {
 
 std::string Parameters::toStr() const {
     std::stringstream repStr;
+    repStr << eu::toString(modelSolver_) << ",";
     repStr << alphaParam_ << ",";
     repStr << betaParam_ << ",";
     repStr << deltaPram_ << ",";
@@ -143,6 +147,7 @@ std::string Parameters::toStr() const {
     repStr << nbColumn_ << ",";
     repStr << boolToString(isTruncated_) << ",";
     repStr << MaxLabel_ << ",";
+    repStr << MaxCommittedLabel_ << ",";
     repStr << boolToString(isDominanceReleased_) << ",";
     repStr << boolToString(isDropPickPossible_) << ",";
     repStr << boolToString(pruneNodes_) << ",";
@@ -165,12 +170,12 @@ std::string Parameters::toStr() const {
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
 
-solverOption::solverOption(bool isTruncated, int maxLabel, bool isDominanceReleased, int nbPick,
-                           SortPaths pathSort, bool isSuccessorsLimited, bool pruneNodes, bool pruneArcs,
+solverOption::solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
+                           SortPaths pathSort, bool pruneNodes, bool pruneArcs,
                            bool discardSuboptimalPath, bool isDropPickPossible,
                            LabelingStrategy labelingStrategy) :
         isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased),
-        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs),
+        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), MaxCommittedLabel_(MaxCommittedLabel),
         discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), LabelingStrategy_(labelingStrategy),
         MaxLabel_(maxLabel), usePick_(false),
         nbPick_(nbPick), pathSort_(pathSort) {}
@@ -194,6 +199,7 @@ solverOption::solverOption(const PParameters &MainParams) {
     pruneNodes_ = MainParams->pruneNodes_;
     pruneArcs_ = MainParams->pruneArcs_;
     discardSuboptimalPath_ = MainParams->discardSuboptimalPath_;
+    MaxCommittedLabel_ = MainParams->MaxCommittedLabel_;
 }
 
 // Display function
