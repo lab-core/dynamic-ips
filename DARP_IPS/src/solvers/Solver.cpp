@@ -90,6 +90,7 @@ void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
 void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
+    bool repeat = false;
 
     // Set available time
     CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
@@ -137,17 +138,20 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->SPIters_++;
         CG_Model_->SPIter_++;
 
-        if (nbNegativeFound == 0 || iter > 1) {
-            subProOptions_->disableHeuristics();
-            EpochInst->parameters_->dynamicPricing_ = false;
-            std::cout << "Solve the exact mode " << std::endl;
+        if (nbNegativeFound == 0) {
+            if (!repeat) {
+                subProOptions_->disableHeuristics();
+                EpochInst->parameters_->dynamicPricing_ = false;
+                std::cout << "Solve the exact mode " << std::endl;
+                repeat = true;
+            }
+            else {
+                CG_Model_->CGSuccess_++;
+                std::cout << "Terminate CG-> No negative column " << std::endl;
+                break;
+            }
         }
 
-        if (nbNegativeFound == 0 && iter > 2) {
-            CG_Model_->CGSuccess_++;
-            std::cout << "Terminate CG-> No negative column " << std::endl;
-            break;
-        }
         else {
             // Update available time
             CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
@@ -450,7 +454,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
         nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
         nbNegativeFound += subProblem->nbNegativeColumns_;
         runtimeMetrics_->updateSubproblemMetrics(subProblem);
-        (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+ //       (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
     }
 
 

@@ -69,6 +69,7 @@ public:
     void addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
     void addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
     void setParameters(const PInstance &pInst, float availableTime);
+    void getDuals(const PInstance &pInst);
 
 };
 

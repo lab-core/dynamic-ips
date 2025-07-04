@@ -171,6 +171,32 @@ void CplexModeler::setParameters(const PInstance &pInst, float availableTime) {
     Cplex_.setParam(IloCplex::Param::MIP::Cuts::ZeroHalfCut, 2);*/
 }
 
+void CplexModeler::getDuals(const PInstance &pInst) {
+    // getting dual values
+    requestDuals_.clear();
+    vehicleDuals_.clear();
+
+    Cplex_.getDuals(requestDuals_, requestConst_);
+    Cplex_.getDuals(vehicleDuals_, vehicleConst_);
+
+    for (auto &requestObj: pInst->requests_) {
+        requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
+        requestObj->InitialDual_ = requestObj->dual_;
+    }
+
+    for (auto &vehicleObj: pInst->vehicles_) {
+        int index = vehicleObj->vehicleIndex_;
+        if (index > -1) {
+            vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
+            vehicleObj->InitialDual_ = vehicleObj->dual_;
+        }
+        else {
+            vehicleObj->dual_ = 0;
+            vehicleObj->InitialDual_ = 0;
+        }
+    }
+}
+
 // this function initialized the model
 void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests

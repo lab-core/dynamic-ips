@@ -120,28 +120,7 @@ void ReducedProblem::solveModelLP(const PInstance &pInst, const InputPaths &inpu
 
             objValue_ = static_cast<float>(Cplex_.getObjValue());
             // getting dual values
-            requestDuals_.clear();
-            vehicleDuals_.clear();
-
-            Cplex_.getDuals(requestDuals_, requestConst_);
-            Cplex_.getDuals(vehicleDuals_, vehicleConst_);
-
-            for (auto &requestObj: pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-                requestObj->InitialDual_ = requestObj->dual_;
-            }
-
-            for (auto &vehicleObj: pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                    vehicleObj->InitialDual_ = vehicleObj->dual_;
-                }
-                else {
-                    vehicleObj->dual_ = 0;
-                    vehicleObj->InitialDual_ = 0;
-                }
-            }
+            getDuals(pInst);
         }
 //        Cplex_.clearModel();
     }
@@ -243,29 +222,7 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
             solveTime_->stop();
 
             objValue_ = static_cast<float>(Cplex_.getObjValue());
-            // getting dual values
-            requestDuals_.clear();
-            vehicleDuals_.clear();
-
-            Cplex_.getDuals(requestDuals_, requestConst_);
-            Cplex_.getDuals(vehicleDuals_, vehicleConst_);
-
-            for (auto &requestObj: pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-                requestObj->InitialDual_ = requestObj->dual_;
-            }
-
-            for (auto &vehicleObj: pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                    vehicleObj->InitialDual_ = vehicleObj->dual_;
-                }
-                else {
-                    vehicleObj->dual_ = 0;
-                    vehicleObj->InitialDual_ = 0;
-                }
-            }
+            getDuals(pInst);
 
             // Convert to integer
             IloConversion convZ(env_, zVar_, ILOINT);
@@ -432,30 +389,7 @@ void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest>
 
                         auxObjValue_ = static_cast<float>(Cplex_.getObjValue());
                         // getting dual values
-                        requestDuals_.clear();
-                        vehicleDuals_.clear();
-
-                        Cplex_.getDuals(requestDuals_, requestConst_);
-                        Cplex_.getDuals(vehicleDuals_, vehicleConst_);
-
-                        for (auto &requestObj: pInst->requests_) {
-                            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-                            /*if (requestObj->InitialDual_ != requestObj->dual_)
-                                std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
-                        }
-
-
-                        for (auto &vehicleObj: pInst->vehicles_) {
-                            if (vehicleObj->vehicleIndex_ > -1) {
-                                int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
-                                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                                /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
-                                     std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
-                            }
-                            else {
-                                vehicleObj->dual_ = 0;
-                            }
-                        }
+                        getDuals(pInst);
 
                         // reset changes
                         objFunction_.setSense(IloObjective::Minimize);
@@ -561,16 +495,12 @@ void ReducedProblem::solveModelInt_box(const PInstance &pInst, vector<PRequest> 
 
                     objValue_ = static_cast<float>(Cplex_.getObjValue());
                     // getting dual values
-                    requestDuals_.clear();
-                    vehicleDuals_.clear();
+                    getDuals(pInst);
 
                     IloNumArray uVal(env_);
                     IloNumArray vVal(env_);
                     Cplex_.getValues(uVal, uVar_);
                     Cplex_.getValues(vVal, vVar_);
-
-                    Cplex_.getDuals(requestDuals_, requestConst_);
-                    Cplex_.getDuals(vehicleDuals_, vehicleConst_);
 
                     for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         if (uVal[i] > 0)
@@ -579,25 +509,6 @@ void ReducedProblem::solveModelInt_box(const PInstance &pInst, vector<PRequest> 
                             std::cout << "V[" << zVar_[i].getName()  << "] : " << vVal[i] << std::endl;
                     }
 
-                    for (auto &requestObj: pInst->requests_) {
-                        requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-                        /*if (requestObj->InitialDual_ != requestObj->dual_)
-                            std::cout << requestObj->InitialDual_ << "  :  " << requestObj->dual_ << std::endl;*/
-                    }
-                    std::cout << "======================================" << std::endl;
-
-
-                    for (auto &vehicleObj: pInst->vehicles_) {
-                        if (vehicleObj->vehicleIndex_ > -1) {
-                            int index = pInst->vehicles_[vehicleObj->vehicleID_]->vehicleIndex_;
-                            vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                            /*if (vehicleObj->InitialDual_ != vehicleObj->dual_)
-                                 std::cout << vehicleObj->InitialDual_ << "  :  " << vehicleObj->dual_ << std::endl;*/
-                        }
-                        else {
-                            vehicleObj->dual_ = 0;
-                        }
-                    }
                     // rest the model
                     for (IloInt i = zVal.getSize() - 1; i >= 0; --i) {
                         uVar_[i].setBounds(0.0, 0.0);
