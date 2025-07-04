@@ -37,15 +37,15 @@ for mode in 1; do
     for scenario in ${scenario_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
       for instance in "${instances_1000[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
         ((i++))
       done
       for instance in "${instances_1100[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
         ((i++))
       done
       for instance in "${instances_1400[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
         ((i++))
       done
     done
