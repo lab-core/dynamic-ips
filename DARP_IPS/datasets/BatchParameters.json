@@ -27,7 +27,7 @@
     "solveTimeLimit": 300,
     "populateTimeLimit": 200,
     "MIPGap": 0.001,
-    "ModelSolver": 0
+    "ModelSolver": 1
   },
   "scenarios": {
     "nbPick1": {
@@ -403,7 +403,7 @@
       "Partial_Pricing": 0,
       "nbPick": 40,
       "sortPath": 0,
-      "sortColumn": 1
+      "sortColumn": 0
     },
     "test": {
       "vehicleReturn": 0,
