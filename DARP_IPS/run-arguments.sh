@@ -1,7 +1,8 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=64G
-#SBATCH --time=10:15:00
+#SBATCH --account=def-legraina
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=84G
+#SBATCH --time=15:15:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
@@ -37,15 +38,15 @@ for mode in 1; do
     for scenario in ${scenario_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
       for instance in "${instances_1000[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
       for instance in "${instances_1100[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
       for instance in "${instances_1400[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
     done
