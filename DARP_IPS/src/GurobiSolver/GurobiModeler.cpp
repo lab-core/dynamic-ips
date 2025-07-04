@@ -28,7 +28,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_StringParam_LogFile, outputLog);
         env_.set(GRB_IntParam_UpdateMode, 1);
-        //       model_->set(GRB_IntParam_OutputFlag, 1);
+        model_->set(GRB_IntParam_OutputFlag, 1);
 
     } catch (GRBException& e) {
         std::cerr << "Error in GurobiModeler constructor: " << e.getMessage() << std::endl;
