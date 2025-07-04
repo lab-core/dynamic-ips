@@ -4,7 +4,7 @@ set(SOURCE_FILES
         LabelingSubProblem.cpp
         SubproModeler.cpp
         GreedyModeler.cpp
-        solver.cpp
+        Solver.cpp
         CG_Algorithm.cpp
         ISUD_Algorithm.cpp)
 
