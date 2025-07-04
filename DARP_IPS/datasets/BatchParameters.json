@@ -6,7 +6,7 @@
     "epochLength": 30,
     "penaltyL": 30,
     "committedTime": 30,
-    "nbThreads": 24,
+    "nbThreads": 16,
     "mainAlgorithm": 0,
     "solutionMode": 2,
     "GreedyReOptimize": 0,
@@ -27,7 +27,7 @@
     "solveTimeLimit": 300,
     "populateTimeLimit": 200,
     "MIPGap": 0.001,
-    "ModelSolver": 1
+    "ModelSolver": 0
   },
   "scenarios": {
     "nbPick1": {
@@ -415,20 +415,20 @@
       "pickupDeviationWindow": 60,
       "InitialDual": 1,
       "warmStart": 1,
-      "NumIter": 40,
+      "NumIter": 1,
       "NumColumn": 50,
       "isTruncated": 1,
-      "MaxLabel": 10,
-      "MaxCommittedLabel": 10,
+      "MaxLabel": 15,
+      "MaxCommittedLabel": 15,
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
       "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "Partial_Pricing": 0,
-      "nbPick": 40,
+      "Dynamic_Pricing": 0,
+      "Partial_Pricing": 1,
+      "nbPick": 4,
       "sortPath": 0,
-      "sortColumn": 1
+      "sortColumn": 0
     }
   }
 }

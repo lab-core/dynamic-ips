@@ -1,7 +1,6 @@
 #!/bin/bash
-#SBATCH --account=def-legraina
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=84G
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
 #SBATCH --time=15:15:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
