@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
                 std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
                 Request::requestCount_ = 0;
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-                if (mainInst->nbInitialOnboards_ != 0)
+                if (mainInst->nbInitialOnboards_ == 0)
                     mainInst->nbVehicles_ = numVehicles;
                 ReadWrite::readParametersJson(inputPaths.getInputParamFile(), mainInst, config->scenario_);
                 mainInst->adjustParameters(config);
