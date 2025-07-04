@@ -226,6 +226,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     subProOptions_->enableHeuristics(mainInst->parameters_);
     EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = CG_Model_->objValue_;
+    labelsPool_.clear();
+    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
