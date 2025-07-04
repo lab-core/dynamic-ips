@@ -123,8 +123,7 @@ void CP_Gurobi::addRouteVar(const PRoute& newRoute, VarSign sign, const PInstanc
         if (sign == NEGATIVE) {
             // Call parent class method for negative sign
             // Create variable
-            GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS,
-                                        col, newRoute->name_);
+            GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
             routeSolVar_.push_back(var);
         }
         else {
@@ -133,8 +132,7 @@ void CP_Gurobi::addRouteVar(const PRoute& newRoute, VarSign sign, const PInstanc
             col.addTerm(newRoute->incompatibilityDegree_, normalConst_);
 
             // Create variable
-            GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS,
-                                        col, newRoute->name_);
+            GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
             routeIncVar_.push_back(var);
             IncRoute_.push_back(newRoute);
         }
@@ -235,8 +233,7 @@ void CP_Gurobi::repairModel(const PInstance& pInst, const std::vector<PRequest>&
 }
 
 // Update the model
-void CP_Gurobi::updateModel(const PInstance& pInst, std::vector<PRequest>& zSolution,
-                                std::vector<PRoute>& routeSolution) {
+void CP_Gurobi::updateModel(const PInstance& pInst) {
     try {
         beginBatchUpdate();
 
@@ -253,6 +250,104 @@ void CP_Gurobi::updateModel(const PInstance& pInst, std::vector<PRequest>& zSolu
         throw;
     }
 }
+
+void CP_Gurobi::updateNormalCoefficients() {
+    // Validate model and constraint before proceeding
+    if (!model_) {
+        throw std::runtime_error("Model is not initialized for coefficient update");
+    }
+
+    // Update coefficients of existing variables in normalConst_ based on current incompatibilityDegree_
+    for (size_t i = 0; i < IncRoute_.size(); ++i) {
+        // Validate route object and corresponding variable exist
+        if (!IncRoute_[i]) {
+            std::cerr << "Warning: Null route object at index " << i << std::endl;
+            continue;
+        }
+
+        if (i >= routeIncVar_.size()) {
+            std::cerr << "Warning: Route index " << i << " exceeds variable array size" << std::endl;
+            break;
+        }
+
+        // Get current coefficient and update if changed
+        double currentCoeff = model_->getCoeff(normalConst_, routeIncVar_[i]);
+        double newCoeff = IncRoute_[i]->incompatibilityDegree_;
+
+        // Only update if coefficient has changed to avoid unnecessary operations
+        if (std::abs(currentCoeff - newCoeff) > 1e-9) {
+            model_->chgCoeff(normalConst_, routeIncVar_[i], newCoeff);
+        }
+    }
+}
+
+void CP_Gurobi::updateModel_Batch(const PInstance& pInst) {
+    try {
+        if (routesToAdd_.empty()) return;
+
+        // Validate model before proceeding
+        if (!model_) {
+            throw std::runtime_error("Model is not initialized");
+        }
+
+        beginBatchUpdate();
+  //      updateNormalCoefficients();
+
+        const size_t numRoutes = routesToAdd_.size();
+
+        std::vector<double> lb(numRoutes, 0.0);
+        std::vector<double> ub(numRoutes, GRB_INFINITY);
+        std::vector<double> obj;
+        std::vector<char> vtype(numRoutes, GRB_CONTINUOUS);
+//        std::vector<std::string> names;
+        std::vector<GRBColumn> columns;
+
+        // Reserve space to avoid reallocations
+        obj.reserve(numRoutes);
+        //       names.reserve(numRoutes);
+        columns.reserve(numRoutes);
+        IncRoute_.reserve(IncRoute_.size() + numRoutes);
+
+        // Fill arrays with range-based loop
+        for (const auto& routeObj : routesToAdd_) {
+            obj.push_back(routeObj->totalDelay_);
+            //           names.push_back(routeObj->name_);
+            columns.push_back(createColumn(routeObj, POSITIVE, pInst));
+            columns.back().addTerm(routeObj->incompatibilityDegree_, normalConst_);
+            IncRoute_.push_back(routeObj);
+            routeObj->cpAdded_ = true;
+        }
+
+        // Batch addition using vector data
+        GRBVar* newVars = model_->addVars(
+            lb.data(),
+            ub.data(),
+            obj.data(),
+            vtype.data(),
+            nullptr,
+ //           names.data(),
+            columns.data(),
+            numRoutes
+        );
+
+        // Pre-reserve space to avoid multiple reallocations
+        routeIncVar_.reserve(routeIncVar_.size() + numRoutes);
+
+        // Add variables to container
+        routeIncVar_.insert(routeIncVar_.end(), newVars, newVars + numRoutes);
+
+        // Single update call
+        endBatchUpdate();
+
+    } catch (const GRBException& e) {
+        std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
+        throw;
+    } catch (const std::exception& e) {
+        std::cerr << "Error in updateModel: " << e.what() << std::endl;
+        throw;
+    }
+}
+
 
 // Solve the model
 void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
@@ -273,23 +368,7 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
         }
         else {
             // Get dual values
-            getDuals();
-            const auto& requestDuals = getRequestDuals();
-            const auto& vehicleDuals = getVehicleDuals();
-
-            // Update duals in instance
-            for (auto& requestObj : pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals[requestObj->taskIndex_]);
-            }
-
-            for (auto& vehicleObj : pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals[index]);
-                } else {
-                    vehicleObj->dual_ = 0;
-                }
-            }
+            getDuals(pInst);
 
             // Check objective value
             double objVal = getObjValue();
@@ -427,23 +506,7 @@ void CP_Gurobi::solveCPModelFresh(PInstance& pInst, std::vector<PRequest>& zSolu
         }
         else {
             // Get dual values
-            getDuals();
-            const auto& requestDuals = getRequestDuals();
-            const auto& vehicleDuals = getVehicleDuals();
-
-            // Update duals in instance
-            for (auto& requestObj : pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals[requestObj->taskIndex_]);
-            }
-
-            for (auto& vehicleObj : pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals[index]);
-                } else {
-                    vehicleObj->dual_ = 0;
-                }
-            }
+            getDuals(pInst);
 
             // Check objective value
             double objVal = getObjValue();

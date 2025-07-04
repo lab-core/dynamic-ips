@@ -138,24 +138,20 @@ namespace Tools {
         t_ = std::thread([this]() {
             // run an infinite loop while not finished
             std::unique_lock<std::mutex> l(mutex_);
-            while (!needStop_) {
-                // if nothing to do, wait
+            while (!needStop_) {  // Keep thread alive until told to stop
                 if (f_ == nullptr)
-                    cWaiting_.wait(l);
-                // if need to stop
-                if (needStop_)
+                    cWaiting_.wait(l);   // If nothing to do, wait (sleep)
+                if (needStop_)              // If need to stop
                     break;
-                // else run
-                l.unlock();
-                f_();
-                // once finished, remove f_
+                l.unlock();                 // Else, execute the job
+                f_();                       // Execute the job
                 l.lock();
-                f_ = nullptr;
+                f_ = nullptr;               // once finished, remove f_
                 globalThreadsPool.makeAvailable(this);
             }
             delete this;
         });
-        t_.detach();
+        t_.detach();                        // Let thread run independently
     }
 
     void Thread::run(std::function<void(void)> f) {
@@ -185,16 +181,16 @@ namespace Tools {
         std::unique_lock<std::mutex> l(mutex_);
         Thread *pThread;
         if (threadsAvailable_.empty()) {
-            pThread = new Thread();
+            pThread = new Thread();                 // Create new if none available
             activeThreads.push_back(pThread);
         } else {
-            pThread = threadsAvailable_.front();
+            pThread = threadsAvailable_.front();    // Reuse existing
             threadsAvailable_.pop_front();
         }
         l.unlock();
 
         // attach the job
-        pThread->run(std::move(f));
+        pThread->run(std::move(f));         // Assign job to thread
     }
 
     void GlobalThreadsPool::makeAvailable(Thread *pThread) {

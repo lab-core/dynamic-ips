@@ -4,7 +4,7 @@
 
 #include "MasterAlgorithm.h"
 
-#include "solver.h"
+#include "Solver.h"
 #include "../GurobiSolver/MP_Gurobi.h"
 #include "../CplexSolver/MIPMasterProblem.h"
 #include "../CplexSolver/DualAuxSolver.h"
@@ -170,6 +170,15 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
         }
         setObjValue();
     }
+
+    if (pInst->parameters_->initialDual_ == PENALTIES){
+        for (auto &requestObj : pInst->requests_) {
+            requestObj->dual_ = requestObj->penalty_;
+            requestObj->InitialDual_ = requestObj->penalty_;
+        }
+        for (auto &vehicleObj: pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
 }
 
 // this function creates initial routes serving only one request and fill zSolution_ with available requests
@@ -198,7 +207,7 @@ void MasterAlgorithm::calcIncompatibilityBit(const PRoute &route, const PInstanc
         route->isCompatible_ = false;
         route->incompatibilityDegree_++;
     }
-    boost::dynamic_bitset<> vehicles;
+    /*boost::dynamic_bitset<> vehicles;
     vehicles.resize(pInst->vehicles_.size());
     for (auto & requestObj : route->routeRequests_){
         if (requestObj->solVehicleID_ < LARGE_CONSTANT)
@@ -210,6 +219,63 @@ void MasterAlgorithm::calcIncompatibilityBit(const PRoute &route, const PInstanc
     if (vehicles.count() > 0) {
         route->isCompatible_ = false;
         route->incompatibilityDegree_ += static_cast<int>(vehicles.count());
+    }*/
+}
+
+void MasterAlgorithm::updateIncDegreesM1Fast(const PInstance &pInst) {
+    // Resize if needed
+    if (vehicleRequestsBits_.size() != pInst->vehicles_.size()) {
+        vehicleRequestsBits_.resize(pInst->vehicles_.size());
+    }
+
+    // Clear and rebuild vehicle request bitsets
+    for (int v = 0; v < pInst->vehicles_.size(); ++v) {
+        vehicleRequestsBits_[v].reset();
+
+        const auto& vehicleObj = pInst->vehicles_[v];
+        if (vehicleObj->currentRoute_ && !vehicleObj->currentRoute_->routeRequests_.empty()) {
+            for (const auto& req : vehicleObj->currentRoute_->routeRequests_) {
+                vehicleRequestsBits_[v].set(req->taskIndex_);
+            }
+        }
+    }
+
+    for (int v = 0; v < pInst->vehicles_.size(); ++v) {
+        if (!availableRoutes_[v].empty()) {
+            for (auto& routeObj : availableRoutes_[v]) {
+                calcIncompatibilityM1Fast(routeObj);
+            }
+        }
+    }
+}
+
+void MasterAlgorithm::calcIncompatibilityM1Fast(const PRoute &route) const {
+    route->isCompatible_ = true;
+    route->incompatibilityDegree_ = 0;
+
+    if (route->routeRequests_.empty()) {
+        return;
+    }
+
+    int vehicleID = route->vehicleID_;
+
+    // Get current basis requests for this vehicle (pre-computed bitset)
+    const auto& basisBits = vehicleRequestsBits_[vehicleID];
+
+    // Create candidate bitset
+    std::bitset<LABEL_BIT_SIZE> candidateBits;
+    for (const auto& req : route->routeRequests_) {
+        candidateBits.set(req->taskIndex_);
+    }
+
+    // Ultra-fast XOR operation to find differences
+    auto differences = basisBits ^ candidateBits;
+
+    // Count set bits = number of violations (M1 incompatibility degree)
+    route->incompatibilityDegree_ = differences.count();
+
+    if (route->incompatibilityDegree_ > 0) {
+        route->isCompatible_ = false;
     }
 }
 
@@ -275,7 +341,7 @@ void MasterAlgorithm::updateIncDegreesM(const PInstance &pInst) {
     for (auto & vehicleObj : pInst->vehicles_) {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                calcIncompatibilityMFull(routeObj);
+                calcIncompatibilityM(routeObj);
             }
         }
     }
@@ -447,7 +513,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
 void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, const PInstance &pInst, std::vector<PRoute> &routesToAdd){
     updateReducedCosts(pInst);
     if (selectMode == CP || selectMode == RP) {
-        updateIncDegreesM(pInst);
+        updateIncDegreesBit(pInst);
         if (pInst->parameters_->sortColumn_ == COMP_C) {
             updateScore(pInst);
         }
@@ -477,13 +543,13 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, const PInstanc
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                        if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0 && routeObj->reducedCost_ < maxReducedCost_) {
+                        if (!routeObj->cpAdded_ && (!routeObj->isCompatible_) && !routeObj->routeRequests_.empty()) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->isCompatible_ && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && (routeObj->incompatibilityDegree_ < 2) && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }

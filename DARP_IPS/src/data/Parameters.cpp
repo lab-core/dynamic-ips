@@ -184,7 +184,12 @@ solverOption::~solverOption() = default;
 
 void solverOption::disableHeuristics() {
     isTruncated_ = false;
-    isDominanceReleased_ = false;
+    isDropPickPossible_ = true;
+}
+
+void solverOption::enableHeuristics(const PParameters &MainParams) {
+    isTruncated_ = true;
+    isDropPickPossible_ = false;
 }
 
 solverOption::solverOption(const PParameters &MainParams) {

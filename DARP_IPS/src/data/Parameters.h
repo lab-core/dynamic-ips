@@ -125,6 +125,7 @@ struct solverOption {
 
     virtual ~solverOption();
     void disableHeuristics();
+    void enableHeuristics(const PParameters &MainParams);
     // Display function
     std::string toString() const;
 };

@@ -14,7 +14,7 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 int numEpochTests = 30;
-bool solveEpoch = true;
+bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);

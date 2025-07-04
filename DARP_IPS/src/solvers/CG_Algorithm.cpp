@@ -292,7 +292,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
         }
-        else if (pInst->parameters_->initialDual_ == LP_CP) {
+        else if (pInst->parameters_->initialDual_ == LP_CP || pInst->parameters_->initialDual_ == PENALTIES) {
             MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
             setCurrentRoutes(pInst);
@@ -405,7 +405,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
                 solveCP_Gurobi(pInst, epoch, inputPaths, subProTime);
             }
         }
-        else if (pInst->parameters_->initialDual_ == LMP){
+        else if (pInst->parameters_->initialDual_ == LMP || pInst->parameters_->initialDual_ == PENALTIES){
             MPGurobiPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
             setCurrentRoutes(pInst);
@@ -546,7 +546,7 @@ void CG_Algorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &input
         CPTime_->start();
         CPBuildTime_->start();
         CPGurobiPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
-        CPGurobiPro_->updateModel(pInst, zSolution_, routeSolution_);
+        CPGurobiPro_->updateModel(pInst);
         CPBuildTime_->stop();
 
         while (true) {

@@ -78,15 +78,12 @@ public:
     int getStatus() const;
     double getObjValue() const;
 
-    // Get dual values
-    void getDuals();
-    const std::vector<double>& getRequestDuals() const { return requestDuals_; }
-    const std::vector<double>& getVehicleDuals() const { return vehicleDuals_; }
-
     // Get variable values
     double getVarValue(const GRBVar& var) const;
 
-    void getDualsFromRelaxed(GRBModel &relaxedModel);
+    // Get dual values
+    void getDuals(const PInstance& pInst);
+    void getDualsFromRelaxed(GRBModel &relaxedModel, const PInstance& pInst);
 
     // Access to variables
     const std::vector<GRBVar>& getRouteVar() const { return routeVar_; }
@@ -94,6 +91,10 @@ public:
 
     // Timer access
     myTools::Timer* getSolveTimer() { return solveTime_; }
+
+    // Convert variables to integer/continious
+    void convertToInt();
+    void convertToFloat();
 };
 
 

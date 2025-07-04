@@ -60,10 +60,10 @@ public:
     void solveICG_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
     void solve_Epoch(PInstance & EpochInst, PInstance & mainInst, InputPaths &inputPaths);
 
-    bool solve_SP_Label(PInstance & EpochInst, PInstance & mainInst, int iter, int &nbNegativeFound,
+    bool solve_SP_Label(PInstance & EpochInst, PInstance & mainInst, int &iter, int &nbNegativeFound,
         vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes);
 
-    bool solve_SP_CPLEX(PInstance & EpochInst, PInstance & mainInst, int iter, int &nbNegativeFound,
+    bool solve_SP_CPLEX(PInstance & EpochInst, PInstance & mainInst, int &iter, int &nbNegativeFound,
         vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes);
 
     // these functions are to solve the main instance in anytime /dynamic /static mode

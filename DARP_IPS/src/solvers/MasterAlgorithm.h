@@ -21,6 +21,7 @@ public:
 
     // Gurobi solver
     PCP_Gurobi CPGurobiPro_;
+    std::vector<std::bitset<LABEL_BIT_SIZE>> vehicleRequestsBits_;
 
     vector2D<PRoute> availableRoutes_;
     int nbRoutes_;
@@ -95,6 +96,11 @@ public:
 
     //This function updates the incompatibility degree of availableRoutes
     static void calcIncompatibilityBit(const PRoute &route, const PInstance &pInst);
+
+    void updateIncDegreesM1Fast(const PInstance &pInst);
+
+    void calcIncompatibilityM1Fast(const PRoute &route) const;
+
     void calcIncompatibilityM(const PRoute &route) const;
     void calcIncompatibilityMFull(const PRoute &route) const;
     void updateIncDegreesBit(const PInstance &pInst) const;

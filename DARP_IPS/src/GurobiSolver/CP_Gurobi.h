@@ -41,7 +41,7 @@ public:
     void addRouteVar(const PRoute& newRoute, VarSign sign, const PInstance& pInst);
 
     // Constructor and Destructor
-    CP_Gurobi(std::string outputLog);
+    explicit CP_Gurobi(std::string outputLog);
 
     void resetForNextIteration();
 
@@ -57,8 +57,11 @@ public:
                      const std::vector<PRoute>& routeSolution);
 
     // Update model
-    void updateModel(const PInstance& pInst, std::vector<PRequest>& zSolution,
-                     std::vector<PRoute>& routeSolution);
+    void updateModel(const PInstance& pInst);
+
+void updateNormalCoefficients();
+
+void updateModel_Batch(const PInstance& pInst);
 
     // Solve model
     void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,

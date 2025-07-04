@@ -128,7 +128,7 @@ int ISUD_Algorithm::solveRP_Gurobi(PInstance &pInst, int compDegree, const Input
 
     if (!RPGurobiPro_->routesToAdd_.empty()){
         MPBuildTime_->start();
-        RPGurobiPro_->updateRPModel(pInst);
+        RPGurobiPro_->updateModel_batch(pInst);
         MPBuildTime_->stop();
         RPGurobiPro_->solveModelRelaxInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, objValue_);
@@ -355,7 +355,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                     setAvailableTime();
                     if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
                         CPBuildTime_->start();
-                        CPGurobiPro_->updateModel(pInst, zSolution_, routeSolution_);
+                        CPGurobiPro_->updateModel(pInst);
                         CPBuildTime_->stop();
                         CPGurobiPro_->solveCPModelFresh(pInst, zSolution_, routeSolution_, inputPaths);
                         setCurrentRoutes(pInst);
@@ -488,6 +488,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 isCPImproved = false;
             }
             iterTime_ = masterTime_->dSinceStart().count();
+            int CpCounter = 0;
             while (isCPImproved) {
                 isCPImproved = false;
                 previousObj_ = objValue_;
@@ -496,7 +497,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 setAvailableTime();
                 if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
                     CPBuildTime_->start();
-                    CPGurobiPro_->updateModel(pInst, zSolution_, routeSolution_);
+                    CPGurobiPro_->updateModel_Batch(pInst);
                     CPBuildTime_->stop();
                     CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
                     setCurrentRoutes(pInst);
@@ -532,18 +533,18 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                                 std::cout << previousObj_ << std::endl;
                                 previousObj_ = objValue_;
                             }
-                            else {
+                            else if (!isCPImproved && CpCounter == 0){
                                 restartAlgorithm = false;
                                 break;
                             }
                         }
 
-                        else {
+                        else if (!isCPImproved && CpCounter == 0) {
                             restartAlgorithm = false;
                             break;
                         }
                     }
-                    else if (CPGurobiPro_->status_ == POSITIVE_VALUE || CPGurobiPro_->status_ == INFEASIBLE) {
+                    else if ((CPGurobiPro_->status_ == POSITIVE_VALUE || CPGurobiPro_->status_ == INFEASIBLE) && !isCPImproved && CpCounter == 0) {
                         restartAlgorithm = false;
                         break;
                     }
@@ -551,7 +552,8 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         CPSuccess_++;
                         previousObj_ = objValue_;
                         RMPCounter_++;
-                        isCPImproved = true;
+                        isCPImproved = false;
+                        CpCounter++;
                         setAvailableTime();
                         restartAlgorithm = true;
                         if (availableTime_ <= 1) {
@@ -559,7 +561,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                             break;
                         }
                     }
-                } else {
+                } else if (!isCPImproved && CpCounter == 0) {
                     restartAlgorithm = false;
                     break;
                 }

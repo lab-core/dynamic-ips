@@ -430,7 +430,7 @@ void ReducedProblem::solveModelIntAux_P(const PInstance &pInst, vector<PRequest>
                     else {
                         solveTime_->stop();
 
-                        objValue_ = static_cast<float>(Cplex_.getObjValue());
+                        auxObjValue_ = static_cast<float>(Cplex_.getObjValue());
                         // getting dual values
                         requestDuals_.clear();
                         vehicleDuals_.clear();

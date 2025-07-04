@@ -31,9 +31,12 @@ public:
 
     // Update model with new routes
     void updateRPModel(PInstance& pInst);
+    void updateModel_batch(PInstance& pInst);
 
     // Build the complete model
     void buildModelRP(PInstance& pInst, std::vector<PRoute>& routeSolution, int nbVehicles);
+
+    void extractSolution(const PInstance& pInst, std::vector<PRequest>& zSolution, std::vector<PRoute>& routeSolution);
 
     // Solve as LP
     void solveModelLP(const PInstance& pInst, const InputPaths& inputPaths);

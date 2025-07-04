@@ -137,11 +137,18 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->SPIters_++;
         CG_Model_->SPIter_++;
 
-        if (nbNegativeFound == 0) {
+        if (nbNegativeFound == 0 || iter > 1) {
+            subProOptions_->disableHeuristics();
+            EpochInst->parameters_->dynamicPricing_ = false;
+            std::cout << "Solve the exact mode " << std::endl;
+        }
+
+        if (nbNegativeFound == 0 && iter > 2) {
             CG_Model_->CGSuccess_++;
             std::cout << "Terminate CG-> No negative column " << std::endl;
             break;
-        } else {
+        }
+        else {
             // Update available time
             CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
             if (CG_Model_->availableTime_ <= 0){
@@ -212,6 +219,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
+    subProOptions_->enableHeuristics(mainInst->parameters_);
+    EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = CG_Model_->objValue_;
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
@@ -345,7 +354,7 @@ void Solver::solve_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPaths &
         solveCG_Epoch(EpochInst, mainInst, inputPaths);
 }
 
-bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int iter, int &nbNegativeFound,
+bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter, int &nbNegativeFound,
                             vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes) {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
@@ -456,7 +465,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int iter,
     return subProBreak;
 }
 
-bool Solver::solve_SP_CPLEX(PInstance &EpochInst, PInstance &mainInst, int iter, int &nbNegativeFound,
+bool Solver::solve_SP_CPLEX(PInstance &EpochInst, PInstance &mainInst, int &iter, int &nbNegativeFound,
     vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes) {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 

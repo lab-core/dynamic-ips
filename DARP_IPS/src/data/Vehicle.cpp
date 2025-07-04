@@ -61,6 +61,7 @@ void Vehicle::setEmptyRoute(const PInstance &pInst) {
         }
     }
     emptyRoute_->totalLength_ = emptyRoute_->plannedDepartTime_.back() - departTime_;
+    emptyRoute_->createColumn(pInst->nbRequests_);
 }
 
 void Vehicle::setSolutionRoute() {

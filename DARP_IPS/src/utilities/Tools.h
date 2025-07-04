@@ -187,7 +187,8 @@ namespace Tools{
 
     class GlobalThreadsPool {
     private:
-        std::list<Thread*> threadsAvailable_, activeThreads;
+        std::list<Thread*> threadsAvailable_;           // Reusable threads
+        std::list<Thread*> activeThreads;               // All created threads
         std::mutex mutex_;
     public:
         GlobalThreadsPool() = default;
@@ -205,7 +206,7 @@ namespace Tools{
     private:
         // global maximum number of threads
         static int maxGlobalThreads_;
-        // global number of available threads  for the local pool
+        // global number of available threads for the local pool
         static int nGlobalThreadsAvailable_;
         // true if currently trying to set the maxGlobalThreads_
         static bool settingMaxGlobalThreads_;

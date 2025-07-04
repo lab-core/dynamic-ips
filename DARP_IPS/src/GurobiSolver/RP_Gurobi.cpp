@@ -70,6 +70,71 @@ void RP_Gurobi::updateRPModel(PInstance &pInst) {
     }
 }
 
+
+void RP_Gurobi::updateModel_batch(PInstance& pInst) {
+    try {
+        if (routesToAdd_.empty()) return;
+
+        beginBatchUpdate();
+
+        const size_t numRoutes = routesToAdd_.size();
+
+        std::vector<double> lb(numRoutes, 0.0);
+        std::vector<double> ub(numRoutes, GRB_INFINITY);
+        std::vector<double> obj;
+        std::vector<char> vtype(numRoutes, GRB_INTEGER);
+        std::vector<std::string> names;
+        std::vector<GRBColumn> columns;
+
+        // Reserve space to avoid reallocations
+        obj.reserve(numRoutes);
+ //       names.reserve(numRoutes);
+        columns.reserve(numRoutes);
+
+        compRoutes_.reserve(compRoutes_.size() + numRoutes);   // avoid reallocations
+        // Fill arrays with range-based loop
+        for (const auto& routeObj : routesToAdd_) {
+            obj.push_back(routeObj->totalDelay_);
+ //           names.push_back(routeObj->name_);
+            columns.push_back(createColumn(routeObj, POSITIVE, pInst));
+            compRoutes_.push_back(routeObj);
+            routeObj->mpAdded_ = true;
+        }
+
+        // Batch addition using vector data
+        GRBVar* newVars = model_->addVars(
+            lb.data(),
+            ub.data(),
+            obj.data(),
+            vtype.data(),
+            nullptr,
+ //           names.data(),
+            columns.data(),
+            numRoutes
+        );
+
+        // Use unique_ptr for automatic cleanup of the returned array
+        std::unique_ptr<GRBVar[]> varsPtr(newVars);
+
+        // Pre-reserve space to avoid multiple reallocations
+        routeVar_.reserve(routeVar_.size() + numRoutes);
+
+        // Add variables to container
+        routeVar_.insert(routeVar_.end(), newVars, newVars + numRoutes);
+
+        // Single update call
+        endBatchUpdate();
+
+    } catch (const GRBException& e) {
+        std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
+        throw;
+    } catch (const std::exception& e) {
+        std::cerr << "Error in updateModel: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+
 void RP_Gurobi::buildModelRP(PInstance &pInst, std::vector<PRoute> &routeSolution, int nbVehicles) {
     try {
         // Model initialization
@@ -109,6 +174,30 @@ void RP_Gurobi::buildModelRP(PInstance &pInst, std::vector<PRoute> &routeSolutio
     }
 }
 
+void RP_Gurobi::extractSolution(const PInstance &pInst, std::vector<PRequest> &zSolution,
+    std::vector<PRoute> &routeSolution) {
+    // Saving the result
+    zSolution.clear();
+    routeSolution.clear();
+    routeSolutionIndex_.clear();
+
+    // Get route variable values
+    for (size_t r = 0; r < routeVar_.size(); ++r) {
+        if (getVarValue(routeVar_[r]) > 0.5) {
+            routeSolution.push_back(compRoutes_[r]);
+            routeSolutionIndex_.push_back(static_cast<int>(r));
+        }
+    }
+
+    // Get z variable values
+    for (size_t i = 0; i < zVar_.size(); ++i) {
+        double val = getVarValue(zVar_[i]);
+        if (val > 0.5) {
+            zSolution.push_back(pInst->nameToRequest_[zVar_[i].get(GRB_StringAttr_VarName)]);
+        }
+    }
+}
+
 // Solve as LP
 void RP_Gurobi::solveModelLP(const PInstance &pInst, const InputPaths &inputPaths) {
     try {
@@ -130,28 +219,8 @@ void RP_Gurobi::solveModelLP(const PInstance &pInst, const InputPaths &inputPath
             objValue_ = static_cast<float>(getObjValue());
 
             // Getting dual values
-            getDuals();
-            const auto& requestDuals = getRequestDuals();
-            const auto& vehicleDuals = getVehicleDuals();
+            getDuals(pInst);
 
-            // Update request duals
-            for (auto& requestObj : pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals[requestObj->taskIndex_]);
-                requestObj->InitialDual_ = requestObj->dual_;
-            }
-
-            // Update vehicle duals
-            for (auto& vehicleObj : pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals[index]);
-                    vehicleObj->InitialDual_ = vehicleObj->dual_;
-                }
-                else {
-                    vehicleObj->dual_ = 0;
-                    vehicleObj->InitialDual_ = 0;
-                }
-            }
         }
     }
     catch (GRBException& e) {
@@ -197,17 +266,7 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
 
             if (currentObj >= preObj) {
                 // Solution is not better, convert back to continuous
-                beginBatchUpdate();
-
-                for (auto& var : zVar_) {
-                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                }
-
-                for (auto& var : routeVar_) {
-                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                }
-
-                endBatchUpdate();
+                convertToFloat();
             }
             else {
                 objValue_ = static_cast<float>(currentObj);
@@ -216,41 +275,10 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
                 zSolution.clear();
                 routeSolution.clear();
                 routeSolutionIndex_.clear();
-
-                // Get route variable values
-                for (size_t r = 0; r < routeVar_.size(); ++r) {
-                    double val = getVarValue(routeVar_[r]);
-                    if (val > 0.5) {
-                        routeSolution.push_back(compRoutes_[r]);
-                        routeSolutionIndex_.push_back(static_cast<int>(r));
-                    }
-                }
-
-                // Get z variable values
-                for (size_t i = 0; i < zVar_.size(); ++i) {
-                    double val = getVarValue(zVar_[i]);
-                    if (val > 0.5) {
-                        // Find the request by name
-                        std::string varName = zVar_[i].get(GRB_StringAttr_VarName);
-                        auto reqIt = pInst->nameToRequest_.find(varName);
-                        if (reqIt != pInst->nameToRequest_.end()) {
-                            zSolution.push_back(reqIt->second);
-                        }
-                    }
-                }
+                extractSolution(pInst, zSolution, routeSolution);
 
                 // Convert back to continuous for next iteration
-                beginBatchUpdate();
-
-                for (auto& var : zVar_) {
-                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                }
-
-                for (auto& var : routeVar_) {
-                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                }
-
-                endBatchUpdate();
+                convertToFloat();
             }
         }
     }
@@ -281,27 +309,18 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
             objValue_ = static_cast<float>(getObjValue());
 
             // Getting dual values
-            getDuals();
-            const auto& requestDuals = getRequestDuals();
-            const auto& vehicleDuals = getVehicleDuals();
+            getDuals(pInst);
 
             // Update request duals
-            for (auto& requestObj : pInst->requests_) {
-                requestObj->dual_ = static_cast<float>(requestDuals[requestObj->taskIndex_]);
+            for (auto& requestObj : pInst->requests_)
                 requestObj->InitialDual_ = requestObj->dual_;
-            }
 
             // Update vehicle duals
             for (auto& vehicleObj : pInst->vehicles_) {
-                int index = vehicleObj->vehicleIndex_;
-                if (index > -1) {
-                    vehicleObj->dual_ = static_cast<float>(vehicleDuals[index]);
+                if (vehicleObj->vehicleIndex_ > -1)
                     vehicleObj->InitialDual_ = vehicleObj->dual_;
-                }
-                else {
-                    vehicleObj->dual_ = 0;
+                else
                     vehicleObj->InitialDual_ = 0;
-                }
             }
 
             // Convert to integer
@@ -319,10 +338,10 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
                 var.set(GRB_CharAttr_VType, GRB_INTEGER);
             }
 
-            endBatchUpdate();
-
             // Set time limit
             model_->set(GRB_DoubleParam_TimeLimit, availableTime);
+
+            endBatchUpdate();
 
             solveTime_->start();
             status = solve();
@@ -336,60 +355,16 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
 
                 if (currentObj >= preObj) {
                     // Solution is not better
-                    beginBatchUpdate();
-
-                    // Convert back to continuous
-                    for (auto& var : zVar_) {
-                        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                    }
-
-                    for (auto& var : routeVar_) {
-                        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                    }
-
-                    endBatchUpdate();
+                    convertToFloat();
                 }
                 else {
                     objValue_ = static_cast<float>(currentObj);
 
                     // Saving the result
-                    zSolution.clear();
-                    routeSolution.clear();
-                    routeSolutionIndex_.clear();
-
-                    // Get route variable values
-                    for (size_t r = 0; r < routeVar_.size(); ++r) {
-                        double val = getVarValue(routeVar_[r]);
-                        if (val > 0.9) {
-                            routeSolution.push_back(compRoutes_[r]);
-                            routeSolutionIndex_.push_back(static_cast<int>(r));
-                        }
-                    }
-
-                    // Get z variable values
-                    for (size_t i = 0; i < zVar_.size(); ++i) {
-                        double val = getVarValue(zVar_[i]);
-                        if (val > 0.9) {
-                            std::string varName = zVar_[i].get(GRB_StringAttr_VarName);
-                            auto reqIt = pInst->nameToRequest_.find(varName);
-                            if (reqIt != pInst->nameToRequest_.end()) {
-                                zSolution.push_back(reqIt->second);
-                            }
-                        }
-                    }
+                    extractSolution(pInst, zSolution, routeSolution);
 
                     // Convert back to continuous for next iteration
-                    beginBatchUpdate();
-
-                    for (auto& var : zVar_) {
-                        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                    }
-
-                    for (auto& var : routeVar_) {
-                        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                    }
-
-                    endBatchUpdate();
+                    convertToFloat();
                 }
             }
         }
@@ -431,30 +406,7 @@ void RP_Gurobi::solveModelRelaxInt(const PInstance &pInst, std::vector<PRequest>
         objValue_ = static_cast<float>(currentObj);
 
         // Save the integer solution
-        zSolution.clear();
-        routeSolution.clear();
-        routeSolutionIndex_.clear();
-
-        // Get route variable values
-        for (size_t r = 0; r < routeVar_.size(); ++r) {
-            double val = getVarValue(routeVar_[r]);
-            if (val > 0.9) {
-                routeSolution.push_back(compRoutes_[r]);
-                routeSolutionIndex_.push_back(static_cast<int>(r));
-            }
-        }
-
-        // Get z variable values
-        for (size_t i = 0; i < zVar_.size(); ++i) {
-            double val = getVarValue(zVar_[i]);
-            if (val > 0.9) {
-                std::string varName = zVar_[i].get(GRB_StringAttr_VarName);
-                auto reqIt = pInst->nameToRequest_.find(varName);
-                if (reqIt != pInst->nameToRequest_.end()) {
-                    zSolution.push_back(reqIt->second);
-                }
-            }
-        }
+        extractSolution(pInst, zSolution, routeSolution);
 
         // Create relaxed model from the solved MIP to get duals from LP relaxation
         GRBModel relaxedModel = model_->relax();
@@ -467,26 +419,7 @@ void RP_Gurobi::solveModelRelaxInt(const PInstance &pInst, std::vector<PRequest>
             throw std::runtime_error("Failed to solve LP relaxation for dual values");
         }
 
-        getDualsFromRelaxed(relaxedModel);
-
-        // Update request duals (assuming same constraint ordering)
-        for (auto& requestObj : pInst->requests_) {
-            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-            requestObj->InitialDual_ = requestObj->dual_;
-        }
-
-        // Update vehicle duals (assuming same constraint ordering)
-        for (auto& vehicleObj : pInst->vehicles_) {
-            int index = vehicleObj->vehicleIndex_;
-            if (index > -1) {
-                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                vehicleObj->InitialDual_ = vehicleObj->dual_;
-            }
-            else {
-                vehicleObj->dual_ = 0;
-                vehicleObj->InitialDual_ = 0;
-            }
-        }
+        getDualsFromRelaxed(relaxedModel, pInst);
 
     }
     catch (GRBException& e) {
@@ -501,18 +434,8 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
                                         std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
                                         float availableTime, float preObj, float lpObj) {
     try {
-        // Convert to integer
-        beginBatchUpdate();
-
-        for (auto& var : zVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
-        }
-
-        for (auto& var : routeVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
-        }
-
-        endBatchUpdate();
+        // Convert variables to integer
+        convertToInt();
 
         // Configure Gurobi logging
         myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
@@ -527,163 +450,122 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
         if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL && status != GRB_TIME_LIMIT) {
             throw std::runtime_error("Failed to optimize the MP");
         }
+        double currentObj = getObjValue();
+
+
+        if (currentObj >= preObj) {
+            // Convert variables back to continuous
+            convertToFloat();
+        }
         else {
-            double currentObj = getObjValue();
+            objValue_ = static_cast<float>(currentObj);
 
-            if (currentObj >= preObj) {
-                // Solution is not better
+            // Store variable values
+            std::vector<double> zVals(zVar_.size());
+            std::vector<double> routeVals(routeVar_.size());
+
+            for (size_t i = 0; i < zVar_.size(); ++i) {
+                zVals[i] = getVarValue(zVar_[i]);
+            }
+
+            for (size_t r = 0; r < routeVar_.size(); ++r) {
+                routeVals[r] = getVarValue(routeVar_[r]);
+            }
+            extractSolution(pInst, zSolution, routeSolution);
+
+            auxObjValue_ = 0;
+
+            // If LP objective is better than current integer solution
+            if (lpObj < objValue_) {
+                // Fix variables at their current values
                 beginBatchUpdate();
-
-                // Convert back to continuous
-                for (auto& var : zVar_) {
+                // Convert variables back to continuous
+                for (auto& var : zVar_)
                     var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
+
+                for (auto& var : routeVar_)
+                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
+
+                for (size_t r = 0; r < routeVar_.size(); ++r) {
+                    if (routeVals[r] > 0.5) {
+                        routeVar_[r].set(GRB_DoubleAttr_UB, 1.0);
+                        routeVar_[r].set(GRB_DoubleAttr_LB, -GRB_INFINITY);
+                    } else {
+                        routeVar_[r].set(GRB_DoubleAttr_UB, 0.0);
+                        routeVar_[r].set(GRB_DoubleAttr_LB, -GRB_INFINITY);
+                    }
                 }
 
-                for (auto& var : routeVar_) {
-                    var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
+                for (size_t i = 0; i < zVar_.size(); ++i) {
+                    if (zVals[i] > 0.5) {
+                        zVar_[i].set(GRB_DoubleAttr_UB, 1.0);
+                        zVar_[i].set(GRB_DoubleAttr_LB, -GRB_INFINITY);
+                    } else {
+                        zVar_[i].set(GRB_DoubleAttr_UB, 0.0);
+                        zVar_[i].set(GRB_DoubleAttr_LB, -GRB_INFINITY);
+                    }
+                }
+
+                // Change to maximization
+                model_->set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
+
+                // Change RHS of constraints to 0
+
+                for (auto& constr : requestConstr_) {
+                    constr.set(GRB_DoubleAttr_RHS, 0.0);
+                }
+
+                for (auto& constr : vehicleConstr_) {
+                    constr.set(GRB_DoubleAttr_RHS, 0.0);
                 }
 
                 endBatchUpdate();
-            }
-            else {
-                objValue_ = static_cast<float>(currentObj);
 
-                // Store variable values
-                std::vector<double> zVals(zVar_.size());
-                std::vector<double> routeVals(routeVar_.size());
+                // Solve auxiliary problem
+                solveTime_->start();
+                status = solve();
+                solveTime_->stop();
 
-                for (size_t i = 0; i < zVar_.size(); ++i) {
-                    zVals[i] = getVarValue(zVar_[i]);
+                if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
+                    throw std::runtime_error("Failed to optimize the Aux MP");
                 }
+                else {
+                    auxObjValue_ = static_cast<float>(getObjValue());
 
-                for (size_t r = 0; r < routeVar_.size(); ++r) {
-                    routeVals[r] = getVarValue(routeVar_[r]);
-                }
+                    // Get new dual values
+                    getDuals(pInst);
 
-                // Saving the result
-                zSolution.clear();
-                routeSolution.clear();
-
-                for (size_t r = 0; r < routeVals.size(); ++r) {
-                    if (routeVals[r] > 0.5) {
-                        routeSolution.push_back(compRoutes_[r]);
-                    }
-                }
-
-                for (size_t i = 0; i < zVals.size(); ++i) {
-                    if (zVals[i] > 0.5) {
-                        std::string varName = zVar_[i].get(GRB_StringAttr_VarName);
-                        auto reqIt = pInst->nameToRequest_.find(varName);
-                        if (reqIt != pInst->nameToRequest_.end()) {
-                            zSolution.push_back(reqIt->second);
-                        }
-                    }
-                }
-
-                auxObjValue_ = 0;
-
-                // If LP objective is better than current integer solution
-                if (lpObj < objValue_) {
-                    // Fix variables at their current values
+                    // Reset changes
                     beginBatchUpdate();
 
-                    for (size_t r = 0; r < routeVar_.size(); ++r) {
-                        if (routeVals[r] > 0.5) {
-                            routeVar_[r].set(GRB_DoubleAttr_UB, 1.0);
-                        } else {
-                            routeVar_[r].set(GRB_DoubleAttr_UB, 0.0);
-                        }
+                    // Change back to minimization
+                    model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
+
+                    // Reset variable bounds
+                    for (auto& var : zVar_) {
+                        var.set(GRB_DoubleAttr_LB, 0.0);
+                        var.set(GRB_DoubleAttr_UB, GRB_INFINITY);
                     }
 
-                    for (size_t i = 0; i < zVar_.size(); ++i) {
-                        if (zVals[i] > 0.5) {
-                            zVar_[i].set(GRB_DoubleAttr_UB, 1.0);
-                        } else {
-                            zVar_[i].set(GRB_DoubleAttr_UB, 0.0);
-                        }
+                    for (auto& var : routeVar_) {
+                        var.set(GRB_DoubleAttr_LB, 0.0);
+                        var.set(GRB_DoubleAttr_UB, GRB_INFINITY);
                     }
 
-                    // Change to maximization
-                    model_->set(GRB_IntAttr_ModelSense, GRB_MAXIMIZE);
-
-                    // Change RHS of constraints to 0
-                    auto& requestConstr = const_cast<std::vector<GRBConstr>&>(requestConstr_);
-                    auto& vehicleConstr = const_cast<std::vector<GRBConstr>&>(vehicleConstr_);
-
-                    for (auto& constr : requestConstr) {
-                        constr.set(GRB_DoubleAttr_RHS, 0.0);
+                    // Reset RHS values
+                    for (size_t i = 0; i < requestConstr_.size(); ++i) {
+                        requestConstr_[i].set(GRB_DoubleAttr_RHS, requestRHS_[i]);
                     }
 
-                    for (auto& constr : vehicleConstr) {
-                        constr.set(GRB_DoubleAttr_RHS, 0.0);
+                    for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
+                        vehicleConstr_[i].set(GRB_DoubleAttr_RHS, vehicleRHS_[i]);
                     }
 
                     endBatchUpdate();
-
-                    // Solve auxiliary problem
-                    solveTime_->start();
-                    status = solve();
-                    solveTime_->stop();
-
-                    if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
-                        throw std::runtime_error("Failed to optimize the Aux MP");
-                    }
-                    else {
-                        objValue_ = static_cast<float>(getObjValue());
-
-                        // Get new dual values
-                        getDuals();
-                        const auto& requestDuals = getRequestDuals();
-                        const auto& vehicleDuals = getVehicleDuals();
-
-                        for (auto& requestObj : pInst->requests_) {
-                            requestObj->dual_ = static_cast<float>(requestDuals[requestObj->taskIndex_]);
-                        }
-
-                        for (auto& vehicleObj : pInst->vehicles_) {
-                            if (vehicleObj->vehicleIndex_ > -1) {
-                                int index = vehicleObj->vehicleIndex_;
-                                vehicleObj->dual_ = static_cast<float>(vehicleDuals[index]);
-                            } else {
-                                vehicleObj->dual_ = 0;
-                            }
-                        }
-
-                        // Reset changes
-                        beginBatchUpdate();
-
-                        // Change back to minimization
-                        model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
-
-                        // Reset variable bounds
-                        for (auto& var : zVar_) {
-                            var.set(GRB_DoubleAttr_LB, 0.0);
-                            var.set(GRB_DoubleAttr_UB, GRB_INFINITY);
-                            var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                        }
-
-                        for (auto& var : routeVar_) {
-                            var.set(GRB_DoubleAttr_LB, 0.0);
-                            var.set(GRB_DoubleAttr_UB, GRB_INFINITY);
-                            var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-                        }
-
-                        // Reset RHS values
-                        for (size_t i = 0; i < requestConstr.size(); ++i) {
-                            requestConstr[i].set(GRB_DoubleAttr_RHS, requestRHS_[i]);
-                        }
-
-                        for (size_t i = 0; i < vehicleConstr.size(); ++i) {
-                            vehicleConstr[i].set(GRB_DoubleAttr_RHS, vehicleRHS_[i]);
-                        }
-
-                        endBatchUpdate();
-                    }
                 }
             }
         }
 
- //       model_->set(GRB_IntParam_OutputFlag, 0);
     }
     catch (GRBException& e) {
         std::cerr << "Error occurred in solveModelIntAux_P at line: " << __LINE__ << std::endl;
@@ -706,14 +588,7 @@ void RP_Gurobi::tuneModel(const InputPaths &inputPaths, float tuneTimeLimit,
         }
 
         // Convert variables to integer for tuning (since you solve as integer)
-        beginBatchUpdate();
-        for (auto& var : zVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
-        }
-        for (auto& var : routeVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
-        }
-        endBatchUpdate();
+        convertToInt();
 
         // Set tuning parameters
         model_->set(GRB_DoubleParam_TimeLimit, individualSolveTimeLimit);

@@ -27,6 +27,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntParam_UpdateMode, 0);                // Immediate updates
         model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_StringParam_LogFile, outputLog);
+        env_.set(GRB_IntParam_UpdateMode, 1);
         //       model_->set(GRB_IntParam_OutputFlag, 1);
 
     } catch (GRBException& e) {
@@ -94,7 +95,7 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
 
         // Set basic parameters
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
-        model_->set(GRB_DoubleParam_MIPGap, pInst->parameters_->MIPGap_);
+ //       model_->set(GRB_DoubleParam_MIPGap, pInst->parameters_->MIPGap_);
 
         // Update model
         model_->update();
@@ -166,7 +167,7 @@ void GurobiModeler::addRouteVarInt(const PRoute& newRoute, VarSign sign, const P
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
         double objCoeff = signMultiplier * newRoute->totalDelay_;
-        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, newRoute->name_);
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, nullptr);
         routeVar_.push_back(var);
 
     } catch (GRBException& e) {
@@ -182,7 +183,7 @@ void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
         double objCoeff = signMultiplier * newRoute->totalDelay_;
-        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, newRoute->name_);
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
         routeVar_.push_back(var);
 
     } catch (GRBException& e) {
@@ -193,19 +194,39 @@ void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const
 
 // Begin batch update
 void GurobiModeler::beginBatchUpdate() {
-    try {
+    /*try {
         model_->set(GRB_IntParam_UpdateMode, 1); // Enable batch mode
     } catch (GRBException& e) {
         std::cerr << "Error in beginBatchUpdate: " << e.getMessage() << std::endl;
         throw;
-    }
+    }*/
+}
+
+void GurobiModeler::convertToInt() {
+    beginBatchUpdate();
+    for (auto& var : zVar_)
+        var.set(GRB_CharAttr_VType, GRB_INTEGER);
+
+    for (auto& var : routeVar_)
+        var.set(GRB_CharAttr_VType, GRB_INTEGER);
+    endBatchUpdate();
+}
+
+void GurobiModeler::convertToFloat() {
+    beginBatchUpdate();
+    for (auto& var : zVar_)
+        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
+
+    for (auto& var : routeVar_)
+        var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
+    endBatchUpdate();
 }
 
 // End batch update
 void GurobiModeler::endBatchUpdate() {
     try {
         model_->update();
-        model_->set(GRB_IntParam_UpdateMode, 0); // Disable batch mode
+//        model_->set(GRB_IntParam_UpdateMode, 0); // Disable batch mode
     } catch (GRBException& e) {
         std::cerr << "Error in endBatchUpdate: " << e.getMessage() << std::endl;
         throw;
@@ -282,8 +303,18 @@ double GurobiModeler::getObjValue() const {
     }
 }
 
+// Get variable value
+double GurobiModeler::getVarValue(const GRBVar& var) const {
+    try {
+        return var.get(GRB_DoubleAttr_X);
+    } catch (GRBException& e) {
+        std::cerr << "Error getting variable value: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
 // Get dual values
-void GurobiModeler::getDuals() {
+void GurobiModeler::getDuals(const PInstance& pInst) {
     try {
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
@@ -295,25 +326,32 @@ void GurobiModeler::getDuals() {
             vehicleDuals_[i] = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
         }
 
+        // Update request duals
+        for (auto& requestObj : pInst->requests_) {
+            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
+            requestObj->InitialDual_ = requestObj->dual_;
+        }
+
+        // Update vehicle duals
+        for (auto& vehicleObj : pInst->vehicles_) {
+            int index = vehicleObj->vehicleIndex_;
+            if (index > -1) {
+                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
+                vehicleObj->InitialDual_ = vehicleObj->dual_;
+            }
+            else {
+                vehicleObj->dual_ = 0;
+                vehicleObj->InitialDual_ = 0;
+            }
+        }
+
     } catch (GRBException& e) {
         std::cerr << "Error in getDuals: " << e.getMessage() << std::endl;
         throw;
     }
 }
 
-
-
-// Get variable value
-double GurobiModeler::getVarValue(const GRBVar& var) const {
-    try {
-        return var.get(GRB_DoubleAttr_X);
-    } catch (GRBException& e) {
-        std::cerr << "Error getting variable value: " << e.getMessage() << std::endl;
-        throw;
-    }
-}
-
-void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel) {
+void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel, const PInstance& pInst) {
     try {
         // Get all constraints from the relaxed model
         GRBConstr* allConstrs = relaxedModel.getConstrs();
@@ -331,6 +369,25 @@ void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel) {
         for (size_t i = 0; i < vehicleDuals_.size(); ++i) {
             vehicleDuals_[i] = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
             constrIndex++;
+        }
+
+        // Update request duals (assuming same constraint ordering)
+        for (auto& requestObj : pInst->requests_) {
+            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
+            requestObj->InitialDual_ = requestObj->dual_;
+        }
+
+        // Update vehicle duals (assuming same constraint ordering)
+        for (auto& vehicleObj : pInst->vehicles_) {
+            int index = vehicleObj->vehicleIndex_;
+            if (index > -1) {
+                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
+                vehicleObj->InitialDual_ = vehicleObj->dual_;
+            }
+            else {
+                vehicleObj->dual_ = 0;
+                vehicleObj->InitialDual_ = 0;
+            }
         }
 
     } catch (GRBException& e) {
