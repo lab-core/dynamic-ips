@@ -406,15 +406,15 @@
       "sortColumn": 0
     },
     "test": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 120,
-      "MaxWait": 9999999,
+      "MaxWait": 120,
       "returnType": 2,
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "InitialDual": 1,
-      "warmStart": 1,
+      "warmStart": 0,
       "NumIter": 1,
       "NumColumn": 50,
       "isTruncated": 1,
@@ -426,9 +426,9 @@
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 0,
       "Partial_Pricing": 1,
-      "nbPick": 4,
+      "nbPick": 2,
       "sortPath": 0,
-      "sortColumn": 0
+      "sortColumn": 1
     }
   }
 }
