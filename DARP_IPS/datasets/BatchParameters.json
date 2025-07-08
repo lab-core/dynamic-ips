@@ -27,7 +27,7 @@
     "solveTimeLimit": 300,
     "populateTimeLimit": 200,
     "MIPGap": 0.001,
-    "ModelSolver": 1
+    "ModelSolver": 0
   },
   "scenarios": {
     "nbPick1": {
