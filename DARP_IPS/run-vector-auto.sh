@@ -22,7 +22,7 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define scenario for each mode
 declare -A scenario_files
-scenario_files[1]="no_commit"
+scenario_files[1]="commit"
 scenario_files[2]="ACG-LP"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory

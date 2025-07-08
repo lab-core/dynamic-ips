@@ -344,7 +344,7 @@
       "NumColumn": 50,
       "isTruncated": 1,
       "MaxLabel": 15,
-      "MaxCommittedLabel": 15,
+      "MaxCommittedLabel": 0,
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
