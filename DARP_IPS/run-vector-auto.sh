@@ -1,28 +1,29 @@
 #!/bin/bash
-#SBATCH --mem=16G
+#SBATCH --mem=20G
 #SBATCH --cpus-per-task=16
-#SBATCH --time=18:15:00
-#SBATCH --array=1-3
+#SBATCH --time=2:15:00
+#SBATCH --array=1-24
 #SBATCH --output=/dev/null
 
 # Load required modules
 module load eigen gcc
 
 # Define fixed parameters
-vehicles_1="manhattan-vehicles"
-vehicles_2="sufficient_manhattan-vehicles-300"
-directory="Instances_16h"
+vehicles_1="vehicles_uniform"
+vehicles_2="vehicles_byDemand"
+directory="Instances_2h-7"
 main_dir="datasets/$directory"
+param_dir="BatchParameters"
 
 # Define algorithms for each mode
 declare -A algorithms
 algorithms[1]="2"  # Mode 1 -> Algorithm 2
 algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
-# Define parameter files for each mode
-declare -A param_files
-param_files[1]="commit"  # Mode 1 has two parameter files
-param_files[2]="ACG-LP"  # Mode 2 has three parameter files
+# Define scenario for each mode
+declare -A scenario_files
+scenario_files[1]="no_commit"
+scenario_files[2]="ACG-LP"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
@@ -41,11 +42,11 @@ i=1
 for mode in 1; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
-#      for instance_path in "${INSTANCES[@]}"; do
-#        instance=$(basename "$instance_path")
-      for instance in "${instances[@]}"; do
-        for param_dir in ${param_files[$mode]}; do
-        jobs[$i]="$vehicles_2 $directory $instance $vehicle_count $algorithm $mode $param_dir 1"
+      for instance_path in "${INSTANCES[@]}"; do
+        instance=$(basename "$instance_path")
+#      for instance in "${instances[@]}"; do
+        for scenario in ${scenario_files[$mode]}; do
+        jobs[$i]="--vehicle-folder $vehicles_1 --inst-folder $directory --instance-name $instance --num-vehicles $vehicle_count --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
         ((i++))
         done
       done
