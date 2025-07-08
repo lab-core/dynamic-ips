@@ -90,7 +90,7 @@ void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
 void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    bool repeat = false;
+    bool repeat = true;
 
     // Set available time
     CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
@@ -223,8 +223,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
-    subProOptions_->enableHeuristics(mainInst->parameters_);
-    EpochInst->parameters_->dynamicPricing_ = true;
+ //   subProOptions_->enableHeuristics(mainInst->parameters_);
+ //   EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = CG_Model_->objValue_;
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
