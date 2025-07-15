@@ -56,6 +56,7 @@ public:
     void addSource(const PNode &node, float departTime, int departPassengers);
     void addNode(const PNode &node);
 
+    void reConstructRoute(PVehicle & vehicle);
     // function to add node to the solution route
     void addNode(const PNode &node, float reachTime, float departTime);
     void addSink(const PNode &node);

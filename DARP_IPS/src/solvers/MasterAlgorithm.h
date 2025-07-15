@@ -37,6 +37,8 @@ public:
     std::vector<PRoute> InRouteSolution_;   // Initial solutions
     std::vector<PRequest> InZSolution_;
 
+    SpMat Basis_;
+    SpMat BasisInv_;
     int nbCoveredTasks_;
     float maxReducedCost_;                  // max threshold for the reduced costs selection in CP
     float minReducedCost_;
@@ -58,6 +60,7 @@ public:
 
     int CGSuccess_;                         // number of time that CG where able to converge
     float objValue_;                        // objective value during MP iterations
+    float upperbound_;
     float previousObj_;
     float lpObjValue_;                      // linear objective value
     float totalWaitTime_;                   // total waiting time without penalties
@@ -97,6 +100,8 @@ public:
     //This function updates the incompatibility degree of availableRoutes
     static void calcIncompatibilityBit(const PRoute &route, const PInstance &pInst);
 
+    static void calcIncompatibilityBitF(const PRoute &route, const PInstance &pInst);
+
     void updateIncDegreesM1Fast(const PInstance &pInst);
 
     void calcIncompatibilityM1Fast(const PRoute &route) const;
@@ -104,6 +109,9 @@ public:
     void calcIncompatibilityM(const PRoute &route) const;
     void calcIncompatibilityMFull(const PRoute &route) const;
     void updateIncDegreesBit(const PInstance &pInst) const;
+
+    void updateIncDegreesBitF(const PInstance &pInst) const;
+
     void updateIncDegreesM(const PInstance &pInst);
     void updateScore1(const PInstance &pInst);
     void updateScore(const PInstance &pInst);
@@ -118,6 +126,7 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(const PInstance &pInst);
     void updateRoutesToAdd(SelectionMode selectMode, const PInstance &pInst, std::vector<PRoute> &routesToAdd);
+    void reFillRoutesToAdd(const PInstance &pInst, std::vector<PRoute> &routesToAdd);
     void updateRoutesToAddZoom(std::vector<PRoute> &routesToAdd) const;
 
     // function to save the reduced costs and incompatibility degree of the created routes
@@ -134,6 +143,8 @@ public:
     void updateEpochTimers(PRuntimeMetrics &runtimeMetrics);
     std::string runtimesToString(PRuntimeMetrics &runtimeMetrics);
     void createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime);
+    void buildBasis(const PInstance &pInst);
+    void computeBasisInverse();
 };
 
 

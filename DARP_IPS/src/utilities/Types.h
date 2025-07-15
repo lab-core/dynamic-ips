@@ -100,6 +100,8 @@ using IloNumVar2D = IloArray<IloNumVarArray>;
 using IloNumVar3D = IloArray<IloNumVar2D>;
 using IloNum2D = IloArray<IloNumArray>;
 
+typedef Eigen::SparseMatrix<double> SpMat;
+typedef Eigen::Triplet<double> Triplet;
 //-----------------------------------------------------------------------------
 //  Enumerations
 //-----------------------------------------------------------------------------

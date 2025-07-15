@@ -13,6 +13,8 @@
 #include <string>
 #include <chrono>
 #include "Eigen/Dense"
+#include <Eigen/Sparse>
+#include <Eigen/SparseLU>
 #include "Tools.h"
 #include <algorithm>
 #include <valarray>
@@ -20,6 +22,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <ilcplex/ilocplex.h>
 #include <unordered_map>
+#include <unordered_set>
 #include "json.hpp"
 #include "Types.h"
 

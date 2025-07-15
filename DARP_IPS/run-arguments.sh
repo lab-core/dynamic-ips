@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=20G
-#SBATCH --time=2:15:00
+#SBATCH --time=6:15:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
@@ -20,7 +20,7 @@ algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-scenario_files[1]="commit"  # Mode 1 has two parameter files
+scenario_files[1]="exact"  # Mode 1 has two parameter files
 scenario_files[2]="ACG-LP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts

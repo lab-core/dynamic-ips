@@ -24,7 +24,9 @@ Instance::Instance(std::string name, float simulationStart, int nbVehicles, int 
     nbZones_ = 0;
     nbRejected_ = 0;
     nbIdle_ = 0;
-    nbPotentialIdle_ = 0;
+    passPerVehicle_ = 0;
+    requestPerVehicle_ = 0;
+    nodePerVehicle_ = 0;
     nbReturn_ = 0;
     nbStateChanged_ = 0;
     nbInitialOnboards_ = nbOnboards;
@@ -47,7 +49,6 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     zones_ = mainInst.zones_;
     nbZones_ = mainInst.nbZones_;
     nbIdle_ = 0;
-    nbPotentialIdle_ = 0;
     nbReturn_ = 0;
     nbStateChanged_ = 0;
     nbRejected_ = 0;
@@ -268,13 +269,9 @@ std::string Instance::solutionToString() {
 void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRequest> &penaltyRequests, float elapsedTime,
                                 int lastRecRequests) {
     nbReturn_ = mainInst->nbReturn_;
-    nbIdle_ = mainInst->nbIdle_;
-    nbPotentialIdle_ = mainInst->nbPotentialIdle_;
     nbStateChanged_ = mainInst->nbStateChanged_;
 
     mainInst->nbReturn_ = 0;
-    mainInst->nbIdle_ = 0;
-    mainInst->nbPotentialIdle_ = 0;
     mainInst->nbStateChanged_ = 0;
 
     for (auto & vehicleObj : mainInst->vehicles_){
@@ -368,13 +365,9 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
 
 void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     nbReturn_ = mainInst->nbReturn_;
-    nbIdle_ = mainInst->nbIdle_;
-    nbPotentialIdle_ = mainInst->nbPotentialIdle_;
     nbStateChanged_ = mainInst->nbStateChanged_;
 
     mainInst->nbReturn_ = 0;
-    mainInst->nbIdle_ = 0;
-    mainInst->nbPotentialIdle_ = 0;
     mainInst->nbStateChanged_ = 0;
 
     for (auto & vehicleObj : mainInst->vehicles_){
@@ -550,6 +543,10 @@ void Instance::updatePenalties(float elapsedTime) {
         else {
             requestObj->latestPickup_ = requestObj->committedPickTime_ + parameters_->pickupDeviationWindow_;
 
+        }
+        if (requestObj->solVehicleID_ == LARGE_CONSTANT) {
+            requestObj->dual_ = requestObj->penalty_;
+            requestObj->InitialDual_ = requestObj->penalty_;
         }
     }
 }
@@ -1029,6 +1026,24 @@ void Instance::resetDuals() {
     for (auto & vehicleObj : vehicles_) {
         vehicleObj->dual_ = 0;
     }
+}
+
+void Instance::calcVehicleMetric() {
+    nbIdle_ = 0.0;
+    passPerVehicle_ = 0.0;
+    requestPerVehicle_ = 0.0;
+    nodePerVehicle_ = 0.0;
+    for (auto & vehicleObj : vehicles_) {
+        requestPerVehicle_ += vehicleObj->currentRoute_->routeRequests_.size();
+        nodePerVehicle_ += vehicleObj->currentRoute_->routeSize_ - 1;
+        passPerVehicle_ += vehicleObj->numPassengers_;
+        if (vehicleObj->currentRoute_->routeSize_ == 1)
+            nbIdle_++;
+    }
+    float nbActiveVehicles = vehicles_.size() - nbIdle_;
+    nodePerVehicle_ = nodePerVehicle_ / nbActiveVehicles;
+    requestPerVehicle_ = requestPerVehicle_ / nbActiveVehicles;
+    passPerVehicle_ = passPerVehicle_ / nbActiveVehicles;
 }
 
 // Function to get index based on node type and identifier

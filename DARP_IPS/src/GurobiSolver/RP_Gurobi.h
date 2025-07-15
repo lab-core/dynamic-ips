@@ -18,15 +18,13 @@ public:
 
     std::vector<PRoute> compRoutes_;        // list of route variables in the model
 
-    // Map to track request names to variables for quick lookup
-    std::map<std::string, int> requestNameToIndex_;
 
 
     // Constructor and Destructor
     RP_Gurobi(std::string outputLog);
     // Add variables
     void addRouteVar(PRoute& newRoute, PInstance& pInst);
-    void addRouteVarFloat(PRoute& newRoute, PInstance& pInst);
+    void addRouteVarFloat_RP(PRoute& newRoute, PInstance& pInst);
     void addZVar(PRequest& request);
 
     // Update model with new routes
@@ -62,6 +60,7 @@ public:
                    int numTuneResults);
 
     void loadTunedParameters(const InputPaths &inputPaths);
+    void recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &removedRequests);
 };
 
 

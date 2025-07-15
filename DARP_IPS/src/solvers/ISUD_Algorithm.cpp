@@ -61,7 +61,7 @@ void ISUD_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &inp
     masterTime_->stop();
 }
 
-void ISUD_Algorithm::initializationGurobi(PInstance &pInst, const InputPaths &inputPaths,
+void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths,
     const PGreedyModeler &GreedyModel) {
 
     initialization(pInst, inputPaths, GreedyModel);
@@ -168,8 +168,8 @@ void ISUD_Algorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, int
             previousObj_ = objValue_;
         } else
             break;
-        if (RPIter_ == 2)
-             break;
+//        if (RPIter_ == 2)
+ //            break;
 
         if (nbColumns == 0)
             break;
@@ -533,18 +533,18 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                                 std::cout << previousObj_ << std::endl;
                                 previousObj_ = objValue_;
                             }
-                            else if (!isCPImproved && CpCounter == 0){
+                            else if (!isCPImproved){
                                 restartAlgorithm = false;
                                 break;
                             }
                         }
 
-                        else if (!isCPImproved && CpCounter == 0) {
+                        else if (!isCPImproved) {
                             restartAlgorithm = false;
                             break;
                         }
                     }
-                    else if ((CPGurobiPro_->status_ == POSITIVE_VALUE || CPGurobiPro_->status_ == INFEASIBLE) && !isCPImproved && CpCounter == 0) {
+                    else if ((CPGurobiPro_->status_ == POSITIVE_VALUE || CPGurobiPro_->status_ == INFEASIBLE) && !isCPImproved) {
                         restartAlgorithm = false;
                         break;
                     }
@@ -552,8 +552,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         CPSuccess_++;
                         previousObj_ = objValue_;
                         RMPCounter_++;
-                        isCPImproved = false;
-                        CpCounter++;
+                        isCPImproved = true;
                         setAvailableTime();
                         restartAlgorithm = true;
                         if (availableTime_ <= 1) {
@@ -561,7 +560,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                             break;
                         }
                     }
-                } else if (!isCPImproved && CpCounter == 0) {
+                } else if (!isCPImproved) {
                     restartAlgorithm = false;
                     break;
                 }

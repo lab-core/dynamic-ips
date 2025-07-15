@@ -26,7 +26,7 @@ public:
     explicit ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver);
 
     void initializationCPLEX(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
-    void initializationGurobi(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
+    void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
 
     int solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
     int solveRP_Gurobi(PInstance &pInst, int compDegree, const InputPaths &inputPaths);

@@ -25,7 +25,7 @@ void RP_Gurobi::addRouteVar(PRoute &newRoute, PInstance &pInst) {
 }
 
 // Add route variable (float version)
-void RP_Gurobi::addRouteVarFloat(PRoute &newRoute, PInstance &pInst) {
+void RP_Gurobi::addRouteVarFloat_RP(PRoute &newRoute, PInstance &pInst) {
     try {
         GurobiModeler::addRouteVarFloat(newRoute, POSITIVE, pInst);
         compRoutes_.push_back(newRoute);
@@ -40,8 +40,6 @@ void RP_Gurobi::addRouteVarFloat(PRoute &newRoute, PInstance &pInst) {
 void RP_Gurobi::addZVar(PRequest &request) {
     try {
         addZVarInt(request, POSITIVE);
-        // Track the index for later retrieval
-        requestNameToIndex_[request->name_] = zVar_.size() - 1;
     }
     catch (GRBException& e) {
         std::cerr << "Error in addZVar: " << e.getMessage() << std::endl;
@@ -81,46 +79,34 @@ void RP_Gurobi::updateModel_batch(PInstance& pInst) {
 
         std::vector<double> lb(numRoutes, 0.0);
         std::vector<double> ub(numRoutes, GRB_INFINITY);
-        std::vector<double> obj;
+        std::vector<double> obj(numRoutes);
         std::vector<char> vtype(numRoutes, GRB_INTEGER);
-        std::vector<std::string> names;
-        std::vector<GRBColumn> columns;
-
-        // Reserve space to avoid reallocations
-        obj.reserve(numRoutes);
- //       names.reserve(numRoutes);
-        columns.reserve(numRoutes);
+        std::vector<GRBColumn> columns(numRoutes);
 
         compRoutes_.reserve(compRoutes_.size() + numRoutes);   // avoid reallocations
+
+        size_t k = 0;
         // Fill arrays with range-based loop
         for (const auto& routeObj : routesToAdd_) {
-            obj.push_back(routeObj->totalDelay_);
- //           names.push_back(routeObj->name_);
-            columns.push_back(createColumn(routeObj, POSITIVE, pInst));
-            compRoutes_.push_back(routeObj);
+            obj[k] = routeObj->totalDelay_;
+            columns[k] = createColumn(routeObj, POSITIVE, pInst);
+            compRoutes_.emplace_back(routeObj);
             routeObj->mpAdded_ = true;
+            ++k;
         }
 
         // Batch addition using vector data
-        GRBVar* newVars = model_->addVars(
+        std::unique_ptr<GRBVar[]> newVars(model_->addVars(
             lb.data(),
             ub.data(),
             obj.data(),
             vtype.data(),
             nullptr,
- //           names.data(),
             columns.data(),
-            numRoutes
-        );
-
-        // Use unique_ptr for automatic cleanup of the returned array
-        std::unique_ptr<GRBVar[]> varsPtr(newVars);
-
-        // Pre-reserve space to avoid multiple reallocations
-        routeVar_.reserve(routeVar_.size() + numRoutes);
+            numRoutes));
 
         // Add variables to container
-        routeVar_.insert(routeVar_.end(), newVars, newVars + numRoutes);
+        routeVar_.insert(routeVar_.end(), newVars.get(), newVars.get() + numRoutes);
 
         // Single update call
         endBatchUpdate();
@@ -148,7 +134,6 @@ void RP_Gurobi::buildModelRP(PInstance &pInst, std::vector<PRoute> &routeSolutio
         for (auto& zSol : pInst->requests_) {
             if (zSol->committedPickTime_ == LARGE_CONSTANT) {
                 addZVar(zSol);
-                requestNameToIndex_[zSol->name_] = zVar_.size() - 1;
             }
         }
 
@@ -272,9 +257,6 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
                 objValue_ = static_cast<float>(currentObj);
 
                 // Saving the result
-                zSolution.clear();
-                routeSolution.clear();
-                routeSolutionIndex_.clear();
                 extractSolution(pInst, zSolution, routeSolution);
 
                 // Convert back to continuous for next iteration
@@ -685,5 +667,54 @@ void RP_Gurobi::loadTunedParameters(const InputPaths &inputPaths) {
     } catch (GRBException& e) {
         std::cout << "Could not load tuned parameters: " << e.getMessage() << std::endl;
         std::cout << "Using default parameters." << std::endl;
+    }
+}
+
+void RP_Gurobi::recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &removedRequests) {
+    try {
+
+        // 1. Remove request constraints (no need to update internal vectors)
+        for (int i = static_cast<int>(removedRequests.size())-1; i >= 0; --i) {
+            if (removedRequests[i]) {
+                model_->remove(requestConstr_[i]);
+                requestConstr_.erase(requestConstr_.begin() + i);
+                pInst->requests_.erase(pInst->requests_.begin() + i);
+            }
+        }
+
+        // 2. Remove non-basis route variables that cover removed requests
+        for (int i = static_cast<int>(compRoutes_.size())-1; i >= 0; --i) {
+
+            if (pInst->vehicles_[compRoutes_[i]->vehicleID_]->currentRoute_->getRouteId() != compRoutes_[i]->getRouteId()) {
+                if ((compRoutes_[i]->column_ & removedRequests).any()) {
+                    model_->remove(routeVar_[i]);
+                    routeVar_.erase(routeVar_.begin() + i);
+                    compRoutes_.erase(compRoutes_.begin() + i);
+                }
+            }
+            else {
+                // Update objective coefficient
+                routeVar_[i].set(GRB_DoubleAttr_Obj, compRoutes_[i]->totalDelay_);
+            }
+        }
+
+        // 4. Single model update
+        model_->update();
+
+        // 1. Solve the modified LP
+        model_->optimize();
+
+        // Get request constraint duals
+        for (size_t i = 0; i < requestConstr_.size(); ++i) {
+            pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            std::cout << pInst->requests_[i]->InitialDual_ << " - " << pInst->requests_[i]->dual_ << std::endl;
+        }
+
+        for (size_t j = 0; j < vehicleConstr_.size(); ++j)
+            pInst->vehicles_[j]->dual_ = vehicleConstr_[j].get(GRB_DoubleAttr_Pi);
+
+    } catch (const GRBException& e) {
+        std::cerr << "Gurobi error in recoverModelForDuals: " << e.getMessage() << std::endl;
+        throw;
     }
 }

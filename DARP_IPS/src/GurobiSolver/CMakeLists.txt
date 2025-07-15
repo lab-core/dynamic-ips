@@ -7,6 +7,8 @@ set(SOURCE_FILES
     MP_Gurobi.h
         CP_Gurobi.cpp
         CP_Gurobi.h
+        CP_Reduced.cpp
+        CP_Reduced.h
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})

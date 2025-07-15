@@ -168,7 +168,6 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                         // if we have reached the end of the route, the next condition is checked
                         if (i == currentRoute_->routeSize_ - 1 && departTime_ < elapsedTime + committedTime) {
                             handleIdleState(elapsedTime + committedTime);
-                            mainInst->nbPotentialIdle_++;
                         }
                         numPassengers_ = currentRoute_->plannedPassengers_[i];
                         departNode_ = currentRoute_->routeNodes_[i];
@@ -193,10 +192,6 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
             emptyRoute_ = currentRoute_;
     }
     else if (departTime_ <= elapsedTime + committedTime){
-        if (currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_[0]->serviceTime_ <= elapsedTime)
-            mainInst->nbIdle_++;
-        else
-            mainInst->nbPotentialIdle_++;
         handleIdleState(elapsedTime + committedTime);
     }
     for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -210,6 +205,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
             }
         }
     }
+ //   adjustDuals();
 
     // check penalties
     /*if (currentRoute_->routeRequests_.empty())
@@ -323,4 +319,18 @@ void Vehicle::setRequestStatus(const PNode &node, float reachTime) const {
 //          myTools::throwException("Trip delay Validation");
         }
     }
+}
+
+void Vehicle::adjustDuals() {
+    if (currentRoute_->routeRequests_.size() > 0) {
+        float totalDual = 0.0;
+        for (int i = 0; i < currentRoute_->routeRequests_.size(); ++i) {
+            totalDual += currentRoute_->routeRequests_[i]->dual_;
+        }
+        totalDual += dual_;
+        for (int i = 0; i < currentRoute_->routeRequests_.size(); ++i) {
+            currentRoute_->routeRequests_[i]->dual_ *= currentRoute_->totalDelay_ / totalDual;
+        }
+    }
+    dual_ = 0.0;
 }

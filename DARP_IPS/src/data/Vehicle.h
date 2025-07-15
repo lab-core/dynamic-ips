@@ -71,6 +71,7 @@ public:
     void updateDepartTime(float departTime);
     void handleIdleState(float epochEndTime);
     void setRequestStatus(const PNode &node, float reachTime) const;
+    void adjustDuals();
 };
 
 

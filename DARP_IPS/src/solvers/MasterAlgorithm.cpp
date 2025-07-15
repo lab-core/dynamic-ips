@@ -29,7 +29,7 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
     availableTime_ = 0;
     timeLimit_ = 0;
     MPEpochSolveTime_ = 0;
-
+    upperbound_ = 0.0;
     iterTime_ = 0;
 
     MPBuildTime_ = new myTools::Timer(); MPBuildTime_->init();
@@ -179,6 +179,15 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->dual_ = 0;
     }
+
+    // create upper bound
+    pInst->parameters_->greedyReOptimize_ = false;
+    GreedyModel->greedyTime_->start();
+    GreedyModel->initialization(pInst);
+    GreedyModel->solveInsertion(pInst);
+    upperbound_ = GreedyModel->createUpperbound(pInst);
+    GreedyModel->greedyTime_->stop();
+    std::cout << "Upper Bound by Grredy: " << upperbound_ << std::endl;
 }
 
 // this function creates initial routes serving only one request and fill zSolution_ with available requests
@@ -220,6 +229,30 @@ void MasterAlgorithm::calcIncompatibilityBit(const PRoute &route, const PInstanc
         route->isCompatible_ = false;
         route->incompatibilityDegree_ += static_cast<int>(vehicles.count());
     }*/
+}
+
+void MasterAlgorithm::calcIncompatibilityBitF(const PRoute &route, const PInstance &pInst) {
+    route->isCompatible_ = true;
+    route->incompatibilityDegree_ = 0;
+
+    // If this column does not cover the requests of the current route in related vehicle
+    if ((route->column_ & pInst->vehicles_[route->vehicleID_]->currentRoute_->column_)!=pInst->vehicles_[route->vehicleID_]->currentRoute_->column_){
+        route->isCompatible_ = false;
+        route->incompatibilityDegree_++;
+    }
+    boost::dynamic_bitset<> vehicles;
+    vehicles.resize(pInst->vehicles_.size());
+    for (auto & requestObj : route->routeRequests_){
+        if (requestObj->solVehicleID_ < LARGE_CONSTANT)
+            vehicles.set(requestObj->solVehicleID_, true);
+    }
+    vehicles.set(route->vehicleID_, false);
+
+    // Count incompatibility if there are any incompatible vehicles
+    if (vehicles.count() > 0) {
+        route->isCompatible_ = false;
+        route->incompatibilityDegree_ += static_cast<int>(vehicles.count());
+    }
 }
 
 void MasterAlgorithm::updateIncDegreesM1Fast(const PInstance &pInst) {
@@ -285,6 +318,16 @@ void MasterAlgorithm::updateIncDegreesBit(const PInstance &pInst) const {
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
                 calcIncompatibilityBit(routeObj, pInst);
+            }
+        }
+    }
+}
+
+void MasterAlgorithm::updateIncDegreesBitF(const PInstance &pInst) const {
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
+            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
+                calcIncompatibilityBitF(routeObj, pInst);
             }
         }
     }
@@ -549,7 +592,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, const PInstanc
                         }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && (routeObj->incompatibilityDegree_ < 2) && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2 && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
@@ -565,6 +608,20 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, const PInstanc
                     break;
             }
             nbColumnsAdded_ += numAdded;
+        }
+    }
+}
+
+void MasterAlgorithm::reFillRoutesToAdd(const PInstance &pInst,
+    std::vector<PRoute> &routesToAdd) {
+    for (auto & vehicleObj : pInst->vehicles_) {
+
+        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+            if (routeObj->cpAdded_ || routeObj->mpAdded_) {
+                routeObj->createColumn(pInst->nbRequests_);
+                routesToAdd.push_back(routeObj);
+                nbColumnsAdded_++;
+            }
         }
     }
 }
@@ -666,6 +723,7 @@ void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
+    availableTime_ = LARGE_CONSTANT;
 }
 
 void MasterAlgorithm::updateEpochTimers(PRuntimeMetrics &runtimeMetrics) {
@@ -734,6 +792,63 @@ void MasterAlgorithm::createFinalOutputString(const PInstance &pInst, float subp
     pInst->instRepStr_ << CPSuccess_ << ",";
     pInst->instRepStr_ << CPFails_ << ",";
     pInst->instRepStr_ << CGSuccess_ << ",";
+}
+
+void MasterAlgorithm::buildBasis(const PInstance &pInst) {
+    // 1. Triplet buffer
+    std::vector<Triplet> nz;
+    std::size_t nnz_estimate = pInst->nbVehicles_ + pInst->nbRequests_;
+    nz.reserve(nnz_estimate);
+
+    // 2. Identity on vehicle rows/columns
+    for (const auto& vehicleObj : pInst->vehicles_) {
+        nz.emplace_back(vehicleObj->vehicleID_, vehicleObj->vehicleID_, 1.0);   // row, col, value
+    }
+
+    // 4. Incidence rows: requests covered by routes
+    for (const auto& routeObj : routeSolution_) {
+        for (const auto& requestObj : routeObj->routeRequests_) {
+            nz.emplace_back(pInst->nbVehicles_ + requestObj->taskIndex_, routeObj->vehicleID_, 1.0);
+        }
+    }
+
+    // 3. Identity un-requests (zSolution_)
+    for (size_t i = 0; i < zSolution_.size(); i++) {
+        nz.emplace_back(pInst->nbVehicles_ + zSolution_[i]->taskIndex_,
+            pInst->nbVehicles_ + i, 1.0);
+    }
+
+    // 5. Build sparse basis
+    int nRows = pInst->nbVehicles_ + pInst->nbRequests_;
+    int nCols = pInst->nbVehicles_ + static_cast<int>(zSolution_.size());
+    Basis_ = SpMat(nRows, nCols);
+    Basis_.setFromTriplets(nz.begin(), nz.end());
+    Basis_.makeCompressed();
+}
+
+void MasterAlgorithm::computeBasisInverse() {
+    const int n = static_cast<int>(Basis_.rows());
+
+    // Factorisation -----------------------------------------------------
+    Eigen::SparseLU<SpMat> solver;
+    solver.analyzePattern(Basis_);     // symbolic phase
+    solver.factorize(Basis_);          // numeric phase
+    if (solver.info() != Eigen::Success)
+        throw std::runtime_error("LU factorisation failed");
+
+    // Identity matrix as right‑hand side -------------------------------
+    SpMat I(n, n);
+    std::vector<Triplet> eye;
+    eye.reserve(n);
+    for (int i = 0; i < n; ++i) eye.emplace_back(i, i, 1.0);
+    I.setFromTriplets(eye.begin(), eye.end(), [](double, double){ return 1.0; });
+
+    // Solve B * X = I  =>  X = B^{-1} -----------------------------------
+    BasisInv_ = solver.solve(I);
+    if (solver.info() != Eigen::Success)
+        throw std::runtime_error("Solve for inverse failed");
+
+    BasisInv_.makeCompressed();            // optional
 }
 
 

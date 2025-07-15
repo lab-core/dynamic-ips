@@ -6,7 +6,8 @@
 #include "ISUD_Algorithm.h"
 #include "Solver.h"
 #include "solvers/LabelingSubProblem.h"
-#include "../CplexSolver/CPLEXSubProblem.h"
+#include "CplexSolver/CPLEXSubProblem.h"
+#include "GurobiSolver/MP_Gurobi.h"
 
 Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     elapsedTime_ = 0;
@@ -14,6 +15,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     nbOnePick_ = 0;
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
+    heuristicCG_ = 0;
 
     greedyRebalanceTime_ = 0;
 
@@ -45,7 +47,9 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                               "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
                               "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                               " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                              "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#PotentialIdle,#StateChanged,nbOnePick,nbTwoPick,nbThreePick" << std::endl;
+                              "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
+                              "#requestPerVehicle,#nodePerVehicle,"
+                              "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound" << std::endl;
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
@@ -90,7 +94,7 @@ void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
 void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    bool repeat = true;
+    bool repeat = false;
 
     // Set available time
     CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
@@ -142,6 +146,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (!repeat) {
                 subProOptions_->disableHeuristics();
                 EpochInst->parameters_->dynamicPricing_ = false;
+                heuristicCG_ = CG_Model_->lpObjValue_;
                 std::cout << "Solve the exact mode " << std::endl;
                 repeat = true;
             }
@@ -180,10 +185,16 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (CG_Model_->availableTime_ <= 0)
             break;
 
-        if (EpochInst->parameters_->mainAlgorithm_ == A_CG && previousObj == CG_Model_->objValue_) {
-            CG_Model_->CGSuccess_++;
-            std::cout << "No changes in Objective" << std::endl;
-            break;
+        if (EpochInst->parameters_->mainAlgorithm_ == A_CG){
+            if (previousObj == CG_Model_->objValue_) {
+                CG_Model_->CGSuccess_++;
+                std::cout << "No changes in Objective" << std::endl;
+                break;
+            }
+            /*else if (CG_Model_->objValue_ <= CG_Model_->upperbound_ * (1.0 - 0.01)) {
+                std::cout << "Improve is sufficient!" << std::endl;
+                break;
+            }*/
         }
 
         std::cout << " simulation time: " << simulationTime_->dSinceStart().count() << std::endl;
@@ -223,8 +234,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
- //   subProOptions_->enableHeuristics(mainInst->parameters_);
- //   EpochInst->parameters_->dynamicPricing_ = true;
+    subProOptions_->enableHeuristics(mainInst->parameters_);
+    EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = CG_Model_->objValue_;
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
@@ -345,10 +356,8 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
             }
         }
     }
-    /*if (labelsPool_.getSize() > 70000) {
-        labelsPool_.clear();
-        labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
-    }*/
+    labelsPool_.clear();
+    labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     objValue_ = ISUD_Model_->objValue_;
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
@@ -411,9 +420,9 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             }
 
             // Handle route recycling
-            if (EpochInst->parameters_->routeRecycle_) {
+            /*if (EpochInst->parameters_->routeRecycle_) {
                 subProSolve.back()->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
-            }
+            }*/
             availableRoutes[vehicleObj->vehicleID_].clear();
         }
     }
@@ -636,6 +645,28 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
 
+        if (mainInst->parameters_->routeRecycle_) {
+            if (mainInst->parameters_->approach_ == ISUD) {
+                for (auto &vehicleObj: mainInst->vehicles_) {
+                    if (vehicleObj->stateChanged_)
+                        ISUD_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
+                }
+                if (removedRequests.count()) {
+                    updateAvailableRoutes(removedRequests, ISUD_Model_->availableRoutes_);
+                }
+
+            }
+            else if (mainInst->parameters_->approach_ == CG) {
+                for (auto &vehicleObj: mainInst->vehicles_) {
+                    if (vehicleObj->stateChanged_)
+                        CG_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
+                }
+                if (removedRequests.count()) {
+                    updateAvailableRoutes(removedRequests, CG_Model_->availableRoutes_);
+                }
+            }
+        }
+
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
@@ -815,17 +846,43 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                                         static_cast<float>(epoch_) * mainInst->parameters_->epochLength_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
+        if (mainInst->parameters_->routeRecycle_) {
+            if (mainInst->parameters_->approach_ == ISUD && ISUD_Model_->availableRoutes_.size() > 0) {
+                for (auto &vehicleObj: mainInst->vehicles_) {
+                    if (vehicleObj->stateChanged_)
+                        ISUD_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
+                }
+                if (removedRequests.count()) {
+                    updateAvailableRoutes(removedRequests, ISUD_Model_->availableRoutes_);
+                }
 
+            }
+            else if (mainInst->parameters_->approach_ == CG && CG_Model_->availableRoutes_.size() > 0) {
+                for (auto &vehicleObj: mainInst->vehicles_) {
+                    if (vehicleObj->stateChanged_)
+                        CG_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
+                }
+                if (removedRequests.count()) {
+                    updateAvailableRoutes(removedRequests, CG_Model_->availableRoutes_);
+                }
+            }
+        }
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
 
-        if (mainInst->parameters_->approach_ == ISUD)
+        if (mainInst->parameters_->approach_ == ISUD) {
             EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , static_cast<float>(epoch_) *
                 mainInst->parameters_->epochLength_, nbReceivedRequest);
-        else if (mainInst->parameters_->approach_ == CG)
+            if (mainInst->parameters_->routeRecycle_ && !ISUD_Model_->availableRoutes_.empty())
+                reconstructAvailableRoutes(mainInst, ISUD_Model_->availableRoutes_);
+        }
+        else if (mainInst->parameters_->approach_ == CG) {
             EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , static_cast<float>(epoch_) *
             mainInst->parameters_->epochLength_, nbReceivedRequest);
+            if (mainInst->parameters_->routeRecycle_ && !CG_Model_->availableRoutes_.empty())
+                reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
+        }
 
         for (auto &vehicleObj: mainInst->vehicles_){
             vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
@@ -908,7 +965,7 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     std::stringstream repStr;
     runtimeMetrics_->epochRuntime_ = simulationTime_->dSinceStart().count();
     avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
-
+    float upperbound = 0.0;
     repStr << epoch_ << ",";
     repStr << EpochInst->nbRequests_ << ",";
     repStr << EpochInst->nbNewRequests_ << ",";
@@ -917,20 +974,29 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     repStr << simulationTime_->dSinceInit().count() << ",";
 
     // master problem Times
-    if (EpochInst->parameters_->approach_ == CG)
+    if (EpochInst->parameters_->approach_ == CG) {
         repStr << CG_Model_->runtimesToString(runtimeMetrics_);
-    else if (EpochInst->parameters_->approach_ == ISUD)
+        upperbound = CG_Model_->upperbound_;
+    }
+    else if (EpochInst->parameters_->approach_ == ISUD) {
         repStr << ISUD_Model_->runtimesToString(runtimeMetrics_);
+        upperbound = ISUD_Model_->upperbound_;
+    }
+    EpochInst->calcVehicleMetric();
 
     repStr << preprocessTime_ ->dSinceStart().count()<< ","
            << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ","
            << EpochInst->nbReturn_ << ","
            << EpochInst->nbIdle_ << ","
-           << EpochInst->nbPotentialIdle_ << ","
+           << EpochInst->passPerVehicle_ << ","
+           << EpochInst->requestPerVehicle_ << ","
+           << EpochInst->nodePerVehicle_ << ","
            << EpochInst->nbStateChanged_ << ","
            << nbOnePick_ << ","
            << nbTwoPick_ << ","
-           << nbThreePick_ << "\n";
+           << nbThreePick_ << ","
+           << heuristicCG_ << ","
+           << upperbound << "\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }
@@ -952,9 +1018,11 @@ std::string Solver::toString(const PInstance & mainInst) const {
     repStr << "################################   FINAL ROUTES   ################################" << std::endl;
     repStr << "#" << std::left << std::endl;
     for (auto & vehicleObj : mainInst->vehicles_) {
-        repStr << "#" << std::left << std::endl;
-        repStr << "#\t" << std::setw(24) << "- IDLE_TIME" << " : " << vehicleObj->idleTime_ << std::endl;
-        repStr << vehicleObj->solutionRoute_->toString();
+        if (vehicleObj->solutionRoute_->routeSize_ > 1) {
+            repStr << "#" << std::left << std::endl;
+            repStr << "#\t" << std::setw(24) << "- IDLE_TIME" << " : " << vehicleObj->idleTime_ << std::endl;
+            repStr << vehicleObj->solutionRoute_->toString();
+        }
     }
     repStr << std::endl << std::endl;
     repStr << "#################################   REQUESTS    #################################" << std::endl;
@@ -1072,13 +1140,22 @@ void Solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vec
         vehicleRoutes.erase(
                 std::remove_if(vehicleRoutes.begin(), vehicleRoutes.end(),
                                [&removedRequests](const PRoute &routeObj) {
-                                   return (routeObj->column_ & removedRequests).any() || routeObj->routeRequests_.empty();
+                                   return !(routeObj->column_ & removedRequests).none() || routeObj->routeRequests_.empty();
                                }),
                 vehicleRoutes.end()
         );
     }
 }
 
+void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes) {
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
+            for (auto & routeObj : availableRoutes[vehicleObj->vehicleID_]) {
+                routeObj->reConstructRoute(vehicleObj);
+            }
+        }
+    }
+}
 void Solver::returnVehicles(const PInstance & EpochInst) const {
     float lastEpoch = 0;
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)

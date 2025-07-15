@@ -41,9 +41,13 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &input
     MPBuildTime_->start();
     MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
-    // set duals based on greedy
-    if (pInst->parameters_->initialStart_ == GREEDY_START)
+
+    if (pInst->parameters_->routeRecycle_ &&  availableRoutes_.size() > 0) {
+        reFillRoutesToAdd(pInst, MasterPro_->routesToAdd_);
+        MasterPro_->updateModel(pInst);
         MasterPro_->solveModelLP(pInst, inputPaths);
+    }
+
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
@@ -68,9 +72,12 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, const InputPaths &inpu
     MPBuildTime_->start();
     MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
-    // set duals based on greedy
-    if (pInst->parameters_->initialStart_ == GREEDY_START)
+
+    if (pInst->parameters_->routeRecycle_ &&  availableRoutes_.size() > 0) {
+        reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveModelLP(pInst, inputPaths);
+    }
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();

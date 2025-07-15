@@ -44,7 +44,9 @@ public:
     std::vector<int> selectedVehicles_;                     // list of the vehicles selected to solve the subproblem
     int nbReturn_;
     int nbIdle_;
-    int nbPotentialIdle_;
+    float passPerVehicle_;
+    float requestPerVehicle_;
+    float nodePerVehicle_;
     int nbStateChanged_;
     std::vector<PRequest> lastCommittedRequests_;
 
@@ -111,6 +113,7 @@ public:
     void setAssignedEpochVehicles(float assignTime) const;
     void setNodeIndices() const;
     void resetDuals();
+    void calcVehicleMetric();
 };
 
 int getIndex(const PNode& node, int id, int nbPairs);

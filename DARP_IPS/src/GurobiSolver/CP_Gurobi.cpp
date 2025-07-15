@@ -394,12 +394,8 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
 
                 for (size_t i = 0; i < zIncVar_.size(); ++i) {
                     if (getVarValue(zIncVar_[i]) > 0) {
-                        std::string varName = zIncVar_[i].get(GRB_StringAttr_VarName);
-                        auto reqIt = pInst->nameToRequest_.find(varName);
-                        if (reqIt != pInst->nameToRequest_.end()) {
-                            zResult.push_back(reqIt->second);
-                            InRequestVar.push_back(static_cast<int>(i));
-                        }
+                        zResult.push_back(pInst->nameToRequest_[zIncVar_[i].get(GRB_StringAttr_VarName)]);
+                        InRequestVar.push_back(static_cast<int>(i));
                     }
                 }
 
@@ -448,12 +444,8 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
 
                     for (int idx = InRequestVar.size() - 1; idx >= 0; --idx) {
                         int i = InRequestVar[idx];
-                        std::string varName = zIncVar_[i].get(GRB_StringAttr_VarName);
-                        auto reqIt = pInst->nameToRequest_.find(varName);
-                        if (reqIt != pInst->nameToRequest_.end()) {
-                            zSolution.push_back(reqIt->second);
-                            addZVar(zSolution.back(), NEGATIVE);
-                        }
+                        zSolution.push_back(pInst->nameToRequest_[zIncVar_[i].get(GRB_StringAttr_VarName)]);
+                        addZVar(zSolution.back(), NEGATIVE);
                         model_->remove(zIncVar_[i]);
                         zIncVar_.erase(zIncVar_.begin() + i);
                     }

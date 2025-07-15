@@ -21,11 +21,11 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
 
         // Apply tuned parameters
+        model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
         model_->set(GRB_IntParam_UpdateMode, 0);                // Immediate updates
-        model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_StringParam_LogFile, outputLog);
         env_.set(GRB_IntParam_UpdateMode, 1);
         model_->set(GRB_IntParam_OutputFlag, 1);
@@ -67,10 +67,6 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
         requestRHS_.resize(nbRequestTask_, rhs);
         vehicleRHS_.resize(nbVehicles, rhs);
 
-        // Initialize dual arrays
-        requestDuals_.resize(nbRequestTask_, 0.0);
-        vehicleDuals_.resize(nbVehicles, 0.0);
-
         // Reserve space for constraints
         requestConstr_.reserve(nbRequestTask_);
         vehicleConstr_.reserve(nbVehicles);
@@ -81,16 +77,16 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
 
         // Add request constraints (= rhs)
         for (int i = 0; i < nbRequestTask_; ++i) {
-            std::string constrName = "request_" + std::to_string(i);
+  //          std::string constrName = "request_" + std::to_string(i);
             GRBLinExpr expr = 0;
-            requestConstr_.push_back(model_->addConstr(expr == rhs, constrName));
+            requestConstr_.push_back(model_->addConstr(expr == rhs));
         }
 
         // Add vehicle constraints (= rhs)
         for (int i = 0; i < nbVehicles; ++i) {
-            std::string constrName = "vehicle_" + std::to_string(i);
+ //           std::string constrName = "vehicle_" + std::to_string(i);
             GRBLinExpr expr = 0;
-            vehicleConstr_.push_back(model_->addConstr(expr == rhs, constrName));
+            vehicleConstr_.push_back(model_->addConstr(expr == rhs));
         }
 
         // Set basic parameters
@@ -316,32 +312,22 @@ double GurobiModeler::getVarValue(const GRBVar& var) const {
 // Get dual values
 void GurobiModeler::getDuals(const PInstance& pInst) {
     try {
+
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
-            requestDuals_[i] = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->dual_;
         }
 
         // Get vehicle constraint duals
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
-            vehicleDuals_[i] = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
-        }
-
-        // Update request duals
-        for (auto& requestObj : pInst->requests_) {
-            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-            requestObj->InitialDual_ = requestObj->dual_;
-        }
-
-        // Update vehicle duals
-        for (auto& vehicleObj : pInst->vehicles_) {
-            int index = vehicleObj->vehicleIndex_;
-            if (index > -1) {
-                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                vehicleObj->InitialDual_ = vehicleObj->dual_;
+            if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
+                pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
+                pInst->vehicles_[i]->InitialDual_ = pInst->vehicles_[i]->dual_;
             }
             else {
-                vehicleObj->dual_ = 0;
-                vehicleObj->InitialDual_ = 0;
+                pInst->vehicles_[i]->dual_ = 0;
+                pInst->vehicles_[i]->InitialDual_ = 0;
             }
         }
 
@@ -355,41 +341,27 @@ void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel, const PInstance&
     try {
         // Get all constraints from the relaxed model
         GRBConstr* allConstrs = relaxedModel.getConstrs();
-        int numConstrs = relaxedModel.get(GRB_IntAttr_NumConstrs);
-
         int constrIndex = 0;
 
-        // Get request constraint duals (assuming they were added first)
-        for (size_t i = 0; i < requestDuals_.size(); ++i) {
-            requestDuals_[i] = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
+        // Update request duals (same constraint ordering)
+        for (size_t i = 0; i < requestConstr_.size(); ++i) {
+            pInst->requests_[i]->dual_ = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
+            pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->dual_;
             constrIndex++;
         }
 
         // Get vehicle constraint duals (assuming they were added second)
-        for (size_t i = 0; i < vehicleDuals_.size(); ++i) {
-            vehicleDuals_[i] = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
-            constrIndex++;
-        }
-
-        // Update request duals (assuming same constraint ordering)
-        for (auto& requestObj : pInst->requests_) {
-            requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-            requestObj->InitialDual_ = requestObj->dual_;
-        }
-
-        // Update vehicle duals (assuming same constraint ordering)
-        for (auto& vehicleObj : pInst->vehicles_) {
-            int index = vehicleObj->vehicleIndex_;
-            if (index > -1) {
-                vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-                vehicleObj->InitialDual_ = vehicleObj->dual_;
+        for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
+            if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
+                pInst->vehicles_[i]->dual_ = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
+                pInst->vehicles_[i]->InitialDual_ = pInst->vehicles_[i]->dual_;
             }
             else {
-                vehicleObj->dual_ = 0;
-                vehicleObj->InitialDual_ = 0;
+                pInst->vehicles_[i]->dual_ = 0;
+                pInst->vehicles_[i]->InitialDual_ = 0;
             }
+            constrIndex++;
         }
-
     } catch (GRBException& e) {
         std::cerr << "Error in getDualsFromRelaxed: " << e.getMessage() << std::endl;
         throw;

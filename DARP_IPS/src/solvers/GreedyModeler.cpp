@@ -52,11 +52,25 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
         else {
             newRoute = greedySol->greedyLabelToRoute(false);
         }
+        newRoute->createColumn(PInst->nbRequests_);
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->setCurrentRoute(newRoute);
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
     }
     greedyRouteList_.clear();
+}
+
+float GreedyModeler::createUpperbound(const PInstance &PInst) {
+    float upperbound = 0;
+    for (auto & greedySol : greedyRouteList_) {
+        PRoute newRoute;
+        newRoute = greedySol->greedyLabelToRoute(false);
+        upperbound += newRoute->totalDelay_;
+        greedySol->resetGreedyRoute(greedyLabelPool_);
+        greedySol.reset();
+    }
+    greedyRouteList_.clear();
+    return upperbound;
 }
 
 void GreedyModeler::GreedySolver(PInstance &PInst) {

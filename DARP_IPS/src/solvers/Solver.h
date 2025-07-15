@@ -26,6 +26,7 @@ public:
     int nbThreePick_;
 
     float objValue_;
+    float heuristicCG_;
     int greedyRebalanceTime_;
 
     int epoch_;
@@ -78,6 +79,8 @@ public:
                                     const PInstance &EpochInst, int &nbNegative);
 
     static void updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes);
+
+    void reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes);
 
     void returnVehicles(const PInstance & EpochInst) const;
     void returnVehiclesZone(const PInstance & EpochInst) const;

@@ -82,6 +82,21 @@ void Route::addNode(const PNode &node) {
     }
 }
 
+void Route::reConstructRoute(PVehicle & vehicle){
+    totalDelay_ = 0;
+    PRoute newRoute = std::make_shared<Route>(vehicleID_);
+    newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
+    for (int i = 1; i < routeNodes_.size(); ++i) {
+        newRoute->addNode(routeNodes_[i]);
+    }
+    plannedDepartTime_ = newRoute->plannedDepartTime_;
+    plannedReachTime_ = newRoute->plannedReachTime_;
+    plannedDelay_ = newRoute->plannedDelay_;
+    totalDelay_ = newRoute->totalDelay_;
+    routeRequests_ = newRoute->routeRequests_;
+    routeNodes_ = newRoute->routeNodes_;
+    plannedPassengers_ = newRoute->plannedPassengers_;
+}
 
 void Route::addNode(const PNode &node, float reachTime, float departTime) {
     routeSize_ ++;

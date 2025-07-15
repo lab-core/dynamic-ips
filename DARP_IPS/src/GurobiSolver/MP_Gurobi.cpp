@@ -25,20 +25,19 @@ void MP_Gurobi::buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolutio
         for (auto& zSol : pInst->requests_) {
             if (zSol->committedPickTime_ == LARGE_CONSTANT) {
                 addZVarFloat(zSol, POSITIVE);
-                zVar_.push_back(getZVar().back());
             }
         }
 
         // Adding route solution columns
         for (auto& routeSol : routeSolution) {
             if (pInst->vehicles_[routeSol->vehicleID_]->vehicleIndex_ > -1) {
-                addRouteVarFloat(routeSol, pInst);
+                addRouteVarFloat_RP(routeSol, pInst);
             }
         }
 
         // Adding new route variables from routesToAdd_
         for (auto& routeObj : routesToAdd_) {
-            addRouteVarFloat(routeObj, pInst);
+            addRouteVarFloat_RP(routeObj, pInst);
         }
 
         // End batch update
@@ -58,7 +57,7 @@ void MP_Gurobi::updateModel(PInstance& pInst) {
 
         // Add the new compatible columns to the model
         for (auto routeObj : routesToAdd_) {
-            addRouteVarFloat(routeObj, pInst);
+            addRouteVarFloat_RP(routeObj, pInst);
         }
 
         endBatchUpdate();

@@ -59,9 +59,9 @@ public:
     // Update model
     void updateModel(const PInstance& pInst);
 
-void updateNormalCoefficients();
+    void updateNormalCoefficients();
 
-void updateModel_Batch(const PInstance& pInst);
+    void updateModel_Batch(const PInstance& pInst);
 
     // Solve model
     void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,

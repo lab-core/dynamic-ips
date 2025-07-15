@@ -19,10 +19,6 @@ public:
     GRBModel* model_;
     std::string outputLog_;
 
-    // For dual values
-    std::vector<double> requestDuals_;
-    std::vector<double> vehicleDuals_;
-
     // Variables arrays
     std::vector<GRBVar> routeVar_;
     std::vector<GRBVar> zVar_;
