@@ -56,10 +56,12 @@ endif()
 
 
 ######## GUROBI Dependency
-set(GUROBI_ROOT "/Library/gurobi1200/macos_universal2")
-set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
-set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi120.dylib")
-set(GUROBI_CXX_LIBRARY "${GUROBI_ROOT}/lib/libgurobi_c++.a")
+if (APPLE)
+    set(GUROBI_ROOT "/Library/gurobi1200/macos_universal2")
+    set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
+    set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi120.dylib")
+    set(GUROBI_CXX_LIBRARY "${GUROBI_ROOT}/lib/libgurobi_c++.a")
+endif ()
 find_package(GUROBI REQUIRED)
 if(GUROBI_FOUND)
     message("-----GUROBI IS FOUND-----")
