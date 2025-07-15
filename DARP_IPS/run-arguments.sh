@@ -1,7 +1,8 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=40G
-#SBATCH --time=2:15:00
+#SBATCH --account=def-legraina
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=100G
+#SBATCH --time=15:15:00
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
@@ -20,7 +21,7 @@ algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
-scenario_files[1]="no_commit"  # Mode 1 has two parameter files
+scenario_files[1]="exact"  # Mode 1 has two parameter files
 scenario_files[2]="ACG-LP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
@@ -37,15 +38,15 @@ for mode in 1; do
     for scenario in ${scenario_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
       for instance in "${instances_1000[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 0"
         ((i++))
       done
       for instance in "${instances_1100[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 0"
         ((i++))
       done
       for instance in "${instances_1400[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 0"
         ((i++))
       done
     done
