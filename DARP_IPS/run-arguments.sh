@@ -1,8 +1,9 @@
 #!/bin/bash
+#SBATCH --account=def-legraina
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=20G
-#SBATCH --time=8:15:00
-#SBATCH --array=1-9
+#SBATCH --mem=64G
+#SBATCH --time=10:15:00
+#SBATCH --array=1-6
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -24,8 +25,8 @@ scenario_files[1]="exact"  # Mode 1 has two parameter files
 scenario_files[2]="ACG-LP"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
-instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
-instances_1100=("20160316_12-120m" "20160512_12-120m")
+instances_1000=("20151130_12-120m" "20151230_12-120m")
+instances_1100=("20160512_12-120m")
 instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 
 # Create a single array containing all instance-mode combinations
@@ -37,15 +38,15 @@ for mode in 1; do
     for scenario in ${scenario_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
       for instance in "${instances_1000[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1000 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
       for instance in "${instances_1100[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1100 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
       for instance in "${instances_1400[@]}"; do
-        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $instance --num-vehicles 1400 --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2"
         ((i++))
       done
     done
