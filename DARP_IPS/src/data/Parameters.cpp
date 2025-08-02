@@ -10,9 +10,9 @@
 
 // Constructor and Destructor
 Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-                       int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm,
-                       int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
-                       float WaitForReturn, int numVehicleSwitch,
+                       int committedTime, int nbThreads, InitialDual initialDual, DualMethod dualMethod,
+                       MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn,
+                       float timeWindow, float WaitForReturn, int numVehicleSwitch,
                        WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
@@ -24,7 +24,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
-        mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter),
+        mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter), dualMethod_(dualMethod),
         greedyReOptimize_(greedyReOptimize), saveScratch_(0), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
         WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
@@ -59,6 +59,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# penalty epoch Length " << " = " << penaltyL_ << std::endl;
     repStr << std::setw(setwLength) << "# number of threads " << " = " << nbThreads_ << std::endl;
     repStr << std::setw(setwLength) << "# initial dual solution " << " = " << eu::toString(initialDual_) << std::endl;
+    repStr << std::setw(setwLength) << "# dual method " << " = " << eu::toString(dualMethod_) << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << eu::toString(mainAlgorithm_) << std::endl;
     repStr << std::setw(setwLength) << "# solution mode " << " = " << eu::toString(solutionMode_) << std::endl;
     repStr << std::setw(setwLength) << "# Number of iter per epoch " << " = " << numIter_ << std::endl;
@@ -133,6 +134,7 @@ std::string Parameters::toStr() const {
     repStr << maxWait_ << ",";
     repStr << nbThreads_ << ",";
     repStr << eu::toString(initialDual_) << ",";
+    repStr << eu::toString(dualMethod_) << ",";
     repStr << eu::toString(initialStart_) << ",";
     repStr << eu::toString(mainAlgorithm_) << ",";
     repStr << eu::toString(solutionMode_) << ",";

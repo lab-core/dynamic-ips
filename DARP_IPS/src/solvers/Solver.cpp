@@ -94,15 +94,15 @@ void Solver::selectVehiclesForSubproblem(const PInstance &EpochInst, int iter){
 void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPaths &inputPaths) {
 
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
-    bool repeat = false;
+    bool repeat = true;
 
     // Set available time
     CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), 1);
     EpochInst->updateTaskIndexLabeling();
     if (mainInst->parameters_->modelSolver_ == CPLEX)
-        CG_Model_->initializationCPLEX(EpochInst, inputPaths, GreedyModel_);
+        CG_Model_->initializationCPLEX(EpochInst, inputPaths, epoch_, GreedyModel_);
     else
-        CG_Model_->initializationGurobi(EpochInst, inputPaths, GreedyModel_);
+        CG_Model_->initializationGurobi(EpochInst, inputPaths, epoch_, GreedyModel_);
 
     // Initialize variables
     int iter = 0;
@@ -212,11 +212,12 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     CG_Model_->MasterPro_.reset();
     CG_Model_->MPGurobiPro_.reset();
 
-    if (EpochInst->parameters_->initialDual_ == AUX_D)
+    if (EpochInst->parameters_->dualMethod_ == AUX_D)
         CG_Model_->DualAuxSolver_.reset();
 
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || (EpochInst->parameters_->solutionMode_ == DYNAMIC
+            && std::fmod(EpochInst->parameters_->epochLength_ * epoch_, 30.0) == 0.0)) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                 returnVehicles(EpochInst);
             else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -234,8 +235,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             }
         }
     }
-    subProOptions_->enableHeuristics(mainInst->parameters_);
-    EpochInst->parameters_->dynamicPricing_ = true;
+ //   subProOptions_->enableHeuristics(mainInst->parameters_);
+//    EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = CG_Model_->objValue_;
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
@@ -674,9 +675,13 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
         else if (mainInst->parameters_->approach_ == CG)
             EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
+        else
+            EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
-            vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
-            vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
+            if (EpochInst->nbRequests_ != 0) {
+                vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
+                vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
+            }
         }
         if (EpochInst->parameters_->timeWindow_ == 0)
             EpochInst->updatePenalties(elapsedTime_);
@@ -700,7 +705,7 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             break;
         }
         std::cout << "# TOTAL NUMBER OF NEW REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
-        if (EpochInst->nbNewRequests_ == 0 && skip) {
+        if (EpochInst->nbNewRequests_ == 0 && (skip || mainInst->parameters_->mainAlgorithm_  == GREEDY)) {
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
             goto nextEpoch;
@@ -768,9 +773,13 @@ void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool midd
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst, nbReceivedRequest);
 
-    for (auto &vehicleObj: mainInst->vehicles_){
-        vehicleObj->currentRoute_->createColumn(StaticInst->nbRequests_);
+    for (auto &vehicleObj: StaticInst->vehicles_){
+        if (StaticInst->nbRequests_ != 0) {
+            vehicleObj->currentRoute_->createColumn(StaticInst->nbRequests_);
+            vehicleObj->emptyRoute_->createColumn(StaticInst->nbRequests_);
+        }
     }
+
     if (StaticInst->parameters_->timeWindow_ == 0)
         StaticInst->updatePenalties(0);
 

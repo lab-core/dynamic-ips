@@ -22,6 +22,7 @@ public:
     float committedTime_{};
     int nbThreads_{};
     InitialDual initialDual_;
+    DualMethod dualMethod_{};
     MainAlgorithm mainAlgorithm_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
     int numIter_;                  // solve the Master problem one time at each iteration of the CG
@@ -77,8 +78,8 @@ public:
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
-               int committedTime, int nbThreads, InitialDual initialDual, MainAlgorithm mainAlgorithm, int numIter,
-               bool greedyReOptimize, bool vehicleReturn, float timeWindow,
+               int committedTime, int nbThreads, InitialDual initialDual, DualMethod dualMethod,
+               MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                float WaitForReturn, int numVehicleSwitch, WarmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel, bool pruneNodes, bool pruneArcs,

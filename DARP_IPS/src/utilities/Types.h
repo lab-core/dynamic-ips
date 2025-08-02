@@ -53,6 +53,7 @@ struct RuntimeMetrics;
 class MP_Gurobi;
 class RP_Gurobi;
 class CP_Gurobi;
+class CP_Reduced;
 class GurobiModeler;
 class MasterAlgorithm;
 class CG_Algorithm;
@@ -87,6 +88,7 @@ using PMP_Gurobi = std::shared_ptr<MP_Gurobi>;
 using PRP_Gurobi = std::shared_ptr<RP_Gurobi>;
 using PGurobiModeler = std::shared_ptr<GurobiModeler>;
 using PCP_Gurobi = std::shared_ptr<CP_Gurobi>;
+using PCP_Reduced = std::shared_ptr<CP_Reduced>;
 using PMasterAlgorithm = std::shared_ptr<MasterAlgorithm>;
 using PCG_Algorithm = std::unique_ptr<CG_Algorithm>;
 using PISUD_Algorithm = std::unique_ptr<ISUD_Algorithm>;
@@ -140,17 +142,26 @@ enum SolutionMode : int {
 enum WarmStart : int {
     GREEDY_START = 0,
     PRE_SOLUTION = 1,
-    EMPTY_ROUTES = 2,
-    IP_SOLUTION = 3
+    EMPTY_ROUTES = 2
 };
 
 enum InitialDual : int {
     PENALTIES = 0,
-    LMP = 1,
-    AUX_D = 2,
-    AUX_P = 3,
-    AUX_BOX = 4,
-    LP_CP = 5
+    LAST_LP = 1,
+    ADJUSTED = 2,
+    INIT_CP = 3,
+    BARRIER = 4,
+    LAGRANGIAN = 5,
+};
+
+enum DualMethod : int {
+    LMP = 0,
+    AUX_D = 1,
+    AUX_P = 2,
+    AUX_BOX = 3,
+    LP_CP = 4,
+    INTERIOR = 5,
+    LAGRANGE = 6
 };
 
 enum NodeStatus : int {
@@ -259,7 +270,11 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 6> initialDualNames = {
-        "PENALTY", "LINEAR_LP", "AUX_DUAL", "AUX_MP", "AUX_BOX", "LP_CP"
+        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE"
+    };
+
+    constexpr std::array<const char*, 7> dualMethodNames = {
+        "Last_LP", "AUX_D", "AUX_P", "AUX_BOX", "LP_CP", "BARRIER", "LAGRANGE"
     };
 
     constexpr std::array<const char*, 4> nodeStatusNames = {
@@ -365,6 +380,13 @@ namespace enum_utils {
         auto index = static_cast<size_t>(value);
         return (index < enum_strings::initialDualNames.size()) ?
                enum_strings::initialDualNames[index] : "UNKNOWN";
+    }
+
+    template<>
+    inline const char* toString<DualMethod>(DualMethod value) {
+        auto index = static_cast<size_t>(value);
+        return (index < enum_strings::dualMethodNames.size()) ?
+               enum_strings::dualMethodNames[index] : "UNKNOWN";
     }
 
     template<>

@@ -618,3 +618,38 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
   }*/
 
 
+void ReducedProblem::solveInteriorLP(const PInstance &pInst, const InputPaths &inputPaths) {
+    try {
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LMP");
+        // Configure CPLEX to use interior point method
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Barrier);
+        // Disable crossover (equivalent to Gurobi's Crossover=0)
+        Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::NoAlg);
+
+        Cplex_.extract(Model_);
+        solveTime_->start();
+        if (!Cplex_.solve()) {
+            solveTime_->stop();
+            env_.out() << Model_ << std::endl;
+
+            std::cout << "Failed to optimize the LMP" << std::endl;
+            Cplex_.clearModel();
+            myTools::myException::throwError("Failed to optimize the LMP");
+        }
+        else {
+            solveTime_->stop();
+
+            // getting dual values
+            getDuals(pInst);
+        }
+        // Reset to dual simplex method (equivalent to Gurobi's METHOD_DUAL)
+        Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Dual);
+        // Re-enable crossover
+        Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::Auto);
+        //        Cplex_.clearModel();
+    }
+    catch (IloException& e) {
+        std::cout << "Error occurred in ReducedProblem::solveModelLP at line: " << __LINE__ << std::endl;
+        std::cout << e << std::endl;
+    }
+}

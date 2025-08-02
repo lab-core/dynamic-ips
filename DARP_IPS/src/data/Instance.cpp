@@ -363,6 +363,78 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
     updateRequestOrder();
 }
 
+void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, int lastRecRequests) {
+    nbReturn_ = mainInst->nbReturn_;
+    nbStateChanged_ = mainInst->nbStateChanged_;
+
+    mainInst->nbReturn_ = 0;
+    mainInst->nbStateChanged_ = 0;
+
+    for (auto & vehicleObj : mainInst->vehicles_){
+        instGraph_->addNewNode(vehicleObj->departNode_);
+        instGraph_->addNewNode(vehicleObj->sinkNode_);
+
+        vehicleObj->score_ = INFINITY;
+    }
+    nbNewRequests_ = 0;
+
+    if (mainInst->parameters_->greedyReOptimize_) {
+        // add unperformed requests
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ > 1) {
+                for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                    if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                        addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
+                        instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                        instGraph_->addNewNode(
+                                mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
+                    }
+                        // adding onboard nodes to the graph
+                    else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
+                        instGraph_->nodes_.emplace(
+                                std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
+                                                              vehicleObj->currentRoute_->routeNodes_[i]));
+                        instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+                        instGraph_->nbNodes_++;
+                    }
+                }
+            }
+        }
+    }
+
+    // add new requests
+    for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
+        if (parameters_->solutionMode_ == ANYTIME) {
+            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                }
+
+            }
+            else
+                break;
+        }
+        else {
+            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                }
+            }
+            else
+                break;
+        }
+    }
+
+    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
+    updateRequestOrder();
+}
+
 void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     nbReturn_ = mainInst->nbReturn_;
     nbStateChanged_ = mainInst->nbStateChanged_;
@@ -970,7 +1042,12 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         repStr << vehicleObj->InitialDual_ << ",";
         repStr << vehicleObj->dual_ << ",";
         repStr << model << ",";
-        repStr << vehicleObj->InitialDual_ -  vehicleObj->dual_<< "\n";
+        repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->routeSize_ << ",";
+        repStr << vehicleObj->currentRoute_->routeRequests_.size() << ",";
+        repStr << vehicleObj->currentRoute_->totalLength_ << ",";
+        repStr << vehicleObj->stateChanged_ << "\n";
+        vehicleObj->InitialDual_ = vehicleObj->dual_;
     }
     return repStr.str();
 }

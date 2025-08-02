@@ -274,14 +274,16 @@ bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOpt
     /*if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);*/
 
-    if (this->passedTime_ >= otherLabel->passedTime_) {
-        if (this->reducedCost_ >= otherLabel->reducedCost_) {
-            if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                //               if (otherLabel->openRequests_ == this->openRequests_) {
-                if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
-                    if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
-                        if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
-                            return true;
+    if (otherLabel->pathNode_.back()->type_ != SINK) {
+        if (this->passedTime_ >= otherLabel->passedTime_) {
+            if (this->reducedCost_ >= otherLabel->reducedCost_) {
+                if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                    //               if (otherLabel->openRequests_ == this->openRequests_) {
+                    if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
+                        if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
+                            if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
+                                return true;
+                        }
                     }
                 }
             }

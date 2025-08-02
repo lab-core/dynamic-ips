@@ -61,7 +61,6 @@ void Vehicle::setEmptyRoute(const PInstance &pInst) {
         }
     }
     emptyRoute_->totalLength_ = emptyRoute_->plannedDepartTime_.back() - departTime_;
-    emptyRoute_->createColumn(pInst->nbRequests_);
 }
 
 void Vehicle::setSolutionRoute() {
@@ -148,7 +147,8 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                         currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
-                        removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
+                        if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
+                            removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
                         if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
                             currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
                             currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
@@ -205,23 +205,6 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
             }
         }
     }
- //   adjustDuals();
-
-    // check penalties
-    /*if (currentRoute_->routeRequests_.empty())
-        dual_ = 0;
-    else {
-        float duals = dual_;
-        for (auto & requestObj : currentRoute_->routeRequests_)
-            duals += requestObj->dual_;
-        if (currentRoute_->totalDelay_ - duals > 0.1) {
-            float deltaDual = currentRoute_->totalDelay_ - duals;
-            for (auto & requestObj : currentRoute_->routeRequests_) {
-                requestObj->dual_ = requestObj->penalty_;
-//                requestObj->dual_ += deltaDual/currentRoute_->routeRequests_.size();
-            }
-        }
-    }*/
 }
 
 // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch

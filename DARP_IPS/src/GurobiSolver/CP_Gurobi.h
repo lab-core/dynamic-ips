@@ -83,9 +83,6 @@ public:
     std::string toString() const;
 
     // Getters
-    SolutionStatus getStatus() const { return status_; }
-    const std::vector<PRoute>& getFractionalRoutes() const { return fractionalRoutes_; }
-    const std::vector<PRequest>& getFractionalZ() const { return fractionalZ_; }
 };
 
 

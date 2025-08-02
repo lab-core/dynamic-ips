@@ -215,6 +215,36 @@ void RP_Gurobi::solveModelLP(const PInstance &pInst, const InputPaths &inputPath
     }
 }
 
+void RP_Gurobi::solveInteriorLP(const PInstance &pInst, const InputPaths &inputPaths) {
+    try {
+        // Redirect output to log file
+        // Configure Gurobi logging
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
+        model_->set(GRB_IntParam_Method, 2);
+        model_->set(GRB_IntParam_Crossover, 0);
+        model_->update();
+
+        solveTime_->start();
+        int status = solve();
+        solveTime_->stop();
+
+        if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
+            std::cerr << "Failed to optimize the LMP. Status: " << status << std::endl;
+            throw std::runtime_error("Failed to optimize the LMP");
+        }
+        // Getting dual values
+        getDuals(pInst);
+        model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
+        model_->set(GRB_IntParam_Crossover, 1);
+        model_->update();
+    }
+    catch (GRBException& e) {
+        std::cerr << "Error occurred in solveModelLP at line: " << __LINE__ << std::endl;
+        std::cerr << "GRB Error: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
 void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSolution,
     std::vector<PRoute> &routeSolution, const InputPaths &inputPaths, float availableTime, float preObj) {
     try {
@@ -292,19 +322,6 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
 
             // Getting dual values
             getDuals(pInst);
-
-            // Update request duals
-            for (auto& requestObj : pInst->requests_)
-                requestObj->InitialDual_ = requestObj->dual_;
-
-            // Update vehicle duals
-            for (auto& vehicleObj : pInst->vehicles_) {
-                if (vehicleObj->vehicleIndex_ > -1)
-                    vehicleObj->InitialDual_ = vehicleObj->dual_;
-                else
-                    vehicleObj->InitialDual_ = 0;
-            }
-
             // Convert to integer
             std::cout << "----------------------- MP ------------------------" << std::endl;
 

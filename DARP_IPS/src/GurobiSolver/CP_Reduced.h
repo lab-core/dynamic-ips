@@ -34,15 +34,34 @@ public:
     // Status
     SolutionStatus status_;
 
+    // Helper functions
+    void addRouteVar(const PRoute& newRoute, const PInstance& pInst);
+    // Helper function for creating column
+    GRBColumn createCPColumnM1(const PRoute& newRoute, const PInstance& pInst);
+    GRBColumn createCPColumnM2(const PRoute& newRoute, const PInstance& pInst);
+
     // Constructor and Destructor
     explicit CP_Reduced(const std::string &outputLog)
         : GurobiModeler(outputLog) {}
 
+    void resetForNextIteration();
+
     // Model initialization
-    void initializeCPModel(const PInstance& pInst, int nbVehicles, int nbPenalties);
+    void initializeCPModel(const PInstance& pInst);
 
     // Build model
     void buildModel(const PInstance& pInst);
+    void buildModel_batch(const PInstance& pInst);
+
+    void updateNormalCoefficients();
+
+    // Solve model
+    void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
+                      std::vector<PRoute>& routeSolution, InputPaths& inputPaths);
+
+    void solveCPDual(PInstance& pInst, InputPaths& inputPaths);
+
+    bool isColumnDisjoint(const std::vector<PRoute>& routeResults, int nbRequests, int nbVehicles);
 };
 
 

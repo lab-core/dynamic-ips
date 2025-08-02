@@ -6,6 +6,7 @@
 #include "CplexSolver/ComplementPro.h"
 #include "CplexSolver/ReducedProblem.h"
 #include "GurobiSolver/CP_Gurobi.h"
+#include "GurobiSolver/CP_Reduced.h"
 #include "GurobiSolver/RP_Gurobi.h"
 
 ISUD_Algorithm::ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver) : MasterAlgorithm(inputPaths) {
@@ -15,7 +16,7 @@ ISUD_Algorithm::ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSo
     }
     else if (modelSolver == GUROBI) {
         RPGurobiPro_ = std::make_shared<RP_Gurobi>(inputPaths.getOutputSolverLog());
-        CPGurobiPro_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
+        CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
     }
 
     CPBuilt_ = false;
@@ -73,8 +74,8 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
     CPBuilt_ = false;
 
     // Building models
-    CPGurobiPro_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCPModel(pInst, pInst->nbVehicles_);
+    CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
+    CPGurobiPro_->initializeCPModel(pInst);
     RPGurobiPro_ = std::make_shared<RP_Gurobi>(inputPaths.getOutputSolverLog());
 
     RPGurobiPro_->routesToAdd_.clear();
@@ -344,7 +345,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                     // Build CP model
                     CPBuildTime_->start();
                     CPGurobiPro_->routesToAdd_.clear();
-                    CPGurobiPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
+                    CPGurobiPro_->buildModel(pInst);
                     CPBuildTime_->stop();
 
                     iterTime_ = masterTime_->dSinceStart().count();
@@ -355,9 +356,9 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                     setAvailableTime();
                     if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
                         CPBuildTime_->start();
-                        CPGurobiPro_->updateModel(pInst);
+ //                       CPGurobiPro_->updateModel(pInst);
                         CPBuildTime_->stop();
-                        CPGurobiPro_->solveCPModelFresh(pInst, zSolution_, routeSolution_, inputPaths);
+//                        CPGurobiPro_->solveCPModelFresh(pInst, zSolution_, routeSolution_, inputPaths);
                         setCurrentRoutes(pInst);
                         CPIter_++;
 
@@ -410,7 +411,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                             CPSuccess_++;
                             previousObj_ = objValue_;
                             RMPCounter_++;
-                            isCPImproved = true;
+                            isCPImproved = false;
                             setAvailableTime();
                             restartAlgorithm = true;
 
@@ -428,7 +429,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                 for (auto &routeObj: CPGurobiPro_->IncRoute_)
                     routeObj->cpAdded_ = false;
                 CPGurobiPro_.reset();
-                CPGurobiPro_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
+                CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
             }
             setAvailableTime();
             if (minReducedCost_ > 0 || availableTime_ <= 1)
@@ -469,21 +470,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
             CPTime_->start();
             setAvailableTime();
 
-            if (minReducedCost_ < 0 && availableTime_ > 3) {
-                CPBuildTime_->start();
-                CPGurobiPro_->routesToAdd_.clear();
-                // the model is built only in the first iteration of ISUD then just the solution is updated and
-                // incompatible columns remain the same
-                if (!CPBuilt_)
-                    CPGurobiPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
-                else{
-                    // Make sure that compatible columns have negative coefficient
-                    CPGurobiPro_->repairModel(pInst, zSolution_, routeSolution_);
-                }
-                CPBuildTime_->stop();
-                CPBuilt_ = true;
-            }
-            else {
+            if (minReducedCost_ > 0 || availableTime_ < 3) {
                 restartAlgorithm = false;
                 isCPImproved = false;
             }
@@ -493,15 +480,19 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 isCPImproved = false;
                 previousObj_ = objValue_;
                 CPGurobiPro_->routesToAdd_.clear();
+
                 updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
                 setAvailableTime();
                 if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
+                    CPGurobiPro_->resetForNextIteration();
                     CPBuildTime_->start();
-                    CPGurobiPro_->updateModel_Batch(pInst);
+                    CPGurobiPro_->buildModel(pInst);
                     CPBuildTime_->stop();
                     CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
+
                     setCurrentRoutes(pInst);
                     CPIter_++;
+                    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
 
                     CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
                     setObjValue();
@@ -555,6 +546,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         isCPImproved = true;
                         setAvailableTime();
                         restartAlgorithm = true;
+
                         if (availableTime_ <= 1) {
                             restartAlgorithm = false;
                             break;
@@ -569,8 +561,6 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
             updateReducedCosts(pInst);
             if (minReducedCost_ > 0 || availableTime_ <= 0)
                 restartAlgorithm = false;
-
-            CPGurobiPro_->resetForNextIteration();
  //           CPGurobiPro_.reset();
  //           CPGurobiPro_ = std::make_shared<CP_Gurobi>();
             CPBuilt_ = false;

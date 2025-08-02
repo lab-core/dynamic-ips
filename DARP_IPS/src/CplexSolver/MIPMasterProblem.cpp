@@ -18,7 +18,7 @@ void MIPMasterProblem::buildModelMP(PInstance &pInst, vector<PRoute> &routeSolut
     for (auto & zSol : pInst->requests_) {
         if (zSol->committedPickTime_ == LARGE_CONSTANT)
             addZVarFloat(zVar_, zSol, POSITIVE);
-        if (pInst->parameters_->initialDual_ == AUX_BOX)
+        if (pInst->parameters_->dualMethod_ == AUX_BOX)
             addUVarFloat(uVar_, vVar_, zSol);
     }
 

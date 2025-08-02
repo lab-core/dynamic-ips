@@ -297,44 +297,35 @@ void CP_Gurobi::updateModel_Batch(const PInstance& pInst) {
 
         std::vector<double> lb(numRoutes, 0.0);
         std::vector<double> ub(numRoutes, GRB_INFINITY);
-        std::vector<double> obj;
+        std::vector<double> obj(numRoutes);
         std::vector<char> vtype(numRoutes, GRB_CONTINUOUS);
-//        std::vector<std::string> names;
-        std::vector<GRBColumn> columns;
+        std::vector<GRBColumn> columns(numRoutes);
 
-        // Reserve space to avoid reallocations
-        obj.reserve(numRoutes);
-        //       names.reserve(numRoutes);
-        columns.reserve(numRoutes);
         IncRoute_.reserve(IncRoute_.size() + numRoutes);
 
         // Fill arrays with range-based loop
+        size_t k = 0;
         for (const auto& routeObj : routesToAdd_) {
-            obj.push_back(routeObj->totalDelay_);
-            //           names.push_back(routeObj->name_);
-            columns.push_back(createColumn(routeObj, POSITIVE, pInst));
-            columns.back().addTerm(routeObj->incompatibilityDegree_, normalConst_);
-            IncRoute_.push_back(routeObj);
+            obj[k] = routeObj->totalDelay_;
+            columns[k] = createColumn(routeObj, POSITIVE, pInst);
+            columns[k].addTerm(routeObj->incompatibilityDegree_, normalConst_);
+            IncRoute_.emplace_back(routeObj);
             routeObj->cpAdded_ = true;
+            ++k;
         }
 
         // Batch addition using vector data
-        GRBVar* newVars = model_->addVars(
+        std::unique_ptr<GRBVar[]> newVars(model_->addVars(
             lb.data(),
             ub.data(),
             obj.data(),
             vtype.data(),
             nullptr,
- //           names.data(),
             columns.data(),
-            numRoutes
-        );
-
-        // Pre-reserve space to avoid multiple reallocations
-        routeIncVar_.reserve(routeIncVar_.size() + numRoutes);
+            numRoutes));
 
         // Add variables to container
-        routeIncVar_.insert(routeIncVar_.end(), newVars, newVars + numRoutes);
+        routeIncVar_.insert(routeIncVar_.end(), newVars.get(), newVars.get() + numRoutes);
 
         // Single update call
         endBatchUpdate();

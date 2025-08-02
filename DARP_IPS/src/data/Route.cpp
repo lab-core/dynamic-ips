@@ -96,6 +96,8 @@ void Route::reConstructRoute(PVehicle & vehicle){
     routeRequests_ = newRoute->routeRequests_;
     routeNodes_ = newRoute->routeNodes_;
     plannedPassengers_ = newRoute->plannedPassengers_;
+    nbCommitted_ = newRoute->nbCommitted_;
+    routeSize_ = newRoute->routeSize_;
 }
 
 void Route::addNode(const PNode &node, float reachTime, float departTime) {

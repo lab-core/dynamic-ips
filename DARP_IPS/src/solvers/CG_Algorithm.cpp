@@ -21,7 +21,7 @@ CG_Algorithm::CG_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver
     MIPIter_ = 0;
 }
 
-void CG_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &inputPaths,
+void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
 
     initialization(pInst, inputPaths, GreedyModel);
@@ -30,7 +30,7 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &input
     // build the model
     MasterPro_ = std::make_shared<MIPMasterProblem>();
     MasterPro_->routesToAdd_.clear();
-    if (pInst->parameters_->initialDual_ == AUX_D)
+    if (pInst->parameters_->dualMethod_ == AUX_D)
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
@@ -42,10 +42,11 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &input
     MasterPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
 
-    if (pInst->parameters_->routeRecycle_ &&  availableRoutes_.size() > 0) {
+    setInitialDuals(pInst, inputPaths, epoch);
+    if (availableRoutes_.size() > 0 && pInst->parameters_->initialDual_ == BARRIER) {
         reFillRoutesToAdd(pInst, MasterPro_->routesToAdd_);
         MasterPro_->updateModel(pInst);
-        MasterPro_->solveModelLP(pInst, inputPaths);
+        MasterPro_->solveInteriorLP(pInst, inputPaths);
     }
 
     setObjValue();
@@ -53,7 +54,7 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &input
     masterTime_->stop();
 }
 
-void CG_Algorithm::initializationGurobi(PInstance &pInst, const InputPaths &inputPaths,
+void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
     initialization(pInst, inputPaths, GreedyModel);
     masterTime_->start();
@@ -61,7 +62,7 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, const InputPaths &inpu
     // build the model
     MPGurobiPro_ = std::make_shared<MP_Gurobi>(inputPaths.getOutputSolverLog());
     MPGurobiPro_->routesToAdd_.clear();
-    if (pInst->parameters_->initialDual_ == AUX_D)
+    if (pInst->parameters_->dualMethod_ == AUX_D)
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
 
     for (auto & vehicleObj : pInst->vehicles_) {
@@ -73,11 +74,21 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, const InputPaths &inpu
     MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
 
-    if (pInst->parameters_->routeRecycle_ &&  availableRoutes_.size() > 0) {
+    setInitialDuals(pInst, inputPaths, epoch);
+    if (availableRoutes_.size() > 0 && pInst->parameters_->initialDual_ == BARRIER) {
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
         MPGurobiPro_->updateModel(pInst);
-        MPGurobiPro_->solveModelLP(pInst, inputPaths);
+        MPGurobiPro_->solveInteriorLP(pInst, inputPaths);
     }
+
+    /*if (availableRoutes_.size() > 0) {
+        this->updateIncDegrees(pInst);
+        this->updateReducedCosts(pInst);
+        this->buildBasis2(pInst);
+ //       this->validateBasisStructure(pInst);
+        this->computeBasisInverse();
+    }*/
+
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
@@ -261,7 +272,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
         setAvailableTime();
         if (availableTime_ < 3)
             availableTime_ = 3;
-        if (pInst->parameters_->initialDual_ == AUX_D) {
+        if (pInst->parameters_->dualMethod_ == AUX_D) {
             DualAuxSolver_->initializeModel(pInst);
             DualAuxSolver_->buildModel(MasterPro_->compRoutes_, pInst->requests_);
             MasterPro_->solveModelIntAux_D(pInst, zSolution_, routeSolution_, inputPaths,
@@ -275,7 +286,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                     masterTime_->dSinceStart().count(), subProTime, DualAuxSolver_->objValue_);
         }
-        else if (pInst->parameters_->initialDual_ == AUX_P) {
+        else if (pInst->parameters_->dualMethod_ == AUX_P) {
             MasterPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
             setCurrentRoutes(pInst);
@@ -287,7 +298,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
         }
-        else if (pInst->parameters_->initialDual_ == AUX_BOX) {
+        else if (pInst->parameters_->dualMethod_ == AUX_BOX) {
             MasterPro_->solveModelInt_box(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
             setCurrentRoutes(pInst);
@@ -299,55 +310,38 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
         }
-        else if (pInst->parameters_->initialDual_ == LP_CP || pInst->parameters_->initialDual_ == PENALTIES) {
-            MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_);
-            setCurrentRoutes(pInst);
-            MIPIter_++;
-            MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
-            setObjValue();
-            epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            iterTime_ = masterTime_->dSinceStart().count();
-
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "MIP", static_cast<int>(MasterPro_->compRoutes_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, MasterPro_->auxObjValue_);
-
-            setAvailableTime();
-            /************************************************************************************************/
-            //                                     COMPLEMENTARY PROBLEM
-            /************************************************************************************************/
-            if (availableTime_ > 3) {
-                solveCP_CPLEX(pInst, epoch, inputPaths, subProTime);
-            }
-        }
         else {
-            MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_);
+            MasterPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj_);
             setCurrentRoutes(pInst);
             MIPIter_++;
             MPEpochSolveTime_ += MasterPro_->solveTime_->dSinceStart().count();
             setObjValue();
-
             epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
+
+            if (pInst->parameters_->dualMethod_ == LMP) {
+                (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MasterPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, 0.0);
-        }
-/*
-        for (auto & routeObj : routeSolution_) {
-            for (int i = 1; i < routeObj->routeSize_; ++i) {
-                if (routeObj->routeNodes_[i]->type_ == PICKUP) {
-                    routeObj->routeNodes_[i]->related_Request_->avgDual_ = routeObj->totalDelay_ / routeObj->routeRequests_.size();
-                    routeObj->routeNodes_[i]->related_Request_->minDual_ = routeObj->plannedReachTime_[i] - routeObj->routeNodes_[i]->related_Request_->initialEarlyPick_;
+            }
+            else if (pInst->parameters_->dualMethod_ == LP_CP) {
+                iterTime_ = masterTime_->dSinceStart().count();
+                setAvailableTime();
+                /************************************************************************************************/
+                //                                     COMPLEMENTARY PROBLEM
+                /************************************************************************************************/
+                if (availableTime_ > 3) {
+                    solveCP_CPLEX(pInst, epoch, inputPaths, subProTime);
                 }
             }
+            else if (pInst->parameters_->dualMethod_ == LAGRANGE) {
+                lagSolver_ = std::make_unique<LagrangianSolver>(pInst, objValue_,routeSolution_, zSolution_,
+                    availableRoutes_);
+                lagSolver_->run(pInst);
+                lagSolver_.reset();
+            }
+            else if (pInst->parameters_->dualMethod_ == INTERIOR) {
+                MasterPro_->solveInteriorLP(pInst, inputPaths);
+            }
         }
-
-        for (auto & requestObj : zSolution_) {
-            requestObj->minDual_ = requestObj->penalty_;
-            requestObj->avgDual_ = requestObj->penalty_;
-        }
-*/
-
  //       (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
  //       (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
 
@@ -360,6 +354,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
 void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     masterTime_->start();
     previousObj_ = objValue_;
+
     if (SPIter_ == 0)
         lpObjValue_ = objValue_;
 
@@ -379,7 +374,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         setAvailableTime();
         if (availableTime_ < 3)
             availableTime_ = 3;
-        if (pInst->parameters_->initialDual_ == AUX_P) {
+        if (pInst->parameters_->dualMethod_ == AUX_P) {
             MPGurobiPro_->solveModelIntAux_P(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_, lpObjValue_);
             setCurrentRoutes(pInst);
@@ -391,28 +386,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
                                                         masterTime_->dSinceStart().count(), subProTime, MPGurobiPro_->auxObjValue_);
         }
-        else if (pInst->parameters_->initialDual_ == LP_CP) {
-            MPGurobiPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
-                                     availableTime_, previousObj_);
-            setCurrentRoutes(pInst);
-            MIPIter_++;
-            MPEpochSolveTime_ += MPGurobiPro_->solveTime_->dSinceStart().count();
-            setObjValue();
-            epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            iterTime_ = masterTime_->dSinceStart().count();
-
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "MIP", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, MPGurobiPro_->auxObjValue_);
-
-            setAvailableTime();
-            /************************************************************************************************/
-            //                                     COMPLEMENTARY PROBLEM
-            /************************************************************************************************/
-            if (availableTime_ > 3) {
-                solveCP_Gurobi(pInst, epoch, inputPaths, subProTime);
-            }
-        }
-        else if (pInst->parameters_->initialDual_ == LMP || pInst->parameters_->initialDual_ == PENALTIES){
+        else {
             MPGurobiPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, previousObj_);
             setCurrentRoutes(pInst);
@@ -422,7 +396,29 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
 
             epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
             (*pLogMPResultsStream_) << save_MPResults(epoch, "CG", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
+                                                            masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+            if (pInst->parameters_->dualMethod_ == LP_CP) {
+                iterTime_ = masterTime_->dSinceStart().count();
+
+                setAvailableTime();
+                /************************************************************************************************/
+                //                                     COMPLEMENTARY PROBLEM
+                /************************************************************************************************/
+                if (availableTime_ > 3) {
+                    solveCP_Gurobi(pInst, epoch, inputPaths, subProTime);
+                }
+            }
+            else if (pInst->parameters_->dualMethod_ == LAGRANGE) {
+                lagSolver_ = std::make_unique<LagrangianSolver>(pInst, objValue_,routeSolution_, zSolution_,
+                    availableRoutes_);
+                lagSolver_->run(pInst);
+                lagSolver_.reset();
+            }
+            else if (pInst->parameters_->dualMethod_ == INTERIOR) {
+                MPGurobiPro_->solveInteriorLP(pInst, inputPaths);
+
+            }
         }
 /*
         for (auto & routeObj : routeSolution_) {
@@ -446,6 +442,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         RMPCounter_++;
 
     }
+    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
     masterTime_->stop();
 }
 
@@ -491,101 +488,4 @@ void CG_Algorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPath
         solveMP_CG_Gurobi(pInst, epoch, inputPaths, subProTime);
     else if (pInst->parameters_->modelSolver_ == CPLEX)
         solveMP_CG_CPLEX(pInst, epoch, inputPaths, subProTime);
-}
-
-void CG_Algorithm::solveCP_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    CompPro_ = std::make_shared<ComplementPro>();
-    CompPro_->routesToAdd_.clear();
-    updateRoutesToAdd(CP, pInst, CompPro_->routesToAdd_);
-    if (minReducedCost_ < 0 && CompPro_->routesToAdd_.size() > 0) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        CompPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
-        CompPro_->updateModel(pInst, zSolution_, routeSolution_);
-        CPBuildTime_->stop();
-
-        while (true) {
-            previousObj_ = objValue_;
-            CompPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
-            CPIter_++;
-            setCurrentRoutes(pInst);
-
-            CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
-            setObjValue();
-            epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            iterTime_ = masterTime_->dSinceStart().count();
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CompPro_->IncRoute_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
-
-            if (CompPro_->status_ == NEGATIVE_VALUE) {
-
-                CPSuccess_++;
-                previousObj_ = objValue_;
-                RMPCounter_++;
-                setAvailableTime();
-                if (availableTime_ < 3) {
-                    break;
-                }
-            }
-            else {
-                break;
-            }
-        }
-
-        CompPro_.reset();
-        CompPro_ = std::make_shared<ComplementPro>();
-        CPTime_->stop();
-    }
-}
-
-void CG_Algorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    CPGurobiPro_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCPModel(pInst, pInst->nbVehicles_);
-    CPGurobiPro_->routesToAdd_.clear();
-    updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    if (minReducedCost_ <= 0 && CPGurobiPro_->routesToAdd_.size() > 0) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        CPGurobiPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
-        CPGurobiPro_->updateModel(pInst);
-        CPBuildTime_->stop();
-
-        while (true) {
-            previousObj_ = objValue_;
-            CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
-            CPIter_++;
-            setCurrentRoutes(pInst);
-
-            CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
-            setObjValue();
-            epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            iterTime_ = masterTime_->dSinceStart().count();
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CPGurobiPro_->IncRoute_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
-
-            if (CPGurobiPro_->status_ == NEGATIVE_VALUE) {
-
-                CPSuccess_++;
-                previousObj_ = objValue_;
-                RMPCounter_++;
-                setAvailableTime();
-                if (availableTime_ < 3) {
-                    break;
-                }
-            }
-            else {
-                break;
-            }
-        }
-
-        CPGurobiPro_.reset();
-        CPGurobiPro_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
-        CPTime_->stop();
-    }
 }

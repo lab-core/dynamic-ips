@@ -445,217 +445,6 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
 //************************************************************************
 // Read the parameters datafile
 //************************************************************************
-void ReadWrite::readParameters(const std::string& strParamFile, PInstance &pInstance) {
-// open the file
-    std::fstream file;
-    std::cout << "Reading << " << strParamFile << " >>" << std::endl;
-    file.open(strParamFile, std::fstream::in);
-    if (!file.is_open())
-    {
-        std::cout << "While trying to read the file " << strParamFile << std::endl;
-        std::cout << "The input file was not opened properly!" << std::endl;
-
-        throw myTools::myException("The input file was not opened properly!", __LINE__);
-    }
-
-    string title;
-
-    float alphaParam = -1, betaParam = -1, deltaPram = -1, minImp = -1, committedTime = -1, epochLength = -1;
-    float informTimeLimit = -1, pickupDeviationWindow = -1, timeWindows = -1, mipGap = -1, maxWait = -1;
-    int penaltyL = -1, nbThreads = -1, bigM = -1, solveTimeLimit = -1, populateTimeLimit = -1;
-    int strategy = -1, CP_IncDegree = -1, initialDual = -1, maxLabel = -1, maxCommittedLabel = -1, WaitForReturn = -1, numVehicleSwitch = -1;
-    bool isTruncated = false, pruneNodes = false, pruneArcs = false, constPortion = false;
-    bool discardSuboptimalPath = false, isDominanceReleased = false, isPickDropPossible = false, useZoom = false;
-    bool useMultiStage = false, vehiclePortion = false, usePick = false, greedyReOptimize = false;
-    bool vehicleReturn = false, dynamicPricing = false, partialPricing = false, routeRecycle = false;
-    int subAlgorithm = -1, mainAlgorithm = -1, initialStart = -1, MIP_maxIncDegree = -1;
-    int solutionMode = -1, nbPick = -1, sortPath = -1, sortColumn = -1, nbColumns = -1, saveScratch = -1, numIter = -1;
-    int returnType = -1, modelSolver = -1;
-
-    while (file.good()) {
-        readUntilOneOfTwoChar(file, '=','\n', title);
-
-        if (strEndWith(title, "alphaParam "))
-            file >> alphaParam;
-
-        else if (strEndWith(title, "betaParam "))
-            file >> betaParam;
-
-        else if (strEndWith(title, "deltaPram "))
-            file >> deltaPram;
-
-        else if (strEndWith(title, "epochLength "))
-            file >> epochLength;
-
-        else if (strEndWith(title, "penaltyL "))
-            file >> penaltyL;
-
-        else if (strEndWith(title, "committedTime "))
-            file >> committedTime;
-
-        else if (strEndWith(title, "nbThreads "))
-            file >> nbThreads;
-
-        else if (strEndWith(title, "InitialDual "))
-            file >> initialDual;
-
-        else if (strEndWith(title, "mainAlgorithm "))
-            file >> mainAlgorithm;
-
-
-        else if (strEndWith(title, "solutionMode "))
-            file >> solutionMode;
-
-        else if (strEndWith(title, "NumIter "))
-            file >> numIter;
-
-        else if (strEndWith(title, "GreedyReOptimize "))
-            file >> greedyReOptimize;
-
-        else if (strEndWith(title, "saveScratch "))
-            file >> saveScratch;
-
-        else if (strEndWith(title, "vehicleReturn "))
-            file >> vehicleReturn;
-
-        else if (strEndWith(title, "timeWindows "))
-            file >> timeWindows;
-
-        else if (strEndWith(title, "WaitForReturn "))
-            file >> WaitForReturn;
-
-        else if (strEndWith(title, "numVehicleSwitch "))
-            file >> numVehicleSwitch;
-
-        else if (strEndWith(title, "informTimeLimit "))
-            file >> informTimeLimit;
-
-        else if (strEndWith(title, "pickupDeviationWindow "))
-            file >> pickupDeviationWindow;
-
-        else if (strEndWith(title, "returnType "))
-            file >> returnType;
-
-        else if (strEndWith(title, "MaxWait "))
-            file >> maxWait;
-
-        else if (strEndWith(title, "warmStart "))
-            file >> initialStart;
-
-        else if (strEndWith(title, "MIP_maxIncDegree "))
-            file >> MIP_maxIncDegree;
-
-        else if (strEndWith(title, "CP_IncDegree "))
-            file >> CP_IncDegree;
-
-        else if (strEndWith(title, "useMultiStage "))
-            file >> useMultiStage;
-
-        else if (strEndWith(title, "minImp "))
-            file >> minImp;
-
-        else if (strEndWith(title, "useZoom "))
-            file >> useZoom;
-
-        else if (strEndWith(title, "NumColumn "))
-            file >> nbColumns;
-
-        else if (strEndWith(title, "isTruncated "))
-            file >> isTruncated;
-
-        else if (strEndWith(title, "MaxLabel "))
-            file >> maxLabel;
-
-        else if (strEndWith(title, "MaxCommittedLabel "))
-            file >> maxCommittedLabel;
-
-        else if (strEndWith(title, "isDominanceReleased "))
-            file >> isDominanceReleased;
-
-
-        else if (strEndWith(title, "pruneNodes "))
-            file >> pruneNodes;
-
-        else if (strEndWith(title, "pruneArcs "))
-            file >> pruneArcs;
-
-        else if (strEndWith(title, "discardSuboptimalPath "))
-            file >> discardSuboptimalPath;
-
-        else if (strEndWith(title, "isDropPickPossible "))
-            file >> isPickDropPossible;
-
-        else if (strEndWith(title, "LabelingStrategy "))
-            file >> strategy;
-
-        else if (strEndWith(title, "subproblemAlgorithm "))
-            file >> subAlgorithm;
-
-        else if (strEndWith(title, "constPortion "))
-            file >> constPortion;
-
-        else if (strEndWith(title, "Vehicle_portion "))
-            file >> vehiclePortion;
-
-        else if (strEndWith(title, "Dynamic_Pricing "))
-            file >> dynamicPricing;
-
-        else if (strEndWith(title, "Partial_Pricing "))
-            file >> partialPricing;
-
-        else if (strEndWith(title, "Route_Recycle "))
-            file >> routeRecycle;
-
-        else if (strEndWith(title, "usePick "))
-            file >> usePick;
-
-        else if (strEndWith(title, "nbPick "))
-            file >> nbPick;
-
-        else if (strEndWith(title, "sortPath "))
-            file >> sortPath;
-
-        else if (strEndWith(title, "sortColumn "))
-            file >> sortColumn;
-
-        else if (strEndWith(title, "BigM "))
-            file >> bigM;
-
-        else if (strEndWith(title, "solveTimeLimit "))
-            file >> solveTimeLimit;
-
-        else if (strEndWith(title, "populateTimeLimit "))
-            file >> populateTimeLimit;
-
-        else if (strEndWith(title, "MIPGap "))
-            file >> mipGap;
-    }
-    if (dynamicPricing && partialPricing){
-        std::cout << "It is not possible to activate dynamic and partial pricing simultaneously!" << std::endl;
-        throw myTools::myException("Parameters are not valid!!", __LINE__);
-    }
-    pInstance->parameters_ = std::make_shared<Parameters>(alphaParam, betaParam, deltaPram, epochLength,
-                                                          penaltyL, committedTime, nbThreads,
-                                                          static_cast<InitialDual>(initialDual),
-                                                          static_cast<MainAlgorithm>(mainAlgorithm), numIter,
-                                                          greedyReOptimize, vehicleReturn, timeWindows,
-                                                          WaitForReturn, numVehicleSwitch,
-                                                          static_cast<WarmStart>(initialStart),
-                                                          MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
-                                                          useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
-                                                          pruneNodes, pruneArcs, discardSuboptimalPath,
-                                                          isDominanceReleased, isPickDropPossible,
-                                                          static_cast<LabelingStrategy>(strategy),
-                                                          static_cast<SubproblemAlgorithm>(subAlgorithm),
-                                                          constPortion, vehiclePortion, dynamicPricing, partialPricing,
-                                                          routeRecycle, usePick, nbPick,
-                                                          static_cast<SortPaths>(sortPath),
-                                                          static_cast<SortColumns>(sortColumn),
-                                                          bigM, solveTimeLimit, populateTimeLimit,
-                                                          static_cast<SolutionMode>(solutionMode), mipGap,
-                                                          informTimeLimit, pickupDeviationWindow,
-                                                          static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver));
-}
 
 void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInstance) {
     // open the JSON file
@@ -703,6 +492,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     // Parse MP_Parameters
     auto mpParams = j["MP_Parameters"];
     int initialDual = mpParams.value("InitialDual", -1);
+    int dualMethod = mpParams.value("DualMethod", -1);
     int initialStart = mpParams.value("warmStart", -1);
     int numIter = mpParams.value("NumIter", -1);
     int MIP_maxIncDegree = mpParams.value("MIP_maxIncDegree", -1);
@@ -752,6 +542,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         alphaParam, betaParam, deltaPram, epochLength,
         penaltyL, committedTime, nbThreads,
         static_cast<InitialDual>(initialDual),
+        static_cast<DualMethod>(dualMethod),
         static_cast<MainAlgorithm>(mainAlgorithm), numIter,
         greedyReOptimize, vehicleReturn, timeWindows,
         WaitForReturn, numVehicleSwitch,
@@ -857,6 +648,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     float informTimeLimit = scenarioParams.value("informTimeLimit", -1.0f);
     float pickupDeviationWindow = scenarioParams.value("pickupDeviationWindow", -1.0f);
     int initialDual = scenarioParams.value("InitialDual", -1);
+    int dualMethod = scenarioParams.value("DualMethod", -1);
     int initialStart = scenarioParams.value("warmStart", -1);
     int numIter = scenarioParams.value("NumIter", -1);
     int nbColumns = scenarioParams.value("NumColumn", -1);
@@ -884,6 +676,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         alphaParam, betaParam, deltaPram, epochLength,
         penaltyL, committedTime, nbThreads,
         static_cast<InitialDual>(initialDual),
+        static_cast<DualMethod>(dualMethod),
         static_cast<MainAlgorithm>(mainAlgorithm), numIter,
         greedyReOptimize, vehicleReturn, timeWindows,
         WaitForReturn, numVehicleSwitch,
@@ -1004,7 +797,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,ModelSolver,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
-                        "maxWait,nbThreads,InitialDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
+                        "maxWait,nbThreads,InitialDual,dualMethod,warmStart,mainAlgorithm,solutionMode,NumIter,"
                         "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
                         "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
                         "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,"
