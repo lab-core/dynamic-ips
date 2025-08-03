@@ -42,9 +42,9 @@ i=1
 for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
-      for instance_path in "${INSTANCES[@]}"; do
-        instance=$(basename "$instance_path")
-#      for instance in "${instances[@]}"; do
+#      for instance_path in "${INSTANCES[@]}"; do
+#        instance=$(basename "$instance_path")
+      for instance in "${instances[@]}"; do
         for scenario in ${scenario_files[$mode]}; do
         jobs[$i]="--vehicle-folder $vehicles_1 --inst-folder $directory --instance-name $instance --num-vehicles $vehicle_count --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
         ((i++))
