@@ -839,7 +839,7 @@ bool LabelingSubProblem::solveDynamic(float availableTime) {
             }
         }
 
-        else if (solverOptions_->LabelingStrategy_ == PULLING){
+        else {
             if (solverOptions_->isDropPickPossible_) {
                 if (!this->solveDynamic_pulling(availableTime)) {
                     subproTime_->stop();

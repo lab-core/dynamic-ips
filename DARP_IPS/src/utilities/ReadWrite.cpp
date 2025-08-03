@@ -605,7 +605,6 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     float minImp = defaultParams.value("minImp", -1.0f);
     bool useZoom = defaultParams.value("useZoom", 0) != 0;
     bool isDominanceReleased = defaultParams.value("isDominanceReleased", 0) != 0;
-    int strategy = defaultParams.value("LabelingStrategy", -1);
     int subAlgorithm = defaultParams.value("subproblemAlgorithm", -1);
     bool constPortion = defaultParams.value("constPortion", 0) != 0;
     bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
@@ -666,6 +665,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int sortColumn = scenarioParams.value("sortColumn", -1);
     bool routeRecycle = scenarioParams.value("Route_Recycle", 0) != 0;
     int newRequestLimit = scenarioParams.value("newRequestLimit", -1);
+    int strategy = scenarioParams.value("LabelingStrategy", -1);
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
