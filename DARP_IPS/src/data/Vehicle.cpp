@@ -73,7 +73,7 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
     currentRoute_ = currentRoute;
     for (int i = 0; i < currentRoute->routeRequests_.size(); ++i) {
         currentRoute->routeRequests_[i]->solVehicleID_  = vehicleID_;
-        currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
+        // currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
     }
 }
 
@@ -145,7 +145,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                        currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
+                        // currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
                         if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
                             removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
                         if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {

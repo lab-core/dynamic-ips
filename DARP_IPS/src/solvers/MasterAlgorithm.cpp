@@ -492,10 +492,10 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
                 routeObj->score_ = routeObj->reducedCost_ / static_cast<float>(routeObj->routeRequests_.size());
                 routeObj->lambda_ = routeObj->totalDelay_ / (routeObj->totalDelay_ - routeObj->reducedCost_ + 0.0001f);
                 routeObj->waitScore_ = 0;
-                for (int i = 0; i < routeObj->routeRequests_.size(); ++i) {
+                /*for (int i = 0; i < routeObj->routeRequests_.size(); ++i) {
                     if (routeObj->routeRequests_[i]->plannedDelay_ != LARGE_CONSTANT)
                         routeObj->waitScore_ += routeObj->plannedDelay_[i] - routeObj->routeRequests_[i]->plannedDelay_;
-                }
+                }*/
             }
             else {
                 routeObj->score_ = 0;

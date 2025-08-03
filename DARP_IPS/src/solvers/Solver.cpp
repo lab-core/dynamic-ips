@@ -663,8 +663,8 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
 
-        if (mainInst->parameters_->routeRecycle_) {
-            if (mainInst->parameters_->approach_ == ISUD) {
+        if (mainInst->parameters_->routeRecycle_ ) {
+            if (mainInst->parameters_->approach_ == ISUD && !ISUD_Model_->availableRoutes_.empty()) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
                     if (vehicleObj->stateChanged_)
                         ISUD_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -674,7 +674,7 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 }
 
             }
-            else if (mainInst->parameters_->approach_ == CG) {
+            else if (mainInst->parameters_->approach_ == CG && !CG_Model_->availableRoutes_.empty()) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
                     if (vehicleObj->stateChanged_)
                         CG_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();

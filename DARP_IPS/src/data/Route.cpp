@@ -75,7 +75,7 @@ void Route::addNode(const PNode &node) {
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
-        plannedDelay_.push_back(reachTime - node->initialReadyTime_);
+ //       plannedDelay_.push_back(reachTime - node->initialReadyTime_);
         totalDelay_ += reachTime - node->initialReadyTime_;
         if (node->related_Request_->committedPickTime_ != LARGE_CONSTANT)
             nbCommitted_++;
