@@ -100,6 +100,7 @@ public:
     // Reduced problem is also solved to initialized dual costs
     void initializeVehicles(const PInstance &pInst);
     void setInitialDuals(PInstance &pInst, InputPaths &inputPaths, int epoch);
+    void setLastDuals(PInstance &pInst);
     void createInitialSolution(PInstance &pInst, const PGreedyModeler &GreedyModel);
     void initialization(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
 

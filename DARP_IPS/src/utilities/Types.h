@@ -109,7 +109,8 @@ typedef Eigen::Triplet<double> Triplet;
 //-----------------------------------------------------------------------------
 enum LabelingStrategy : int {
     PUSHING = 0,
-    PULLING = 1
+    PULLING = 1,
+    RE_PULLING = 2
 };
 
 enum SubproblemAlgorithm : int {
@@ -152,6 +153,7 @@ enum InitialDual : int {
     INIT_CP = 3,
     BARRIER = 4,
     LAGRANGIAN = 5,
+    INITIAL_LP = 6
 };
 
 enum DualMethod : int {
@@ -249,8 +251,8 @@ enum ModelSOLVER: int {
 //  String Mappings for Enums
 //-----------------------------------------------------------------------------
 namespace enum_strings {
-    constexpr std::array<const char*, 2> labelingStrategyNames = {
-        "PUSHING", "PULLING"
+    constexpr std::array<const char*, 3> labelingStrategyNames = {
+        "PUSHING", "PULLING" , "RE_PULLING"
     };
 
     constexpr std::array<const char*, 2> subproblemAlgorithmNames = {
@@ -269,12 +271,12 @@ namespace enum_strings {
         "GREEDY_START", "PRE_SOLUTION", "EMPTY_ROUTES ", "IP_SOLUTION "
     };
 
-    constexpr std::array<const char*, 6> initialDualNames = {
-        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE"
+    constexpr std::array<const char*, 7> initialDualNames = {
+        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP"
     };
 
     constexpr std::array<const char*, 7> dualMethodNames = {
-        "Last_LP", "AUX_D", "AUX_P", "AUX_BOX", "LP_CP", "BARRIER", "LAGRANGE"
+        "LINEAR", "AUX_D", "AUX_P", "AUX_BOX", "LP_CP", "BARRIER", "LAGRANGE"
     };
 
     constexpr std::array<const char*, 4> nodeStatusNames = {

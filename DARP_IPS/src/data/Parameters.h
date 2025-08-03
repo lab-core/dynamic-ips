@@ -69,6 +69,7 @@ public:
     int nbPick_;
     SortPaths sortPath_;
     SortColumns sortColumn_;
+    int newRequestLimit_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -86,7 +87,7 @@ public:
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
-               bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM,
+               bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver);
 
@@ -116,11 +117,12 @@ struct solverOption {
     bool usePick_;
     int nbPick_;
     SortPaths pathSort_;
+    int newRequestLimit_;
 
     // Constructor and Destructor
     solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
-                 SortPaths pathSort, bool pruneNodes, bool pruneArcs,
-                 bool discardSuboptimalPath, bool isDropPickPossible, LabelingStrategy labelingStrategy);
+                 SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
+                 bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit);
 
     explicit solverOption(const PParameters &MainParams);
 

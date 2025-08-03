@@ -16,10 +16,10 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
-                       bool isDominanceReleased, bool isDropPickPossible,
-                       LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
-                       bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick,
-                       int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int solveTimeLimit,
+                       bool isDominanceReleased, bool isDropPickPossible, LabelingStrategy LabelingStrategy,
+                       SubproblemAlgorithm subAlgorithm, bool constPortion, bool vehiclePortion,
+                       bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick, int nbPick,
+                       SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                        int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver):
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
@@ -34,10 +34,9 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible),
         LabelingStrategy_(LabelingStrategy), subAlgorithm_(subAlgorithm), constPortion_(constPortion),
         vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
-        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath),
+        routeRecycle_(routeRecycle), usePick_(usePick), nbPick_(nbPick), sortPath_(sortPath), newRequestLimit_(newRequestLimit),
         sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), modelSolver_(modelSolver),
         populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait) {
-
 }
 
 Parameters::~Parameters() = default;
@@ -107,6 +106,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << eu::toString(sortPath_) << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of columns " << " = " << eu::toString(sortColumn_) << std::endl;
+    repStr << std::setw(setwLength) << "# new Request limit to recycle " << " = " << newRequestLimit_ << std::endl;
     repStr << std::endl;
 
     repStr << "# CPLEX PARAMETERS" << std::endl;
@@ -160,6 +160,7 @@ std::string Parameters::toStr() const {
     repStr << boolToString(dynamicPricing_) << ",";
     repStr << boolToString(partialPricing_) << ",";
     repStr << boolToString(routeRecycle_) << ",";
+    repStr << newRequestLimit_ << ",";
     repStr << nbPick_ << ",";
     repStr << eu::toString(sortPath_) << ",";
     repStr << eu::toString(sortColumn_) << ",";
@@ -173,14 +174,12 @@ std::string Parameters::toStr() const {
 //-----------------------------------------------------------------------------
 
 solverOption::solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
-                           SortPaths pathSort, bool pruneNodes, bool pruneArcs,
-                           bool discardSuboptimalPath, bool isDropPickPossible,
-                           LabelingStrategy labelingStrategy) :
-        isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased),
-        pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), MaxCommittedLabel_(MaxCommittedLabel),
-        discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), LabelingStrategy_(labelingStrategy),
-        MaxLabel_(maxLabel), usePick_(false),
-        nbPick_(nbPick), pathSort_(pathSort) {}
+                           SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
+                           bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit) :
+        isTruncated_(isTruncated), isDominanceReleased_(isDominanceReleased), pruneNodes_(pruneNodes),
+        pruneArcs_(pruneArcs), MaxCommittedLabel_(MaxCommittedLabel), discardSuboptimalPath_(discardSuboptimalPath),
+        isDropPickPossible_(isDropPickPossible), LabelingStrategy_(labelingStrategy), MaxLabel_(maxLabel),
+        usePick_(false), nbPick_(nbPick), pathSort_(pathSort), newRequestLimit_(newRequestLimit) {}
 
 solverOption::~solverOption() = default;
 
@@ -207,6 +206,7 @@ solverOption::solverOption(const PParameters &MainParams) {
     pruneArcs_ = MainParams->pruneArcs_;
     discardSuboptimalPath_ = MainParams->discardSuboptimalPath_;
     MaxCommittedLabel_ = MainParams->MaxCommittedLabel_;
+    newRequestLimit_ = MainParams->newRequestLimit_;
 }
 
 // Display function
@@ -226,7 +226,7 @@ std::string solverOption::toString() const {
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << eu::toString(LabelingStrategy_) << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
-
+    repStr << std::setw(setwLength) << "# new Request limit to recycle " << " = " << newRequestLimit_ << std::endl;
     return repStr.str();
 
 }

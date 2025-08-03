@@ -21,6 +21,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
 
         // Apply tuned parameters
+        model_->set(GRB_IntParam_OutputFlag, 0);
         model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
         model_->set(GRB_IntParam_Crossover, 1);
@@ -29,7 +30,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntParam_UpdateMode, 0);                // Immediate updates
         model_->set(GRB_StringParam_LogFile, outputLog);
         env_.set(GRB_IntParam_UpdateMode, 1);
-        model_->set(GRB_IntParam_OutputFlag, 1);
+
 
     } catch (GRBException& e) {
         std::cerr << "Error in GurobiModeler constructor: " << e.getMessage() << std::endl;
@@ -318,18 +319,15 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
-            pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->dual_;
         }
 
         // Get vehicle constraint duals
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
             if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
                 pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
-                pInst->vehicles_[i]->InitialDual_ = pInst->vehicles_[i]->dual_;
             }
             else {
                 pInst->vehicles_[i]->dual_ = 0;
-                pInst->vehicles_[i]->InitialDual_ = 0;
             }
         }
 
@@ -348,7 +346,6 @@ void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel, const PInstance&
         // Update request duals (same constraint ordering)
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
             pInst->requests_[i]->dual_ = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
-            pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->dual_;
             constrIndex++;
         }
 
@@ -356,11 +353,9 @@ void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel, const PInstance&
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
             if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
                 pInst->vehicles_[i]->dual_ = allConstrs[constrIndex].get(GRB_DoubleAttr_Pi);
-                pInst->vehicles_[i]->InitialDual_ = pInst->vehicles_[i]->dual_;
             }
             else {
                 pInst->vehicles_[i]->dual_ = 0;
-                pInst->vehicles_[i]->InitialDual_ = 0;
             }
             constrIndex++;
         }

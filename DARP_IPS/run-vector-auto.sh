@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=20G
-#SBATCH --cpus-per-task=16
-#SBATCH --time=2:15:00
-#SBATCH --array=1-24
+#SBATCH --mem=10G
+#SBATCH --cpus-per-task=8
+#SBATCH --time=0:10:00
+#SBATCH --array=1-270
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,18 +11,18 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="vehicles_uniform"
 vehicles_2="vehicles_byDemand"
-directory="Instances_2h-7"
+directory="Instances_30s"
 main_dir="datasets/$directory"
-param_dir="BatchParameters"
+param_dir="AnyParameters"
 
 # Define algorithms for each mode
 declare -A algorithms
-algorithms[1]="2"  # Mode 1 -> Algorithm 2
+algorithms[1]="6"  # Mode 1 -> Algorithm 2
 algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define scenario for each mode
 declare -A scenario_files
-scenario_files[1]="commit"
+scenario_files[1]="initialDual"
 scenario_files[2]="ACG-LP"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory

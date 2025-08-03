@@ -173,7 +173,6 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
         if (prePick == PLastStop_) {
             if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_){
                 throw myTools::myException("Instance error: capacity exceeded, consider splitting trip.", __FILE__, __LINE__);
-
             }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);

@@ -618,13 +618,15 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
   }*/
 
 
-void ReducedProblem::solveInteriorLP(const PInstance &pInst, const InputPaths &inputPaths) {
+void ReducedProblem::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths) {
     try {
         myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LMP");
         // Configure CPLEX to use interior point method
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Barrier);
-        // Disable crossover (equivalent to Gurobi's Crossover=0)
-        Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::NoAlg);
+        if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
+            Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Barrier);
+            // Disable crossover (equivalent to Gurobi's Crossover=0)
+            Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::NoAlg);
+        }
 
         Cplex_.extract(Model_);
         solveTime_->start();
@@ -642,10 +644,12 @@ void ReducedProblem::solveInteriorLP(const PInstance &pInst, const InputPaths &i
             // getting dual values
             getDuals(pInst);
         }
-        // Reset to dual simplex method (equivalent to Gurobi's METHOD_DUAL)
-        Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Dual);
-        // Re-enable crossover
-        Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::Auto);
+        if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
+            // Reset to dual simplex method (equivalent to Gurobi's METHOD_DUAL)
+            Cplex_.setParam(IloCplex::Param::RootAlgorithm, IloCplex::Dual);
+            // Re-enable crossover
+            Cplex_.setParam(IloCplex::Param::Barrier::Crossover, IloCplex::Auto);
+        }
         //        Cplex_.clearModel();
     }
     catch (IloException& e) {

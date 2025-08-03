@@ -523,6 +523,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     int nbPick = spParams.value("nbPick", -1);
     int sortPath = spParams.value("sortPath", -1);
     int sortColumn = spParams.value("sortColumn", -1);
+    int newRequestLimit = spParams.value("newRequestLimit", -1);
 
     // Parse cplexParameters
     auto cplexParams = j["cplexParameters"];
@@ -557,7 +558,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         routeRecycle, usePick, nbPick,
         static_cast<SortPaths>(sortPath),
         static_cast<SortColumns>(sortColumn),
-        bigM, solveTimeLimit, populateTimeLimit,
+        bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
@@ -608,7 +609,6 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int subAlgorithm = defaultParams.value("subproblemAlgorithm", -1);
     bool constPortion = defaultParams.value("constPortion", 0) != 0;
     bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
-    bool routeRecycle = defaultParams.value("Route_Recycle", 0) != 0;
     bool usePick = defaultParams.value("usePick", 0) != 0;
     int bigM = defaultParams.value("BigM", -1);
     int solveTimeLimit = defaultParams.value("solveTimeLimit", -1);
@@ -664,6 +664,8 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int nbPick = scenarioParams.value("nbPick", -1);
     int sortPath = scenarioParams.value("sortPath", -1);
     int sortColumn = scenarioParams.value("sortColumn", -1);
+    bool routeRecycle = scenarioParams.value("Route_Recycle", 0) != 0;
+    int newRequestLimit = scenarioParams.value("newRequestLimit", -1);
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
@@ -691,7 +693,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         routeRecycle, usePick, nbPick,
         static_cast<SortPaths>(sortPath),
         static_cast<SortColumns>(sortColumn),
-        bigM, solveTimeLimit, populateTimeLimit,
+        bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
@@ -796,12 +798,12 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,ModelSolver,alpha,beta,delta,epochLength,committedTime,informTimeLimit,pickupDeviationWindow,"
-                        "maxWait,nbThreads,InitialDual,dualMethod,warmStart,mainAlgorithm,solutionMode,NumIter,"
-                        "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,"
-                        "CP_IncDegree,useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
-                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,"
-                        "LabelingStrategy,Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,nbPick,"
+    parametersStream << "Instance,ModelSolver,alpha,beta,delta,epochLength,committedTime,informTimeLimit,"
+                        "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,warmStart,mainAlgorithm,"
+                        "solutionMode,NumIter,GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,"
+                        "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
+                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,"
+                        "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit, nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();

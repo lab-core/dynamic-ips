@@ -103,7 +103,6 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->initializationCPLEX(EpochInst, inputPaths, epoch_, GreedyModel_);
     else
         CG_Model_->initializationGurobi(EpochInst, inputPaths, epoch_, GreedyModel_);
-
     // Initialize variables
     int iter = 0;
     bool subProBreak = false;
@@ -114,8 +113,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     runtimeMetrics_->resetSubproblemMetrics();
-    CG_Model_->availableRoutes_.clear();
-    CG_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
+    if (CG_Model_->availableRoutes_.empty())
+        CG_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
 
     // Main column generation loop
     while (true) {
@@ -123,6 +122,19 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         int nbNegativeFound = 0;
         float previousObj = CG_Model_->objValue_;
+        if (epoch_ == 0) {
+            // request duals
+            for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
+                if (EpochInst->requests_[i]->solVehicleID_ != LARGE_CONSTANT)
+                    EpochInst->requests_[i]->dual_ = EpochInst->requests_[i]->InitialDual_;
+            }
+
+            // vehicle duals
+            for (size_t i = 0; i < EpochInst->vehicles_.size(); ++i)
+                EpochInst->vehicles_[i]->dual_ = EpochInst->vehicles_[i]->InitialDual_;
+        }
+        *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
         //***********************************************************************************//
         //                    Solve subproblems using the extracted function
@@ -240,6 +252,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     objValue_ = CG_Model_->objValue_;
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
+    CG_Model_->setLastDuals(EpochInst);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -264,8 +277,8 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     EpochInst->selectedVehicles_.clear();
     EpochInst->selectedVehicles_.resize(EpochInst->nbVehicles_, 0);
     runtimeMetrics_->resetSubproblemMetrics();
-    ISUD_Model_->availableRoutes_.clear();
-    ISUD_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
+    if (ISUD_Model_->availableRoutes_.empty())
+        ISUD_Model_->availableRoutes_.resize(mainInst->nbVehicles_);
 
 
     while (true) {
@@ -360,6 +373,7 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     objValue_ = ISUD_Model_->objValue_;
+    ISUD_Model_->setLastDuals(EpochInst);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -421,9 +435,12 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             }
 
             // Handle route recycling
-            /*if (EpochInst->parameters_->routeRecycle_) {
+            if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING && EpochInst->parameters_->routeRecycle_ &&
+                !vehicleObj->currentRoute_->routeRequests_.empty() &&
+                availableRoutes[vehicleObj->vehicleID_].size() > mainInst->parameters_->nbColumn_) {
                 subProSolve.back()->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
-            }*/
+                subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
+            }
             availableRoutes[vehicleObj->vehicleID_].clear();
         }
     }
@@ -671,10 +688,20 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         // resetting a subInstance
         EpochInst->resetInstance();
         // reading the data received in the previous epoch
-        if (mainInst->parameters_->approach_ == ISUD)
+        if (mainInst->parameters_->approach_ == ISUD) {
             EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
-        else if (mainInst->parameters_->approach_ == CG)
+            if (EpochInst->parameters_->timeWindow_ == 0)
+                EpochInst->updatePenalties(elapsedTime_);
+            if (mainInst->parameters_->routeRecycle_ && !ISUD_Model_->availableRoutes_.empty())
+                reconstructAvailableRoutes(mainInst, ISUD_Model_->availableRoutes_);
+        }
+        else if (mainInst->parameters_->approach_ == CG) {
             EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , elapsedTime_, nbReceivedRequest);
+            if (EpochInst->parameters_->timeWindow_ == 0)
+                EpochInst->updatePenalties(elapsedTime_);
+            if (mainInst->parameters_->routeRecycle_ && !CG_Model_->availableRoutes_.empty())
+                reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
+        }
         else
             EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
         for (auto &vehicleObj: mainInst->vehicles_){
@@ -683,16 +710,11 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
             }
         }
-        if (EpochInst->parameters_->timeWindow_ == 0)
-            EpochInst->updatePenalties(elapsedTime_);
         if (epoch_ == 0 && mainInst->nbOnboards_ > 0)
             nbReceivedRequest += EpochInst->nbRequests_;
         else
             nbReceivedRequest += EpochInst->nbNewRequests_;
         std::cout << "# TOTAL NUMBER OF REQUESTS: " << EpochInst->nbRequests_ << std::endl;
-        /*std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
-        std::cout << "# NUMBER OF NODES: " << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbNewRequests_ << std::endl;*/
-
         if (elapsedTime_ >= saveTime && middleSave) {
             if (EpochInst->parameters_->mainAlgorithm_ == GREEDY){
                 for (auto & requestObj: EpochInst->requests_)
@@ -705,9 +727,15 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             break;
         }
         std::cout << "# TOTAL NUMBER OF NEW REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
-        if (EpochInst->nbNewRequests_ == 0 && (skip || mainInst->parameters_->mainAlgorithm_  == GREEDY)) {
+        if (EpochInst->nbRequests_ == 0 ||
+            (EpochInst->nbNewRequests_ == 0 && (skip || mainInst->parameters_->mainAlgorithm_  == GREEDY))) {
+            if (mainInst->parameters_->approach_ == CG)
+                CG_Model_->availableRoutes_.clear();
+            else
+                ISUD_Model_->availableRoutes_.clear();
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
+            skip = false;
             goto nextEpoch;
         }
 //        preprocessTime_->stop();
@@ -742,10 +770,10 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 
         preObjective = objValue_;
         EpochInst->setAssignedEpochVehicles(EpochInst->simulationStartTime_ + elapsedTime_ + simulationTime_->dSinceInit().count());
-        simulationTime_->stop();
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         epoch_++;
+        simulationTime_->stop();
     }
     elapsedTime_ = simulationTime_->dSinceInit().count();
     for (auto & vehicleObj : mainInst->vehicles_) {
@@ -827,6 +855,8 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
+    float preObjective = objValue_;
+    bool skip = false;
     while (nbReceivedRequest < mainInst->nbRequests_){
         /*while ((!solveEpoch && (nbReceivedRequest < mainInst->nbRequests_ || !masterModel_->zSolution_.empty())) ||
            (solveEpoch && nbReceivedRequest < mainInst->nbRequests_)) {*/
@@ -883,27 +913,34 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         if (mainInst->parameters_->approach_ == ISUD) {
             EpochInst->buildPartialData(mainInst, ISUD_Model_->zSolution_ , static_cast<float>(epoch_) *
                 mainInst->parameters_->epochLength_, nbReceivedRequest);
+            if (EpochInst->parameters_->timeWindow_ == 0)
+                EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * static_cast<float>(epoch_));
             if (mainInst->parameters_->routeRecycle_ && !ISUD_Model_->availableRoutes_.empty())
                 reconstructAvailableRoutes(mainInst, ISUD_Model_->availableRoutes_);
         }
         else if (mainInst->parameters_->approach_ == CG) {
             EpochInst->buildPartialData(mainInst, CG_Model_->zSolution_ , static_cast<float>(epoch_) *
             mainInst->parameters_->epochLength_, nbReceivedRequest);
+            if (EpochInst->parameters_->timeWindow_ == 0)
+                EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * static_cast<float>(epoch_));
             if (mainInst->parameters_->routeRecycle_ && !CG_Model_->availableRoutes_.empty())
                 reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
         }
+        else
+            EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
 
         for (auto &vehicleObj: mainInst->vehicles_){
-            vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
-            vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
+            if (EpochInst->nbRequests_ != 0) {
+                vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
+                vehicleObj->emptyRoute_->createColumn(EpochInst->nbRequests_);
+            }
         }
-        if (EpochInst->parameters_->timeWindow_ == 0)
-            EpochInst->updatePenalties(mainInst->parameters_->epochLength_ * static_cast<float>(epoch_));
         if (epoch_ == 0 && mainInst->nbOnboards_ > 0)
             nbReceivedRequest += EpochInst->nbRequests_;
         else
             nbReceivedRequest += EpochInst->nbNewRequests_;
         std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbRequests_ << std::endl;
+        std::cout << "# TOTAL NUMBER OF NEW REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
         // saving the status in the middle of running
         if ((static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ >= saveTime) && middleSave ) {
             inputPaths.makeInstanceOutput(std::to_string(instance_count));
@@ -919,9 +956,14 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             //          break;
         }
 
-        if (EpochInst->nbRequests_ == 0) {
+        if (EpochInst->nbRequests_ == 0 || (EpochInst->nbNewRequests_ == 0 && skip)) {
+            if (mainInst->parameters_->approach_ == CG)
+                CG_Model_->availableRoutes_.clear();
+            else
+                ISUD_Model_->availableRoutes_.clear();
             simulationTime_->stop();
             epoch_++;
+            skip = false;
             goto nextEpoch;
         }
         //       preprocessTime_->stop();
@@ -952,11 +994,17 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 break;
         }
 
-        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-            *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         //       (*pLogEpochSolutionStream_) << EpochInst->saveEpochRoutes( epoch_);
+        if (preObjective != objValue_)
+            skip = false;
+        else
+            skip = true;
+
+        preObjective = objValue_;
         EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_
                                         + static_cast<float>(epoch_ + 1) * mainInst->parameters_->epochLength_);
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         epoch_++;
         simulationTime_->stop();
     }
@@ -1146,6 +1194,10 @@ void Solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availa
 void Solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes) {
     for (auto &vehicleRoutes : availableRoutes) {
         // Remove routes with overlapping requests or empty route requests
+        for (auto &route : vehicleRoutes) {
+            if (route->column_.size() != removedRequests.size())
+                std::cout << "error";
+        }
         vehicleRoutes.erase(
                 std::remove_if(vehicleRoutes.begin(), vehicleRoutes.end(),
                                [&removedRequests](const PRoute &routeObj) {
@@ -1159,8 +1211,9 @@ void Solver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vec
 void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes) {
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
-            for (auto & routeObj : availableRoutes[vehicleObj->vehicleID_]) {
-                routeObj->reConstructRoute(vehicleObj);
+            for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
+                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstructRoute(vehicleObj))
+                    availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
             }
         }
     }

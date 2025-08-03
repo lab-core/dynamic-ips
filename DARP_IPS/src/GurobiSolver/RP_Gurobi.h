@@ -38,7 +38,7 @@ public:
 
     // Solve as LP
     void solveModelLP(const PInstance& pInst, const InputPaths& inputPaths);
-    void solveInteriorLP(const PInstance& pInst, const InputPaths& inputPaths);
+    void solveLPDual(const PInstance& pInst, const InputPaths& inputPaths);
 
     // Solve as MIP
     void solveModelInt(const PInstance& pInst, std::vector<PRequest>& zSolution,

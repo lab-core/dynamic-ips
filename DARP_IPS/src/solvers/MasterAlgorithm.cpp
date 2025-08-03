@@ -101,7 +101,6 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     if (pInst->parameters_->initialDual_ == PENALTIES){
         for (auto &requestObj : pInst->requests_) {
             requestObj->dual_ = requestObj->penalty_;
-            requestObj->InitialDual_ = requestObj->penalty_;
         }
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->dual_ = 0;
@@ -109,18 +108,16 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     else if (pInst->parameters_->initialDual_ == LAST_LP) {
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = requestObj->penalty_;
-            requestObj->InitialDual_ = requestObj->penalty_;
         }
     }
     else if (pInst->parameters_->initialDual_ == ADJUSTED) {
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = requestObj->penalty_;
-            requestObj->InitialDual_ = requestObj->penalty_;
         }
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->adjustDuals();
     }
-    else if (availableRoutes_.size() > 0) {
+    else if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_) {
         if (pInst->parameters_->initialDual_ == LAGRANGIAN) {
             lagSolver_ = std::make_unique<LagrangianSolver>(pInst, objValue_,routeSolution_, zSolution_,
                 availableRoutes_);
@@ -131,7 +128,6 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
             solveCP_Gurobi(pInst, epoch, inputPaths, 0.0);
             for (auto &requestObj : zSolution_) {
                 requestObj->dual_ = requestObj->penalty_;
-                requestObj->InitialDual_ = requestObj->penalty_;
             }
         }
     }
@@ -139,10 +135,20 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         float box = 0.8;
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = box * requestObj->penalty_;
-            requestObj->InitialDual_ = box * requestObj->penalty_;
         }
     }
 }
+
+void MasterAlgorithm::setLastDuals(PInstance &pInst) {
+    // request duals
+    for (size_t i = 0; i < pInst->requests_.size(); ++i)
+        pInst->requests_[i]->InitialDual_ = pInst->requests_[i]->dual_;
+
+    // vehicle duals
+    for (size_t i = 0; i < pInst->vehicles_.size(); ++i)
+        pInst->vehicles_[i]->InitialDual_ = pInst->vehicles_[i]->dual_;
+}
+
 
 void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModeler &GreedyModel){
     if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
@@ -185,13 +191,13 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     }
 
     // create upper bound
-    pInst->parameters_->greedyReOptimize_ = false;
+    /*pInst->parameters_->greedyReOptimize_ = false;
     GreedyModel->greedyTime_->start();
     GreedyModel->initialization(pInst);
     GreedyModel->solveInsertion(pInst);
     upperbound_ = GreedyModel->createUpperbound(pInst);
     GreedyModel->greedyTime_->stop();
-    std::cout << "Upper Bound by Grredy: " << upperbound_ << std::endl;
+    std::cout << "Upper Bound by Grredy: " << upperbound_ << std::endl;*/
 }
 
 // this function creates initial routes serving only one request and fill zSolution_ with available requests
@@ -823,7 +829,6 @@ void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         CPGurobiPro_->buildModel_batch(pInst);
         CPBuildTime_->stop();
         CPGurobiPro_->solveCPDual(pInst, inputPaths);
-        (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
         CPIter_++;
         CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
         epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
@@ -1202,3 +1207,5 @@ void MasterAlgorithm::exportBasisToCSV(const std::string& filename) {
     (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
     (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
 }*/
+
+

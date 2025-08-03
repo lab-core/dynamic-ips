@@ -108,6 +108,8 @@ void Graph::addNewNode(const PNode &node) {
             break;
         case PICKUP :
             pickNodes_.push_back(node);
+            if (node->related_Request_->solVehicleID_ == LARGE_CONSTANT)
+                newPickNodes_.push_back(node);
             break;
         case DROPOFF :
             dropNodes_.push_back(node);

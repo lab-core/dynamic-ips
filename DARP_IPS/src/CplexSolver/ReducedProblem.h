@@ -68,7 +68,7 @@ public:
     void solveModelIntAux_D(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                        InputPaths &inputPaths, float availableTime, float preObj, const PDualAuxSolver &DualAuxSolver_);
 
-    void solveInteriorLP(const PInstance &pInst, const InputPaths &inputPaths);
+    void solveLPDual(const PInstance &pInst, const InputPaths &inputPaths);
 
     // Display function
     std::string toString() const override;

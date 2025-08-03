@@ -55,6 +55,9 @@ public:
     bool solveDynamic_pulling1(float availableTime);
     bool solveDynamic_pulling(float availableTime);
     bool solveDynamic_pullingWave(float availableTime);
+
+    bool ResolveDynamic_pullingWave(float availableTime);
+
     bool solveDynamic_pullingWave1(float availableTime);
     bool solveDynamic(float availableTime);
     void removeDominated(Node *node, std::vector<PLabel> & labelPool) const;
@@ -71,6 +74,8 @@ public:
     void truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const;
     void extendToDropOnboards(const PLabel &selectedLabel);
     void constructLabels(const PLabel &initialLabel);
+
+    void constructBaseLabels(const PLabel &initialLabel);
 };
 
 

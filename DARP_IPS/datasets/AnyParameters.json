@@ -21,7 +21,6 @@
     "subproblemAlgorithm": 1,
     "constPortion": 0,
     "Vehicle_portion": 0,
-    "Route_Recycle": 1,
     "usePick": 1,
     "BigM": 27000,
     "solveTimeLimit": 300,
@@ -30,15 +29,15 @@
     "ModelSolver": 1
   },
   "scenarios": {
-    "test": {
-      "vehicleReturn": 1,
+    "initialDual": {
+      "vehicleReturn": 0,
       "WaitForReturn": 120,
-      "MaxWait": 120,
+      "MaxWait": 9999999,
       "returnType": 2,
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "InitialDual": 4,
+      "InitialDual": 0,
       "DualMethod" : 0,
       "warmStart": 1,
       "NumIter": 1,
@@ -54,7 +53,37 @@
       "Partial_Pricing": 1,
       "nbPick": 2,
       "sortPath": 0,
-      "sortColumn": 1
+      "sortColumn": 1,
+      "Route_Recycle": 1,
+      "newRequestLimit": 10
+    },
+    "test": {
+      "vehicleReturn": 0,
+      "WaitForReturn": 120,
+      "MaxWait": 9999999,
+      "returnType": 2,
+      "numVehicleSwitch": 1000,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "InitialDual": 3,
+      "DualMethod" : 0,
+      "warmStart": 1,
+      "NumIter": 1,
+      "NumColumn": 50,
+      "isTruncated": 1,
+      "MaxLabel": 15,
+      "MaxCommittedLabel": 10,
+      "pruneNodes": 1,
+      "pruneArcs": 1,
+      "discardSuboptimalPath": 1,
+      "isDropPickPossible": 0,
+      "Dynamic_Pricing": 0,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "sortPath": 0,
+      "sortColumn": 1,
+      "Route_Recycle": 1,
+      "newRequestLimit": 10
     }
   }
 }

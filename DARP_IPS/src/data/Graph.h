@@ -58,6 +58,7 @@ class Graph {
 public:
     int nbNodes_;
     std::vector<PNode> pickNodes_;          // list of pickup nodes
+    std::vector<PNode> newPickNodes_;          // list of pickup nodes
     std::vector<PNode> dropNodes_;          // list of drop-off nodes
     std::vector<PNode> onboards_;           // list of requests that are already picked up
     std::vector<PNode> sourceNodes_;        // list of source nodes (vehicle start nodes)

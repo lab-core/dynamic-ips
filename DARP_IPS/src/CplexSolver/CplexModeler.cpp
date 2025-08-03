@@ -181,18 +181,15 @@ void CplexModeler::getDuals(const PInstance &pInst) {
 
     for (auto &requestObj: pInst->requests_) {
         requestObj->dual_ = static_cast<float>(requestDuals_[requestObj->taskIndex_]);
-        requestObj->InitialDual_ = requestObj->dual_;
     }
 
     for (auto &vehicleObj: pInst->vehicles_) {
         int index = vehicleObj->vehicleIndex_;
         if (index > -1) {
             vehicleObj->dual_ = static_cast<float>(vehicleDuals_[index]);
-            vehicleObj->InitialDual_ = vehicleObj->dual_;
         }
         else {
             vehicleObj->dual_ = 0;
-            vehicleObj->InitialDual_ = 0;
         }
     }
 }

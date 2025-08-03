@@ -43,10 +43,11 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
     MPBuildTime_->stop();
 
     setInitialDuals(pInst, inputPaths, epoch);
-    if (availableRoutes_.size() > 0 && pInst->parameters_->initialDual_ == BARRIER) {
+    if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
+        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){
         reFillRoutesToAdd(pInst, MasterPro_->routesToAdd_);
         MasterPro_->updateModel(pInst);
-        MasterPro_->solveInteriorLP(pInst, inputPaths);
+        MasterPro_->solveLPDual(pInst, inputPaths);
     }
 
     setObjValue();
@@ -75,10 +76,11 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->stop();
 
     setInitialDuals(pInst, inputPaths, epoch);
-    if (availableRoutes_.size() > 0 && pInst->parameters_->initialDual_ == BARRIER) {
+    if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
+        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
         MPGurobiPro_->updateModel(pInst);
-        MPGurobiPro_->solveInteriorLP(pInst, inputPaths);
+        MPGurobiPro_->solveLPDual(pInst, inputPaths);
     }
 
     /*if (availableRoutes_.size() > 0) {
@@ -339,7 +341,7 @@ void CG_Algorithm::solveMP_CG_CPLEX(PInstance &pInst, int epoch, InputPaths &inp
                 lagSolver_.reset();
             }
             else if (pInst->parameters_->dualMethod_ == INTERIOR) {
-                MasterPro_->solveInteriorLP(pInst, inputPaths);
+                MasterPro_->solveLPDual(pInst, inputPaths);
             }
         }
  //       (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
@@ -416,7 +418,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
                 lagSolver_.reset();
             }
             else if (pInst->parameters_->dualMethod_ == INTERIOR) {
-                MPGurobiPro_->solveInteriorLP(pInst, inputPaths);
+                MPGurobiPro_->solveLPDual(pInst, inputPaths);
 
             }
         }

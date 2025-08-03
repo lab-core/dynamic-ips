@@ -215,14 +215,17 @@ void RP_Gurobi::solveModelLP(const PInstance &pInst, const InputPaths &inputPath
     }
 }
 
-void RP_Gurobi::solveInteriorLP(const PInstance &pInst, const InputPaths &inputPaths) {
+void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths) {
     try {
         // Redirect output to log file
         // Configure Gurobi logging
-        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
-        model_->set(GRB_IntParam_Method, 2);
-        model_->set(GRB_IntParam_Crossover, 0);
-        model_->update();
+        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LP_Dual");
+
+        if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
+            model_->set(GRB_IntParam_Method, 2);
+            model_->set(GRB_IntParam_Crossover, 0);
+            model_->update();
+        }
 
         solveTime_->start();
         int status = solve();
@@ -234,9 +237,11 @@ void RP_Gurobi::solveInteriorLP(const PInstance &pInst, const InputPaths &inputP
         }
         // Getting dual values
         getDuals(pInst);
-        model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
-        model_->set(GRB_IntParam_Crossover, 1);
-        model_->update();
+        if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
+            model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
+            model_->set(GRB_IntParam_Crossover, 1);
+            model_->update();
+        }
     }
     catch (GRBException& e) {
         std::cerr << "Error occurred in solveModelLP at line: " << __LINE__ << std::endl;
@@ -724,7 +729,6 @@ void RP_Gurobi::recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
-            std::cout << pInst->requests_[i]->InitialDual_ << " - " << pInst->requests_[i]->dual_ << std::endl;
         }
 
         for (size_t j = 0; j < vehicleConstr_.size(); ++j)

@@ -82,12 +82,17 @@ void Route::addNode(const PNode &node) {
     }
 }
 
-void Route::reConstructRoute(PVehicle & vehicle){
+bool Route::reConstructRoute(PVehicle & vehicle){
     totalDelay_ = 0;
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < routeNodes_.size(); ++i) {
         newRoute->addNode(routeNodes_[i]);
+        if (routeNodes_[i]->type_ == PICKUP) {
+            if (newRoute->plannedReachTime_[i] < routeNodes_[i]->related_Request_->earlyPick_ ||
+                newRoute->plannedReachTime_[i] > routeNodes_[i]->related_Request_->latestPickup_)
+                return false;
+        }
     }
     plannedDepartTime_ = newRoute->plannedDepartTime_;
     plannedReachTime_ = newRoute->plannedReachTime_;
@@ -98,6 +103,7 @@ void Route::reConstructRoute(PVehicle & vehicle){
     plannedPassengers_ = newRoute->plannedPassengers_;
     nbCommitted_ = newRoute->nbCommitted_;
     routeSize_ = newRoute->routeSize_;
+    return true;
 }
 
 void Route::addNode(const PNode &node, float reachTime, float departTime) {
