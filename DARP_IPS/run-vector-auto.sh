@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=15G
+#SBATCH --mem=8G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-21
+#SBATCH --array=1-18
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -23,7 +23,7 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 # Define scenario for each mode
 declare -A scenario_files
 scenario_files[1]="initialDual"
-scenario_files[2]="Dual_0 Dual_1 Dual_2 Dual_3 Dual_4 Dual_5 Dual_6"
+scenario_files[2]="2Pick_5 2Pick_10 2Pick_50 Partial_5 Partial_10 Partial_50"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))

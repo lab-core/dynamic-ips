@@ -242,7 +242,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
-            if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
+            if (vehicleObj->preSolvePick_ >= 1 && vehicleObj->idle_){
                 vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
             }
         }

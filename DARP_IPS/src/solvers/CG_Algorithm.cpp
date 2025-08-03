@@ -444,7 +444,7 @@ void CG_Algorithm::solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         RMPCounter_++;
 
     }
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
+ //   (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "Dual");
     masterTime_->stop();
 }
 
