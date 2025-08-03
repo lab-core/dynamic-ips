@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --mem=15G
-#SBATCH --cpus-per-task=8
-#SBATCH --time=0:15:00
-#SBATCH --array=1-270
+#SBATCH --cpus-per-task=16
+#SBATCH --time=2:15:00
+#SBATCH --array=1-21
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,7 +11,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="vehicles_uniform"
 vehicles_2="vehicles_byDemand"
-directory="Instances_30s"
+directory="Instances_2h-12"
 main_dir="datasets/$directory"
 param_dir="AnyParameters"
 
@@ -23,23 +23,23 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 # Define scenario for each mode
 declare -A scenario_files
 scenario_files[1]="initialDual"
-scenario_files[2]="ACG-LP"
+scenario_files[2]="Dual_0 Dual_1 Dual_2 Dual_3 Dual_4 Dual_5 Dual_6"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20150828_07-960m"
-  "20150926_07-960m"
-  "20150917_07-960m"
+  "20150828_12-120m"
+  "20160222_12-120m"
+  "20151130_12-120m"
 )
 
-vehicle_counts=(2000)
+vehicle_counts=(1000)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
 i=1
 
-for mode in 1; do
+for mode in 2; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
       for instance_path in "${INSTANCES[@]}"; do
