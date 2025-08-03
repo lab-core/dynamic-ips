@@ -1117,53 +1117,8 @@ void LabelingSubProblem::constructBaseLabels(const PLabel &initialLabel) {
         for (int i = 1; i < route->routeSize_; ++i) {
             if (route->routeNodes_[i]->type_ == DROPOFF || route->routeNodes_[i]->related_Request_->solVehicleID_ == LARGE_CONSTANT)
                 break;
-            // Get or create a new label
-            PLabel newLabel;
-            if (!labelPool_.empty()) {
-                newLabel = std::move(labelPool_.back());
-                labelPool_.pop_back();
-                newLabel->copyLabel(*parentLabel);
-            } else {
-                newLabel = std::make_shared<Label>(*parentLabel);
-            }
-
-            // Extend the label
-            newLabel->extend(&(*subGraph_->nodes_[route->routeNodes_[i]->nodeID_]),
-                             solverOptions_->isDropPickPossible_);
-
-            bool isRepeated = false;
-            for (auto &labelObj: newLabel->pathNode_.back()->activeLabels_) {
-                if (newLabel->isDominated(labelObj, this->solverOptions_)) {
-                    isRepeated = true;
-                    break;
-                }
-            }
-            if (!isRepeated) {
-                auto &pathNode = newLabel->pathNode_.back();
-
-                // Update label statistics and active node list
-                pathNode->nbActiveLabels_++;
-                if (pathNode->bestLabelReduceCost_ > newLabel->reducedCost_) {
-                    pathNode->bestLabelReduceCost_ = newLabel->reducedCost_;
-                }
-
-                if (pathNode->nbActiveLabels_ == 1) {
-                    activeNodes_.push_back(pathNode);
-                }
-
-                pathNode->activeLabels_.push_back(newLabel);
-
-                // Update parent label for pickup nodes
-                if (route->routeNodes_[i]->type_ == PICKUP) {
-                    parentLabel->extendCheck_.set(route->routeNodes_[i]->related_Request_->taskIndexLabel_, true);
-                }
-            }
-
-            // Update the parent label for the next iteration
-            parentLabel = newLabel;
-
-
-            /*auto currentNode = subGraph_->nodes_[route->routeNodes_[i]->nodeID_];
+            
+            auto currentNode = subGraph_->nodes_[route->routeNodes_[i]->nodeID_];
 
             if (parentLabel->isExtendFeasible(&*currentNode, maxPickup_, solverOptions_->discardSuboptimalPath_,
                 Vehicle_->capacity_, nbPrunedPath_,nbEliminated_, nbPrunedArcs_)) {
@@ -1176,7 +1131,7 @@ void LabelingSubProblem::constructBaseLabels(const PLabel &initialLabel) {
                         activeNodes_.push_back(&(*currentNode));
                     }
                 }
-            }*/
+            }
         }
     }
     for (auto &nodeObj: activeNodes_) {
