@@ -29,10 +29,10 @@ scenario_files[2]="Dual_0 Dual_1 Dual_2 Dual_3 Dual_4 Dual_5 Dual_6"
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
   "20160225_07-120m"
-  "20150917_12-120m"
+  "20150917_07-120m"
 )
 
-vehicle_counts=(1000)
+vehicle_counts=(1500)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
