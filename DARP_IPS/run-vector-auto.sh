@@ -2,7 +2,7 @@
 #SBATCH --mem=8G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=2:15:00
-#SBATCH --array=1-18
+#SBATCH --array=1-14
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,7 +11,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="vehicles_uniform"
 vehicles_2="vehicles_byDemand"
-directory="Instances_2h-12"
+directory="Instances_2h-7"
 main_dir="datasets/$directory"
 param_dir="AnyParameters"
 
@@ -23,14 +23,13 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 # Define scenario for each mode
 declare -A scenario_files
 scenario_files[1]="initialDual"
-scenario_files[2]="2Pick_5 2Pick_10 2Pick_50 Partial_5 Partial_10 Partial_50"
+scenario_files[2]="Dual_0 Dual_1 Dual_2 Dual_3 Dual_4 Dual_5 Dual_6"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20150828_12-120m"
-  "20160222_12-120m"
-  "20151130_12-120m"
+  "20160225_07-120m"
+  "20150917_12-120m"
 )
 
 vehicle_counts=(1000)
