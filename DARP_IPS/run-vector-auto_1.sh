@@ -2,25 +2,26 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=10G
 #SBATCH --time=2:15:00
-#SBATCH --array=1-18
+#SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
 # Load required modules
 module load eigen gcc
 
 # Define fixed parameters
-vehicles="vehicles_byDemand"
+vehicles_1="vehicles_uniform"
+vehicles_2="vehicles_byDemand"
 directory="Instances_2h-12"
 
 # Define algorithms for each mode
 declare -A algorithms
 algorithms[1]="2"  # Mode 1 -> Algorithm 2
-algorithms[2]="6 3"  # Mode 2 -> Algorithm 6
+algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define parameter files for each mode
 declare -A param_files
 param_files[1]="exact"  # Mode 1 has two parameter files
-param_files[2]="ACG-LP"  # Mode 2 has three parameter files
+param_files[2]="Partial_10"  # Mode 2 has three parameter files
 
 # Define instance groups and corresponding vehicle counts
 instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
@@ -36,15 +37,15 @@ for mode in 2; do
     for param_dir in ${param_files[$mode]}; do  # Iterate over multiple parameter files for each mode
 
       for instance in "${instances_1000[@]}"; do
-        jobs[$i]="$vehicles $directory $instance 1000 $algorithm $mode $param_dir 1"
+        jobs[$i]="$vehicles_1 $directory $instance 1000 $algorithm $mode $param_dir 1"
         ((i++))
       done
       for instance in "${instances_1100[@]}"; do
-        jobs[$i]="$vehicles $directory $instance 1100 $algorithm $mode $param_dir 1"
+        jobs[$i]="$vehicles_1 $directory $instance 1100 $algorithm $mode $param_dir 1"
         ((i++))
       done
       for instance in "${instances_1400[@]}"; do
-        jobs[$i]="$vehicles $directory $instance 1400 $algorithm $mode $param_dir 1"
+        jobs[$i]="$vehicles_1 $directory $instance 1400 $algorithm $mode $param_dir 1"
         ((i++))
       done
     done
