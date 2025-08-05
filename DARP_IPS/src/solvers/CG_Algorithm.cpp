@@ -79,6 +79,8 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
         (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        for (auto & routeObj : greedyRoutes_)
+            MPGurobiPro_->routesToAdd_.push_back(routeObj);
         MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
     }

@@ -30,7 +30,7 @@ public:
     void initialization(PInstance &PInst);
     // this function converts GreedyRoute to Route
     void solutionToRoute(const PInstance &PInst);
-    float createUpperbound(const PInstance &PInst);
+    float createUpperbound(std::vector<PRoute> & routeSolution);
     void GreedySolver(PInstance &PInst);
     void GreedyAssignment(PInstance &PInst, int select);
     void solveInsertion(const PInstance &PInst);

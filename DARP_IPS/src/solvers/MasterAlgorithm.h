@@ -70,6 +70,7 @@ public:
     float lpObjValue_;                      // linear objective value
     float totalWaitTime_;                   // total waiting time without penalties
     float GreedyObjValue_;                  // objective value of Greedy method
+    std::vector<PRoute> greedyRoutes_;
 
     float MPEpochSolveTime_;                // save the total time used to solve MP models (RP, CG and MIP)
     float CPEpochSolveTime_;                // save the total time used to solve CP models
