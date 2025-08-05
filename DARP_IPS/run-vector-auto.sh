@@ -11,7 +11,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="vehicles_uniform"
 vehicles_2="vehicles_byDemand"
-directory="Instances_2h-7"
+directory="Instances_2h-12"
 main_dir="datasets/$directory"
 param_dir="AnyParameters"
 
@@ -23,15 +23,15 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 # Define scenario for each mode
 declare -A scenario_files
 scenario_files[1]="initialDual"
-scenario_files[2]="Dual_4"
+scenario_files[2]="Dual_6"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
 INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
 instances=(
-  "20150917_07-120m"
+  "20150828_12-120m"
 )
 
-vehicle_counts=(1500)
+vehicle_counts=(1000)
 
 # Create a single array containing all instance-mode-parameter combinations
 declare -a jobs
