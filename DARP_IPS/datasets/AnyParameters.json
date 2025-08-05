@@ -455,13 +455,13 @@
       "discardSuboptimalPath": 1,
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 0,
-      "Partial_Pricing": 0,
+      "Partial_Pricing": 1,
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 1,
       "newRequestLimit": 50,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 2
     },
     "sortColumn_0": {
       "vehicleReturn": 1,
@@ -490,7 +490,7 @@
       "sortColumn": 0,
       "Route_Recycle": 1,
       "newRequestLimit": 10,
-      "LabelingStrategy": 2
+      "LabelingStrategy": 1
     },
     "sortColumn_2": {
       "vehicleReturn": 1,
@@ -516,7 +516,7 @@
       "Partial_Pricing": 1,
       "nbPick": 2,
       "sortPath": 0,
-      "sortColumn": 0,
+      "sortColumn": 2,
       "Route_Recycle": 1,
       "newRequestLimit": 10,
       "LabelingStrategy": 2
