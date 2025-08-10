@@ -85,6 +85,17 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
 
+    if (pInst->parameters_->initialDual_ == GREEDY_D) {
+        for (auto & routeObj : greedyRoutes_)
+            MPGurobiPro_->routesToAdd_.push_back(routeObj);
+        MPGurobiPro_->updateModel(pInst);
+        for (auto & requestObj : zSolution_) {
+            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
+        }
+        //       for (auto & vehicleObj : pInst->vehicles_)
+        //           vehicleObj->dual_ = 0;
+    }
+
     setInitialDuals(pInst, inputPaths, epoch);
     if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
         (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){

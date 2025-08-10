@@ -24,6 +24,7 @@ public:
     int nbOnePick_;
     int nbTwoPick_;
     int nbThreePick_;
+    int nbRecycle_;
 
     float objValue_;
     float heuristicCG_;

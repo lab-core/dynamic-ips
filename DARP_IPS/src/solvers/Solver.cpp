@@ -16,6 +16,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
     heuristicCG_ = 0;
+    nbRecycle_ = 0;
 
     greedyRebalanceTime_ = 0;
 
@@ -49,7 +50,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                               " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
                               "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
                               "#requestPerVehicle,#nodePerVehicle,"
-                              "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound" << std::endl;
+                              "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle" << std::endl;
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
@@ -228,8 +229,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->DualAuxSolver_.reset();
 
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || (EpochInst->parameters_->solutionMode_ == DYNAMIC
-            && std::fmod(EpochInst->parameters_->epochLength_ * epoch_, 30.0) == 0.0)) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                 returnVehicles(EpochInst);
             else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -392,6 +392,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
     nbOnePick_ = 0;
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
+    nbRecycle_ = 0;
 
     // Start the subproblems timer
     subProblemTime_->start();
@@ -413,7 +414,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             // Handle partial pricing
             if (EpochInst->parameters_->partialPricing_) {
                 if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
-                    vehicleObj->numPickup_ = 2;
+                    vehicleObj->numPickup_ = 3;
                     nbThreePick_++;
                 } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                     vehicleObj->numPickup_ = 2;
@@ -438,6 +439,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING && EpochInst->parameters_->routeRecycle_ &&
                 !vehicleObj->currentRoute_->routeRequests_.empty() &&
                 availableRoutes[vehicleObj->vehicleID_].size() > mainInst->parameters_->nbColumn_) {
+                nbRecycle_ ++;
                 subProSolve.back()->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
                 subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
             }
@@ -1053,7 +1055,8 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
            << nbTwoPick_ << ","
            << nbThreePick_ << ","
            << heuristicCG_ << ","
-           << upperbound << "\n";
+           << upperbound << ","
+           << nbRecycle_ <<"\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }
