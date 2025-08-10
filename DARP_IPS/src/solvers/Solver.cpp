@@ -229,7 +229,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->DualAuxSolver_.reset();
 
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || (EpochInst->parameters_->solutionMode_ == DYNAMIC
+            && std::fmod(EpochInst->parameters_->epochLength_ * epoch_, 30.0) == 0.0)) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                 returnVehicles(EpochInst);
             else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -414,7 +415,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             // Handle partial pricing
             if (EpochInst->parameters_->partialPricing_) {
                 if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
-                    vehicleObj->numPickup_ = 3;
+                    vehicleObj->numPickup_ = std::min(3, EpochInst->parameters_->nbPick_);;
                     nbThreePick_++;
                 } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                     vehicleObj->numPickup_ = 2;

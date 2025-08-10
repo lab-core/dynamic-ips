@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     else if (config->scenario_ == "dropPick")
         max_i = 2;
     else if (config->scenario_ == "initialDual")
-        max_i = 7;
+        max_i = 3;
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < max_i; ++i) {
@@ -98,7 +98,10 @@ int main(int argc, char** argv) {
                     mainInst->parameters_->isDropPickPossible_ = (i == 1);
                 }
                 else if (config->scenario_ == "initialDual") {
-                    mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(i);
+                    if (i == 2)
+                        mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(7);
+                    else
+                        mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(i);
                 }
 
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_, config->scenario_);
