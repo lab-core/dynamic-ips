@@ -134,7 +134,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
                 EpochInst->vehicles_[i]->dual_ = EpochInst->vehicles_[i]->InitialDual_;
         }
         *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
-        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");*/
+        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");*/
 
         //***********************************************************************************//
         //                    Solve subproblems using the extracted function

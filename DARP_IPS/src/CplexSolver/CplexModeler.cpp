@@ -159,8 +159,7 @@ void CplexModeler::setParameters(const PInstance &pInst, float availableTime) {
     Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
     Cplex_.setParam(IloCplex::Param::RootAlgorithm, 2);
     Cplex_.setOut(env_.getNullStream());
-    if (pInst->parameters_->MIPGap_ > 0.0001)
-        Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
+    Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
     Cplex_.setParam(IloCplex::Param::TimeLimit, availableTime);
 
     /*Cplex_.setParam(IloCplex::Param::MIP::Strategy::NodeSelect, 1);  // Best-bound search

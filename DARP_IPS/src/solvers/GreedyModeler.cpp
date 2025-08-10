@@ -116,6 +116,7 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
                 }
                 unsigned int vehicle_ID =
                         std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
+                PInst->requests_[i]->marginalCost_ = possibleDelay[vehicle_ID];
 
                 greedyRouteList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                             PInst->instGraph_->dropNodes_[i],

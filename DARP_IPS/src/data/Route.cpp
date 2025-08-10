@@ -75,7 +75,7 @@ void Route::addNode(const PNode &node) {
 
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
- //       plannedDelay_.push_back(reachTime - node->initialReadyTime_);
+        plannedDelay_.push_back(reachTime - node->initialReadyTime_);
         totalDelay_ += reachTime - node->initialReadyTime_;
         if (node->related_Request_->committedPickTime_ != LARGE_CONSTANT)
             nbCommitted_++;
@@ -310,6 +310,23 @@ void Route::resetRoute() const {
             routeNodes_[i]->related_Request_->requestStatus_ = NO_ACTION;
             routeNodes_[i]->related_Request_->pickTime_ = LARGE_CONSTANT;
             routeNodes_[i]->related_Request_->dropTime_ = LARGE_CONSTANT;
+        }
+    }
+}
+
+void Route::calcMarginalCosts(PVehicle & vehicle) {
+    if (routeRequests_.size() == 1)
+        routeRequests_[0]->marginalCost_ = totalDelay_;
+    else if (routeRequests_.size() > 1) {
+        for (auto & requestObj : routeRequests_) {
+            PRoute newRoute = std::make_shared<Route>(vehicleID_);
+            newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
+            for (int i = 1; i < routeNodes_.size()-1; ++i) {
+                if (routeNodes_[i]->related_Request_->getRequestId() != requestObj->getRequestId()) {
+                    newRoute->addNode(routeNodes_[i]);
+                }
+            }
+            requestObj->marginalCost_ = totalDelay_ - newRoute->totalDelay_;
         }
     }
 }

@@ -153,7 +153,8 @@ enum InitialDual : int {
     INIT_CP = 3,
     BARRIER = 4,
     LAGRANGIAN = 5,
-    INITIAL_LP = 6
+    INITIAL_LP = 6,
+    GREEDY_D = 7
 };
 
 enum DualMethod : int {
@@ -271,8 +272,8 @@ namespace enum_strings {
         "GREEDY_START", "PRE_SOLUTION", "EMPTY_ROUTES ", "IP_SOLUTION "
     };
 
-    constexpr std::array<const char*, 7> initialDualNames = {
-        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP"
+    constexpr std::array<const char*, 8> initialDualNames = {
+        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP", "GREEDY_D"
     };
 
     constexpr std::array<const char*, 7> dualMethodNames = {

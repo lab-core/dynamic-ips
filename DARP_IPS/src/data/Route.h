@@ -73,6 +73,7 @@ public:
 
     // This function is to reset the status of the nodes in the route
     void resetRoute() const;
+    void calcMarginalCosts(PVehicle & vehicle);
 
     bool equal(const Route& routeObj) const {
         return this->column_ == routeObj.column_
