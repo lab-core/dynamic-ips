@@ -198,7 +198,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     greedyRoutes_.clear();
     upperbound_ = GreedyModel->createUpperbound(greedyRoutes_);
     GreedyModel->greedyTime_->stop();
-    std::cout << "Upper Bound by Grredy: " << upperbound_ << std::endl;
+    std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
 
 // this function creates initial routes serving only one request and fill zSolution_ with available requests

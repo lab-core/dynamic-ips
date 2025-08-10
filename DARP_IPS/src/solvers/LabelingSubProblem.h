@@ -51,12 +51,18 @@ public:
     bool solveDynamic_pushing(float availableTime);
     // this function is the same as normal pushing strategy, but it does not do a pick after drops
     bool solveDynamic_pushingDrop(float availableTime);
-    void solveDynamic_pushingWave();
+    bool solveDynamic_pushingWave(float availableTime);
+    bool solveDynamic_pushingWaveStep(float availableTime);
     bool solveDynamic_pulling1(float availableTime);
     bool solveDynamic_pulling(float availableTime);
     bool solveDynamic_pullingWave(float availableTime);
+    bool solveDynamic_pullingWaveStep(float availableTime);
 
     bool ResolveDynamic_pullingWave(float availableTime);
+    bool ResolveDynamic_pullingWaveStep(float availableTime);
+    bool pushToDrops(float availableTime, std::vector<PNode> &pickNodeList);
+    void pushToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
+    void pullToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
 
     bool solveDynamic_pullingWave1(float availableTime);
     bool solveDynamic(float availableTime);
