@@ -567,7 +567,7 @@ bool LabelingSubProblem::ResolveDynamic_pullingWaveStep(float availableTime) {
                                 activeNodes_.push_back(&(*neighbourNode));
                             }
                         }
-                        }
+                    }
                 }
             }
         }
@@ -671,7 +671,7 @@ void LabelingSubProblem::pullToPickups(float availableTime, std::vector<PNode> &
                     for (int l = activeNodes_[j]->activeLabels_.size() - 1; l >= 0; l--) {
                         if (activeNodes_[j]->activeLabels_[l]->status_ == ACTIVE){
                             PLabel selectedLabel = activeNodes_[j]->activeLabels_[l];
-                            if (selectedLabel->numExtendCheck_ == pickNodeList.size() ||
+                            if (selectedLabel->numExtendCheck_ >= pickNodeList.size() ||
                                 selectedLabel->nbPickUp_ >= maxPickup_)  {
                                 selectedLabel->status_ = INACTIVE;
                                 activeNodes_[j]->nbActiveLabels_--;
