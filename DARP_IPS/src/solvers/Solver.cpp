@@ -229,8 +229,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->DualAuxSolver_.reset();
 
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || (EpochInst->parameters_->solutionMode_ == DYNAMIC
-            && std::fmod(EpochInst->parameters_->epochLength_ * epoch_, 30.0) == 0.0)) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                 returnVehicles(EpochInst);
             else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -658,7 +657,8 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
 
         // update vehicle status
         mainInst->nbOnboards_ = 0;
-        boost::dynamic_bitset<> removedRequests(EpochInst->nbRequests_);
+        boost::dynamic_bitset<> removedRequests;
+        removedRequests.resize(EpochInst->nbRequests_);
 
         for (auto &vehicleObj: mainInst->vehicles_) {
 //            vehicleObj->updateCurrentRoute(elapsedTime_);
@@ -734,7 +734,7 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             (EpochInst->nbNewRequests_ == 0 && (skip || mainInst->parameters_->mainAlgorithm_  == GREEDY))) {
             if (mainInst->parameters_->approach_ == CG)
                 CG_Model_->availableRoutes_.clear();
-            else
+            else if(mainInst->parameters_->approach_ == ISUD)
                 ISUD_Model_->availableRoutes_.clear();
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
@@ -758,13 +758,13 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                     }
                 }
             }
-            if (EpochInst->parameters_->solutionMode_ == ANYTIME){
+            /*if (EpochInst->parameters_->solutionMode_ == ANYTIME){
                 for (auto &vehicleObj: EpochInst->vehicles_){
                     if (vehicleObj->currentRoute_->routeSize_ > 1 && vehicleObj->idle_){
                         vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
                     }
                 }
-            }
+            }*/
         }
         if (preObjective != objValue_)
             skip = false;
@@ -776,6 +776,12 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         epoch_++;
+        if (mainInst->parameters_->mainAlgorithm_  == GREEDY) {
+            simulationTime_->stop();
+            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
+            skip = false;
+            goto nextEpoch;
+        }
         simulationTime_->stop();
     }
     elapsedTime_ = simulationTime_->dSinceInit().count();
@@ -930,7 +936,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
         }
         else
-            EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
+            EpochInst->buildPartialData(mainInst, static_cast<float>(epoch_) * mainInst->parameters_->epochLength_, nbReceivedRequest);
 
         for (auto &vehicleObj: mainInst->vehicles_){
             if (EpochInst->nbRequests_ != 0) {
@@ -962,7 +968,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         if (EpochInst->nbRequests_ == 0 || (EpochInst->nbNewRequests_ == 0 && skip)) {
             if (mainInst->parameters_->approach_ == CG)
                 CG_Model_->availableRoutes_.clear();
-            else
+            else if(mainInst->parameters_->approach_ == ISUD)
                 ISUD_Model_->availableRoutes_.clear();
             simulationTime_->stop();
             epoch_++;

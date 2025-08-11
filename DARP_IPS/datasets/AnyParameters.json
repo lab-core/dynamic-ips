@@ -3,7 +3,7 @@
     "alphaParam": 1.5,
     "betaParam": 240,
     "deltaPram": 420,
-    "epochLength": 3,
+    "epochLength": 30,
     "penaltyL": 30,
     "committedTime": 30,
     "nbThreads": 16,
@@ -30,7 +30,7 @@
   "scenarios": {
     "test": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 120,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -59,7 +59,7 @@
     },
     "initialDual": {
       "vehicleReturn": 0,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 9999999,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -88,7 +88,7 @@
     },
     "Rebalance_1": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 60,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -117,7 +117,7 @@
     },
     "Rebalance_2": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 120,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -146,7 +146,7 @@
     },
     "Rebalance_3": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 180,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -175,7 +175,7 @@
     },
     "Rebalance_4": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 240,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -204,7 +204,7 @@
     },
     "Rebalance_5": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 300,
       "returnType": 2,
       "numVehicleSwitch": 1000,
@@ -233,7 +233,7 @@
     },
     "Dual_7": {
       "vehicleReturn": 1,
-      "WaitForReturn": 120,
+      "WaitForReturn": 60,
       "MaxWait": 120,
       "returnType": 2,
       "numVehicleSwitch": 1000,
