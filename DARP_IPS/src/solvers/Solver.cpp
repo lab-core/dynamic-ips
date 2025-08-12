@@ -33,6 +33,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
     subProblemTime_ = new myTools::Timer(); subProblemTime_->init();
     preprocessTime_ = new myTools::Timer(); preprocessTime_->init();
     rebalancingTime_ = new myTools::Timer(); rebalancingTime_->init();
+    rebalancingProcessTime_ = new myTools::Timer(); rebalancingProcessTime_->init();
 
     runtimeMetrics_ = std::make_unique<RuntimeMetrics>();
     objValue_ = 0;
@@ -74,6 +75,7 @@ Solver::~Solver() {
     delete subProblemTime_;
     delete preprocessTime_;
     delete rebalancingTime_;
+    delete rebalancingProcessTime_;
     pLogRunTimesStream_->close();
     pLogEpochSubRuntimeStream_->close();
 //    pLogEpochSubRouteStream_->close();
@@ -1348,6 +1350,7 @@ void Solver::returnVehiclesZone(const PInstance & EpochInst) const {
 void Solver::returnVehiclesAssign(const PInstance & EpochInst) const {
     if (!EpochInst->parameters_->vehicleReturn_) return;
     /* ---------- 1. reference time for “idle” test ---------- */
+    rebalancingProcessTime_->start();
 
     float epochStartTime = 0;
     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
@@ -1464,9 +1467,11 @@ void Solver::returnVehiclesAssign(const PInstance & EpochInst) const {
                   << e.getMessage() << std::endl;
     }
     env.end();
+    rebalancingProcessTime_->stop();
 }
 
 void Solver::returnVehiclesAlonsoCplex(const PInstance & EpochInst) const {
+    rebalancingProcessTime_->start();
     rebalancingTime_->stop();
     if (!EpochInst->lastCommittedRequests_.empty()) {
         /* ---------- 1. reference time for “idle” test ---------- */
@@ -1565,9 +1570,11 @@ void Solver::returnVehiclesAlonsoCplex(const PInstance & EpochInst) const {
     }
     EpochInst->lastCommittedRequests_.clear();
     rebalancingTime_->start();
+    std::cout << " rebalancing time: " << rebalancingProcessTime_->dSinceStart().count() << std::endl;
 }
 
 void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
+    rebalancingProcessTime_->start();
     rebalancingTime_->stop();
     if (!EpochInst->lastCommittedRequests_.empty()) {
         /* ---------- 1. reference time for "idle" test ---------- */
@@ -1681,5 +1688,7 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
     }
     EpochInst->lastCommittedRequests_.clear();
     rebalancingTime_->start();
+    rebalancingProcessTime_->stop();
+    std::cout << " rebalancing time: " << rebalancingProcessTime_->dSinceStart().count() << std::endl;
 }
 

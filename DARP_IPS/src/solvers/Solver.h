@@ -45,6 +45,7 @@ public:
     myTools::Timer *rebalancingTime_;
     myTools::Timer *subProblemTime_;
     myTools::Timer *preprocessTime_;
+    myTools::Timer *rebalancingProcessTime_;
     Tools::LogOutput* pLogRunTimesStream_;
     Tools::LogOutput* pLogEpochSubRuntimeStream_;
 //    Tools::LogOutput* pLogEpochSubRouteStream_;
