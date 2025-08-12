@@ -14,7 +14,6 @@ using namespace std::chrono;
 float saveTime = 3600;
 bool middleSave = false;
 int numEpochTests = 30;
-bool solveEpoch = false;
 
 int main(int argc, char** argv) {
     std::ios_base::sync_with_stdio(false);
@@ -66,6 +65,8 @@ int main(int argc, char** argv) {
         max_i = 2;
     else if (config->scenario_ == "initialDual")
         max_i = 3;
+    /*else if (config->scenario_ == "Rebalance_2")
+        max_i = 11;*/
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < max_i; ++i) {
@@ -79,8 +80,11 @@ int main(int argc, char** argv) {
                 std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
                 Request::requestCount_ = 0;
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
-                if (mainInst->nbInitialOnboards_ == 0)
+                if (config->initialState_ < 2)
                     mainInst->nbVehicles_ = numVehicles;
+                /*if (config->scenario_ == "Rebalance_2")
+                    mainInst->nbVehicles_ = numVehicles + (i * 100);*/
+
                 ReadWrite::readParametersJson(inputPaths.getInputParamFile(), mainInst, config->scenario_);
                 mainInst->adjustParameters(config);
 
@@ -104,7 +108,9 @@ int main(int argc, char** argv) {
                         mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(i);
                 }
 
-                ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_, config->scenario_);
+
+                ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_,
+                    config->scenario_, config->initialState_);
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<Solver> instanceSolver = std::make_unique<Solver>(mainInst, inputPaths);

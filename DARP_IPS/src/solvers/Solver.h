@@ -75,6 +75,7 @@ public:
 
     // function to print epoch runTime to file
     std::string saveRuntimes(const PInstance & EpochInst);
+    std::string saveRuntimesGreedy(const PInstance & EpochInst);
 
     static void CreateOneStopRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
                                     const PInstance &EpochInst, int &nbNegative);
@@ -86,6 +87,7 @@ public:
     void returnVehicles(const PInstance & EpochInst) const;
     void returnVehiclesZone(const PInstance & EpochInst) const;
     void returnVehiclesAssign(const PInstance & EpochInst) const;
+    void returnVehiclesAlonsoCplex(const PInstance & EpochInst) const;
     void returnVehiclesAlonso(const PInstance & EpochInst) const;
 
     std::string toString(const PInstance & mainInst) const;

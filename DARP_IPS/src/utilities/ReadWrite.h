@@ -42,7 +42,8 @@ public:
     static void readZones(const std::string& strZoneFile, const PInstance &pInstance);
 
     // function that opens all input files and update main instance data
-    static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile);
+    static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch,
+        const std::string& paramFile, int initialState);
 
     // Parsing functions
     // Read a file stream until meeting the separating character

@@ -34,6 +34,7 @@ protected:
     std::string input_paramFile_;
     std::string input_vehicleFileGeneral_;
     std::string input_vehicleFile_;
+    std::string input_onboardsFileGeneral_;
     std::string input_onboardsFile_;
     std::string input_waitRequests_;
     std::string input_zones_;
@@ -68,8 +69,6 @@ public:
 
     // Constructors
     explicit InputPaths(std::string  datadir, PConfig& config);
-    InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-               const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile);
 
     // getters
     const std::string &getInstanceName() const;
@@ -79,6 +78,7 @@ public:
     const std::string &getInputParamFile() const;
     const std::string &getInputVehicleFile() const;
     const std::string &getInputVehicleFileGeneral() const;
+    const std::string &getInputOnboardsFileGeneral() const;
     const std::string &getInputOnboardsFile() const;
     const std::string &getInputWaitRequests() const;
     const std::string &getInputZones() const;

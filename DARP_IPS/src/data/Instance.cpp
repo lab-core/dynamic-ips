@@ -378,25 +378,23 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
     }
     nbNewRequests_ = 0;
 
-    if (mainInst->parameters_->greedyReOptimize_) {
-        // add unperformed requests
-        for (auto &vehicleObj: mainInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ > 1) {
-                for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                    if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                        addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
-                        instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-                        instGraph_->addNewNode(
-                                mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
-                    }
-                        // adding onboard nodes to the graph
-                    else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
-                        instGraph_->nodes_.emplace(
-                                std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
-                                                              vehicleObj->currentRoute_->routeNodes_[i]));
-                        instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                        instGraph_->nbNodes_++;
-                    }
+    // add unperformed requests
+    for (auto &vehicleObj: mainInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ > 1) {
+            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                    addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
+                    instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                    instGraph_->addNewNode(
+                            mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
+                }
+                // adding onboard nodes to the graph
+                else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
+                    instGraph_->nodes_.emplace(
+                            std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
+                                                          vehicleObj->currentRoute_->routeNodes_[i]));
+                    instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
+                    instGraph_->nbNodes_++;
                 }
             }
         }

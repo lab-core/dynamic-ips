@@ -29,7 +29,7 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
     // attributes to read the data file and initialize instance
     string title;
     std::string name;
-    int nbVehicles = -1, nbRequests = -1, nbOnboards = -1, nbReceived = -1, nbLocations = -1;
+    int nbVehicles = -1, nbRequests = -1, nbOnboards = 0, nbReceived = -1, nbLocations = -1;
     float simulationStart = -1;
     std::vector<PVehicle> vehicles;
 
@@ -204,6 +204,34 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
     }
 
     string title;
+    // First pass: find "REQUESTS_INFO" and count the number of lines after it
+    if (pInstance->nbOnboards_ == 0) {
+        while (file.good()) {
+            readUntilOneOfTwoChar(file, '\n', '\r', title);
+            if (strEndWith(title, "REQUESTS_INFO")) {
+                // Count the number of data lines after "REQUESTS_INFO"
+                std::string line;
+                while (std::getline(file, line)) {
+                    // Skip empty lines
+                    if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos) {
+                        pInstance->nbOnboards_++;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    pInstance->nbInitialOnboards_ = pInstance->nbOnboards_;
+
+    // Close and reopen the file for the second pass
+    file.close();
+    file.open(strTripsFile, std::fstream::in);
+
+    if (!file.is_open()) {
+        std::cout << "While trying to reopen the file " << strTripsFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
 
     while (file.good()) {
         //       readUntilChar(file, '\n', title);
@@ -742,19 +770,18 @@ void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance)
 }
 
 // function that opens all input files and update main instance data
-void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch, const std::string& paramFile) {
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch,
+    const std::string& paramFile, int initialState) {
     readZones(inputPaths.getInputZones(), pInstance);
     vector2D<PNode> routeNodes;
     routeNodes.resize(pInstance->nbVehicles_);
-    if (pInstance->nbOnboards_ > 0){
+    if (initialState == 2){
         readVehiclesDataF(inputPaths.getInputVehicleFile(), pInstance, routeNodes);
-        readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance, routeNodes);
-    }
-    else
-        readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
-    if (pInstance->nbWaiting_ > 0) {
-        readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
- //       if (!solveEpoch) {
+        if (pInstance->nbOnboards_ > 0)
+            readOnboardRequests(inputPaths.getInputOnboardsFile(), pInstance, routeNodes);
+        if (pInstance->nbWaiting_ > 0) {
+            readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
+            //       if (!solveEpoch) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
                 if (routeNodes[v].size() > 1) {
                     PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);
@@ -769,22 +796,28 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         }
                         else
                             continue;
- //                           newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+                        //                           newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     }
-//                    newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
+                    //                    newRoute->addSink(pInstance->vehicles_[v]->sinkNode_);
                     pInstance->vehicles_[v]->setCurrentRoute(newRoute);
                 }
             }
-//        }
+            //        }
+        }
     }
+    else if (initialState == 1) {
+        readVehiclesDataF(inputPaths.getInputVehicleFileGeneral(), pInstance, routeNodes);
+        readOnboardRequests(inputPaths.getInputOnboardsFileGeneral(), pInstance, routeNodes);
+    }
+    else
+        readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
 
-    if (!solveEpoch) {
-        readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
-        pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
-    }
-    else{
-        pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
-    }
+
+    readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
+    pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
+    // if you want to solve just small tests disable reading Trips and use the following!
+//    pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
+
     pInstance->nbNewRequests_ = pInstance->nbRequests_ - pInstance->nbOnboards_;
 
     inputPaths.initializeOutputs(eu::toString(pInstance->parameters_->mainAlgorithm_),

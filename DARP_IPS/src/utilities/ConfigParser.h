@@ -22,6 +22,7 @@ struct ProgramConfig {
     std::string paramFile_;
     std::string scenario_;
     int saveScratch_;
+    int initialState_;
 
     // Default constructor with default values
     ProgramConfig();

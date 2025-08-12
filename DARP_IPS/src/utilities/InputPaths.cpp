@@ -22,25 +22,7 @@ InputPaths::InputPaths(std::string  datadir, PConfig& config) : dataDir_(std::mo
     input_paramFile_ = dataDir_ + config->paramFile_ + ".json";
     input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFileGeneral_ = dataDir_ + config->vehicleFolder_ + "/" + config->vehicleFileName_ + ".txt";
-}
-
-InputPaths::InputPaths(std::string  datadir, const std::string& instFolder, const std::string& instanceName,
-                       const std::string& vehicleFile, const std::string& vehicleFolder, const std::string& paramFile)
-        : dataDir_(std::move(datadir)), instanceName_(instanceName) {
-
-    instanceDir_ = dataDir_ + instFolder + "/" + instanceName + "/";
-
-    //initialize the file names for trip records and instance data
-    input_TripData_ = instanceDir_ + "TRIP_" + instanceName + ".txt";
-    input_InstanceData_ = instanceDir_ + "INSTANCE_" + instanceName + ".txt";
-    //   input_durationData_ = instanceDir_ + "DURATION_" + instanceName + ".txt";
-    input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + paramFile  + ".json";
-    input_zones_ = dataDir_ + "Zones.txt";
-    input_vehicleFile_ = instanceDir_ + "VEHICLES_" + instanceName + ".txt";
-    input_vehicleFileGeneral_ = dataDir_ + vehicleFolder + "/" + vehicleFile + ".txt";
-    input_onboardsFile_ = instanceDir_ + "ONBOARDS_" + instanceName + ".txt";
-    input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
+    input_onboardsFileGeneral_ = dataDir_ + config->vehicleFolder_ + "/ONBOARDS_" + config->vehicleFileName_ + ".txt";
 }
 
 // getters
@@ -51,6 +33,7 @@ const std::string &InputPaths::getInputDurationData() const {return input_durati
 const std::string &InputPaths::getInputParamFile() const { return input_paramFile_; }
 const std::string &InputPaths::getInputVehicleFile() const {return input_vehicleFile_;}
 const std::string &InputPaths::getInputVehicleFileGeneral() const {return input_vehicleFileGeneral_;}
+const std::string &InputPaths::getInputOnboardsFileGeneral() const {return input_onboardsFileGeneral_;}
 const std::string &InputPaths::getInputOnboardsFile() const {return input_onboardsFile_;}
 const std::string &InputPaths::getInputWaitRequests() const { return input_waitRequests_;}
 const std::string &InputPaths::getInputZones() const {return input_zones_;}
@@ -184,9 +167,9 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
         throw myTools::myException("Output directory can not be created!!!", __LINE__);
     }
 
-    output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
+    output_onboards_ = outputDir + "ONBOARDS_" + "vehicles_" + instNum + "_4.txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
-    output_vehicles_ = outputDir + "VEHICLES_" + instanceNameOut_ + ".txt";
+    output_vehicles_ = outputDir + "vehicles_" + instNum + "_4.txt";
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }

@@ -40,17 +40,24 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
 
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
 
-
-    // this Stream defines the runtime outputs
-    pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-    (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
-                              "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
-                              "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
-                              "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
-                              " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                              "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
-                              "#requestPerVehicle,#nodePerVehicle,"
-                              "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle" << std::endl;
+    if (mainInst->parameters_->approach_ != Greedy) {
+        // this Stream defines the runtime outputs
+        pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
+        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
+                                  "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
+                                  "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
+                                  "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
+                                  " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
+                                  "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
+                                  "#requestPerVehicle,#nodePerVehicle,"
+                                  "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle" << std::endl;
+    }
+    else {
+        pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
+        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,"
+                                  "GreedyObj,Objective,waitTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
+                                  "#requestPerVehicle,#nodePerVehicle" << std::endl;
+    }
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
@@ -747,7 +754,7 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         else if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
             if (EpochInst->parameters_->vehicleReturn_) {
-                if (elapsedTime_ - greedyRebalanceTime_ >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+                if (elapsedTime_ - greedyRebalanceTime_ >= EpochInst->parameters_->epochLength_) {
                     if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                         returnVehicles(EpochInst);
                     else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -776,12 +783,6 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         epoch_++;
-        if (mainInst->parameters_->mainAlgorithm_  == GREEDY) {
-            simulationTime_->stop();
-            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
-            skip = false;
-            goto nextEpoch;
-        }
         simulationTime_->stop();
     }
     elapsedTime_ = simulationTime_->dSinceInit().count();
@@ -852,7 +853,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
     // define required variables
     epoch_ = 0;
     rebalancingTime_->start();
-    int instance_count = 1;
+    int instance_count = mainInst->nbVehicles_;
 
     mainInst->setInitialTimes();
     for (int v = 0; v < mainInst->nbVehicles_; ++v) {
@@ -956,13 +957,13 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ +
                                              static_cast<float>(epoch_) * EpochInst->parameters_->epochLength_,mainInst->parameters_->epochLength_);
 
-            saveTime += 60;
+ //           saveTime += 60;
             /*if (instance_count >= 30)
                 break;*/
-            instance_count ++;
+//            instance_count ++;
 
 
-            //          break;
+                      break;
         }
 
         if (EpochInst->nbRequests_ == 0 || (EpochInst->nbNewRequests_ == 0 && skip)) {
@@ -1014,6 +1015,8 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                                         + static_cast<float>(epoch_ + 1) * mainInst->parameters_->epochLength_);
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
+        else
+            *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
         epoch_++;
         simulationTime_->stop();
     }
@@ -1032,12 +1035,12 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     runtimeMetrics_->epochRuntime_ = simulationTime_->dSinceStart().count();
     avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
     float upperbound = 0.0;
-    repStr << epoch_ << ",";
-    repStr << EpochInst->nbRequests_ << ",";
-    repStr << EpochInst->nbNewRequests_ << ",";
-    repStr << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ",";
-    repStr << runtimeMetrics_->epochRuntime_ << ",";
-    repStr << simulationTime_->dSinceInit().count() << ",";
+    repStr << epoch_ << ","
+           << EpochInst->nbRequests_ << ","
+           << EpochInst->nbNewRequests_ << ","
+           << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ","
+           << runtimeMetrics_->epochRuntime_ << ","
+           << simulationTime_->dSinceInit().count() << ",";
 
     // master problem Times
     if (EpochInst->parameters_->approach_ == CG) {
@@ -1064,6 +1067,32 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
            << heuristicCG_ << ","
            << upperbound << ","
            << nbRecycle_ <<"\n";
+    runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
+    return repStr.str();
+}
+
+std::string Solver::saveRuntimesGreedy(const PInstance &EpochInst) {
+    std::stringstream repStr;
+    runtimeMetrics_->epochRuntime_ = simulationTime_->dSinceStart().count();
+    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
+    repStr << epoch_ << ","
+           << EpochInst->nbRequests_ << ","
+           << EpochInst->nbNewRequests_ << ","
+           << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ","
+           << runtimeMetrics_->epochRuntime_ << ","
+           << simulationTime_->dSinceInit().count() << ","
+           << GreedyModel_->objValue_ << ","
+           << GreedyModel_->objValue_ << ","
+           << GreedyModel_->objValue_ << ","
+           << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ",";
+
+    EpochInst->calcVehicleMetric();
+
+    repStr << EpochInst->nbReturn_ << ","
+           << EpochInst->nbIdle_ << ","
+           << EpochInst->passPerVehicle_ << ","
+           << EpochInst->requestPerVehicle_ << ","
+           << EpochInst->nodePerVehicle_ <<"\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }
@@ -1437,7 +1466,7 @@ void Solver::returnVehiclesAssign(const PInstance & EpochInst) const {
     env.end();
 }
 
-void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
+void Solver::returnVehiclesAlonsoCplex(const PInstance & EpochInst) const {
     rebalancingTime_->stop();
     if (!EpochInst->lastCommittedRequests_.empty()) {
         /* ---------- 1. reference time for “idle” test ---------- */
@@ -1537,3 +1566,120 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
     EpochInst->lastCommittedRequests_.clear();
     rebalancingTime_->start();
 }
+
+void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
+    rebalancingTime_->stop();
+    if (!EpochInst->lastCommittedRequests_.empty()) {
+        /* ---------- 1. reference time for "idle" test ---------- */
+
+        float epochStartTime = 0;
+        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+            epochStartTime = EpochInst->simulationStartTime_ + elapsedTime_;
+        else
+            epochStartTime = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_;
+        float lastEpoch = epochStartTime - EpochInst->parameters_->WaitForReturn_;
+
+        /* ---------- 2. collect idle vehicles ---------- */
+        std::vector<PVehicle> idleVehicles;
+        for (auto &vehicleObj: EpochInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch &&
+                vehicleObj->currentRoute_->routeNodes_.back()->initialType_ != SINK) {
+                idleVehicles.push_back(vehicleObj);
+            }
+        }
+        if (!idleVehicles.empty()) {
+
+            /* ---------- 4. build and solve assignment MIP ---------- */
+            try {
+                const std::size_t nV = idleVehicles.size();
+                const std::size_t nR = EpochInst->lastCommittedRequests_.size();
+                const int need = static_cast<int>(std::min(nV, nR));
+
+                GRBEnv env = GRBEnv();
+                env.set(GRB_IntParam_OutputFlag, 0); // Suppress output
+                env.set(GRB_IntParam_Threads, EpochInst->parameters_->nbThreads_);
+
+                GRBModel model = GRBModel(env);
+
+                // Create decision variables y[v][r]
+                std::vector<std::vector<GRBVar>> y(nV);
+                for (std::size_t v = 0; v < nV; ++v) {
+                    y[v].resize(nR);
+                    for (std::size_t r = 0; r < nR; ++r) {
+                        y[v][r] = model.addVar(0.0, 1.0, 0.0, GRB_CONTINUOUS);
+                    }
+                }
+
+                /* objective */
+                GRBLinExpr obj = 0;
+                for (std::size_t v = 0; v < nV; ++v) {
+                    int vehLoc = idleVehicles[v]->departNode_->locationID_;
+                    for (std::size_t r = 0; r < nR; ++r) {
+                        int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
+                        float cost = durationMatrix_[vehLoc][reqLoc];
+                        obj += cost * y[v][r];
+                    }
+                }
+                model.setObjective(obj, GRB_MINIMIZE);
+
+                /* (1) at most one request per vehicle */
+                for (std::size_t v = 0; v < nV; ++v) {
+                    GRBLinExpr sum = 0;
+                    for (std::size_t r = 0; r < nR; ++r) {
+                        sum += y[v][r];
+                    }
+                    model.addConstr(sum <= 1);
+                }
+
+                /* (2) at most one vehicle per request */
+                for (std::size_t r = 0; r < nR; ++r) {
+                    GRBLinExpr sum = 0;
+                    for (std::size_t v = 0; v < nV; ++v) {
+                        sum += y[v][r];
+                    }
+                    model.addConstr(sum <= 1);
+                }
+
+                /* (3) use exactly min(|V_idle|, |R_late|) vehicles */
+                GRBLinExpr tot = 0;
+                for (std::size_t v = 0; v < nV; ++v) {
+                    for (std::size_t r = 0; r < nR; ++r) {
+                        tot += y[v][r];
+                    }
+                }
+                model.addConstr(tot == need);
+
+                // Solve the model
+                model.optimize();
+
+                /* ---------- 5. write back assignments ---------- */
+                if (model.get(GRB_IntAttr_Status) == GRB_OPTIMAL) {
+                    for (std::size_t v = 0; v < nV; ++v) {
+                        for (std::size_t r = 0; r < nR; ++r) {
+                            if (y[v][r].get(GRB_DoubleAttr_X) > 0.5) {
+                                std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Requests " << EpochInst->lastCommittedRequests_[r]->pickZoneID_ << std::endl;
+
+                                PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
+                                sinkNode->zoneID_ = EpochInst->lastCommittedRequests_[r]->pickZoneID_;
+                                sinkNode->locationID_ = EpochInst->lastCommittedRequests_[r]->PickUpID_;
+                                idleVehicles[v]->currentRoute_->addSink(sinkNode);
+                                if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+                                    idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
+                                        + elapsedTime_ + simulationTime_->dSinceStart().count());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (const GRBException &e) {
+                std::cerr << "Gurobi error in returnVehiclesAssign: "
+                          << e.getMessage() << std::endl;
+            }
+        }
+    }
+    EpochInst->lastCommittedRequests_.clear();
+    rebalancingTime_->start();
+}
+

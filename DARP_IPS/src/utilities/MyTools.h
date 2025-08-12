@@ -39,8 +39,6 @@ extern std::vector<std::vector<float>> durationMatrix_;
 //  Useful tools and data types
 //-----------------------------------------------------------------------------
 
-extern bool solveEpoch;
-
 // Function template to concatenate two vectors of the same type
 template <typename T>
 std::vector<T> concatenateVectors(const std::vector<T>& vec1, const std::vector<T>& vec2) {

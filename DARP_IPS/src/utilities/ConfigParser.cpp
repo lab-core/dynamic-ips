@@ -9,7 +9,7 @@
 #include <algorithm>
 
 // ProgramConfig implementation
-ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), saveScratch_(0) {}
+ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), saveScratch_(0), initialState_(-1) {}
 
 void ProgramConfig::printConfig() const {
     std::cout << "Configuration:\n";
@@ -28,6 +28,7 @@ void ProgramConfig::printConfig() const {
     } else {
         std::cout << "  Instance source: Read from file\n";
     }
+    std::cout << "  Initial state: " << initialState_ << "\n";
 }
 
 //-----------------------------------------------------------------------------
@@ -45,7 +46,8 @@ void ConfigParser::printUsage(const char* programName) {
               << "  --sol-mode <int>            Solution mode (non-negative integer)\n"
               << "  --paramfile <string>        Parameter file name\n"
               << "  --scenario <string>         Scenario name\n"
-              << "  --save-scratch <int>        Save scratch flag (0 or 1)\n\n";
+              << "  --save-scratch <int>        Save scratch flag (0 or 1)\n"
+              << "  --initial-state <int>       Initial state (non-negative integer)\n\n";
 
     std::cout << "Optional arguments:\n"
               << "  --instance-name <string>    Specific instance name (if not provided, reads from file)\n"
@@ -55,11 +57,11 @@ void ConfigParser::printUsage(const char* programName) {
               << "  # Use all instances from file:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
               << "                    --num-vehicles 4 --main-algo 1 --sol-mode 0 \\\n"
-              << "                    --paramfile AnyParameters --scenario test --save-scratch 1\n\n"
+              << "                    --paramfile AnyParameters --scenario test --save-scratch 1 --initial-state 0\n\n"
               << "  # Use specific instance:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
-              << "                    --instance-name test.txt --num-vehicles 4 --main-algo 1 \\\n"
-              << "                    --sol-mode 0 --paramfile AnyParameters --scenario test --save-scratch 0\n";
+              << "                    --instance-name test.txt --num-vehicles 4 --main-algo 1 --sol-mode 0\\\n"
+              << "                    --paramfile AnyParameters --scenario test --save-scratch 0 --initial-state 1 \n";
 }
 
 
@@ -109,6 +111,12 @@ bool ConfigParser::validateConfig(const PConfig& config) {
         return false;
     }
 
+    if (config->initialState_ < 0) {
+        std::cerr << "Error: Initial state must be non-negative (got "
+                  << config->initialState_ << ").\n";
+        return false;
+    }
+
     return true;
 }
 
@@ -145,8 +153,8 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
 
     // Check for required arguments
     std::vector<std::string> required = {
-        "--vehicle-folder", "--inst-folder", "--num-vehicles",
-        "--main-algo", "--sol-mode", "--paramfile", "--scenario", "--save-scratch"
+        "--vehicle-folder", "--inst-folder", "--num-vehicles", "--main-algo", "--sol-mode",
+        "--paramfile", "--scenario", "--save-scratch", "--initial-state"
     };
 
     for (const auto& req : required) {
@@ -163,6 +171,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
         config->numVehicles_ = std::stoi(args["--num-vehicles"]);
         config->mainAlgo_ = std::stoi(args["--main-algo"]);
         config->solMode_ = std::stoi(args["--sol-mode"]);
+        config->initialState_ = std::stoi(args["--initial-state"]);
         config->paramFile_ = args["--paramfile"];
         config->scenario_ = args["--scenario"];
         config->saveScratch_ = std::stoi(args["--save-scratch"]);
