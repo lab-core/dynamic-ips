@@ -164,7 +164,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->SPIters_++;
         CG_Model_->SPIter_++;
 
-        if (nbNegativeFound < 0) {
+        if (nbNegativeFound == 0) {
             if (!repeat) {
                 subProOptions_->disableHeuristics();
                 EpochInst->parameters_->dynamicPricing_ = false;
@@ -211,7 +211,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (previousObj == CG_Model_->objValue_) {
                 CG_Model_->CGSuccess_++;
                 std::cout << "No changes in Objective" << std::endl;
- //               break;
+                break;
             }
             /*else if (CG_Model_->objValue_ <= CG_Model_->upperbound_ * (1.0 - 0.01)) {
                 std::cout << "Improve is sufficient!" << std::endl;

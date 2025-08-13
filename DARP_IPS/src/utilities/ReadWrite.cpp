@@ -813,10 +813,10 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
         readVehiclesData(inputPaths.getInputVehicleFileGeneral(), pInstance);
 
 
-    /*readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
-    pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);*/
+    readTripRequests(inputPaths.getInputTripData(), pInstance, pInstance->nbRequests_);
+    pInstance->nbRequests_ += (pInstance->nbOnboards_ + pInstance->nbWaiting_);
     // if you want to solve just small tests disable reading Trips and use the following!
-    pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
+//    pInstance->nbRequests_ = (pInstance->nbOnboards_ + pInstance->nbWaiting_);
 
     pInstance->nbNewRequests_ = pInstance->nbRequests_ - pInstance->nbOnboards_;
 
