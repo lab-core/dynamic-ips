@@ -87,7 +87,7 @@
       "LabelingStrategy": 1
     },
     "Rebalance_1": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 60,
       "returnType": 2,
@@ -116,7 +116,7 @@
       "LabelingStrategy": 1
     },
     "Rebalance_2": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
       "returnType": 2,
@@ -145,7 +145,7 @@
       "LabelingStrategy": 1
     },
     "Rebalance_3": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 180,
       "returnType": 2,
@@ -174,7 +174,7 @@
       "LabelingStrategy": 1
     },
     "Rebalance_4": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 240,
       "returnType": 2,
@@ -203,7 +203,7 @@
       "LabelingStrategy": 1
     },
     "Rebalance_5": {
-      "vehicleReturn": 0,
+      "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 300,
       "returnType": 2,
