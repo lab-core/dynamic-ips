@@ -1647,7 +1647,7 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
                     int vehLoc = idleVehicles[v]->departNode_->locationID_;
                     for (std::size_t r = 0; r < nR; ++r) {
                         int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                        float cost = durationMatrix_[vehLoc][reqLoc];
+                        float cost = durationMatrix_[vehLoc][reqLoc] / ((EpochInst->lastCommittedRequests_[r]->pickTime_ - EpochInst->lastCommittedRequests_[r]->initialEarlyPick_)/60.0);
                         obj += cost * y[v][r];
                     }
                 }
