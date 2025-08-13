@@ -1,8 +1,9 @@
 #!/bin/bash
-#SBATCH --mem=24G
+#SBATCH --account=def-legraina
+#SBATCH --mem=8G
 #SBATCH --cpus-per-task=16
-#SBATCH --time=2:15:00
-#SBATCH --array=1-1
+#SBATCH --time=0:10:00
+#SBATCH --array=1-270
 #SBATCH --output=/dev/null
 
 # Load required modules
@@ -11,7 +12,7 @@ module load eigen gcc
 # Define fixed parameters
 vehicles_1="vehicles_uniform"
 vehicles_2="vehicles_byDemand"
-directory="Instances_2h-12"
+directory="Instances_30s"
 main_dir="datasets/$directory"
 param_dir="AnyParameters"
 
@@ -37,14 +38,14 @@ vehicle_counts=(1000)
 declare -a jobs
 i=1
 
-for mode in 2; do
+for mode in 1; do
   for algorithm in ${algorithms[$mode]}; do  # Select algorithm for the current mode
     for vehicle_count in "${vehicle_counts[@]}"; do
-#      for instance_path in "${INSTANCES[@]}"; do
-#        instance=$(basename "$instance_path")
-      for instance in "${instances[@]}"; do
+      for instance_path in "${INSTANCES[@]}"; do
+        instance=$(basename "$instance_path")
+ #     for instance in "${instances[@]}"; do
         for scenario in ${scenario_files[$mode]}; do
-        jobs[$i]="--vehicle-folder $vehicles_1 --inst-folder $directory --instance-name $instance --num-vehicles $vehicle_count --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 1"
+        jobs[$i]="--vehicle-folder $vehicles_1 --inst-folder $directory --instance-name $instance --num-vehicles $vehicle_count --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 2 --initial-state 2"
         ((i++))
         done
       done
