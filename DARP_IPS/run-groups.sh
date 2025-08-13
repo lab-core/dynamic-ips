@@ -3,14 +3,14 @@
 #SBATCH --mem=30G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-54
-#SBATCH --output=/dev/null
+#SBATCH --output=slurm-%A_%a.out
+#SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
-module load gcc eigen
+module load gcc eigen boost gurobi
 exe="bin/realtime_DARP"
 
 # Choose which groups to run (comma/space separated) or "ALL".
-# Override at submit: sbatch --export=SELECTED_GROUPS="G1,G2,G3" run.sh
 : "${SELECTED_GROUPS:=ALL}"
 
 # -------------------------
@@ -36,7 +36,6 @@ G2_scenarios=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalanc
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20160628_11-240m")
 
-
 # Register all for SELECTED_GROUPS=ALL
 ALL_GROUPS=(G1 G2)
 
@@ -47,15 +46,18 @@ jobs=()
 
 add_group() {
   local G="$1"
-  local vf_var="${G}_vehicle_folder"; local vehicle_folder="${!vf_var}"
-  local pf_var="${G}_paramfile";      local paramfile="${!pf_var}"
-  local if_var="${G}_inst_folder";    local inst_folder="${!if_var}"
 
-  declare -n counts_ref="${G}_vehicle_counts"
-  declare -n algos_ref="${G}_algorithms"
-  declare -n modes_ref="${G}_modes"
-  declare -n scens_ref="${G}_scenarios"
-  declare -n insts_ref="${G}_instances"
+  # Indirect scalar lookups
+  eval "vehicle_folder=\${${G}_vehicle_folder}"
+  eval "paramfile=\${${G}_paramfile}"
+  eval "inst_folder=\${${G}_inst_folder}"
+
+  # Indirect array copies (portable to bash 3.2)
+  eval "counts_ref=(\"\${${G}_vehicle_counts[@]}\")"
+  eval "algos_ref=(\"\${${G}_algorithms[@]}\")"
+  eval "modes_ref=(\"\${${G}_modes[@]}\")"
+  eval "scens_ref=(\"\${${G}_scenarios[@]}\")"
+  eval "insts_ref=(\"\${${G}_instances[@]}\")"
 
   local m a s c inst
   for m in "${modes_ref[@]}"; do
@@ -89,13 +91,15 @@ echo "[INFO] Built $total_jobs jobs from groups: ${selected[*]}"
 # -------------------------
 # Run the command for this array task
 # -------------------------
-task_id="${SLURM_ARRAY_TASK_ID:-1}"   # default 1 for quick local tests
+task_id="${SLURM_ARRAY_TASK_ID:?SLURM_ARRAY_TASK_ID is required under sbatch}"
 if (( task_id < 1 || task_id > total_jobs )); then
-  echo "[INFO] SLURM_ARRAY_TASK_ID=$task_id out of range (1..$total_jobs)."
+  echo "[INFO] SLURM_ARRAY_TASK_ID=$task_id out of range (1..$total_jobs). Nothing to do."
   exit 0
 fi
 
 cmd="${jobs[$((task_id-1))]}"
-echo "[INFO] $(date) :: Task $task_id/$total_jobs"
-echo "[INFO] $cmd"
+echo "[INFO] $(date) :: JobID=${SLURM_JOB_ID:-NA} Task $task_id/$total_jobs on ${SLURMD_NODENAME:-unknown}"
+echo "[INFO] Running: $cmd"
+
+# Execute on the allocation
 srun $cmd
