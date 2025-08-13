@@ -65,6 +65,8 @@ int main(int argc, char** argv) {
         max_i = 2;
     else if (config->scenario_ == "initialDual")
         max_i = 3;
+    else if (config->scenario_ == "nbPickup")
+        max_i = 2;
     /*else if (config->scenario_ == "Rebalance_2")
         max_i = 11;*/
 
@@ -106,6 +108,16 @@ int main(int argc, char** argv) {
                         mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(7);
                     else
                         mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(i);
+                }
+                else if (config->scenario_ == "nbPickup") {
+                    if (i == 0) {
+                        mainInst->parameters_->dynamicPricing_ =  true;
+                        mainInst->parameters_->partialPricing_ =  false;
+                    }
+                    else {
+                        mainInst->parameters_->partialPricing_ =  true;
+                        mainInst->parameters_->dynamicPricing_ =  false;
+                    }
                 }
 
 

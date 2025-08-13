@@ -84,24 +84,22 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->start();
     MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
-    if (epoch > 0) {
-        setInitialDuals(pInst, inputPaths, epoch);
-        if (pInst->parameters_->initialDual_ == GREEDY_D) {
-            for (auto & routeObj : greedyRoutes_)
-                MPGurobiPro_->routesToAdd_.push_back(routeObj);
-            MPGurobiPro_->updateModel(pInst);
-            for (auto & requestObj : zSolution_) {
-                requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
-            }
-            //       for (auto & vehicleObj : pInst->vehicles_)
-            //           vehicleObj->dual_ = 0;
+    setInitialDuals(pInst, inputPaths, epoch);
+    if (pInst->parameters_->initialDual_ == GREEDY_D) {
+        for (auto & routeObj : greedyRoutes_)
+            MPGurobiPro_->routesToAdd_.push_back(routeObj);
+        MPGurobiPro_->updateModel(pInst);
+        for (auto & requestObj : zSolution_) {
+            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
         }
-        if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
-            (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){
-            reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
-            MPGurobiPro_->updateModel(pInst);
-            MPGurobiPro_->solveLPDual(pInst, inputPaths);
-            }
+        //       for (auto & vehicleObj : pInst->vehicles_)
+        //           vehicleObj->dual_ = 0;
+    }
+    if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
+        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)) {
+        reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        MPGurobiPro_->updateModel(pInst);
+        MPGurobiPro_->solveLPDual(pInst, inputPaths);
     }
 
     /*if (availableRoutes_.size() > 0) {
@@ -255,8 +253,8 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
             iterTime_ = masterTime_->dSinceStart().count();
             objValue_ = MPGurobiPro_->objValue_;
 
-            *pLogMPResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
-                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
+            /**pLogMPResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);*/
 
             RMPCounter_++;
 

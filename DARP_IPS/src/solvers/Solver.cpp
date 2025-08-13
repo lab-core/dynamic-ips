@@ -164,7 +164,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->SPIters_++;
         CG_Model_->SPIter_++;
 
-        if (nbNegativeFound == 0) {
+        if (nbNegativeFound < 0) {
             if (!repeat) {
                 subProOptions_->disableHeuristics();
                 EpochInst->parameters_->dynamicPricing_ = false;
@@ -211,7 +211,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             if (previousObj == CG_Model_->objValue_) {
                 CG_Model_->CGSuccess_++;
                 std::cout << "No changes in Objective" << std::endl;
-                break;
+ //               break;
             }
             /*else if (CG_Model_->objValue_ <= CG_Model_->upperbound_ * (1.0 - 0.01)) {
                 std::cout << "Improve is sufficient!" << std::endl;
@@ -423,7 +423,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             // Handle partial pricing
             if (EpochInst->parameters_->partialPricing_) {
                 if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
-                    vehicleObj->numPickup_ = std::min(3, EpochInst->parameters_->nbPick_);;
+                    vehicleObj->numPickup_ = std::min(2, EpochInst->parameters_->nbPick_);
                     nbThreePick_++;
                 } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                     vehicleObj->numPickup_ = 2;

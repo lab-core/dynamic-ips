@@ -23,7 +23,7 @@ algorithms[2]="6"  # Mode 2 -> Algorithm 6
 
 # Define scenario for each mode
 declare -A scenario_files
-scenario_files[1]="initialDual"
+scenario_files[1]="nbPickup"
 scenario_files[2]="Dual_6"
 
 # Dynamically create the INSTANCES array with paths to each test subdirectory
