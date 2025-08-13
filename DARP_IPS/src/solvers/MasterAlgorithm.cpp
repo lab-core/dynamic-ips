@@ -738,7 +738,8 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
     return repStr.str();
 }
 
-void MasterAlgorithm::createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime) {
+void MasterAlgorithm::createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime,
+    float rebalancingRuntime) {
     pInst->instRepStr_ << LPIter_ << "," << MIPIter_ << ",";
     pInst->instRepStr_ << RPIter_ << "," << CPIter_ << ",";
     pInst->instRepStr_ << ZoomIter_ << ",";
@@ -747,7 +748,7 @@ void MasterAlgorithm::createFinalOutputString(const PInstance &pInst, float subp
     pInst->instRepStr_ << RPTime_->dSinceInit().count() << ",";
     pInst->instRepStr_<< CPTime_->dSinceInit().count() << ",";
     pInst->instRepStr_ << ZOOMTime_->dSinceInit().count() << ",";
-    pInst->instRepStr_ << subproblemTime << "," << greedyRuntime << ",";
+    pInst->instRepStr_ << subproblemTime << "," << greedyRuntime << "," << rebalancingRuntime << ",";
     float TotalTime = masterTime_->dSinceInit().count() + subproblemTime + greedyRuntime;
     pInst->instRepStr_ << TotalTime << ",";
     if (masterTime_->dSinceInit().count() > 0 ){

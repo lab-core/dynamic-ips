@@ -754,8 +754,8 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
             finalInstanceStream
                         << "VehicleFile,paramFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,"
                            "customer Group,#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,idle time/vehicle,"
-                           "#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,#RP Iter,#CP Iter,"
-                           "#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,"
+                           "#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,#RP Iter,#CP Iter,#Zoom Iter,"
+                           "#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Rebalance time,"
                            "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,CPSuccess,CPFails,CGSuccess\n";
 
             // Write data row

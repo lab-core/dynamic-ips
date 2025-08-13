@@ -49,13 +49,13 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                                   "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
                                   "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                                   " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                                  "LinearObjective,waitTime,destructTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
-                                  "#requestPerVehicle,#nodePerVehicle,"
+                                  "LinearObjective,waitTime,destructTime,RebalancingRuntime,GreedyTime,#Return,#Idle,"
+                                  "#passPerVehicle,#requestPerVehicle,#nodePerVehicle,"
                                   "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle" << std::endl;
     }
     else {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,"
+        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,RebalancingRuntime,"
                                   "GreedyObj,Objective,waitTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
                                   "#requestPerVehicle,#nodePerVehicle" << std::endl;
     }
@@ -1055,7 +1055,8 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
     }
     EpochInst->calcVehicleMetric();
 
-    repStr << preprocessTime_ ->dSinceStart().count()<< ","
+    repStr << preprocessTime_->dSinceStart().count()<< ","
+           << rebalancingProcessTime_->dSinceStart().count()<< ","
            << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ","
            << EpochInst->nbReturn_ << ","
            << EpochInst->nbIdle_ << ","
@@ -1083,6 +1084,7 @@ std::string Solver::saveRuntimesGreedy(const PInstance &EpochInst) {
            << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ","
            << runtimeMetrics_->epochRuntime_ << ","
            << simulationTime_->dSinceInit().count() << ","
+           << rebalancingProcessTime_->dSinceStart().count()<< ","
            << GreedyModel_->objValue_ << ","
            << GreedyModel_->objValue_ << ","
            << GreedyModel_->objValue_ << ","
@@ -1144,10 +1146,12 @@ std::string Solver::toString(const PInstance & mainInst) const {
     mainInst->instRepStr_ << epoch_-1 << "," ;
     if (mainInst->parameters_->approach_ == CG)
         CG_Model_->createFinalOutputString(mainInst, subProblemTime_->dSinceInit().count(),
-            GreedyModel_->greedyTime_->dSinceInit().count());
+            GreedyModel_->greedyTime_->dSinceInit().count(), rebalancingProcessTime_->dSinceInit().count());
     else if (mainInst->parameters_->approach_ == ISUD)
         ISUD_Model_->createFinalOutputString(mainInst, subProblemTime_->dSinceInit().count(),
-            GreedyModel_->greedyTime_->dSinceInit().count());
+            GreedyModel_->greedyTime_->dSinceInit().count(), rebalancingProcessTime_->dSinceInit().count());
+    else
+        createFinalOutputString(mainInst);
     return repStr.str();
 }
 
@@ -1179,6 +1183,26 @@ void Solver::solve(PInstance &mainInst, InputPaths &inputPaths, bool middleSave,
                   << " solver" << std::endl;
         throw std::runtime_error("Unknown solver error");
     }
+}
+
+void Solver::createFinalOutputString(const PInstance &pInst) const{
+    pInst->instRepStr_ << 0 << "," << 0 << ",";
+    pInst->instRepStr_ << 0 << "," << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_<< 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << "," << 0 << "," << rebalancingProcessTime_->dSinceInit().count() << ",";
+    float TotalTime = GreedyModel_->greedyTime_->dSinceStart().count();
+    pInst->instRepStr_ << TotalTime << ",";
+    pInst->instRepStr_ << 0 << "," << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
+    pInst->instRepStr_ << 0 << ",";
 }
 
 void RuntimeMetrics::resetSubproblemMetrics() {
@@ -1570,7 +1594,6 @@ void Solver::returnVehiclesAlonsoCplex(const PInstance & EpochInst) const {
     }
     EpochInst->lastCommittedRequests_.clear();
     rebalancingTime_->start();
-    std::cout << " rebalancing time: " << rebalancingProcessTime_->dSinceStart().count() << std::endl;
 }
 
 void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
@@ -1689,6 +1712,5 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
     EpochInst->lastCommittedRequests_.clear();
     rebalancingTime_->start();
     rebalancingProcessTime_->stop();
-    std::cout << " rebalancing time: " << rebalancingProcessTime_->dSinceStart().count() << std::endl;
 }
 

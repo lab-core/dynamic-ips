@@ -93,6 +93,7 @@ public:
 
     std::string toString(const PInstance & mainInst) const;
     void solve(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
+    void createFinalOutputString(const PInstance &pInst) const;
 };
 
 // Metrics structure to hold all runtime data

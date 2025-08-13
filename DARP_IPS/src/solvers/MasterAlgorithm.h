@@ -146,7 +146,7 @@ public:
     void setAvailableTime(const PInstance &pInst, float elapsedTime, int iteration);
     void updateEpochTimers(PRuntimeMetrics &runtimeMetrics);
     std::string runtimesToString(PRuntimeMetrics &runtimeMetrics);
-    void createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime);
+    void createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime, float rebalancingRuntime);
 
     // CP solvers
     void solveCP_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
