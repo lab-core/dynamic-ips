@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#SBATCH --account=def-legraina
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=32G
+#SBATCH --mem=36G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-54
 #SBATCH --error=slurm-%A_%a.err
