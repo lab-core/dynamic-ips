@@ -4,7 +4,6 @@
 #SBATCH --mem=30G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-54
-#SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -66,7 +65,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 0 --initial-state 1")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 2 --initial-state 1")
           done
         done
       done

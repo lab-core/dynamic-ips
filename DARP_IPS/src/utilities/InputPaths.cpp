@@ -81,8 +81,10 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
         std::string instFolder;
         if (saveScratch == 1)
             instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
-        else
-            instFolder = "/home/elamib/scratch/dynamic-ips/" + instanceFolder_;
+        else {
+            instFolder = "/home/elamib/links/scratch/dynamic-ips/" + instanceFolder_;
+//            instFolder = "/home/elamib/scratch/dynamic-ips/" + instanceFolder_;
+        }
         struct stat buffer{};
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
             char *folderPath = const_cast<char *>(instFolder.c_str());
