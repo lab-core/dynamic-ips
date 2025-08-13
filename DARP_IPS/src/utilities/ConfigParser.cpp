@@ -84,8 +84,8 @@ bool ConfigParser::validateConfig(const PConfig& config) {
         return false;
     }
 
-    if (config->saveScratch_ < 0 || config->saveScratch_ > 1) {
-        std::cerr << "Error: Save scratch must be 0 or 1 (got "
+    if (config->saveScratch_ > 2) {
+        std::cerr << "Error: Save scratch must be less than (got "
                   << config->saveScratch_ << ").\n";
         return false;
     }
