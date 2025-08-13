@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=36G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-27
+#SBATCH --array=1-1
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -37,8 +37,18 @@ G2_scenarios=("Dual_0" "Dual_1" "Dual_7")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20160628_11-240m")
 
+# G2 → num_vehicles=1100 with its instances
+G3_vehicle_folder="vehicles_byDemand_w11"
+G3_paramfile="AnyParameters"
+G3_vehicle_counts=(1300)
+G3_algorithms=(6)
+G3_modes=(2)
+G3_scenarios=("Dual_7")
+G3_inst_folder="Instances_4h-11"
+G3_instances=("20160521_11-240m")
+
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G3)
 
 # -------------------------
 # Build job list
