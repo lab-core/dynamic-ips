@@ -423,7 +423,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             // Handle partial pricing
             if (EpochInst->parameters_->partialPricing_) {
                 if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
-                    vehicleObj->numPickup_ = std::min(2, EpochInst->parameters_->nbPick_);
+                    vehicleObj->numPickup_ = std::min(3, EpochInst->parameters_->nbPick_);
                     nbThreePick_++;
                 } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
                     vehicleObj->numPickup_ = 2;
