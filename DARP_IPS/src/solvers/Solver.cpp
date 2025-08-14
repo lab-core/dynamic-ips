@@ -1613,8 +1613,9 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
         std::vector<PVehicle> idleVehicles;
         for (auto &vehicleObj: EpochInst->vehicles_) {
             if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch &&
-                vehicleObj->currentRoute_->routeNodes_.back()->initialType_ != SINK) {
+                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch
+  //              && vehicleObj->currentRoute_->routeNodes_.back()->initialType_ != SINK
+                ) {
                 idleVehicles.push_back(vehicleObj);
             }
         }
