@@ -59,9 +59,9 @@ G4_instances=("20160628_11-240m")
 G5_vehicle_folder="vehicles_byDemand_w11"
 G5_paramfile="AnyParameters"
 G5_vehicle_counts=(1000)
-G5_algorithms=(6)
-G5_modes=(2)
-G5_scenarios=("Dual_7")
+G5_algorithms=(2)
+G5_modes=(1)
+G5_scenarios=("Rebalance_1")
 G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
