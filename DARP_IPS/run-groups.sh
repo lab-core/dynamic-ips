@@ -21,7 +21,7 @@ G1_paramfile="AnyParameters"
 G1_vehicle_counts=(1300 1400 1500)
 G1_algorithms=(6)
 G1_modes=(2)
-G1_scenarios=("DualMethod_2", "DualMethod_4")
+G1_scenarios=("DualMethod_2")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160521_11-240m" "20150926_11-240m")
 
@@ -31,7 +31,7 @@ G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1000 1100 1200)
 G2_algorithms=(6)
 G2_modes=(2)
-G2_scenarios=("DualMethod_2", "DualMethod_4")
+G2_scenarios=("DualMethod_2")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20160628_11-240m")
 
