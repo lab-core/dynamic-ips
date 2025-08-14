@@ -86,8 +86,8 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->stop();
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
-        for (auto & routeObj : greedyRoutes_)
-            MPGurobiPro_->routesToAdd_.push_back(routeObj);
+//        for (auto & routeObj : greedyRoutes_)
+//            MPGurobiPro_->routesToAdd_.push_back(routeObj);
         MPGurobiPro_->updateModel(pInst);
         for (auto & requestObj : zSolution_) {
             requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
