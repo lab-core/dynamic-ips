@@ -7,6 +7,7 @@
 
 #include "utilities/InputPaths.h"
 #include "utilities/MyTools.h"
+#include <ilcplex/ilocplex.h>
 
 class DualAuxSolver {
 public:
