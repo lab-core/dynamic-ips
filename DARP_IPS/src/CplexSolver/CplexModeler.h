@@ -7,6 +7,7 @@
 
 
 #include "data/Instance.h"
+#include <ilcplex/ilocplex.h>
 
 //-----------------------------------------------------------------------------
 // General class for modeling and solving the MP components with Cplex

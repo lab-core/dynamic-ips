@@ -435,7 +435,7 @@ void CPLEXSubProblem::extractSingleSolution(PInstance &pInst, std::vector<PRoute
         IloNumArray wVal(env_);
 
         int nbNodes = nbRequests_ * 2 + 2 + Vehicle_->onboards_.size();
-        IloNum2D xVal(env_, nbNodes);
+        IloArray<IloNumArray> xVal(env_, nbNodes);
 
         double objValue;
 

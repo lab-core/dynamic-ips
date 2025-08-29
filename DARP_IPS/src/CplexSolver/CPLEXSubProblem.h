@@ -7,12 +7,14 @@
 
 #include "data/Instance.h"
 #include "solvers/SubproModeler.h"
+#include <ilcplex/ilocplex.h>
 
 //-----------------------------------------------------------------------------
 //  CPLEXSubProblem class
 //  Algorithms for solving the subProblems and getting results
 //-----------------------------------------------------------------------------
-
+using IloNumVar2D = IloArray<IloNumVarArray>;
+using IloNumVar3D = IloArray<IloNumVar2D>;
 
 class CPLEXSubProblem : public SubproModeler{
 public:
