@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 #include <array>
-#include <ilcplex/ilocplex.h>
 
 //-----------------------------------------------------------------------------
 //  Constants and Configuration
@@ -23,6 +22,7 @@ namespace constants {
     constexpr int SECONDS_PER_HOUR = 3600;
     constexpr int SECONDS_PER_MINUTE = 60;
     constexpr float EPSILON = 0.1f;
+    constexpr float LARGE_PENALTY = 2000;
 }
 
 //-----------------------------------------------------------------------------
@@ -98,9 +98,6 @@ using PRuntimeMetrics = std::unique_ptr<RuntimeMetrics>;
 //  Container Type Aliases
 //-----------------------------------------------------------------------------
 template<class T> using vector2D = std::vector<std::vector<T>>;
-using IloNumVar2D = IloArray<IloNumVarArray>;
-using IloNumVar3D = IloArray<IloNumVar2D>;
-using IloNum2D = IloArray<IloNumArray>;
 
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> Triplet;
@@ -111,6 +108,12 @@ enum LabelingStrategy : int {
     PUSHING = 0,
     PULLING = 1,
     RE_PULLING = 2
+};
+
+enum LabelingReOptimizeStrategy : int {
+    RE_INSERT = 0,
+    BY_ROUTE = 1,
+    BY_GRAPH = 2,
 };
 
 enum SubproblemAlgorithm : int {
@@ -256,6 +259,10 @@ namespace enum_strings {
         "PUSHING", "PULLING" , "RE_PULLING"
     };
 
+    constexpr std::array<const char*, 3> labelingReOptimizeStrategyNames = {
+        "RE_INSERT", "BY_ROUTE" , "BY_GRAPH"
+    };
+
     constexpr std::array<const char*, 2> subproblemAlgorithmNames = {
         "CPLEX        ", "LABEL_SETTING"
     };
@@ -348,6 +355,13 @@ namespace enum_utils {
         auto index = static_cast<size_t>(value);
         return (index < enum_strings::labelingStrategyNames.size()) ?
                enum_strings::labelingStrategyNames[index] : "UNKNOWN";
+    }
+
+    template<>
+    inline const char* toString<LabelingReOptimizeStrategy>(LabelingReOptimizeStrategy value) {
+        auto index = static_cast<size_t>(value);
+        return (index < enum_strings::labelingReOptimizeStrategyNames.size()) ?
+               enum_strings::labelingReOptimizeStrategyNames[index] : "UNKNOWN";
     }
 
     template<>
@@ -482,12 +496,6 @@ namespace enum_utils {
         return (index < enum_strings::approachNames.size()) ?
                enum_strings::approachNames[index] : "UNKNOWN";
     }
-
-    // Stream operators for convenient output
-    /*template<typename EnumType>
-    std::ostream& operator<<(std::ostream& os, EnumType value) {
-        return os << toString(value);
-    }*/
 }
 
 
