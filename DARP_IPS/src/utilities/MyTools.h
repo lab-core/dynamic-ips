@@ -9,7 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <memory>
 #include <string>
 #include <chrono>
 #include "Eigen/Dense"
@@ -20,9 +19,7 @@
 #include <valarray>
 #include <bitset>
 #include <boost/dynamic_bitset.hpp>
-#include <ilcplex/ilocplex.h>
 #include <unordered_map>
-#include <unordered_set>
 #include "json.hpp"
 #include "Types.h"
 
