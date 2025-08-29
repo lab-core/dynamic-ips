@@ -390,7 +390,7 @@ void MIPSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
                 IloNumArray wVal(env_);
 
                 int nbNodes = nbRequests_ * 2 + 2 + vehicleObj->onboards_.size();
-                IloNum2D xVal(env_, nbNodes);
+                IloArray<IloNumArray> xVal(env_, nbNodes);
 
                 Cplex_.getValues(uVal, U_[v]);
                 Cplex_.getValues(wVal, W_[v]);

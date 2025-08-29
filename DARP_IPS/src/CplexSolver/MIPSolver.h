@@ -8,11 +8,14 @@
 #include "data/Instance.h"
 #include "utilities/InputPaths.h"
 #include "utilities/MyTools.h"
+#include <ilcplex/ilocplex.h>
 
 //-----------------------------------------------------------------------------
 //  Contains MIP formulation to solve with Cplex
 //  This is just for testing the results and comparison
 //-----------------------------------------------------------------------------
+using IloNumVar2D = IloArray<IloNumVarArray>;
+using IloNumVar3D = IloArray<IloNumVar2D>;
 
 class MIPSolver {
 public:
