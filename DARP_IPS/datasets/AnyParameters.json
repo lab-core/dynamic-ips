@@ -29,33 +29,34 @@
   },
   "scenarios": {
     "test": {
-      "vehicleReturn": 1,
+      "vehicleReturn": 0,
       "WaitForReturn": 60,
       "MaxWait": 120,
       "returnType": 2,
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "InitialDual": 1,
+      "InitialDual": 0,
       "DualMethod" : 0,
       "warmStart": 1,
       "NumIter": 1,
       "NumColumn": 50,
       "isTruncated": 1,
-      "MaxLabel": 15,
-      "MaxCommittedLabel": 10,
+      "MaxLabel": 10,
+      "MaxCommittedLabel": 0,
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 0,
       "Partial_Pricing": 1,
-      "nbPick": 2,
+      "nbPick": 3,
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 0,
-      "newRequestLimit": 10,
-      "LabelingStrategy": 1
+      "newRequestLimit": 150,
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 2
     },
     "Rebalance_no": {
       "vehicleReturn": 0,
@@ -84,7 +85,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_1": {
       "vehicleReturn": 1,
@@ -113,7 +115,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_2": {
       "vehicleReturn": 1,
@@ -142,7 +145,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_3": {
       "vehicleReturn": 1,
@@ -171,7 +175,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_4": {
       "vehicleReturn": 1,
@@ -200,7 +205,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_5": {
       "vehicleReturn": 1,
@@ -229,7 +235,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "initialDual": {
       "vehicleReturn": 0,
@@ -258,7 +265,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "nbPickup": {
       "vehicleReturn": 0,
@@ -287,7 +295,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Dual_0": {
       "vehicleReturn": 1,
@@ -316,7 +325,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Dual_1": {
       "vehicleReturn": 1,
@@ -345,7 +355,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Dual_7": {
       "vehicleReturn": 1,
@@ -374,7 +385,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "DualMethod_2": {
       "vehicleReturn": 1,
@@ -490,7 +502,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Partial": {
       "vehicleReturn": 1,
@@ -519,7 +532,8 @@
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 1
     }
   }
 }

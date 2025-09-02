@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12.2)
+cmake_minimum_required(VERSION 3.16)
 project(DARP_IPS)
 
 # Dynamically detect and set architecture for macOS
@@ -16,6 +16,10 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Check C++11 support
 include(CheckCXXCompilerFlag)
+
+# Check Solver
+set(HAVE_CPLEX 0)
+set(HAVE_GUROBI 0)
 
 # Suppress developer warnings if not defined
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
@@ -43,6 +47,9 @@ if(CPLEX_ILOCPLEX_FOUND)
     message("-----CPLEX ILOCPLEX IS FOUND-----")
     include_directories(${CPLEX_ILOCPLEX_INCLUDE_DIR})
     link_directories(${CPLEX_ILOCPLEX_LIBRARY})
+    set(HAVE_CPLEX 1)
+else()
+    message(STATUS "CPLEX not found. Set CPLEX_HOME or disable ENABLE_CPLEX.")
 endif()
 
 find_package(Boost REQUIRED)
@@ -53,6 +60,15 @@ if(Boost_FOUND)
 else()
     message(FATAL_ERROR "Boost not found")
 endif()
+
+# Enable AddressSanitizer for debug builds
+option(ENABLE_SANITIZERS "Enable address sanitizer for debug builds" ON)
+if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Address sanitizer enabled")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+endif()
+
 
 
 ######## GUROBI Dependency
@@ -67,20 +83,21 @@ if(GUROBI_FOUND)
     message("-----GUROBI IS FOUND-----")
     include_directories(${GUROBI_INCLUDE_DIRS})
     link_directories(${GUROBI_LIBRARIES})
+    set(HAVE_GUROBI 1)
+else()
+    message(STATUS "Gurobi not found. Set GUROBI_HOME or disable ENABLE_GUROBI.")
 endif()
 
 ######## Eigen Dependency
-if (UNIX)
-    if (APPLE)
-        set (EIGEN_DIR "/Applications/eigen-3.4.0")
-    else()
-        set (EIGEN_DIR /home/elamib/Documents/eigen-3.4.0 /home/ella/eigen-3.4.0)
+find_package(Eigen3 REQUIRED)
+if(Eigen3_FOUND)
+    message(STATUS "Eigen3 found at: ${Eigen3_INCLUDE_DIRS}")
+    if(Eigen3_VERSION)
+        message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
     endif()
 else()
-    set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
+    message(FATAL_ERROR "Eigen3 not found")
 endif()
-set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
-INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
 # Threads for portability
 find_package(Threads REQUIRED)
@@ -98,13 +115,8 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread)
-
+SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread Eigen3::Eigen)
 
 
 INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
-
-
-add_executable(realtime_DARP src/realTimeMain.cpp)
-target_link_libraries(realtime_DARP ${DARP_IPS_LIB} ${LIBS} Threads::Threads)

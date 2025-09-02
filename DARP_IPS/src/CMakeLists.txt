@@ -4,8 +4,6 @@ add_subdirectory(solvers)
 add_subdirectory(CplexSolver)
 add_subdirectory(GurobiSolver)
 
-set(SOURCE_FILES realTimeMain.cpp)
-
 # build the static library
-add_library(${DARP_IPS_LIB} SHARED ${SOURCE_FILES})
-target_link_libraries(${DARP_IPS_LIB} data utilities solvers CplexSolver GurobiSolver ${LIBS})
+add_executable(realtime_DARP realTimeMain.cpp)
+target_link_libraries(realtime_DARP PRIVATE data utilities solvers CplexSolver GurobiSolver ${LIBS})
