@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
+#SBATCH --mem=90G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-54
 #SBATCH --error=slurm-%A_%a.err
@@ -21,7 +21,7 @@ G1_paramfile="AnyParameters"
 G1_vehicle_counts=(1500 1600 1700)
 G1_algorithms=(2)
 G1_modes=(1)
-G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160329_11-240m" "20160628_11-240m")
 
@@ -31,7 +31,7 @@ G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(2)
 G2_modes=(1)
-G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 
@@ -41,7 +41,7 @@ G3_paramfile="AnyParameters"
 G3_vehicle_counts=(1600 1700 1800)
 G3_algorithms=(2)
 G3_modes=(1)
-G3_scenarios=("Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+G3_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20160521_11-240m" "20150926_11-240m")
 
