@@ -23,7 +23,7 @@ G1_algorithms=(2)
 G1_modes=(1)
 G1_scenarios=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 G1_inst_folder="Instances_4h-11"
-G1_instances=("20160329_11-240" "20160628_11-240")
+G1_instances=("20160329_11-240m" "20160628_11-240m")
 
 # G2
 G2_vehicle_folder="vehicles_byDemand_w11"
@@ -66,7 +66,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G1)
 
 # -------------------------
 # Build job list
