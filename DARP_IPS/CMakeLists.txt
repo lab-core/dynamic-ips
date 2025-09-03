@@ -17,10 +17,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # Check C++11 support
 include(CheckCXXCompilerFlag)
 
-# Check Solver
-set(HAVE_CPLEX 0)
-set(HAVE_GUROBI 0)
-
 # Suppress developer warnings if not defined
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
@@ -47,9 +43,6 @@ if(CPLEX_ILOCPLEX_FOUND)
     message("-----CPLEX ILOCPLEX IS FOUND-----")
     include_directories(${CPLEX_ILOCPLEX_INCLUDE_DIR})
     link_directories(${CPLEX_ILOCPLEX_LIBRARY})
-    set(HAVE_CPLEX 1)
-else()
-    message(STATUS "CPLEX not found. Set CPLEX_HOME or disable ENABLE_CPLEX.")
 endif()
 
 find_package(Boost REQUIRED)
@@ -60,15 +53,6 @@ if(Boost_FOUND)
 else()
     message(FATAL_ERROR "Boost not found")
 endif()
-
-# Enable AddressSanitizer for debug builds
-option(ENABLE_SANITIZERS "Enable address sanitizer for debug builds" ON)
-if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Address sanitizer enabled")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O1")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-endif()
-
 
 
 ######## GUROBI Dependency
@@ -83,9 +67,6 @@ if(GUROBI_FOUND)
     message("-----GUROBI IS FOUND-----")
     include_directories(${GUROBI_INCLUDE_DIRS})
     link_directories(${GUROBI_LIBRARIES})
-    set(HAVE_GUROBI 1)
-else()
-    message(STATUS "Gurobi not found. Set GUROBI_HOME or disable ENABLE_GUROBI.")
 endif()
 
 ######## Eigen Dependency
@@ -117,7 +98,9 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread)
+find_package(Threads REQUIRED)
+set(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ Threads::Threads)
+
 
 
 INCLUDE_DIRECTORIES(src)
