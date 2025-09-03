@@ -89,15 +89,17 @@ else()
 endif()
 
 ######## Eigen Dependency
-find_package(Eigen3 REQUIRED)
-if(Eigen3_FOUND)
-    message(STATUS "Eigen3 found at: ${Eigen3_INCLUDE_DIRS}")
-    if(Eigen3_VERSION)
-        message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
+if (UNIX)
+    if (APPLE)
+        set (EIGEN_DIR "/Applications/eigen-3.4.0")
+    else()
+        set (EIGEN_DIR /home/elamib/Documents/eigen-3.4.0 /home/ella/eigen-3.4.0)
     endif()
 else()
-    message(FATAL_ERROR "Eigen3 not found")
+    set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
 endif()
+set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
+INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
 # Threads for portability
 find_package(Threads REQUIRED)
@@ -115,7 +117,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 SET(DARP_IPS_LIB DARP_IPS)
-SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread Eigen3::Eigen)
+SET(LIBS cplex-library cplex-concert ilocplex gurobi::gurobi_c++ -lpthread)
 
 
 INCLUDE_DIRECTORIES(src)
