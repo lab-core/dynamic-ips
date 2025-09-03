@@ -8,32 +8,30 @@ if(Eigen3_FOUND)
 endif()
 
 # Manual search
-find_path(Eigen3_INCLUDE_DIRS
+find_path(EIGEN3_INCLUDE_DIR
         NAMES Eigen/Core
         PATHS
-        # User paths
         ${EIGEN3_ROOT_DIR}
         $ENV{EIGEN3_ROOT_DIR}
-        # Common locations
-        /home/elamib/Documents/eigen-3.4.0
         /home/ella/eigen-3.4.0
-        # Platform specific
         /Applications/eigen-3.4.0          # macOS
-        ~/eigen*                     # User home
         "C:/Program Files/eigen-3.4.0"    # Windows
+        /home/elamib/Documents/eigen-3.4.0
         PATH_SUFFIXES include eigen3
 )
+
+set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 # Get version
 if(Eigen3_INCLUDE_DIRS AND EXISTS "${Eigen3_INCLUDE_DIRS}/Eigen/src/Core/util/Macros.h")
     file(READ "${Eigen3_INCLUDE_DIRS}/Eigen/src/Core/util/Macros.h" _eigen_macros)
     string(REGEX MATCH "#define EIGEN_WORLD_VERSION ([0-9]+)" _ "${_eigen_macros}")
-    set(_major ${CMAKE_MATCH_1})
+    set(_world ${CMAKE_MATCH_1})
     string(REGEX MATCH "#define EIGEN_MAJOR_VERSION ([0-9]+)" _ "${_eigen_macros}")
-    set(_minor ${CMAKE_MATCH_1})
+    set(_major ${CMAKE_MATCH_1})
     string(REGEX MATCH "#define EIGEN_MINOR_VERSION ([0-9]+)" _ "${_eigen_macros}")
-    set(_patch ${CMAKE_MATCH_1})
-    set(Eigen3_VERSION "${_major}.${_minor}.${_patch}")
+    set(_minor ${CMAKE_MATCH_1})
+    set(Eigen3_VERSION "${_world}.${_major}.${_minor}")
 endif()
 
 include(FindPackageHandleStandardArgs)
