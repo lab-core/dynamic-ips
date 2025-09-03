@@ -116,11 +116,10 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
         }
     }*/
     if (currentRoute_->routeSize_ > 1) {
-        if (currentRoute_->routeRequests_.empty() ||
-              currentRoute_->routeRequests_.size() > 1 || preSolvePick_ != 1) {
+ //        if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePick_ != 1) {
             idle_ = false;
             // this condition is useful for the cases that the vehicle does not have any stop in the current epoch
-            if (departTime_ < elapsedTime + committedTime || currentRoute_->plannedReachTime_[1] == departTime_) {
+            if (departTime_ < elapsedTime + committedTime) {
                 onboards_.clear();
                 int breakIndex = 0;
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
@@ -186,7 +185,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 }
                 currentRoute_->removeNode(breakIndex);
             }
-        }
+//        }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
@@ -316,3 +315,13 @@ void Vehicle::adjustDuals() {
     }
     dual_ = 0.0;
 }
+
+/*void Vehicle::checkCoveredRequests(std::vector<PRoute> &availableRoutes, int nbRequests) {
+    coveredRequests.reset();
+    coveredRequests.resize(nbRequests);
+    for (auto & routeObj: availableRoutes) {
+        for (auto & requestObj: routeObj->routeRequests_) {
+            coveredRequests.set(requestObj->taskIndex_);
+        }
+    }
+}*/

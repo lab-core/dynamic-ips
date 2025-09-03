@@ -410,8 +410,8 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
                 newRoute->routeNodes_.back()->related_Request_->dropTime_ = currentLabel->reachTime_;
                 newRoute->routeNodes_.back()->related_Request_->requestStatus_ = COMPLETED;
             }
+            newRoute->routeNodes_.back()->related_Request_->solVehicleID_ = newRoute->vehicleID_;
         }
-        newRoute->routeNodes_.back()->related_Request_->solVehicleID_ = newRoute->vehicleID_;
         currentLabel = currentLabel->child_;
     }
 
@@ -496,10 +496,12 @@ bool GreedyRoute::isAnyViolation(const PStopLabel &startLabel) const {
                 return true;
             }
         }
-        /*else if (currentLabel->currentNode_->type_ == PICKUP) {
-            if (currentLabel->reachTime_ > currentLabel->currentNode_->related_Request_->latestPickup_)
+        else if (currentLabel->currentNode_->type_ == PICKUP) {
+            if (currentLabel->reachTime_ < currentLabel->currentNode_->readyTime_
+  //              || currentLabel->reachTime_ > currentLabel->currentNode_->related_Request_->latestPickup_
+                )
                 return true;
-        }*/
+        }
         currentLabel = currentLabel->child_;
     }
     return false;

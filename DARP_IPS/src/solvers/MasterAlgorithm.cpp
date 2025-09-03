@@ -9,6 +9,7 @@
 #include "CplexSolver/MIPMasterProblem.h"
 #include "CplexSolver/DualAuxSolver.h"
 #include "CplexSolver/ComplementPro.h"
+#include "GurobiSolver/CP_Gurobi.h"
 #include "GurobiSolver/CP_Reduced.h"
 
 //---------------------------------------------------------------------------------------------
@@ -195,8 +196,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     GreedyModel->greedyTime_->start();
     GreedyModel->initialization(pInst);
     GreedyModel->solveInsertion(pInst);
-    greedyRoutes_.clear();
-    upperbound_ = GreedyModel->createUpperbound(greedyRoutes_);
+    upperbound_ = GreedyModel->createUpperbound();
     GreedyModel->greedyTime_->stop();
     std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
@@ -218,12 +218,18 @@ void MasterAlgorithm::initialization(PInstance &pInst, const InputPaths &inputPa
 }
 
 //This function updates the incompatibility degree of availableRoutes
-void MasterAlgorithm::updateIncDegrees(PInstance &pInst) {
+void MasterAlgorithm::updateIncDegrees(PInstance &pInst, bool greedyBase) {
  //   calcAdjacenyPairs(pInst);
     for (auto & vehicleObj : pInst->vehicles_) {
+        vehicleObj->currentRoute_->createColumn(pInst->nbRequests_);
+        vehicleObj->greedyRoute_->createColumn(pInst->nbRequests_);
         if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                calcCompatibilityM1(routeObj, pInst);
+                routeObj->createColumn(pInst->nbRequests_);
+                if (!greedyBase)
+                    calcCompatibilityM1(routeObj, vehicleObj->currentRoute_);
+                else
+                    calcCompatibilityM1(routeObj, vehicleObj->greedyRoute_);
             }
         }
     }
@@ -290,20 +296,17 @@ void MasterAlgorithm::assessReqVehCompatibility(PRoute &route, PInstance &pInst)
 // This function calculates the symmetric difference between two routes  - it counts both:
 // Requests that would be lost (current route has, new route doesn't)
 // Requests that would be gained (new route has, current route doesn't)
-void MasterAlgorithm::calcCompatibilityM1(PRoute &route, PInstance &pInst) {
+void MasterAlgorithm::calcCompatibilityM1(PRoute &route, PRoute &currentVehicleRoute) {
     route->isCompatible_ = true;
     route->incompatibilityDegree_ = 0;
     // Add coefficients for request constraints
-    route->createColumn(pInst->nbRequests_);
-    pInst->vehicles_[route->vehicleID_]->currentRoute_->createColumn(pInst->nbRequests_);
-
-    for (auto& requestObj : pInst->vehicles_[route->vehicleID_]->currentRoute_->routeRequests_) {
+    for (auto& requestObj : currentVehicleRoute->routeRequests_) {
         if (!route->column_.test(requestObj->taskIndex_) ) {
             route->incompatibilityDegree_++;
         }
     }
     for (auto& requestObj : route->routeRequests_) {
-        if (!pInst->vehicles_[route->vehicleID_]->currentRoute_->column_.test(requestObj->taskIndex_) ) {
+        if (!currentVehicleRoute->column_.test(requestObj->taskIndex_) ) {
             route->incompatibilityDegree_++;
         }
     }
@@ -385,47 +388,58 @@ void MasterAlgorithm::updateScore1(PInstance &pInst) {
 }
 
 void MasterAlgorithm::updateScore(PInstance &pInst) {
-    for (auto & vehicleObj : pInst->vehicles_) {
-        if (!availableRoutes_[vehicleObj->vehicleID_].empty()) {
-            for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-                routeObj->IncScoreRatio_ = 0.0;
-                float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
-                if (m_j == 0.0) continue;
-                boost::dynamic_bitset<> vehicles(pInst->nbVehicles_);
-                for (auto & requestObj: routeObj->routeRequests_) {
-                    if (requestObj->solVehicleID_ == LARGE_CONSTANT)
-                        routeObj->IncScoreRatio_ += 1 / m_j;
-                    else if (!vehicles.test(requestObj->solVehicleID_)){
-                        vehicles.set(requestObj->solVehicleID_, true);
-                        float m_l = static_cast<float>(pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->routeRequests_.size()) + 1.0f;
-                        if (m_l == 0.0) continue;
-                        float overlap = 0.0f;
-                        for (const auto& req : routeObj->routeRequests_) {
-                            if (pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->column_.test(req->taskIndex_)) {
-                                overlap += 1.0f;
-                            }
-                        }
-                        if (pInst->vehicles_[requestObj->solVehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
-                            overlap += 1.0f;
-                        routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
-                    }
+    // Precompute current solution structure for efficiency
+    std::vector<boost::dynamic_bitset<>> currentRouteBitsets(pInst->nbVehicles_);
+    std::vector<float> currentRouteSizes(pInst->nbVehicles_);
+
+    for (size_t v = 0; v < pInst->nbVehicles_; ++v) {
+        auto& currentRoute = pInst->vehicles_[v]->currentRoute_;
+        currentRouteBitsets[v] = currentRoute->column_;
+        currentRouteSizes[v] = static_cast<float>(currentRoute->routeRequests_.size()) + 1.0f;
+    }
+
+    // Update scores for all available routes
+    for (auto& vehicleObj : pInst->vehicles_) {
+        int vID = vehicleObj->vehicleID_;
+
+        for (auto& routeObj : availableRoutes_[vID]) {
+            routeObj->IncScoreRatio_ = 0.0;
+
+            float m_j = static_cast<float>(routeObj->routeRequests_.size()) + 1.0f;
+            if (m_j <= 1.0f) continue; // Skip empty routes
+
+            // Compute compatibility with each basis column (current routes)
+            for (size_t basisVehicle = 0; basisVehicle < pInst->nbVehicles_; ++basisVehicle) {
+                float m_l = currentRouteSizes[basisVehicle];
+                if (m_l <= 1.0f) continue; // Skip empty basis routes
+
+                // Count overlapping requests
+                float overlap = static_cast<float>((routeObj->column_ & currentRouteBitsets[basisVehicle]).count());
+
+                // Add 1 if both routes use the same vehicle (vehicle assignment constraint)
+                if (basisVehicle == vID) {
+                    overlap += 1.0f;
                 }
-                if (!vehicles.test(routeObj->vehicleID_)){
-                    float m_l = static_cast<float>(pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->routeRequests_.size()) + 1.0f;
-                    if (m_l == 0.0) continue;
-                    float overlap = 0.0f;
-                    for (const auto& req : routeObj->routeRequests_) {
-                        if (pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->column_.test(req->taskIndex_)) {
-                            overlap += 1.0f;
-                        }
-                    }
-                    if (pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->vehicleID_ == routeObj->vehicleID_)
-                        overlap += 1.0f;
-                    routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
-                }
-     //           std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
- //               routeObj->IncScoreRatio_ *= routeObj->reducedCost_;
+
+                // Add contribution to score
+                routeObj->IncScoreRatio_ += (overlap * overlap) / (m_j * m_l);
             }
+
+            // Handle unserved requests (if they contribute to compatibility)
+            int unservedCount = 0;
+            for (const auto& req : routeObj->routeRequests_) {
+                if (req->solVehicleID_ == LARGE_CONSTANT) {
+                    unservedCount++;
+                }
+            }
+            if (unservedCount > 0) {
+                // Each unserved request forms its own "basis column" with z_i = 1
+                // Contributing 1/m_j per unserved request
+                routeObj->IncScoreRatio_ += static_cast<float>(unservedCount) / m_j;
+            }
+
+            routeObj->IncScoreRatio_ *= routeObj->reducedCost_;
+
         }
     }
 }
@@ -513,7 +527,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
 void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd){
     updateReducedCosts(pInst);
     if (selectMode == CP || selectMode == RP) {
-        updateIncDegrees(pInst);
+        updateIncDegrees(pInst, false);
         if (pInst->parameters_->sortColumn_ == COMP_C) {
             updateScore(pInst);
         }
@@ -575,7 +589,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
 void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->mpAdded_) {
+            if (routeObj->routeRequests_.size() == 1 && routeObj->getRouteId() != vehicleObj->currentRoute_->getRouteId()) {
                 routeObj->createColumn(pInst->nbRequests_);
                 routesToAdd.push_back(routeObj);
                 nbColumnsAdded_++;
@@ -585,11 +599,11 @@ void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &r
 }
 
 void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
-    updateIncDegrees(pInst);
+    updateIncDegrees(pInst, true);
+    nbColumnsAdded_ = 0;
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->incompatibilityDegree_ < 3) {
-                routeObj->createColumn(pInst->nbRequests_);
+            if (routeObj->incompatibilityDegree_ > 1) {
                 routesToAdd.push_back(routeObj);
                 nbColumnsAdded_++;
             }
@@ -828,7 +842,7 @@ void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &in
     if (CPGurobiPro_->routesToAdd_.size() > 0) {
         CPTime_->start();
         CPBuildTime_->start();
-        CPGurobiPro_->buildModel_batch(pInst);
+        CPGurobiPro_->buildModel_batch(pInst, false);
         CPBuildTime_->stop();
         CPGurobiPro_->solveCPDual(pInst, inputPaths);
         CPIter_++;
@@ -842,6 +856,57 @@ void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         CPTime_->stop();
     }
 }
+
+void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    /************************************************************************************************/
+    //                                     COMPLEMENTARY PROBLEM
+    /************************************************************************************************/
+    CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
+    CPGurobiPro_->initializeCPModel(pInst);
+    CPGurobiPro_->routesToAdd_.clear();
+    reFillRoutesToAddCP(pInst, CPGurobiPro_->routesToAdd_);
+    //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
+    for (auto & vehicleObj : pInst->vehicles_) {
+        CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+    }
+    if (CPGurobiPro_->routesToAdd_.size() > 0) {
+        CPTime_->start();
+        CPBuildTime_->start();
+        CPGurobiPro_->buildModel_batch(pInst, true);
+        CPBuildTime_->stop();
+        CPGurobiPro_->solveCPDual(pInst, inputPaths);
+        CPIter_++;
+        CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
+        CPGurobiPro_.reset();
+        CPTime_->stop();
+    }
+}
+
+void MasterAlgorithm::solveCP_Dual_Gurobi_full(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    /************************************************************************************************/
+    //                                     COMPLEMENTARY PROBLEM
+    /************************************************************************************************/
+    CPGurobiFull_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
+    CPGurobiFull_->initializeCPModel(pInst, pInst->nbVehicles_);
+    CPGurobiFull_->routesToAdd_.clear();
+    reFillRoutesToAddCP(pInst, CPGurobiFull_->routesToAdd_);
+    //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
+    for (auto & vehicleObj : pInst->vehicles_) {
+        CPGurobiFull_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+    }
+    if (CPGurobiFull_->routesToAdd_.size() > 0) {
+        CPTime_->start();
+        CPBuildTime_->start();
+        CPGurobiFull_->buildModel_Dual(pInst);
+        CPBuildTime_->stop();
+        CPGurobiFull_->solveCPDual(pInst, inputPaths);
+        CPIter_++;
+        CPEpochSolveTime_ += CPGurobiFull_->solveTime_->dSinceStart().count();
+        CPGurobiFull_.reset();
+        CPTime_->stop();
+    }
+}
+
 
 void MasterAlgorithm::buildBasis(const PInstance &pInst) {
     // 1. Triplet buffer
@@ -1204,6 +1269,42 @@ void MasterAlgorithm::exportBasisToCSV(const std::string& filename) {
     std::cout << "- Non-zeros: " << Basis_.nonZeros() << std::endl;
     std::cout << "- Density: " << (100.0 * Basis_.nonZeros()) / (Basis_.rows() * Basis_.cols()) << "%" << std::endl;
 }
+
+void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
+    for (auto & requestObj: pInst->requests_) {
+        requestObj->coveredVehicles_.reset();
+        requestObj->coveredVehicles_.resize(nbVehicles_);
+    }
+    if (pInst->parameters_->LabelingStrategy_ == PULLING) {
+        for (auto & requestObj: pInst->requests_) {
+            requestObj->coveredVehicles_.flip();
+        }
+    }
+    else {
+        if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_GRAPH) {
+            for (auto & vehicleObj : pInst->vehicles_) {
+                for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
+                    for (auto & requestObj: routeObj->routeRequests_) {
+                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
+                    }
+                }
+            }
+        }
+        else if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_ROUTE) {
+            for (auto & vehicleObj : pInst->vehicles_) {
+                for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
+                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
+                }
+            }
+        }
+        else {
+            for (auto & requestObj: pInst->requests_) {
+                requestObj->coveredVehicles_.flip();
+            }
+        }
+    }
+}
+
 // save initial duals
 /*if (pInst->parameters_->solutionMode_ != ANYTIME) {
     (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");

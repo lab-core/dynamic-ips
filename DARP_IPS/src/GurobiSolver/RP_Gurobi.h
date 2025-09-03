@@ -40,6 +40,8 @@ public:
     void solveModelLP(const PInstance& pInst, const InputPaths& inputPaths);
     void solveLPDual(const PInstance& pInst, const InputPaths& inputPaths);
 
+    void verifyDualsAndBasis(const PInstance &pInst);
+
     // Solve as MIP
     void solveModelInt(const PInstance& pInst, std::vector<PRequest>& zSolution,
                        std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
@@ -62,6 +64,10 @@ public:
 
     void loadTunedParameters(const InputPaths &inputPaths);
     void recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &removedRequests);
+
+    std::vector<int> countRequestCoverage(const PInstance &pInst);
+
+    void printCoverageStatistics(const PInstance &pInst);
 };
 
 

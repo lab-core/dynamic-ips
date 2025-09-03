@@ -432,7 +432,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
 // Read the duration data file
 //************************************************************************
 
-void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations) {
+void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &durationMat) {
 // open the file
     std::fstream file;
     std::cout << "Reading << " << strDurFile << " >>" << std::endl;
@@ -446,10 +446,16 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
     }
 
     durationMat.clear();
-    durationMat.resize(nbLocations);
-    for (int i = 0; i < nbLocations; ++i)
-        durationMat[i].resize(nbLocations);
     string title;
+    int nbLocations = -1;
+
+    readUntilOneOfTwoChar(file, '\n', '=', title);
+    if (strEndWith(title, "nbLocations ")) {
+        file >> nbLocations;
+        durationMat.resize(nbLocations);
+        for (int i = 0; i < nbLocations; ++i)
+            durationMat[i].resize(nbLocations);
+    }
 
     while (file.good()) {
         //       readUntilChar(file, '\n', title);
@@ -541,6 +547,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     bool discardSuboptimalPath = spParams.value("discardSuboptimalPath", 0) != 0;
     bool isPickDropPossible = spParams.value("isDropPickPossible", 0) != 0;
     int strategy = spParams.value("LabelingStrategy", -1);
+    int reptimizeLabelstrategy = spParams.value("LabelingReOptimizeStrategy", -1);
     int subAlgorithm = spParams.value("subproblemAlgorithm", -1);
     bool constPortion = spParams.value("constPortion", 0) != 0;
     bool vehiclePortion = spParams.value("Vehicle_portion", 0) != 0;
@@ -589,7 +596,8 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
-        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
+        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
+        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy)
     );
 }
 void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName) {
@@ -694,6 +702,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     bool routeRecycle = scenarioParams.value("Route_Recycle", 0) != 0;
     int newRequestLimit = scenarioParams.value("newRequestLimit", -1);
     int strategy = scenarioParams.value("LabelingStrategy", -1);
+    int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", -1);
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
@@ -724,7 +733,8 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
-        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver)
+        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
+        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy)
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -782,6 +792,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
         if (pInstance->nbWaiting_ > 0) {
             readWaitRequests(inputPaths.getInputWaitRequests(), pInstance, pInstance->nbWaiting_, routeNodes);
             //       if (!solveEpoch) {
+            int num = 0;
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
                 if (routeNodes[v].size() > 1) {
                     PRoute newRoute = std::make_shared<Route>(pInstance->vehicles_[v]->vehicleID_);

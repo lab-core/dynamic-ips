@@ -34,7 +34,7 @@ public:
     static void readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes);
 
     // Read the duration data file
-    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat, int nbLocations);
+    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat);
 
     // Read the parameters datafile
     static void readParametersJsonFull(InputPaths &inputPaths, PInstance &pInstance);

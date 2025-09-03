@@ -345,7 +345,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
                     // Build CP model
                     CPBuildTime_->start();
                     CPGurobiPro_->routesToAdd_.clear();
-                    CPGurobiPro_->buildModel(pInst);
+                    CPGurobiPro_->buildModel(pInst, false);
                     CPBuildTime_->stop();
 
                     iterTime_ = masterTime_->dSinceStart().count();
@@ -486,7 +486,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
                     CPGurobiPro_->resetForNextIteration();
                     CPBuildTime_->start();
-                    CPGurobiPro_->buildModel(pInst);
+                    CPGurobiPro_->buildModel(pInst, false);
                     CPBuildTime_->stop();
                     CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
 

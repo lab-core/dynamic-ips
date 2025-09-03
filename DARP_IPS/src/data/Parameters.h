@@ -9,9 +9,42 @@
 #include "utilities/ConfigParser.h"
 
 //-----------------------------------------------------------------------------
+//  SolverBase Class - Base class for solver-related parameters
+//-----------------------------------------------------------------------------
+class SolverBase {
+public:
+    // label setting strategies
+    bool isTruncated_{};
+    int MaxLabel_{};
+    int MaxCommittedLabel_{};
+    bool isDominanceReleased_{};
+    bool pruneNodes_{};
+    bool pruneArcs_{};
+    bool discardSuboptimalPath_{};
+    bool isDropPickPossible_{};
+    LabelingStrategy LabelingStrategy_{};
+    LabelingReOptimizeStrategy labelingReOptimizeStrategy_;
+    bool usePick_{};
+    int nbPick_{};
+    SortPaths sortPath_;
+    int newRequestLimit_{};
+
+    // Constructor
+    SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
+               bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
+               LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
+               bool usePick, int nbPick, SortPaths pathSort, int newRequestLimit);
+
+    virtual ~SolverBase() = default;
+
+    // Pure virtual function for display
+    virtual std::string toString() const = 0;
+};
+
+//-----------------------------------------------------------------------------
 //  Parameters Struct
 //-----------------------------------------------------------------------------
-struct Parameters {
+struct Parameters : public SolverBase {
 public:
     // model Parameters
     float alphaParam_{};
@@ -48,28 +81,14 @@ public:
     bool useZoom_;
     int nbColumn_;
 
-
-    // label setting strategies
-    bool isTruncated_{};
-    int MaxLabel_{};
-    int MaxCommittedLabel_{};
-    bool isDominanceReleased_{};
-    bool pruneNodes_{};
-    bool pruneArcs_{};
-    bool discardSuboptimalPath_{};
-    bool isDropPickPossible_{};
-    LabelingStrategy LabelingStrategy_;
+    // Additional label setting strategies not in base class
     SubproblemAlgorithm subAlgorithm_;
     bool constPortion_;
     bool vehiclePortion_{};
     bool dynamicPricing_{};
-    bool partialPricing_;
-    bool routeRecycle_;
-    bool usePick_;
-    int nbPick_;
-    SortPaths sortPath_;
+    bool partialPricing_{};
+    bool routeRecycle_{};
     SortColumns sortColumn_;
-    int newRequestLimit_;
 
     //CPLEX Parameters
     int bigM_{};
@@ -89,12 +108,13 @@ public:
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver);
+               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
+               LabelingReOptimizeStrategy labelingReOptimizeStrategy);
 
     virtual ~Parameters();
 
     // Display function
-    std::string toString() const;
+    std::string toString() const override;
     std::string toStr() const;
 };
 
@@ -102,23 +122,7 @@ public:
 //-----------------------------------------------------------------------------
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
-struct solverOption {
-    //   int maxPickup_;
-
-    bool isTruncated_;
-    bool isDominanceReleased_;
-    bool pruneNodes_;
-    bool pruneArcs_;
-    bool discardSuboptimalPath_;
-    bool isDropPickPossible_;
-    LabelingStrategy LabelingStrategy_;
-    int MaxLabel_;
-    int MaxCommittedLabel_;
-    bool usePick_;
-    int nbPick_;
-    SortPaths pathSort_;
-    int newRequestLimit_;
-
+struct solverOption : public SolverBase {
     // Constructor and Destructor
     solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
                  SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
@@ -129,8 +133,9 @@ struct solverOption {
     virtual ~solverOption();
     void disableHeuristics();
     void enableHeuristics(const PParameters &MainParams);
+
     // Display function
-    std::string toString() const;
+    std::string toString() const override;
 };
 
 std::string boolToString(bool value);

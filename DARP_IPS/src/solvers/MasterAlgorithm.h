@@ -20,6 +20,7 @@ public:
     // solvers
     PComplementPro CompPro_;
     PCP_Reduced CPGurobiPro_;
+    PCP_Gurobi CPGurobiFull_;
     std::unique_ptr<LagrangianSolver> lagSolver_;
 
 
@@ -70,7 +71,6 @@ public:
     float lpObjValue_;                      // linear objective value
     float totalWaitTime_;                   // total waiting time without penalties
     float GreedyObjValue_;                  // objective value of Greedy method
-    std::vector<PRoute> greedyRoutes_;
 
     float MPEpochSolveTime_;                // save the total time used to solve MP models (RP, CG and MIP)
     float CPEpochSolveTime_;                // save the total time used to solve CP models
@@ -106,13 +106,13 @@ public:
     void initialization(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
 
     //This function updates the incompatibility degree of availableRoutes
-    void updateIncDegrees(PInstance &pInst);
+    void updateIncDegrees(PInstance &pInst, bool greedyBase);
     void calcAdjacenyPairs(PInstance &pInst);
 
     void assessReqCompatibility(PRoute &route, PInstance &pInst);
     void assessReqVehCompatibility(PRoute &route, PInstance &pInst);
 
-    void calcCompatibilityM1(PRoute &route, PInstance &pInst);
+    void calcCompatibilityM1(PRoute &route, PRoute &currentVehicleRoute);
     void calcCompatibilityM2(PRoute &route, PInstance &pInst);
     void calcCompatibilityM2Full(PRoute &route, PInstance &pInst);
 
@@ -152,6 +152,9 @@ public:
     void solveCP_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
+    void solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+
+    void solveCP_Dual_Gurobi_full(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void buildBasis(const PInstance &pInst);
     void pickRoutesRoundRobin1(int columnsNeeded);
@@ -164,6 +167,8 @@ public:
     bool isDuplicatePatternForVehicle(const boost::dynamic_bitset<> &pattern,
                                       const std::vector<boost::dynamic_bitset<>> &usedPatterns);
     void exportBasisToCSV(const std::string &filename);
+
+    void checkCoveredVehicles(PInstance &pInst);
 };
 
 

@@ -35,10 +35,16 @@ public:
     SolutionStatus status_;
 
     // Helper functions
-    void addRouteVar(const PRoute& newRoute, const PInstance& pInst);
+    void addRouteVar(const PRoute& newRoute, const PRoute &currentVehicleRoute);
+
+    void addRouteVarBatch(const PInstance &pInst, bool greedyBase);
+
+    void addZVar(const PRequest &request);
+
+    void addZVarBatch(const PInstance &pInst);
+
     // Helper function for creating column
-    GRBColumn createCPColumnM1(const PRoute& newRoute, const PInstance& pInst);
-    GRBColumn createCPColumnM2(const PRoute& newRoute, const PInstance& pInst);
+    GRBColumn createCPColumnM1(const PRoute& newRoute, const PRoute &currentVehicleRoute);
 
     // Constructor and Destructor
     explicit CP_Reduced(const std::string &outputLog)
@@ -50,8 +56,8 @@ public:
     void initializeCPModel(const PInstance& pInst);
 
     // Build model
-    void buildModel(const PInstance& pInst);
-    void buildModel_batch(const PInstance& pInst);
+    void buildModel(const PInstance& pInst, bool greedyBase);
+    void buildModel_batch(const PInstance& pInst, bool greedyBase);
 
     void updateNormalCoefficients();
 

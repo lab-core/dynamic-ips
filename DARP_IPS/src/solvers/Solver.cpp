@@ -142,9 +142,10 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             // vehicle duals
             for (size_t i = 0; i < EpochInst->vehicles_.size(); ++i)
                 EpochInst->vehicles_[i]->dual_ = EpochInst->vehicles_[i]->InitialDual_;
-        }
-        *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
-        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");*/
+        }*/
+        /*if (epoch_ > 0)
+            *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");*/
+ //       *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
         //***********************************************************************************//
         //                    Solve subproblems using the extracted function
@@ -238,7 +239,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->DualAuxSolver_.reset();
 
     if (EpochInst->parameters_->vehicleReturn_) {
-        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || EpochInst->parameters_->solutionMode_ == DYNAMIC) {
+        if (rebalancingTime_->dSinceStart().count() >= EpochInst->parameters_->epochLength_ || (EpochInst->parameters_->solutionMode_ == DYNAMIC
+            && std::fmod(EpochInst->parameters_->epochLength_ * epoch_, 30.0) == 0.0)) {
             if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
                 returnVehicles(EpochInst);
             else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -262,6 +264,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     CG_Model_->setLastDuals(EpochInst);
+    CG_Model_->checkCoveredVehicles(EpochInst);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -383,6 +386,7 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     objValue_ = ISUD_Model_->objValue_;
     ISUD_Model_->setLastDuals(EpochInst);
+    ISUD_Model_->checkCoveredVehicles(EpochInst);
     std::cout << " end time: " << simulationTime_->dSinceStart().count() << std::endl;
 }
 
@@ -445,12 +449,21 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
             }
 
             // Handle route recycling
-            if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING && EpochInst->parameters_->routeRecycle_ &&
-                !vehicleObj->currentRoute_->routeRequests_.empty() &&
-                availableRoutes[vehicleObj->vehicleID_].size() > mainInst->parameters_->nbColumn_) {
-                nbRecycle_ ++;
-                subProSolve.back()->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
-                subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
+            if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING &&
+                !vehicleObj->currentRoute_->routeRequests_.empty() && EpochInst->nbNewRequests_ > 0 &&
+                EpochInst->nbNewRequests_ <= mainInst->parameters_->newRequestLimit_) {
+                if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_ROUTE) {
+                    subProSolve.back()->reOptimize_ = true;
+                    nbRecycle_ ++;
+                }
+                 else {
+                     subProSolve.back()->reOptimize_ = true;
+                     nbRecycle_ ++;
+                     subProSolve.back()->availableRoutes_ = std::move(availableRoutes[vehicleObj->vehicleID_]);
+                     subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
+                     /*if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_GRAPH)
+                         vehicleObj->checkCoveredRequests(availableRoutes[vehicleObj->vehicleID_], EpochInst->nbRequests_);*/
+                 }
             }
             availableRoutes[vehicleObj->vehicleID_].clear();
         }
@@ -1277,7 +1290,7 @@ void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRou
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
             for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
-                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstructRoute(vehicleObj))
+                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
             }
         }
@@ -1648,7 +1661,7 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
                     int vehLoc = idleVehicles[v]->departNode_->locationID_;
                     for (std::size_t r = 0; r < nR; ++r) {
                         int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                        float cost = durationMatrix_[vehLoc][reqLoc] / ((EpochInst->lastCommittedRequests_[r]->pickTime_ - EpochInst->lastCommittedRequests_[r]->initialEarlyPick_)/60.0);
+                        float cost = durationMatrix_[vehLoc][reqLoc];
                         obj += cost * y[v][r];
                     }
                 }

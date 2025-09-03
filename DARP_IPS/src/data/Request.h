@@ -53,6 +53,7 @@ public:
     int pickZoneID_;
     int dropZoneID_;
     int nbSwitch_;
+    boost::dynamic_bitset<> coveredVehicles_;
 
 
     // Constructor and Destructor

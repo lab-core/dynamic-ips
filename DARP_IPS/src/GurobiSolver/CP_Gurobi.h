@@ -50,7 +50,9 @@ public:
 
     // Build model
     void buildModel(const PInstance& pInst, const std::vector<PRequest>& zSolution,
-                    const std::vector<PRoute>& routeSolution, int nbVehicles);
+                    const std::vector<PRoute>& routeSolution);
+
+    void buildModel_Dual(const PInstance &pInst);
 
     // Repair model
     void repairModel(const PInstance& pInst, const std::vector<PRequest>& zSolution,
@@ -67,8 +69,10 @@ public:
     void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
                       std::vector<PRoute>& routeSolution, InputPaths& inputPaths);
 
+    void solveCPDual(PInstance &pInst, InputPaths &inputPaths);
+
     void solveCPModelFresh(PInstance& pInst, std::vector<PRequest>& zSolution,
-                      std::vector<PRoute>& routeSolution, InputPaths& inputPaths);
+                       std::vector<PRoute>& routeSolution, InputPaths& inputPaths);
 
     bool isColumnDisjointFast(const std::vector<PRequest>& zResults,
                                          const std::vector<PRoute>& routeResults,

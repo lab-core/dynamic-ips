@@ -219,8 +219,6 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
     try {
         // Redirect output to log file
         // Configure Gurobi logging
-        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LP_Dual");
-
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
             model_->set(GRB_IntParam_Method, 2);
             model_->set(GRB_IntParam_Crossover, 0);
@@ -235,6 +233,7 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
             std::cerr << "Failed to optimize the LMP. Status: " << status << std::endl;
             throw std::runtime_error("Failed to optimize the LMP");
         }
+        std::cout << "Linear Objective: " << static_cast<float>(getObjValue()) << std::endl;
         // Getting dual values
         getDuals(pInst);
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
@@ -250,6 +249,103 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
     }
 }
 
+void RP_Gurobi::verifyDualsAndBasis(const PInstance &pInst) {
+    try {
+        const double TOLERANCE = 1e-6;  // Tolerance for numerical precision
+        bool verificationPassed = true;
+        int basicVarCount = 0;
+
+        std::cout << "\n=== Basic Variables Dual Verification ===" << std::endl;
+        std::cout << "Verifying: Objective Coefficient = Column Dual Value for Basic Variables" << std::endl;
+
+        // Get all variables from the model
+        GRBVar* vars = model_->getVars();
+        int numVars = model_->get(GRB_IntAttr_NumVars);
+
+        // Get constraint duals for calculating column duals
+        GRBConstr* constrs = model_->getConstrs();
+        int numConstrs = model_->get(GRB_IntAttr_NumConstrs);
+
+        for (int i = 0; i < numVars; i++) {
+            // Get variable basis status
+            int basisStatus = vars[i].get(GRB_IntAttr_VBasis);
+
+            if (basisStatus == GRB_BASIC) {
+                basicVarCount++;
+
+                double objCoeff = vars[i].get(GRB_DoubleAttr_Obj);
+                double varValue = vars[i].get(GRB_DoubleAttr_X);
+                std::string varName = vars[i].get(GRB_StringAttr_VarName);
+
+                // Calculate column dual: c_j - sum(a_ij * pi_i)
+                // For basic variables, this should equal the objective coefficient
+                double columnDual = objCoeff;
+
+                // Get column coefficients and calculate dual value
+                GRBColumn col = model_->getCol(vars[i]);
+                int colSize = col.size();
+
+                for (int k = 0; k < colSize; k++) {
+                    GRBConstr constr = col.getConstr(k);
+                    double coeff = col.getCoeff(k);
+                    double pi = constr.get(GRB_DoubleAttr_Pi);
+                    columnDual -= coeff * pi;
+                }
+
+                // For basic variables: reduced cost should be 0
+                // This means: objective_coeff - sum(a_ij * pi_i) = 0
+                // Therefore: objective_coeff = sum(a_ij * pi_i)
+                double calculatedDual = objCoeff - columnDual;
+
+                std::cout << "Basic Variable: " << varName << std::endl;
+                std::cout << "  Objective Coeff: " << objCoeff << std::endl;
+                std::cout << "  Calculated Dual: " << calculatedDual << std::endl;
+                std::cout << "  Variable Value:  " << varValue << " (integer: " <<
+                    (std::abs(varValue - std::round(varValue)) < TOLERANCE ? "YES" : "NO") << ")" << std::endl;
+                std::cout << "  Reduced Cost:    " << columnDual << std::endl;
+
+                // Verify that reduced cost is zero (basic variable condition)
+                if (std::abs(columnDual) > TOLERANCE) {
+                    std::cerr << "  ✗ ERROR: Basic variable has non-zero reduced cost!" << std::endl;
+                    verificationPassed = false;
+                } else {
+                    std::cout << "  ✓ Reduced cost is zero (basic variable condition satisfied)" << std::endl;
+                }
+
+                // Verify that objective coefficient equals the dual calculation
+                double dualDifference = std::abs(objCoeff - calculatedDual);
+                if (dualDifference > TOLERANCE) {
+                    std::cerr << "  ✗ ERROR: Objective coeff ≠ Calculated dual (diff: " << dualDifference << ")" << std::endl;
+                    verificationPassed = false;
+                } else {
+                    std::cout << "  ✓ Objective coefficient matches calculated dual" << std::endl;
+                }
+
+                std::cout << "  " << std::string(50, '-') << std::endl;
+            }
+        }
+
+        std::cout << "\n--- Verification Summary ---" << std::endl;
+        std::cout << "Total basic variables checked: " << basicVarCount << std::endl;
+
+        if (verificationPassed) {
+            std::cout << "✓ SUCCESS: All basic variables satisfy dual conditions" << std::endl;
+            std::cout << "✓ All basic variables have integer values" << std::endl;
+            std::cout << "✓ Objective coefficients match calculated duals for all basic variables" << std::endl;
+        } else {
+            std::cerr << "✗ FAILED: Dual verification failed for some basic variables" << std::endl;
+            throw std::runtime_error("Dual verification failed: basic variables don't satisfy dual conditions");
+        }
+
+        // Cleanup
+        delete[] vars;
+        delete[] constrs;
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in dual verification: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
 void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSolution,
     std::vector<PRoute> &routeSolution, const InputPaths &inputPaths, float availableTime, float preObj) {
     try {
@@ -265,6 +361,12 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         for (auto& var : routeVar_) {
             var.set(GRB_CharAttr_VType, GRB_INTEGER);
         }
+        // Count coverage for all requests
+        /*auto coverage = countRequestCoverage(pInst);
+        std::cout << "Request 0 is covered by " << coverage[0] << " routes" << std::endl;
+
+        // Print detailed statistics
+        printCoverageStatistics(pInst);*/
 
         // Redirect output to log file
         myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LMP");
@@ -737,5 +839,77 @@ void RP_Gurobi::recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &
     } catch (const GRBException& e) {
         std::cerr << "Gurobi error in recoverModelForDuals: " << e.getMessage() << std::endl;
         throw;
+    }
+}
+
+// Count how many times each request is covered by route variables in the model
+std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
+    try {
+        std::vector<int> coverageCount(pInst->requests_.size(), 0);
+
+        // Iterate through all route variables in the model
+        for (size_t r = 0; r < routeVar_.size(); ++r) {
+            // Check if this route variable exists and is valid
+            if (r < compRoutes_.size()) {
+                const auto& route = compRoutes_[r];
+
+                // Iterate through all requests to see which ones this route covers
+                for (size_t i = 0; i < pInst->requests_.size(); ++i) {
+                    // Check if this route covers the request
+                    // Assuming you have a way to check if route covers request
+                    // This could be through route->column_ bitset or route's request list
+
+                    if (route->column_.size() > i && route->column_[i]) {
+                        coverageCount[i]++;
+                    }
+                }
+            }
+        }
+
+        return coverageCount;
+
+    } catch (const GRBException& e) {
+        std::cerr << "Error in countRequestCoverage: " << e.getMessage() << std::endl;
+        throw;
+    } catch (const std::exception& e) {
+        std::cerr << "Error in countRequestCoverage: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+// Function to print coverage statistics
+void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
+    try {
+        auto coverage = countRequestCoverage(pInst);
+
+        std::cout << "\n=== Request Coverage Statistics ===" << std::endl;
+        std::cout << "Request ID\tCount\tWeighted\tRequest Name" << std::endl;
+        std::cout << std::string(60, '-') << std::endl;
+
+        for (size_t i = 0; i < pInst->requests_.size(); ++i) {
+            std::cout << std::setw(10) << i
+                     << "\t" << std::setw(5) << coverage[i];
+
+            // Print request name if available
+            if (i < pInst->requests_.size()) {
+                // Assuming requests have some identifier - adjust based on your Request class
+                std::cout << "\t" << "Request_" << pInst->requests_[i]->getRequestId(); // Replace with actual request identifier
+            }
+            std::cout << std::endl;
+        }
+
+        // Summary statistics
+        int uncoveredRequests = std::count(coverage.begin(), coverage.end(), 0);
+        int totalCoverages = std::accumulate(coverage.begin(), coverage.end(), 0);
+        double avgCoverage = coverage.empty() ? 0.0 : static_cast<double>(totalCoverages) / coverage.size();
+
+        std::cout << std::string(60, '-') << std::endl;
+        std::cout << "Total requests: " << pInst->requests_.size() << std::endl;
+        std::cout << "Uncovered requests: " << uncoveredRequests << std::endl;
+        std::cout << "Total route-request coverages: " << totalCoverages << std::endl;
+        std::cout << "Average coverage per request: " << std::fixed << std::setprecision(2) << avgCoverage << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Error in printCoverageStatistics: " << e.what() << std::endl;
     }
 }

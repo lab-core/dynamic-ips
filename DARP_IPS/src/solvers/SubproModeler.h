@@ -21,6 +21,7 @@ public:
     std::vector<PRequest> subRequests_;     // List of requests
     int nbNegativeColumns_;                 // number negative reduced cost routes found
     int nbTotalRequest_;                    // equals to the number of requests in the corresponding graph
+    bool reOptimize_;
 
     // Constructor and Destructor
     explicit SubproModeler(const PVehicle &vehicle);

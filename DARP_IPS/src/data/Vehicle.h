@@ -26,6 +26,7 @@ public:
     std::vector<std::string> onboards_;     // list of the nodeIDs for drop-off points for the onboard passengers
 
     PRoute currentRoute_;                   // current vehicle plan
+    PRoute greedyRoute_;                   // current vehicle plan
     PRoute solutionRoute_;                  // actual vehicle plan (performed plan)
     PRoute emptyRoute_;                     // empty route which may contain a drop of points
     float dual_;
@@ -45,6 +46,7 @@ public:
     float driveFullTime_;                   // time the vehicle drives with passengers
     float driveEmptyTime_;                  // time the vehicle drives empty to reach passengers
     float returnEmptyTime_;                 // time the vehicle drives empty to return
+//    boost::dynamic_bitset<> coveredRequests;
 
 
     // Constructor and Destructor
@@ -72,6 +74,7 @@ public:
     void handleIdleState(float epochEndTime);
     void setRequestStatus(const PNode &node, float reachTime) const;
     void adjustDuals();
+ //   void checkCoveredRequests(std::vector<PRoute> &availableRoutes, int nbRequests);
 };
 
 

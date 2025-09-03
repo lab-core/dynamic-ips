@@ -57,6 +57,7 @@ public:
     void addNode(const PNode &node);
 
     bool reConstructRoute(PVehicle & vehicle);
+    bool reConstruct(PVehicle &vehicle);
     // function to add node to the solution route
     void addNode(const PNode &node, float reachTime, float departTime);
     void addSink(const PNode &node);

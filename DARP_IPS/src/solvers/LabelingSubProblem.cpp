@@ -100,8 +100,7 @@ void LabelingSubProblem::initialization() {
     initialLabel->pathNode_.back()->bestLabelReduceCost_ = initialLabel->reducedCost_;
     activeNodes_.clear();
     activeNodes_.push_back(initialLabel->pathNode_.back());
-    if (solverOptions_->LabelingStrategy_ == RE_PULLING && !availableRoutes_.empty() &&
-        !subGraph_->newPickNodes_.empty() && subGraph_->newPickNodes_.size() <= solverOptions_->newRequestLimit_) {
+    if (reOptimize_  && solverOptions_->labelingReOptimizeStrategy_ == RE_INSERT &&  !subGraph_->newPickNodes_.empty()) {
         constructBaseLabels(initialLabel);
         initialLabel->numExtendCheck_ = 0;
     }
@@ -1030,8 +1029,7 @@ bool LabelingSubProblem::solveDynamic_pushingWaveStep(float availableTime) {
 
 bool LabelingSubProblem::solveDynamic(float availableTime) {
     subproTime_->start();
-    if (solverOptions_->LabelingStrategy_ != RE_PULLING || availableRoutes_.empty() || subGraph_->newPickNodes_.empty()
-        || subGraph_->newPickNodes_.size() > solverOptions_->newRequestLimit_) {
+    if (!reOptimize_ ) {
         if (solverOptions_->LabelingStrategy_ == PUSHING || subRequests_.empty()){
             if (solverOptions_->isDropPickPossible_) {
                 if (!this->solveDynamic_pushing(availableTime)) {
@@ -1063,9 +1061,17 @@ bool LabelingSubProblem::solveDynamic(float availableTime) {
         }
     }
     else {
-        if (!this->ResolveDynamic_pullingWaveStep(availableTime)) {
-            subproTime_->stop();
-            return false;
+        if (solverOptions_->labelingReOptimizeStrategy_ == RE_INSERT &&  !subGraph_->newPickNodes_.empty()) {
+            if (!this->ResolveDynamic_pullingWaveStep(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
+        }
+        else {
+            if (!this->solveDynamic_pullingWaveStep(availableTime)) {
+                subproTime_->stop();
+                return false;
+            }
         }
     }
     subproTime_->stop();
@@ -1155,14 +1161,14 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     return repStr.str();
 }
 
-void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const {
-    if (solverOptions_->pathSort_ == RD_COST) {
+void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> & labelPool) {
+    if (solverOptions_->sortPath_ == RD_COST) {
         std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
                          [](const PLabel &lhs, const PLabel &rhs) {
                              return lhs->reducedCost_ < rhs->reducedCost_;
                          });
     }
-    else if (solverOptions_->pathSort_ == LAMBDA) {
+    else if (solverOptions_->sortPath_ == LAMBDA) {
         std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
                          [](const PLabel &lhs, const PLabel &rhs) {
                              return lhs->lambdaScore_ < rhs->lambdaScore_;
@@ -1173,37 +1179,83 @@ void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, int MaxComm
             return lhs->labelScore_ < rhs->labelScore_;});
     }
 
-    int keptCommittedLabels = 0;
-    int keptNonCommittedLabels = 0;
 
-    // Iterate from best to worst (forward order after sorting)
-    for (int i = 0; i < node->activeLabels_.size(); i++){
-        if (node->activeLabels_[i]->status_ != ACTIVE) {
-            continue;
-        }
-
-        bool shouldKeep = false;
-
-        if (node->activeLabels_[i]->nbCommitted_ > 0) {
-            // This is a committed label
-            if (keptCommittedLabels < MaxCommittedLabel) {
-                shouldKeep = true;
-                keptCommittedLabels++;
-            }
-        } else {
-            // This is a non-committed label
-            if (keptNonCommittedLabels < MaxLabel) {
-                shouldKeep = true;
-                keptNonCommittedLabels++;
-            }
-        }
-
-        if (!shouldKeep) {
+    for (int i = node->activeLabels_.size()-1; i >=0; i--){
+        if (node->nbActiveLabels_ <= MaxLabel)
+            break;
+        if (node->activeLabels_[i]->status_ == ACTIVE){
             node->nbActiveLabels_--;
             node->activeLabels_[i]->status_ = DOMINATED;
             labelPool.push_back(std::move(node->activeLabels_[i]));
             node->activeLabels_.erase(node->activeLabels_.begin() + i);
-            i--; // Adjust index since we removed an element
+        }
+    }
+}
+
+
+void LabelingSubProblem::truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const {
+    if (solverOptions_->sortPath_ == RD_COST) {
+        std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
+                         [](const PLabel &lhs, const PLabel &rhs) {
+                             return lhs->reducedCost_ < rhs->reducedCost_;
+                         });
+    }
+    else if (solverOptions_->sortPath_ == LAMBDA) {
+        std::stable_sort(node->activeLabels_.begin(), node->activeLabels_.end(),
+                         [](const PLabel &lhs, const PLabel &rhs) {
+                             return lhs->lambdaScore_ < rhs->lambdaScore_;
+                         });
+    }
+    else {
+        std::stable_sort(node->activeLabels_.begin(),node->activeLabels_.end(),[](const PLabel &lhs, const PLabel &rhs){
+            return lhs->labelScore_ < rhs->labelScore_;});
+    }
+    if (MaxCommittedLabel == 0) {
+        // Iterate from best to worst (forward order after sorting)
+        for (int i = node->activeLabels_.size()-1; i >=0; i--){
+            if (node->nbActiveLabels_ <= MaxLabel)
+                break;
+            if (node->activeLabels_[i]->status_ == ACTIVE){
+                node->nbActiveLabels_--;
+                node->activeLabels_[i]->status_ = DOMINATED;
+                labelPool.push_back(std::move(node->activeLabels_[i]));
+                node->activeLabels_.erase(node->activeLabels_.begin() + i);
+            }
+        }
+    }
+    else {
+        int keptCommittedLabels = 0;
+        int keptNonCommittedLabels = 0;
+
+        // Iterate from best to worst (forward order after sorting)
+        for (int i = 0; i < node->activeLabels_.size(); i++){
+            if (node->activeLabels_[i]->status_ != ACTIVE) {
+                continue;
+            }
+
+            bool shouldKeep = false;
+
+            if (node->activeLabels_[i]->nbCommitted_ > 0) {
+                // This is a committed label
+                if (keptCommittedLabels < MaxCommittedLabel) {
+                    shouldKeep = true;
+                    keptCommittedLabels++;
+                }
+            } else {
+                // This is a non-committed label
+                if (keptNonCommittedLabels < MaxLabel) {
+                    shouldKeep = true;
+                    keptNonCommittedLabels++;
+                }
+            }
+
+            if (!shouldKeep) {
+                node->nbActiveLabels_--;
+                node->activeLabels_[i]->status_ = DOMINATED;
+                labelPool.push_back(std::move(node->activeLabels_[i]));
+                node->activeLabels_.erase(node->activeLabels_.begin() + i);
+                i--; // Adjust index since we removed an element
+            }
         }
     }
 }

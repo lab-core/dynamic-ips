@@ -44,9 +44,9 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
 
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
-        for (auto & routeObj : greedyRoutes_)
-            MPGurobiPro_->routesToAdd_.push_back(routeObj);
-        MPGurobiPro_->updateModel(pInst);
+        for (auto & vehicleObj : pInst->vehicles_)
+            MasterPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        MasterPro_->updateModel(pInst);
         for (auto & requestObj : zSolution_) {
             requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
         }
@@ -86,30 +86,32 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->stop();
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
-//        for (auto & routeObj : greedyRoutes_)
-//            MPGurobiPro_->routesToAdd_.push_back(routeObj);
-        MPGurobiPro_->updateModel(pInst);
         for (auto & requestObj : zSolution_) {
-            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
+            requestObj->dual_ = 0.3 * requestObj->marginalCost_ + 0.7 * requestObj->penalty_;
         }
-        //       for (auto & vehicleObj : pInst->vehicles_)
-        //           vehicleObj->dual_ = 0;
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
     }
     if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
-        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)) {
+        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP ||
+            pInst->parameters_->initialDual_ == GREEDY_D)) {
+        MPGurobiPro_->routesToAdd_.clear();
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        if (pInst->parameters_->initialDual_ == GREEDY_D) {
+            for (auto & vehicleObj : pInst->vehicles_)
+                MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        }
         MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
+        if (pInst->parameters_->initialDual_ == GREEDY_D) {
+            for (auto & requestObj : zSolution_) {
+                requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
+            }
+            for (auto & vehicleObj : pInst->vehicles_)
+                vehicleObj->dual_ = 0;
+        }
+        resetMPGurobi(pInst, inputPaths);
     }
-
-    /*if (availableRoutes_.size() > 0) {
-        this->updateIncDegrees(pInst);
-        this->updateReducedCosts(pInst);
-        this->buildBasis2(pInst);
- //       this->validateBasisStructure(pInst);
-        this->computeBasisInverse();
-    }*/
-
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
@@ -151,6 +153,22 @@ void CG_Algorithm::solveRMP_IP(const PInstance &pInst, int epoch, const InputPat
         RMPCounter_++;
     }
     masterTime_->stop();
+}
+
+void CG_Algorithm::resetMPGurobi(PInstance &pInst, const InputPaths &inputPaths) {
+    // build the model
+    MPGurobiPro_.reset();
+    MPGurobiPro_ = std::make_shared<MP_Gurobi>(inputPaths.getOutputSolverLog());
+    MPGurobiPro_->routesToAdd_.clear();
+
+    for (auto & vehicleObj : pInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->emptyRoute_->routeSize_)
+            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+    }
+
+    MPBuildTime_->start();
+    MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
+    MPBuildTime_->stop();
 }
 
 void CG_Algorithm::solveRMP_LP(PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) {

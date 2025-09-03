@@ -77,6 +77,8 @@ public:
     std::string toString() const;
     std::string toStringOut(int epoch) const;
 
+    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> &labelPool);
+
     void truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const;
     void extendToDropOnboards(const PLabel &selectedLabel);
     void constructLabels(const PLabel &initialLabel);

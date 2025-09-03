@@ -73,6 +73,7 @@ void Instance::resetInstance() {
     instGraph_->sourceNodes_.clear();
     instGraph_->onboards_.clear();
     instGraph_->sinkNodes_.clear();
+    instGraph_->newPickNodes_.clear();
 }
 
 /*Instance::~Instance() {

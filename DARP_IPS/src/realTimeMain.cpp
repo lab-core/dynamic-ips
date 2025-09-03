@@ -30,9 +30,8 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "datasets/";
+    std::string dataDir = "my_datasets/";
     int numVehicles = config->numVehicles_;
-    int nbLocations = 1718;
 
     // Prepare instance names
     std::vector<std::string> instNames;
@@ -51,7 +50,7 @@ int main(int argc, char** argv) {
 
     // Build the path of input files
     InputPaths inputPaths(dataDir, config);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_, nbLocations);
+    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_);
 
     int max_i = 1, max_j = 1;
 

@@ -8,6 +8,7 @@ SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     subGraph_ = std::make_shared<Graph>();
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;
+    reOptimize_ = false;
 }
 
 SubproModeler::~SubproModeler() = default;
@@ -45,6 +46,27 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
                             pInst->requests_[i]->earlyPick_;
 
             addRequest = (minWait <= pInst->requests_[i]->penalty_);
+            if (addRequest && reOptimize_) {
+                const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
+                addRequest = isRequestUnassigned || pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_);
+
+                /*switch (pInst->parameters_->labelingReOptimizeStrategy_) {
+                    case BY_GRAPH: {
+                        // For graph-based strategy, check if request is covered by vehicle's graph
+                        const bool isRequestCovered = Vehicle_->coveredRequests.test(pInst->requests_[i]->taskIndex_);
+                        addRequest = isRequestCovered || isRequestUnassigned;
+                        break;
+                    }
+                    case BY_ROUTE: {
+                        // For route-based strategy, check if request is covered by current route
+                        const bool isRequestCovered = Vehicle_->currentRoute_->column_.test(pInst->requests_[i]->taskIndex_);
+                        addRequest = isRequestCovered || isRequestUnassigned;
+                        break;
+                    }
+                    default:
+                        break;
+                }*/
+            }
         }
 
         if (addRequest) {

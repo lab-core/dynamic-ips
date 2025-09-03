@@ -145,7 +145,7 @@ void CP_Gurobi::addRouteVar(const PRoute& newRoute, VarSign sign, const PInstanc
 
 // Build the model at each iteration
 void CP_Gurobi::buildModel(const PInstance& pInst, const std::vector<PRequest>& zSolution,
-                               const std::vector<PRoute>& routeSolution, int nbVehicles) {
+                               const std::vector<PRoute>& routeSolution) {
     try {
         // Model initialization
 //        initializeCPModel(pInst, nbVehicles);
@@ -182,6 +182,49 @@ void CP_Gurobi::buildModel(const PInstance& pInst, const std::vector<PRequest>& 
                 pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
             }
         }
+
+        endBatchUpdate();
+    }
+    catch (GRBException& e) {
+        std::cerr << "Error in buildModel: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
+
+void CP_Gurobi::buildModel_Dual(const PInstance& pInst) {
+    try {
+        // Model initialization
+        //        initializeCPModel(pInst, nbVehicles);
+
+        beginBatchUpdate();
+
+        // Adding solution route columns
+        for (auto& vehicleObj : pInst->vehicles_) {
+            addRouteVar(vehicleObj->greedyRoute_, NEGATIVE, pInst);
+            vehicleObj->greedyRoute_->cpAdded_ = true;
+        }
+
+        // Adding incompatible route columns
+        for (auto& routeAdd : routesToAdd_) {
+            addRouteVar(routeAdd, POSITIVE, pInst);
+            routeAdd->cpAdded_ = true;
+        }
+
+        // Adding z columns out of the basis
+        for (int i = 0; i < pInst->nbRequests_; ++i) {
+            addZVar(pInst->requests_[i], POSITIVE);
+        }
+
+        // Adding empty routes for vehicles
+        /*for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            if (pInst->vehicles_[v]->vehicleIndex_ > -1 &&
+                !pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
+                !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
+                addRouteVar(pInst->vehicles_[v]->emptyRoute_, POSITIVE, pInst);
+                pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
+                }
+        }*/
 
         endBatchUpdate();
     }
@@ -461,6 +504,32 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
             } else {
                 status_ = POSITIVE_VALUE;
             }
+        }
+    }
+    catch (GRBException& e) {
+        std::cerr << "Error in solveCPModel: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
+void CP_Gurobi::solveCPDual(PInstance& pInst, InputPaths& inputPaths) {
+    try {
+        // Set up logging
+
+        solveTime_->start();
+        int status = solve();
+        solveTime_->stop();
+
+ //       env_.set(GRB_IntParam_OutputFlag, 0);
+
+        if (status != GRB_OPTIMAL) {
+            status_ = INFEASIBLE;
+            std::cout << "Failed to optimize the problem" << std::endl;
+        }
+        else {
+            // Get dual values
+            getDuals(pInst);
+
         }
     }
     catch (GRBException& e) {

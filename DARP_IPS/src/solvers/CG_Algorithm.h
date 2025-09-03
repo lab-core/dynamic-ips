@@ -24,6 +24,7 @@ public:
 
     // Solve Linear relaxation of Restricted MP in CG
     void solveRMP_IP(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime);
+    void resetMPGurobi(PInstance &pInst, const InputPaths &inputPaths);
     void solveRMP_LP(PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime);
 
     void solveMP_LP_CPLEX(PInstance &pInst, const InputPaths &inputPaths, int epoch, float subProTime);

@@ -4,11 +4,11 @@
 
 #include "CP_Reduced.h"
 
-void CP_Reduced::addRouteVar(const PRoute &newRoute, const PInstance &pInst) {
+void CP_Reduced::addRouteVar(const PRoute &newRoute, const PRoute &currentVehicleRoute) {
     try {
-        GRBColumn col = createCPColumnM1(newRoute, pInst);
+        GRBColumn col = createCPColumnM1(newRoute, currentVehicleRoute);
         if (newRoute->IncScore_ > 0) {
-            double objCoeff = newRoute->totalDelay_ - pInst->vehicles_[newRoute->vehicleID_]->currentRoute_->totalDelay_;
+            double objCoeff = newRoute->totalDelay_ - currentVehicleRoute->totalDelay_;
 
             // Create variable
             GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
@@ -23,26 +23,116 @@ void CP_Reduced::addRouteVar(const PRoute &newRoute, const PInstance &pInst) {
     }
 }
 
-GRBColumn CP_Reduced::createCPColumnM1(const PRoute &newRoute, const PInstance &pInst) {
+void CP_Reduced::addRouteVarBatch(const PInstance &pInst, bool greedyBase) {
+    const size_t numRoutes = routesToAdd_.size();
+
+    std::vector<double> lb(numRoutes, 0.0);
+    std::vector<double> ub(numRoutes, GRB_INFINITY);
+    std::vector<double> obj(numRoutes);
+    std::vector<char> vtype(numRoutes, GRB_CONTINUOUS);
+    std::vector<GRBColumn> columns(numRoutes);
+
+    IncRoute_.reserve(IncRoute_.size() + numRoutes);
+
+    // Fill arrays with range-based loop
+    size_t k = 0;
+    for (const auto& routeObj : routesToAdd_) {
+        if (greedyBase) {
+            obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->greedyRoute_->totalDelay_;
+            columns[k] = createCPColumnM1(routeObj, pInst->vehicles_[routeObj->vehicleID_]->greedyRoute_);
+        }
+        else {
+            obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->totalDelay_;
+            columns[k] = createCPColumnM1(routeObj, pInst->vehicles_[routeObj->vehicleID_]->currentRoute_);
+        }
+        IncRoute_.emplace_back(routeObj);
+        routeObj->cpAdded_ = true;
+        ++k;
+    }
+
+    // Batch addition using vector data
+    std::unique_ptr<GRBVar[]> newVars(model_->addVars(
+        lb.data(),
+        ub.data(),
+        obj.data(),
+        vtype.data(),
+        nullptr,
+        columns.data(),
+        numRoutes));
+
+    // Add variables to container
+    routeIncVar_.insert(routeIncVar_.end(), newVars.get(), newVars.get() + numRoutes);
+}
+
+void CP_Reduced::addZVar(const PRequest &request) {
+    try {
+        GRBColumn col;
+        double objCoeff;
+        objCoeff = request->penalty_;
+        col.addTerm(1.0, requestConstr_[request->taskIndex_]);
+        col.addTerm(1.0, normalConst_);
+
+        // Create variable
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, request->name_);
+        zIncVar_.push_back(var);
+    }
+    catch (GRBException& e) {
+        std::cerr << "Error in addRouteVar: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
+void CP_Reduced::addZVarBatch(const PInstance& pInst) {
+    const int n = pInst->nbRequests_;
+    if (n == 0) return;
+
+    std::vector<double> lb(n, 0.0);
+    std::vector<double> ub(n, GRB_INFINITY);
+    std::vector<double> obj(n);
+    std::vector<char>    vtype(n, GRB_CONTINUOUS);
+    std::vector<GRBColumn> cols(n);
+ //   std::vector<std::string> names(n);
+
+    for (int i = 0; i < n; ++i) {
+        if (pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT) {
+            const auto& req = pInst->requests_[i];
+            obj[i]   = req->penalty_;
+            cols[i].addTerm(1.0, requestConstr_[req->taskIndex_]);
+            cols[i].addTerm(1.0, normalConst_);
+            //       names[i] = req->name_;
+        }
+    }
+
+    // addVars has an overload that accepts names; if your Gurobi version doesn’t,
+    // call without names and set them afterward.
+    std::unique_ptr<GRBVar[]> zvars(model_->addVars(
+        lb.data(), ub.data(), obj.data(), vtype.data(),
+        nullptr,
+        cols.data(), n));
+
+    zIncVar_.insert(zIncVar_.end(), zvars.get(), zvars.get() + n);
+}
+
+GRBColumn CP_Reduced::createCPColumnM1(const PRoute &newRoute, const PRoute &currentVehicleRoute) {
     GRBColumn col;
 
     newRoute->IncScore_ = 0;
     // Add coefficients for request constraints
-    for (auto& requestObj : pInst->vehicles_[newRoute->vehicleID_]->currentRoute_->routeRequests_) {
+    for (auto& requestObj : currentVehicleRoute->routeRequests_) {
         if (!newRoute->column_.test(requestObj->taskIndex_) ) {
             col.addTerm(-1, requestConstr_[requestObj->taskIndex_]);
             newRoute->IncScore_++;
         }
     }
     for (auto& requestObj : newRoute->routeRequests_) {
-        if (!pInst->vehicles_[newRoute->vehicleID_]->currentRoute_->column_.test(requestObj->taskIndex_) ) {
+        if (!currentVehicleRoute->column_.test(requestObj->taskIndex_) ) {
             col.addTerm(1, requestConstr_[requestObj->taskIndex_]);
             newRoute->IncScore_++;
         }
     }
 
     // Add to normalization constraint
-    col.addTerm(1, normalConst_);
+    col.addTerm(newRoute->IncScore_, normalConst_);
     return col;
 }
 
@@ -63,6 +153,11 @@ void CP_Reduced::resetForNextIteration() {
             model_->remove(var);
         }
         routeIncVar_.clear();
+
+        for (auto& var : zIncVar_) {
+            model_->remove(var);
+        }
+        zIncVar_.clear();
 
 
         // Remove old normalization constraint
@@ -120,13 +215,21 @@ void CP_Reduced::initializeCPModel(const PInstance &pInst) {
     }
 }
 
-void CP_Reduced::buildModel(const PInstance &pInst) {
+void CP_Reduced::buildModel(const PInstance &pInst, bool greedyBase) {
     try {
         beginBatchUpdate();
 
         // Adding incompatible route columns
         for (auto& routeAdd : routesToAdd_) {
-            addRouteVar(routeAdd, pInst);
+            if (greedyBase)
+                addRouteVar(routeAdd, pInst->vehicles_[routeAdd->vehicleID_]->greedyRoute_);
+            else
+                addRouteVar(routeAdd, pInst->vehicles_[routeAdd->vehicleID_]->currentRoute_);
+        }
+
+        // Adding z columns out of the basis
+        for (int i = 0; i < pInst->nbRequests_; ++i) {
+            addZVar(pInst->requests_[i]);
         }
 
         endBatchUpdate();
@@ -137,7 +240,7 @@ void CP_Reduced::buildModel(const PInstance &pInst) {
     }
 }
 
-void CP_Reduced::buildModel_batch(const PInstance &pInst) {
+void CP_Reduced::buildModel_batch(const PInstance &pInst, bool greedyBase) {
     try {
         if (routesToAdd_.empty()) return;
 
@@ -147,39 +250,11 @@ void CP_Reduced::buildModel_batch(const PInstance &pInst) {
         }
 
         beginBatchUpdate();
+        // Adding incompatible route columns
+        addRouteVarBatch(pInst, greedyBase);
 
-        const size_t numRoutes = routesToAdd_.size();
-
-        std::vector<double> lb(numRoutes, 0.0);
-        std::vector<double> ub(numRoutes, GRB_INFINITY);
-        std::vector<double> obj(numRoutes);
-        std::vector<char> vtype(numRoutes, GRB_CONTINUOUS);
-        std::vector<GRBColumn> columns(numRoutes);
-
-        IncRoute_.reserve(IncRoute_.size() + numRoutes);
-
-        // Fill arrays with range-based loop
-        size_t k = 0;
-        for (const auto& routeObj : routesToAdd_) {
-            obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->totalDelay_;
-            columns[k] = createCPColumnM1(routeObj, pInst);
-            IncRoute_.emplace_back(routeObj);
-            routeObj->cpAdded_ = true;
-            ++k;
-        }
-
-        // Batch addition using vector data
-        std::unique_ptr<GRBVar[]> newVars(model_->addVars(
-            lb.data(),
-            ub.data(),
-            obj.data(),
-            vtype.data(),
-            nullptr,
-            columns.data(),
-            numRoutes));
-
-        // Add variables to container
-        routeIncVar_.insert(routeIncVar_.end(), newVars.get(), newVars.get() + numRoutes);
+        // Adding z columns out of the basis
+        addZVarBatch(pInst);
 
         // Single update call
         endBatchUpdate();
@@ -227,8 +302,6 @@ void CP_Reduced::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution
     InputPaths &inputPaths) {
     try {
         // Set up logging
- //       myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "RCP");
-
         solveTime_->start();
         int status = solve();
         solveTime_->stop();
@@ -245,8 +318,6 @@ void CP_Reduced::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution
             for (size_t i = 0; i < pInst->vehicles_.size(); ++i) {
                 pInst->vehicles_[i]->dual_ = 0;
             }
-            for (auto & requestObj: zSolution)
-                requestObj->dual_ = requestObj->penalty_;
 
             // Check objective value
             double objVal = getObjValue();
@@ -297,8 +368,6 @@ void CP_Reduced::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution
 void CP_Reduced::solveCPDual(PInstance &pInst, InputPaths& inputPaths) {
     try {
         // Set up logging
-        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "RCP");
-
         solveTime_->start();
         int status = solve();
         solveTime_->stop();
@@ -315,14 +384,6 @@ void CP_Reduced::solveCPDual(PInstance &pInst, InputPaths& inputPaths) {
             for (size_t i = 0; i < pInst->vehicles_.size(); ++i) {
                 pInst->vehicles_[i]->dual_ = 0;
             }
-
-            // Check objective value
-            double objVal = getObjValue();
-
-            if (objVal < 0)
-                status_ = NEGATIVE_VALUE;
-            else
-                status_ = POSITIVE_VALUE;
         }
     }
     catch (GRBException& e) {
@@ -345,7 +406,5 @@ bool CP_Reduced::isColumnDisjoint(const std::vector<PRoute> &routeResults, int n
         coveredRequests |= route->column_;
         vehicles.set(route->vehicleID_, true);
     }
-
     return true;
-
 }

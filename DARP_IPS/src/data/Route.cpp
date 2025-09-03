@@ -106,6 +106,33 @@ bool Route::reConstructRoute(PVehicle & vehicle){
     return true;
 }
 
+bool Route::reConstruct(PVehicle & vehicle){
+    PRoute newRoute = std::make_shared<Route>(vehicleID_);
+
+    newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
+    for (int i = 1; i < routeNodes_.size(); ++i) {
+        if (plannedDepartTime_[i] > vehicle->departTime_ ) {
+            if (routeNodes_[i]->nodeStatus_ == DEFINED || (routeNodes_[i]->nodeStatus_ == PLANNED &&
+                routeNodes_[i]->related_Request_->solVehicleID_ == vehicleID_)) {
+                newRoute->addNode(routeNodes_[i]);
+            }
+        }
+    }
+    if (newRoute->routeRequests_.empty())
+        return false;
+    plannedDepartTime_ = newRoute->plannedDepartTime_;
+    plannedReachTime_ = newRoute->plannedReachTime_;
+    plannedDelay_ = newRoute->plannedDelay_;
+    totalDelay_ = newRoute->totalDelay_;
+    routeRequests_ = newRoute->routeRequests_;
+    routeNodes_ = newRoute->routeNodes_;
+    plannedPassengers_ = newRoute->plannedPassengers_;
+    nbCommitted_ = newRoute->nbCommitted_;
+    routeSize_ = newRoute->routeSize_;
+    waitScore_ = newRoute->totalDelay_ / newRoute->routeRequests_.size();
+    return true;
+}
+
 void Route::addNode(const PNode &node, float reachTime, float departTime) {
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
@@ -332,8 +359,8 @@ void Route::calcMarginalCosts(PVehicle & vehicle) {
 }
 
 void Route::createColumn(int nbRequests) {
-    column_.resize(nbRequests);
     column_.reset();
+    column_.resize(nbRequests);
     /*for (auto & requestObj: routeRequests_)
         column_->add(requestObj->taskIndex_);*/
     for (auto & requestObj: routeRequests_)

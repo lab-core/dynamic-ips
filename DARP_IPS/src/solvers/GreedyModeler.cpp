@@ -60,13 +60,11 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
     greedyRouteList_.clear();
 }
 
-float GreedyModeler::createUpperbound(std::vector<PRoute> & routeSolution) {
+float GreedyModeler::createUpperbound() {
     float upperbound = 0;
     for (auto & greedySol : greedyRouteList_) {
-        PRoute newRoute;
-        newRoute = greedySol->greedyLabelToRoute(false);
-        routeSolution.push_back(newRoute);
-        upperbound += newRoute->totalDelay_;
+        (*greedySol->Vehicle_)->greedyRoute_ = greedySol->greedyLabelToRoute(false);
+        upperbound += (*greedySol->Vehicle_)->greedyRoute_->totalDelay_;
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
     }

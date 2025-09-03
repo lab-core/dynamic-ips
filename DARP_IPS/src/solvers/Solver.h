@@ -7,7 +7,7 @@
 
 
 #include "solvers/MasterAlgorithm.h"
-#include "../CplexSolver/MIPSolver.h"
+#include "CplexSolver/MIPSolver.h"
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
 
