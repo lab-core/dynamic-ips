@@ -21,7 +21,7 @@ G1_paramfile="AnyParameters"
 G1_vehicle_counts=(1500 1600 1700)
 G1_algorithms=(6)
 G1_modes=(2)
-G1_scenarios=("Dynamic" "Partial")
+G1_scenarios=("SP_10" "SP_20" "SP_30" "SP_40" "SP_50" "SP_150")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160329_11-240m" "20160628_11-240m")
 
@@ -31,7 +31,7 @@ G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(2)
-G2_scenarios=("Dynamic" "Partial")
+G2_scenarios=("SP_10" "SP_20" "SP_30" "SP_40" "SP_50" "SP_150")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 
