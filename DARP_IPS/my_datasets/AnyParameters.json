@@ -714,6 +714,36 @@
       "newRequestLimit": 150,
       "LabelingStrategy": 2,
       "LabelingReOptimizeStrategy": 2
+    },
+    "greedy": {
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 120,
+      "returnType": 2,
+      "numVehicleSwitch": 1000,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "InitialDual": 1,
+      "DualMethod" : 0,
+      "warmStart": 1,
+      "NumIter": 1,
+      "NumColumn": 50,
+      "isTruncated": 1,
+      "MaxLabel": 15,
+      "MaxCommittedLabel": 0,
+      "pruneNodes": 1,
+      "pruneArcs": 1,
+      "discardSuboptimalPath": 1,
+      "isDropPickPossible": 0,
+      "Dynamic_Pricing": 0,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "sortPath": 0,
+      "sortColumn": 1,
+      "Route_Recycle": 0,
+      "newRequestLimit": 150,
+      "LabelingStrategy": 2,
+      "LabelingReOptimizeStrategy": 2
     }
   }
 }
