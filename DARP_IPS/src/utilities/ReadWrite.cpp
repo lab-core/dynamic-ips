@@ -846,8 +846,8 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,warmStart,mainAlgorithm,"
                         "solutionMode,NumIter,GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,"
                         "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
-                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,"
-                        "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit, nbPick,"
+                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,"
+                        "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 
     parametersStream << pInstance->parameters_->toStr();
