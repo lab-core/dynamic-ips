@@ -116,7 +116,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
         }
     }*/
     if (currentRoute_->routeSize_ > 1) {
- //        if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePick_ != 1) {
+         if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePick_ != 1) {
             idle_ = false;
             // this condition is useful for the cases that the vehicle does not have any stop in the current epoch
             if (departTime_ < elapsedTime + committedTime) {
@@ -185,7 +185,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 }
                 currentRoute_->removeNode(breakIndex);
             }
-//        }
+        }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
