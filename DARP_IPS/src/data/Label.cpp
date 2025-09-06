@@ -133,6 +133,24 @@ bool Label::operator () (const Label &rhs) const {
     return reducedCost_ < rhs.reducedCost_;
 }
 
+bool Label::checkSubsetOpen(const PLabel &otherLabel) const {
+    for (auto & node : otherLabel->openNode_) {
+        if (!this->openRequests_.test(node->related_Request_->taskIndexLabel_))
+            return false;
+    }
+    return true;
+}
+
+bool Label::checkSubsetComplete(const PLabel &otherLabel) const {
+    for (auto & node : otherLabel->pathNode_) {
+        if (node->type_ != SINK && node->type_ != SOURCE && node->nodeStatus_ != PLANNED) {
+            if (!this->completeRequests_.test(node->related_Request_->taskIndexLabel_))
+                return false;
+        }
+    }
+    return true;
+}
+
 void Label::extend(Node *outNode, bool isDropPickPossible) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
@@ -277,9 +295,8 @@ bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOpt
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
             if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                //               if (otherLabel->openRequests_ == this->openRequests_) {
-                if ((otherLabel->openRequests_ & this->openRequests_) == otherLabel->openRequests_) {
-                    if ((otherLabel->completeRequests_ & this->completeRequests_) == otherLabel->completeRequests_){
+                if (checkSubsetOpen(otherLabel)){
+                    if (checkSubsetComplete(otherLabel)){
                         if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
                             return true;
                     }

@@ -23,9 +23,6 @@ public:
     PCP_Gurobi CPGurobiFull_;
     std::unique_ptr<LagrangianSolver> lagSolver_;
 
-
-    std::vector<std::bitset<LABEL_BIT_SIZE>> vehicleRequestsBits_;
-
     vector2D<PRoute> availableRoutes_;
     int nbRoutes_;
     int nbColumnsAdded_;

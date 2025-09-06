@@ -57,6 +57,8 @@ public:
     unsigned int getLabelId() const;
 
     bool operator() (const Label &rhs) const;
+    bool checkSubsetOpen(const PLabel &otherLabel) const;
+    bool checkSubsetComplete(const PLabel &otherLabel) const;
 
     void extend(Node *outNode, bool isDropPickPossible);
     // this function checks the feasibility of the label before extension
