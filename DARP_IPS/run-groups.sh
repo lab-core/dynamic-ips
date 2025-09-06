@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
+#SBATCH --mem=80G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-63
+#SBATCH --array=1-9
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -22,7 +22,8 @@ G1_vehicle_counts=(1500 1600 1700)
 G1_algorithms=(6)
 G1_modes=(2)
 #G1_scenarios=("SP_10" "SP_20" "SP_30" "SP_40" "SP_50" "SP_150")
-G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Partial" "Dynamic")
+#G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Partial" "Dynamic")
+G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160329_11-240m" "20160628_11-240m")
 
@@ -33,7 +34,8 @@ G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(2)
 #G2_scenarios=("SP_10" "SP_20" "SP_30" "SP_40" "SP_50" "SP_150")
-G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Partial" "Dynamic")
+#G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Partial" "Dynamic")
+G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 
