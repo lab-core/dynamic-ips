@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=40G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-54
+#SBATCH --array=1-63
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -18,10 +18,10 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="AnyParameters"
-G1_vehicle_counts=(1500 1600 1700)
+G1_vehicle_counts=(1400 1500 1600 1700)
 G1_algorithms=(6)
 G1_modes=(2)
-G1_scenarios=("SP_150")
+G1_scenarios=("SP_150" "Partial")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
@@ -30,10 +30,10 @@ G1_instances=("20160329_11-240m" "20160628_11-240m")
 # G2
 G2_vehicle_folder="vehicles_byDemand_w11"
 G2_paramfile="AnyParameters"
-G2_vehicle_counts=(1600 1700 1800)
+G2_vehicle_counts=(1500 1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(2)
-G2_scenarios=("SP_150")
+G2_scenarios=("SP_150" "Partial")
 #G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
@@ -42,22 +42,22 @@ G2_instances=("20150917_11-240m")
 # G3
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_paramfile="AnyParameters"
-G3_vehicle_counts=(1600 1700 1800)
-G3_algorithms=(2)
-G3_modes=(1)
-G3_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+G3_vehicle_counts=(1400)
+G3_algorithms=(6)
+G3_modes=(2)
+G3_scenarios=("Dynamic")
 G3_inst_folder="Instances_4h-11"
-G3_instances=("20160521_11-240m" "20150926_11-240m")
+G3_instances=("20160329_11-240m" "20160628_11-240m")
 
 # G4
 G4_vehicle_folder="vehicles_byDemand_w11"
 G4_paramfile="AnyParameters"
-G4_vehicle_counts=(1000 1100 1200)
-G4_algorithms=(2)
-G4_modes=(1)
-G4_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+G4_vehicle_counts=(1500)
+G4_algorithms=(6)
+G4_modes=(2)
+G4_scenarios=("Dynamic")
 G4_inst_folder="Instances_4h-11"
-G4_instances=("20160628_11-240m")
+G4_instances=("20150917_11-240m")
 
 # G5
 G5_vehicle_folder="vehicles_byDemand_w11"
@@ -70,7 +70,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G1 G2 G3 G4)
 
 # -------------------------
 # Build job list
