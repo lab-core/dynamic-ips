@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=20G
 #SBATCH --time=2:10:00
-#SBATCH --array=1-63
+#SBATCH --array=1-48
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -80,7 +80,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G3 G4)
+ALL_GROUPS=(G4)
 
 # -------------------------
 # Build job list
