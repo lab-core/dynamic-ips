@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=40G
-#SBATCH --time=4:10:00
+#SBATCH --mem=20G
+#SBATCH --time=2:10:00
 #SBATCH --array=1-63
 #SBATCH --error=slurm-%A_%a.err
 
@@ -40,24 +40,34 @@ G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 
 # G3
-G3_vehicle_folder="vehicles_byDemand_w11"
+G3_vehicle_folder="vehicles_uniform"
 G3_paramfile="AnyParameters"
-G3_vehicle_counts=(1400)
+G3_vehicle_counts=(2000 1500)
 G3_algorithms=(6)
 G3_modes=(2)
-G3_scenarios=("Dynamic")
-G3_inst_folder="Instances_4h-11"
-G3_instances=("20160329_11-240m" "20160628_11-240m")
+G3_scenarios=("SP_150")
+G3_inst_folder="Instances_2h-7"
+G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
+              "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
+              "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
+              "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
+              "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
+              "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
 
 # G4
-G4_vehicle_folder="vehicles_byDemand_w11"
+G4_vehicle_folder="vehicles_uniform"
 G4_paramfile="AnyParameters"
-G4_vehicle_counts=(1500)
-G4_algorithms=(6)
-G4_modes=(2)
-G4_scenarios=("Dynamic")
-G4_inst_folder="Instances_4h-11"
-G4_instances=("20150917_11-240m")
+G4_vehicle_counts=(1500 2000)
+G4_algorithms=(2)
+G4_modes=(1)
+G4_scenarios=("Rebalance_2")
+G4_inst_folder="Instances_2h-7"
+G4_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
+               "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
+               "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
+               "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
+               "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
+               "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
 
 # G5
 G5_vehicle_folder="vehicles_byDemand_w11"
@@ -70,7 +80,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2 G3 G4)
+ALL_GROUPS=(G3 G4)
 
 # -------------------------
 # Build job list
@@ -98,7 +108,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 1")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 0")
           done
         done
       done
