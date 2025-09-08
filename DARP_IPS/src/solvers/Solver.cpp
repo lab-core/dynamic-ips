@@ -1290,7 +1290,7 @@ void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRou
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
             for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
-                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj))
+                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstructRoute(vehicleObj))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
             }
         }

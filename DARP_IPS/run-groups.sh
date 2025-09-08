@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=90G
+#SBATCH --mem=24G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-54
 #SBATCH --error=slurm-%A_%a.err
@@ -18,12 +18,12 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="AnyParameters"
-G1_vehicle_counts=(1500)
-G1_algorithms=(2)
-G1_modes=(1)
-#G1_scenarios=("SP_10" "Partial")
+G1_vehicle_counts=(1500 1600 1700)
+G1_algorithms=(6)
+G1_modes=(2)
+G1_scenarios=("SP_20" "SP_150" "SP_40")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-G1_scenarios=("Rebalance_no")
+#G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160329_11-240m" "20160628_11-240m")
 
@@ -31,11 +31,11 @@ G1_instances=("20160329_11-240m" "20160628_11-240m")
 G2_vehicle_folder="vehicles_byDemand_w11"
 G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1600 1700 1800)
-G2_algorithms=(2)
-G2_modes=(1)
-#G2_scenarios=("SP_10" "Partial")
+G2_algorithms=(6)
+G2_modes=(2)
+G2_scenarios=("SP_20" "SP_150" "SP_40")
 #G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-G2_scenarios=("Rebalance_no")
+#G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 
@@ -75,7 +75,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1)
+ALL_GROUPS=(G1 G2)
 
 # -------------------------
 # Build job list
