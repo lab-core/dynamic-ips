@@ -560,10 +560,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 0,
+      "Route_Recycle": 1,
       "newRequestLimit": 10,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 2
+      "LabelingReOptimizeStrategy": 0
     },
     "SP_20": {
       "vehicleReturn": 1,
@@ -590,10 +590,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 0,
+      "Route_Recycle": 1,
       "newRequestLimit": 20,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 2
+      "LabelingReOptimizeStrategy": 0
     },
     "SP_30": {
       "vehicleReturn": 1,
@@ -620,10 +620,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 0,
+      "Route_Recycle": 1,
       "newRequestLimit": 30,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 2
+      "LabelingReOptimizeStrategy": 0
     },
     "SP_40": {
       "vehicleReturn": 1,
@@ -650,10 +650,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 0,
+      "Route_Recycle": 1,
       "newRequestLimit": 40,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 2
+      "LabelingReOptimizeStrategy": 0
     },
     "SP_50": {
       "vehicleReturn": 1,
@@ -710,10 +710,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 0,
+      "Route_Recycle": 1,
       "newRequestLimit": 150,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 2
+      "LabelingReOptimizeStrategy": 0
     },
     "greedy": {
       "vehicleReturn": 1,
