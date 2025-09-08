@@ -1281,25 +1281,18 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
         }
     }
     else {
-        if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_GRAPH) {
-            for (auto & vehicleObj : pInst->vehicles_) {
-                for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
-                    for (auto & requestObj: routeObj->routeRequests_) {
-                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
-                    }
-                }
-            }
-        }
-        else if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_ROUTE) {
-            for (auto & vehicleObj : pInst->vehicles_) {
-                for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
+        for (auto & vehicleObj : pInst->vehicles_) {
+            for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
+                for (auto & requestObj: routeObj->routeRequests_) {
                     requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
                 }
             }
         }
-        else {
-            for (auto & requestObj: pInst->requests_) {
-                requestObj->coveredVehicles_.flip();
+        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
+            for (auto & vehicleObj : pInst->vehicles_) {
+                for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
+                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
+                }
             }
         }
     }

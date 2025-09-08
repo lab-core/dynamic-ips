@@ -14,8 +14,7 @@
 //-----------------------------------------------------------------------------
 namespace constants {
     constexpr int LARGE_CONSTANT = 9999999;
-    constexpr int MAX_BIT_SIZE = 4000;
-    constexpr int LABEL_BIT_SIZE = 2000;
+    constexpr int LABEL_BIT_SIZE = 1000;
     constexpr int MAX_ZONE = 350;
     constexpr int SENTENCE_SIZE = 50;
     constexpr int SERVICE_TIME = 30;
