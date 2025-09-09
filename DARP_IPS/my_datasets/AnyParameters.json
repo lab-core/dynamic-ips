@@ -6,7 +6,7 @@
     "epochLength": 30,
     "penaltyL": 30,
     "committedTime": 30,
-    "nbThreads": 16,
+    "nbThreads": 4,
     "mainAlgorithm": 0,
     "solutionMode": 2,
     "GreedyReOptimize": 0,
@@ -560,10 +560,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 10,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "SP_20": {
       "vehicleReturn": 1,
@@ -590,10 +590,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 20,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "SP_30": {
       "vehicleReturn": 1,
@@ -620,10 +620,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 30,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "SP_40": {
       "vehicleReturn": 1,
@@ -650,10 +650,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 40,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "SP_50": {
       "vehicleReturn": 1,
@@ -707,13 +707,13 @@
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 0,
       "Partial_Pricing": 1,
-      "nbPick": 2,
+      "nbPick": 3,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 150,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "greedy": {
       "vehicleReturn": 1,
