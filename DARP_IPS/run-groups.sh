@@ -45,7 +45,7 @@ G3_paramfile="AnyParameters"
 G3_vehicle_counts=(2000 1500)
 G3_algorithms=(6)
 G3_modes=(2)
-G3_scenarios=("SP_150")
+G3_scenarios=("SP_20" "Partial" "SP_150")
 G3_inst_folder="Instances_2h-7"
 G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
               "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
