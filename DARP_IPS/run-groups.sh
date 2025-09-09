@@ -75,7 +75,7 @@ G5_inst_folder="Instances_4h-11"
 G5_instances=("20160628_11-240m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G3)
+ALL_GROUPS=(G1 G2)
 
 # -------------------------
 # Build job list
