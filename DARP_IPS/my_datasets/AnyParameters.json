@@ -573,7 +573,7 @@
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "InitialDual": 1,
+      "InitialDual": 7,
       "DualMethod" : 0,
       "warmStart": 1,
       "NumIter": 1,
