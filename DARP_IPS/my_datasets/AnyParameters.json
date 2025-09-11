@@ -590,10 +590,10 @@
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
-      "Route_Recycle": 1,
+      "Route_Recycle": 0,
       "newRequestLimit": 20,
       "LabelingStrategy": 2,
-      "LabelingReOptimizeStrategy": 0
+      "LabelingReOptimizeStrategy": 2
     },
     "SP_30": {
       "vehicleReturn": 1,
