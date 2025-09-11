@@ -67,7 +67,7 @@ G4_instances=("20150715_07-120m" "20160316_07-120m" "20160401_07-120m" "20160427
 # G5
 G5_vehicle_folder="vehicles_byDemand_w7"
 G5_paramfile="AnyParameters"
-G5_vehicle_counts=(1500)
+G5_vehicle_counts=(1600 1700)
 G5_algorithms=(6)
 G5_modes=(2)
 G5_scenarios=("SP_20")
@@ -77,7 +77,7 @@ G5_instances=("20160329_07-960m" "20160628_07-960m")
 # G6
 G6_vehicle_folder="vehicles_byDemand_w7"
 G6_paramfile="AnyParameters"
-G6_vehicle_counts=(1600)
+G6_vehicle_counts=(1700 1800)
 G6_algorithms=(6)
 G6_modes=(2)
 G6_scenarios=("SP_20")
