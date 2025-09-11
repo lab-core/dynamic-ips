@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=36G
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=24G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-200
+#SBATCH --array=1-18
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary

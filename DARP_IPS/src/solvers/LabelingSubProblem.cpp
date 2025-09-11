@@ -552,7 +552,7 @@ bool LabelingSubProblem::ResolveDynamic_pullingWaveStep(float availableTime) {
         // Wave 1: Pull towards Pickup nodes
         pullToPickups(availableTime, subGraph_->newPickNodes_, false);
 
-        for (auto & currentNode : subGraph_->newPickNodes_) {
+        /*for (auto & currentNode : subGraph_->newPickNodes_) {
             for (int j = currentNode->activeLabels_.size()-1; j >=0; j--) {
                 PLabel selectedLabel = currentNode->activeLabels_[j];
                 // push to pickup points
@@ -569,7 +569,7 @@ bool LabelingSubProblem::ResolveDynamic_pullingWaveStep(float availableTime) {
                     }
                 }
             }
-        }
+        }*/
 
         PNode initialNode = subGraph_->nodes_[initialNodeID_];
         std::vector<PNode> nodeList = subGraph_->pickNodes_;
