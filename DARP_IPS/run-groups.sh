@@ -77,7 +77,7 @@ G5_instances=("20160329_07-960m" "20160628_07-960m")
 # G6
 G6_vehicle_folder="vehicles_byDemand_w7"
 G6_paramfile="AnyParameters"
-G6_vehicle_counts=(1700 1800)
+G6_vehicle_counts=(1900)
 G6_algorithms=(6)
 G6_modes=(2)
 G6_scenarios=("SP_20")
@@ -85,7 +85,7 @@ G6_inst_folder="Instances_16h-7"
 G6_instances=("20150917_07-960m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G6)
 
 # -------------------------
 # Build job list
