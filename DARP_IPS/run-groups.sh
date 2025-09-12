@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
-#SBATCH --time=16:10:00
+#SBATCH --time=4:10:00
 #SBATCH --array=1-9
 #SBATCH --error=slurm-%A_%a.err
 
@@ -85,7 +85,7 @@ G6_inst_folder="Instances_16h-7"
 G6_instances=("20150917_07-960m")
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G6)
+ALL_GROUPS=(G1 G2)
 
 # -------------------------
 # Build job list
