@@ -403,7 +403,7 @@
       "NumColumn": 50,
       "isTruncated": 1,
       "MaxLabel": 15,
-      "MaxCommittedLabel": 10,
+      "MaxCommittedLabel": 0,
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
@@ -414,8 +414,9 @@
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 0,
-      "newRequestLimit": 0,
-      "LabelingStrategy": 1
+      "newRequestLimit": 20,
+      "LabelingStrategy": 2,
+      "LabelingReOptimizeStrategy": 2
     },
     "DualMethod_4": {
       "vehicleReturn": 1,
