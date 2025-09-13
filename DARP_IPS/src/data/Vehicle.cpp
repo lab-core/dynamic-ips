@@ -308,9 +308,8 @@ void Vehicle::adjustDuals() {
         for (int i = 0; i < currentRoute_->routeRequests_.size(); ++i) {
             totalDual += currentRoute_->routeRequests_[i]->dual_;
         }
-        totalDual += dual_;
         for (int i = 0; i < currentRoute_->routeRequests_.size(); ++i) {
-            currentRoute_->routeRequests_[i]->dual_ *= currentRoute_->totalDelay_ / totalDual;
+            currentRoute_->routeRequests_[i]->dual_ *= (currentRoute_->totalDelay_ - dual_)/ totalDual;
         }
     }
     dual_ = 0.0;

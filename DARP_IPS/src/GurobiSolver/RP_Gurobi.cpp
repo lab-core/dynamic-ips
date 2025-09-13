@@ -861,6 +861,8 @@ std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
 
                     if (route->column_.size() > i && route->column_[i]) {
                         coverageCount[i]++;
+                        /*if (pInst->requests_[i]->getRequestId() == 1427)
+                            std::cout << route->toString() << std::endl;*/
                     }
                 }
             }
@@ -883,7 +885,7 @@ void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
         auto coverage = countRequestCoverage(pInst);
 
         std::cout << "\n=== Request Coverage Statistics ===" << std::endl;
-        std::cout << "Request ID\tCount\tWeighted\tRequest Name" << std::endl;
+        std::cout << "Request ID\tCount\tRequest Name\tCommitted" << std::endl;
         std::cout << std::string(60, '-') << std::endl;
 
         for (size_t i = 0; i < pInst->requests_.size(); ++i) {
@@ -894,6 +896,10 @@ void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
             if (i < pInst->requests_.size()) {
                 // Assuming requests have some identifier - adjust based on your Request class
                 std::cout << "\t" << "Request_" << pInst->requests_[i]->getRequestId(); // Replace with actual request identifier
+                if (pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT)
+                    std::cout << "\t" << "False";
+                else
+                    std::cout << "\t" << "True";
             }
             std::cout << std::endl;
         }

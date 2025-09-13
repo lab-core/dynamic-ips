@@ -133,6 +133,21 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         int nbNegativeFound = 0;
         float previousObj = CG_Model_->objValue_;
         /*if (epoch_ == 0) {
+            mainInst->parameters_->nbPick_ = 2;
+            mainInst->parameters_->partialPricing_ = false;
+            for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
+                EpochInst->requests_[i]->dual_ = EpochInst->requests_[i]->penalty_;
+            }
+
+            // vehicle duals
+            for (size_t i = 0; i < EpochInst->vehicles_.size(); ++i)
+                EpochInst->vehicles_[i]->dual_ = 0;
+        }
+        else {
+            mainInst->parameters_->nbPick_ = 3;
+            mainInst->parameters_->partialPricing_ = true;
+        }*/
+        /*if (epoch_ == 0) {
             // request duals
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
                 if (EpochInst->requests_[i]->solVehicleID_ != LARGE_CONSTANT)
@@ -430,10 +445,10 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
                     vehicleObj->numPickup_ = std::min(3, EpochInst->parameters_->nbPick_);
                     nbThreePick_++;
                 } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
-                    vehicleObj->numPickup_ = 2;
+                    vehicleObj->numPickup_ = std::min(2, EpochInst->parameters_->nbPick_);
                     nbTwoPick_++;
                 } else {
-                    vehicleObj->numPickup_ = 1;
+                    vehicleObj->numPickup_ = std::min(1, EpochInst->parameters_->nbPick_);
                     nbOnePick_++;
                 }
                 subProSolve.back()->maxPickup_ = vehicleObj->numPickup_;
@@ -921,7 +936,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 }
 
             }
-            else if (mainInst->parameters_->approach_ == CG && CG_Model_->availableRoutes_.size() > 0) {
+            /*else if (mainInst->parameters_->approach_ == CG && CG_Model_->availableRoutes_.size() > 0) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
                     if (vehicleObj->stateChanged_)
                         CG_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -929,7 +944,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 if (removedRequests.count()) {
                     updateAvailableRoutes(removedRequests, CG_Model_->availableRoutes_);
                 }
-            }
+            }*/
         }
         // resetting a subInstance
         EpochInst->resetInstance();
@@ -1290,7 +1305,7 @@ void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRou
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
             for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
-                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstructRoute(vehicleObj))
+                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
             }
         }

@@ -89,8 +89,8 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
         for (auto & requestObj : zSolution_) {
             requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
         }
-        /*for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;*/
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
         for (auto & vehicleObj : pInst->vehicles_)
             MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
     }
@@ -99,19 +99,16 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
             pInst->parameters_->initialDual_ == GREEDY_D)) {
         MPGurobiPro_->routesToAdd_.clear();
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
-        if (pInst->parameters_->initialDual_ == GREEDY_D) {
-            for (auto & vehicleObj : pInst->vehicles_)
-                MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
-        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+
         MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
-        if (pInst->parameters_->initialDual_ == GREEDY_D) {
-            for (auto & requestObj : zSolution_) {
-                requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
-            }
-            for (auto & vehicleObj : pInst->vehicles_)
-                vehicleObj->dual_ = 0;
+        for (auto & requestObj : pInst->requests_) {
+            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->penalty_;
         }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
         resetMPGurobi(pInst, inputPaths);
     }
     setObjValue();
@@ -249,6 +246,8 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
             break;
 
         MPGurobiPro_->routesToAdd_.clear();
+        /*if (RMPCounter_ == 1)
+            updateRoutesToAddOne(NR, pInst, MPGurobiPro_->routesToAdd_);*/
 
         // select routes with negative reduced costs
         updateRoutesToAdd(NR, pInst, MPGurobiPro_->routesToAdd_);

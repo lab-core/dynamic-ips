@@ -324,7 +324,8 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
         // Get vehicle constraint duals
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
             if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
-                pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
+ //               pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
+                pInst->vehicles_[i]->dual_ = 0;
             }
             else {
                 pInst->vehicles_[i]->dual_ = 0;

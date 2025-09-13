@@ -110,6 +110,11 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = requestObj->penalty_;
         }
+        /*for (auto & requestObj : pInst->requests_) {
+            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->penalty_;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;*/
     }
     else if (pInst->parameters_->initialDual_ == ADJUSTED) {
         for (auto &requestObj : zSolution_) {
@@ -586,6 +591,15 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
     }
 }
 
+void MasterAlgorithm::updateRoutesToAddOne(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd) {
+    for (auto & vehicleObj : pInst->vehicles_) {
+        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+            if (!routeObj->mpAdded_ && routeObj->routeRequests_.size() == 1)
+                routesToAdd.push_back(routeObj);
+        }
+    }
+}
+
 void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
@@ -603,10 +617,10 @@ void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> 
     nbColumnsAdded_ = 0;
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->incompatibilityDegree_ > 1) {
+ //           if (routeObj->incompatibilityDegree_ > 1) {
                 routesToAdd.push_back(routeObj);
                 nbColumnsAdded_++;
-            }
+ //           }
         }
     }
 }
@@ -708,6 +722,7 @@ void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
+    availableTime_ = LARGE_CONSTANT;
 }
 
 void MasterAlgorithm::updateEpochTimers(PRuntimeMetrics &runtimeMetrics) {

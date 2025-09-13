@@ -126,6 +126,7 @@ public:
     // this function updates the reduced cost for the routes in the pool
     void updateReducedCosts(const PInstance &pInst);
     void updateRoutesToAdd(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd);
+    void updateRoutesToAddOne(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd);
     void reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd);
 
     void reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> &routesToAdd);
