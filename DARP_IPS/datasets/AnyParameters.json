@@ -3,7 +3,7 @@
     "alphaParam": 1.5,
     "betaParam": 240,
     "deltaPram": 420,
-    "epochLength": 30,
+    "epochLength": 2,
     "penaltyL": 30,
     "committedTime": 30,
     "nbThreads": 16,
