@@ -246,8 +246,8 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
             break;
 
         MPGurobiPro_->routesToAdd_.clear();
-        if (RMPCounter_ == 1)
-            updateRoutesToAddOne(NR, pInst, MPGurobiPro_->routesToAdd_);
+        /*if (RMPCounter_ == 1)
+            updateRoutesToAddOne(NR, pInst, MPGurobiPro_->routesToAdd_);*/
 
         // select routes with negative reduced costs
         updateRoutesToAdd(NR, pInst, MPGurobiPro_->routesToAdd_);
