@@ -319,6 +319,12 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            /*double slack = requestConstr_[i].get(GRB_DoubleAttr_Slack);
+
+            if (pInst->requests_[i]->dual_ == slack)
+                std::cout << pInst->requests_[i]->getRequestId()
+                      << " dual=" << pInst->requests_[i]->dual_
+                      << " slack=" << slack << std::endl;*/
         }
 
         // Get vehicle constraint duals

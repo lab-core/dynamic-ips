@@ -6,6 +6,7 @@
 #define ROUTE_H
 
 #include "data/Graph.h"
+#include "data/Request.h"
 
 
 //---------------------------------------------------------------------------------------------
@@ -91,6 +92,18 @@ inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
              (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&
              (lhs->vehicleID_ == rhs->vehicleID_ ))
     );
+}
+
+static std::string makeKey(const Route& r, int vehicleID) {
+    std::vector<int> ids;
+    for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);
+
+    std::string key = std::to_string(vehicleID) + "|";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i) key += ",";
+        key += std::to_string(ids[i]);
+    }
+    return key;
 }
 
 #endif //ROUTE_H

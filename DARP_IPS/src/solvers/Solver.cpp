@@ -51,7 +51,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                                   " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
                                   "LinearObjective,waitTime,destructTime,RebalancingRuntime,GreedyTime,#Return,#Idle,"
                                   "#passPerVehicle,#requestPerVehicle,#nodePerVehicle,"
-                                  "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle" << std::endl;
+                                  "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle,nbCommitted" << std::endl;
     }
     else {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
@@ -132,7 +132,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         int nbNegativeFound = 0;
         float previousObj = CG_Model_->objValue_;
-        /*if (epoch_ == 0) {
+        if (epoch_ == 0) {
             mainInst->parameters_->nbPick_ = 2;
             mainInst->parameters_->partialPricing_ = false;
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
@@ -146,7 +146,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else {
             mainInst->parameters_->nbPick_ = 3;
             mainInst->parameters_->partialPricing_ = true;
-        }*/
+        }
         /*if (epoch_ == 0) {
             // request duals
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
@@ -158,9 +158,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             for (size_t i = 0; i < EpochInst->vehicles_.size(); ++i)
                 EpochInst->vehicles_[i]->dual_ = EpochInst->vehicles_[i]->InitialDual_;
         }*/
-        /*if (epoch_ > 0)
-            *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");*/
- //       *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+        *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
         //***********************************************************************************//
         //                    Solve subproblems using the extracted function
@@ -936,15 +935,15 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
                 }
 
             }
-            /*else if (mainInst->parameters_->approach_ == CG && CG_Model_->availableRoutes_.size() > 0) {
+            else if (mainInst->parameters_->approach_ == CG && CG_Model_->availableRoutes_.size() > 0) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
                     if (vehicleObj->stateChanged_)
                         CG_Model_->availableRoutes_[vehicleObj->vehicleID_].clear();
                 }
-                if (removedRequests.count()) {
+                /*if (removedRequests.count()) {
                     updateAvailableRoutes(removedRequests, CG_Model_->availableRoutes_);
-                }
-            }*/
+                }*/
+            }
         }
         // resetting a subInstance
         EpochInst->resetInstance();
@@ -1082,6 +1081,7 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
         upperbound = ISUD_Model_->upperbound_;
     }
     EpochInst->calcVehicleMetric();
+    EpochInst->countCommittedRequests();
 
     repStr << preprocessTime_->dSinceStart().count()<< ","
            << rebalancingProcessTime_->dSinceStart().count()<< ","
@@ -1097,7 +1097,8 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
            << nbThreePick_ << ","
            << heuristicCG_ << ","
            << upperbound << ","
-           << nbRecycle_ <<"\n";
+           << nbRecycle_ <<","
+           << EpochInst->nbCommitted_ <<"\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }

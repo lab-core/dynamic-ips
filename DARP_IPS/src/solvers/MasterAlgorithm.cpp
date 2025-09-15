@@ -11,6 +11,7 @@
 #include "CplexSolver/ComplementPro.h"
 #include "GurobiSolver/CP_Gurobi.h"
 #include "GurobiSolver/CP_Reduced.h"
+#include <unordered_set>
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -601,9 +602,17 @@ void MasterAlgorithm::updateRoutesToAddOne(SelectionMode selectMode, PInstance &
 }
 
 void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
+
     for (auto & vehicleObj : pInst->vehicles_) {
+        std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->routeRequests_.size() == 1 && routeObj->getRouteId() != vehicleObj->currentRoute_->getRouteId()) {
+            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
+                continue;
+            // Build a simple signature for this column
+            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
+            // Insert returns {iterator, inserted}; inserted==true means new
+            if (seen.insert(key).second) {
+                // first time we see this column pattern → keep it
                 routeObj->createColumn(pInst->nbRequests_);
                 routesToAdd.push_back(routeObj);
                 nbColumnsAdded_++;

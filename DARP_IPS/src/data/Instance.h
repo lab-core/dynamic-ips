@@ -30,6 +30,7 @@ public:
 
     int nbRequests_;                                    // Number of requests
     int nbRejected_;
+    int nbCommitted_;
     int nbInitialOnboards_;
     int nbOnboards_;                                    // Number of onboard requests
     int nbWaiting_;                                     // Number of requests at the initial state
@@ -115,6 +116,7 @@ public:
     void setNodeIndices() const;
     void resetDuals();
     void calcVehicleMetric();
+    void countCommittedRequests();
 };
 
 int getIndex(const PNode& node, int id, int nbPairs);

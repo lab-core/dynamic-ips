@@ -229,6 +229,9 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
         int status = solve();
         solveTime_->stop();
 
+        /*auto coverage = countRequestCoverage(pInst);
+        printCoverageStatistics(pInst);*/
+
         if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
             std::cerr << "Failed to optimize the LMP. Status: " << status << std::endl;
             throw std::runtime_error("Failed to optimize the LMP");

@@ -1122,6 +1122,14 @@ void Instance::calcVehicleMetric() {
     passPerVehicle_ = passPerVehicle_ / nbActiveVehicles;
 }
 
+void Instance::countCommittedRequests() {
+    nbCommitted_ = 0;
+    for (auto & requestObj : requests_) {
+        if (requestObj->committedPickTime_ < LARGE_CONSTANT)
+            ++nbCommitted_;
+    }
+}
+
 // Function to get index based on node type and identifier
 int getIndex(const PNode& node, int id, int nbPairs) {
     if (node->type_ == SOURCE) {

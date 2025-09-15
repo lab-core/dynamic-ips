@@ -105,11 +105,14 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
         MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
         for (auto & requestObj : pInst->requests_) {
-            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->penalty_;
+            if (requestObj->dual_ != 0)
+                requestObj->dual_ = 0.8 * requestObj->dual_ + 0.2 * requestObj->penalty_;
+            else
+                requestObj->dual_ = requestObj->penalty_;
         }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-        resetMPGurobi(pInst, inputPaths);
+ //       for (auto & vehicleObj : pInst->vehicles_)
+ //           vehicleObj->dual_ = 0;
+ //       resetMPGurobi(pInst, inputPaths);
     }
     setObjValue();
     previousObj_ = objValue_;

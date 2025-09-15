@@ -123,7 +123,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 onboards_.clear();
                 int breakIndex = 0;
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-                    stateChanged_ = true;
+    //                stateChanged_ = true;
                     mainInst->nbStateChanged_++;
                     currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
@@ -144,6 +144,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                        stateChanged_ = true;
                         // currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
                         if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
                             removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);

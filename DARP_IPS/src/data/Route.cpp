@@ -116,6 +116,17 @@ bool Route::reConstruct(PVehicle & vehicle){
                 routeNodes_[i]->related_Request_->solVehicleID_ == vehicleID_)) {
                 newRoute->addNode(routeNodes_[i]);
             }
+            if (routeNodes_[i]->type_ == PICKUP) {
+                if (newRoute->plannedReachTime_[i] < routeNodes_[i]->related_Request_->earlyPick_ ||
+                    newRoute->plannedReachTime_[i] > routeNodes_[i]->related_Request_->latestPickup_)
+                    return false;
+                /*if (newRoute->plannedPassengers_.back() > vehicle->capacity_)
+                    return false;*/
+            }
+            else if (routeNodes_[i]->type_ == DROPOFF) {
+                if (newRoute->plannedReachTime_[i] - routeNodes_[i]->pairNode_->departTime_ > routeNodes_[i]->related_Request_->maxTravelTime_)
+                    return false;
+            }
         }
     }
     if (newRoute->routeRequests_.empty())
