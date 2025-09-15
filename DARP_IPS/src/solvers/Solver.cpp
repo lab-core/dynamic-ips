@@ -132,7 +132,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         CG_Model_->setAvailableTime(EpochInst, simulationTime_->dSinceStart().count(), iter);
         int nbNegativeFound = 0;
         float previousObj = CG_Model_->objValue_;
-        if (epoch_ == 0) {
+        /*if (epoch_ == 0) {
             mainInst->parameters_->nbPick_ = 2;
             mainInst->parameters_->partialPricing_ = false;
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
@@ -146,7 +146,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         else {
             mainInst->parameters_->nbPick_ = 3;
             mainInst->parameters_->partialPricing_ = true;
-        }
+        }*/
         /*if (epoch_ == 0) {
             // request duals
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
@@ -158,8 +158,8 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             for (size_t i = 0; i < EpochInst->vehicles_.size(); ++i)
                 EpochInst->vehicles_[i]->dual_ = EpochInst->vehicles_[i]->InitialDual_;
         }*/
-        *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
-        *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+      //  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+      //  *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
         //***********************************************************************************//
         //                    Solve subproblems using the extracted function
