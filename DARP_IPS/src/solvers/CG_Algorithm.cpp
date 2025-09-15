@@ -99,17 +99,17 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
             pInst->parameters_->initialDual_ == GREEDY_D)) {
         MPGurobiPro_->routesToAdd_.clear();
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
-        for (auto & vehicleObj : pInst->vehicles_)
-            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        /*for (auto & vehicleObj : pInst->vehicles_)
+            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);*/
 
         MPGurobiPro_->updateModel(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
-        for (auto & requestObj : pInst->requests_) {
-            if (requestObj->dual_ != 0)
-                requestObj->dual_ = 0.8 * requestObj->dual_ + 0.2 * requestObj->penalty_;
-            else
+        /*for (auto & requestObj : pInst->requests_) {
+            if (requestObj->dual_ == 0)
                 requestObj->dual_ = requestObj->penalty_;
-        }
+            else
+                requestObj->dual_ = 0.8 * requestObj->dual_ + 0.2 * requestObj->penalty_;
+        }*/
  //       for (auto & vehicleObj : pInst->vehicles_)
  //           vehicleObj->dual_ = 0;
  //       resetMPGurobi(pInst, inputPaths);

@@ -625,11 +625,17 @@ void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> 
     updateIncDegrees(pInst, true);
     nbColumnsAdded_ = 0;
     for (auto & vehicleObj : pInst->vehicles_) {
+        std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
- //           if (routeObj->incompatibilityDegree_ > 1) {
-                routesToAdd.push_back(routeObj);
-                nbColumnsAdded_++;
- //           }
+            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
+                continue;
+            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
+            if (seen.insert(key).second) {
+                if (routeObj->incompatibilityDegree_ > 2) {
+                    routesToAdd.push_back(routeObj);
+                    nbColumnsAdded_++;
+                }
+            }
         }
     }
 }
