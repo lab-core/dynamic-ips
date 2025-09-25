@@ -19,8 +19,7 @@ class MasterAlgorithm {
 public:
     // solvers
     PComplementPro CompPro_;
-    PCP_Reduced CPGurobiPro_;
-    PCP_Gurobi CPGurobiFull_;
+    PCPModeler CPGurobiPro_;
     std::unique_ptr<LagrangianSolver> lagSolver_;
 
     vector2D<PRoute> availableRoutes_;
@@ -138,7 +137,7 @@ public:
 
     std::string save_MPResults(int epoch, const std::string& model, int nbColumns, float reachTime, float subProTime,
                                float auxObj) const;
-    void setCurrentRoutes(const PInstance &pInst) const;
+    void setCurrentRoutes(const PInstance &pInst);
     void setObjValue();
     void setAvailableTime();
     void setAvailableTime(const PInstance &pInst, float elapsedTime, int iteration);
@@ -151,8 +150,6 @@ public:
     void solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-
-    void solveCP_Dual_Gurobi_full(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void buildBasis(const PInstance &pInst);
     void pickRoutesRoundRobin1(int columnsNeeded);

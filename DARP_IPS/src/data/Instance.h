@@ -67,6 +67,7 @@ public:
     // update the set of available requests, removed completed requests and update the set of on-boards
     void buildPartialData(const PInstance &mainInst, const std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
     void buildPartialData(const PInstance &mainInst, float elapsedTime, int lastRecRequests);
+    void addNewRequests(const PInstance &mainInst, float elapsedTime, int lastRecRequests);
     void buildStaticData(const PInstance &mainInst, int lastRecRequests);
 
     // function to add requests from previous epochs to the current partial instance

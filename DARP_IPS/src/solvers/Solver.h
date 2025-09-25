@@ -73,6 +73,7 @@ public:
     void anyTimeSolver(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
     void staticSolver(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
     void dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
+    void DA_Solver(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 
     // function to print epoch runTime to file
     std::string saveRuntimes(const PInstance & EpochInst);

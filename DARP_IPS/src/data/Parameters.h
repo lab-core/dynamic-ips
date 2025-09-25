@@ -56,6 +56,7 @@ public:
     int nbThreads_{};
     InitialDual initialDual_;
     DualMethod dualMethod_{};
+    bool smoothDual_;
     MainAlgorithm mainAlgorithm_;
     SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
     int numIter_;                  // solve the Master problem one time at each iteration of the CG
@@ -76,7 +77,7 @@ public:
     WarmStart initialStart_;
     int MIP_maxIncDegree_;      // max incompatibility degree for Zoom
     int CP_IncDegree_;          // max incompatibility degree for CP
-    bool useMultiStage_;       // min incompatibility degree that CP starts from in multi-stage
+    bool reducedCP_;       // min incompatibility degree that CP starts from in multi-stage
     float minImp_;
     bool useZoom_;
     int nbColumn_;
@@ -101,7 +102,7 @@ public:
                int committedTime, int nbThreads, InitialDual initialDual, DualMethod dualMethod,
                MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                float WaitForReturn, int numVehicleSwitch, WarmStart initialStart,
-               int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage, float minImp, bool useZoom,
+               int MIP_maxIncDegree, int CP_IncDegree, bool reducedCP, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
@@ -109,7 +110,7 @@ public:
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
-               LabelingReOptimizeStrategy labelingReOptimizeStrategy);
+               LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual);
 
     virtual ~Parameters();
 

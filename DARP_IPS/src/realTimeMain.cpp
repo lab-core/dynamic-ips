@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "datasets/";
+    std::string dataDir = "my_datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names
@@ -62,8 +62,6 @@ int main(int argc, char** argv) {
         max_i = 3;
     else if (config->scenario_ == "dropPick")
         max_i = 2;
-    else if (config->scenario_ == "initialDual")
-        max_i = 3;
     else if (config->scenario_ == "nbPickup")
         max_i = 2;
     /*else if (config->scenario_ == "Rebalance_2")
@@ -102,12 +100,6 @@ int main(int argc, char** argv) {
                 else if (config->scenario_ == "dropPick") {
                     mainInst->parameters_->isDropPickPossible_ = (i == 1);
                 }
-                else if (config->scenario_ == "initialDual") {
-                    if (i == 2)
-                        mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(7);
-                    else
-                        mainInst->parameters_->initialDual_ =  static_cast<InitialDual>(i);
-                }
                 else if (config->scenario_ == "nbPickup") {
                     if (i == 0) {
                         mainInst->parameters_->dynamicPricing_ =  true;
@@ -125,7 +117,10 @@ int main(int argc, char** argv) {
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<Solver> instanceSolver = std::make_unique<Solver>(mainInst, inputPaths);
-                instanceSolver->solve(mainInst, inputPaths, middleSave, saveTime);
+                if (mainInst->parameters_->solutionMode_ == STATIC)
+                    instanceSolver->staticSolver(mainInst, inputPaths, middleSave, saveTime);
+                else
+                    instanceSolver->DA_Solver(mainInst, inputPaths, middleSave, saveTime);
 
                 // Test the solution route
                 for (auto& vehicleObj : mainInst->vehicles_)

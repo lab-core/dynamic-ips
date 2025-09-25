@@ -32,6 +32,7 @@ public:
     void solutionToRoute(const PInstance &PInst);
     float createUpperbound();
     void GreedySolver(PInstance &PInst);
+    void GreedyUpperbound(PInstance &PInst);
     void GreedyAssignment(PInstance &PInst, int select);
     void solveInsertion(const PInstance &PInst);
     void solveAssignment(const PInstance &PInst,int select);

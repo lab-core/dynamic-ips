@@ -193,6 +193,16 @@ void CplexModeler::getDuals(const PInstance &pInst) {
     }
 }
 
+void CplexModeler::dump_cplex()
+{
+    // Original, pre-presolve model in both formats
+    Cplex_.exportModel("cplex_orig.lp");
+    Cplex_.exportModel("cplex_orig.mps");
+
+    // Save nondefault parameter settings to .prm
+    Cplex_.writeParam("cplex_.prm");
+}
+
 // this function initialized the model
 void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests

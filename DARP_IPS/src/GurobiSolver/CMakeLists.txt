@@ -5,6 +5,7 @@ set(SOURCE_FILES
     MP_Gurobi.cpp
     CP_Gurobi.cpp
     CP_Reduced.cpp
+    CPModeler.cpp
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})

@@ -19,7 +19,6 @@ void MP_Gurobi::buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolutio
         initializeModel(pInst, rhs, nbVehicles);
 
         // Use batch mode for efficiency when adding many variables
-        beginBatchUpdate();
 
         // Adding request columns (z variables)
         for (auto& zSol : pInst->requests_) {
@@ -41,7 +40,7 @@ void MP_Gurobi::buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolutio
         }
 
         // End batch update
-        endBatchUpdate();
+        model_->update();
 
     } catch (GRBException& e) {
         std::cerr << "Error in buildModelMP: " << e.getMessage() << std::endl;
@@ -53,14 +52,12 @@ void MP_Gurobi::buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolutio
 void MP_Gurobi::updateModel(PInstance& pInst) {
     try {
         // Use batch mode for efficiency
-        beginBatchUpdate();
-
         // Add the new compatible columns to the model
         for (auto routeObj : routesToAdd_) {
             addRouteVarFloat_RP(routeObj, pInst);
         }
 
-        endBatchUpdate();
+        model_->update();
 
     } catch (GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;

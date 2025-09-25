@@ -16,8 +16,6 @@ void CP_Gurobi::resetForNextIteration() {
         IncRoute_.clear();
         // Get all variables and remove them
         // Remove existing solution variables
-        beginBatchUpdate();
-
         for (auto& var : routeSolVar_) {
             model_->remove(var);
         }
@@ -48,7 +46,7 @@ void CP_Gurobi::resetForNextIteration() {
         normalConst_ = model_->addConstr(normalExpr == 1.0, "normalConst");
 
         // Update model once after all removals
-        endBatchUpdate();
+        model_->update();
 
     } catch (const GRBException& e) {
         std::cerr << "Gurobi error in resetForNextIteration: " << e.getMessage() << std::endl;
@@ -150,8 +148,6 @@ void CP_Gurobi::buildModel(const PInstance& pInst, const std::vector<PRequest>& 
         // Model initialization
 //        initializeCPModel(pInst, nbVehicles);
 
-        beginBatchUpdate();
-
         // Adding solution route columns
         for (auto& routeObj : routeSolution) {
             if (pInst->vehicles_[routeObj->vehicleID_]->vehicleIndex_ > -1) {
@@ -183,7 +179,7 @@ void CP_Gurobi::buildModel(const PInstance& pInst, const std::vector<PRequest>& 
             }
         }
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in buildModel: " << e.getMessage() << std::endl;
@@ -196,8 +192,6 @@ void CP_Gurobi::buildModel_Dual(const PInstance& pInst) {
     try {
         // Model initialization
         //        initializeCPModel(pInst, nbVehicles);
-
-        beginBatchUpdate();
 
         // Adding solution route columns
         for (auto& vehicleObj : pInst->vehicles_) {
@@ -226,7 +220,7 @@ void CP_Gurobi::buildModel_Dual(const PInstance& pInst) {
                 }
         }*/
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in buildModel: " << e.getMessage() << std::endl;
@@ -239,8 +233,6 @@ void CP_Gurobi::repairModel(const PInstance& pInst, const std::vector<PRequest>&
                                 const std::vector<PRoute>& routeSolution) {
     try {
         // Remove existing solution variables
-        beginBatchUpdate();
-
         for (auto& var : routeSolVar_) {
             model_->remove(var);
         }
@@ -251,11 +243,9 @@ void CP_Gurobi::repairModel(const PInstance& pInst, const std::vector<PRequest>&
         }
         zSolVar_.clear();
 
-        endBatchUpdate();
+        model_->update();
 
         // Add new solution variables
-        beginBatchUpdate();
-
         // Adding solution route columns
         for (auto& routeObj : routeSolution) {
             addRouteVar(routeObj, NEGATIVE, pInst);
@@ -266,8 +256,7 @@ void CP_Gurobi::repairModel(const PInstance& pInst, const std::vector<PRequest>&
         for (auto& zSol : zSolution) {
             addZVar(zSol, NEGATIVE);
         }
-
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in repairModel: " << e.getMessage() << std::endl;
@@ -278,7 +267,6 @@ void CP_Gurobi::repairModel(const PInstance& pInst, const std::vector<PRequest>&
 // Update the model
 void CP_Gurobi::updateModel(const PInstance& pInst) {
     try {
-        beginBatchUpdate();
 
         // Adding incompatible route columns
         for (auto& routeAdd : routesToAdd_) {
@@ -286,7 +274,7 @@ void CP_Gurobi::updateModel(const PInstance& pInst) {
             routeAdd->cpAdded_ = true;
         }
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
@@ -333,7 +321,6 @@ void CP_Gurobi::updateModel_Batch(const PInstance& pInst) {
             throw std::runtime_error("Model is not initialized");
         }
 
-        beginBatchUpdate();
   //      updateNormalCoefficients();
 
         const size_t numRoutes = routesToAdd_.size();
@@ -371,7 +358,7 @@ void CP_Gurobi::updateModel_Batch(const PInstance& pInst) {
         routeIncVar_.insert(routeIncVar_.end(), newVars.get(), newVars.get() + numRoutes);
 
         // Single update call
-        endBatchUpdate();
+        model_->update();
 
     } catch (const GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
@@ -448,7 +435,6 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
 
                 // Check if solution is column disjoint
                 if (isColumnDisjointFast(zResult, routeResult, pInst)) {
-                    beginBatchUpdate();
                     // Process outgoing variables (in reverse order to avoid index issues)
                     for (int idx = OutRouteVar.size() - 1; idx >= 0; --idx) {
                         int r = OutRouteVar[idx];
@@ -483,7 +469,7 @@ void CP_Gurobi::solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
                         model_->remove(zIncVar_[i]);
                         zIncVar_.erase(zIncVar_.begin() + i);
                     }
-                    endBatchUpdate();
+                    model_->update();
 
                 } else {
                     status_ = FRACTIONAL;

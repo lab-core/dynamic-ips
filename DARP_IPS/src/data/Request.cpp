@@ -36,8 +36,9 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     latestPickup_ = LARGE_CONSTANT;
     dual_ = 0;
     InitialDual_ = 0;
-    minDual_ = 0;
-    avgDual_ = 0;
+    minDual_ = LARGE_CONSTANT;
+    maxDual_ = 0;
+    lastDual_ = 0;
     minTravelTime_ = 0;
     taskIndex_ = -1;
     taskIndexLabel_ = -1;
@@ -75,4 +76,12 @@ std::string Request::toString() const {
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_PASSENGERS" << " : " << nbPassengers_ << std::endl;
     repStr << "#" << std::endl;
     return repStr.str();
+}
+
+void Request::setMaxMinDual() {
+    if (maxDual_ < dual_)
+        maxDual_ = dual_;
+    if (minDual_ > dual_)
+        minDual_ = dual_;
+
 }

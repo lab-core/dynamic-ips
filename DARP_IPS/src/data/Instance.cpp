@@ -434,6 +434,41 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
     updateRequestOrder();
 }
 
+void Instance::addNewRequests(const PInstance &mainInst, float elapsedTime, int lastRecRequests) {
+    int orderCounter = requests_.back()->taskIndex_ + 1;
+    // add new requests
+    for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
+        if (parameters_->solutionMode_ == ANYTIME) {
+            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                }
+
+            }
+            else
+                break;
+        }
+        else {
+            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                    requests_.back()->taskIndex_ = orderCounter;
+                    orderCounter++;
+                }
+            }
+            else
+                break;
+        }
+    }
+    nbTasks_ = static_cast<signed>(requests_.size());
+}
+
 void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     nbReturn_ = mainInst->nbReturn_;
     nbStateChanged_ = mainInst->nbStateChanged_;
@@ -616,8 +651,9 @@ void Instance::updatePenalties(float elapsedTime) {
 
         }
         if (requestObj->solVehicleID_ == LARGE_CONSTANT) {
-            requestObj->dual_ = requestObj->penalty_;
+    //        requestObj->dual_ = requestObj->penalty_;
             requestObj->InitialDual_ = requestObj->penalty_;
+            requestObj->lastDual_ = requestObj->penalty_;
         }
     }
 }
@@ -689,7 +725,8 @@ std::string Instance::saveSolutionRoutes() const {
 std::string Instance::saveRequestsResults() const {
     std::stringstream repStr;
     repStr << "RequestID,nbPassengers, PickupID,DropOffID,ReadyTime,PickTime,DropTime,EarliestPick,LatestPick,"
-              "AssignTime,CommitWaitTime,plannedWaitTime,VehicleID,#VehicleSwitch,WaitTime,TripDelay,MaxTravelTime,MinTravelTime,zoneID" << std::endl;
+              "AssignTime,CommitWaitTime,plannedWaitTime,VehicleID,#VehicleSwitch,WaitTime,TripDelay,MaxTravelTime,"
+              "MinTravelTime,minDual,maxDual,zoneID" << std::endl;
 
     for (auto & requestObj : requests_) {
         if (requestObj->getRequestId() >= nbInitialOnboards_) {
@@ -711,6 +748,8 @@ std::string Instance::saveRequestsResults() const {
             repStr << requestObj->dropTime_ - requestObj->pickTime_ - requestObj->minTravelTime_ << ",";
             repStr << requestObj->maxTravelTime_ << ",";
             repStr << requestObj->minTravelTime_ << ",";
+            repStr << requestObj->minDual_ << ",";
+            repStr << requestObj->maxDual_ << ",";
             repStr << requestObj->pickZoneID_ << "\n";
         }
     }
@@ -1024,7 +1063,7 @@ std::string Instance::saveReqDuals(int epoch, int isudIter, const string& model)
         repStr << requestObj->dual_ << ",";
         repStr << requestObj->minDual_ << ",";
         repStr << requestObj->penalty_ << ",";
-        repStr << requestObj->avgDual_ << ",";
+        repStr << requestObj->maxDual_ << ",";
         repStr << model << ",";
         repStr << requestObj->penalty_ << ",";
         repStr << requestObj->InitialDual_ -  requestObj->dual_<< "\n";

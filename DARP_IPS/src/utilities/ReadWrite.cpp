@@ -415,6 +415,7 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                                                              pInstance->requests_.back()->penalty_;
                 pInstance->requests_.back()->dual_ = iDual;
                 pInstance->requests_.back()->InitialDual_ = iDual;
+                pInstance->requests_.back()->lastDual_ = iDual;
                 if (pickPosition != 0) {
                     routeNodes[vehicleID][pickPosition] = pInstance->instGraph_->pickNodes_.back();
                     routeNodes[vehicleID][dropPosition] = pInstance->instGraph_->dropNodes_.back();
@@ -531,10 +532,11 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     int numIter = mpParams.value("NumIter", -1);
     int MIP_maxIncDegree = mpParams.value("MIP_maxIncDegree", -1);
     int CP_IncDegree = mpParams.value("CP_IncDegree", -1);
-    bool useMultiStage = mpParams.value("useMultiStage", 0) != 0;
+    bool reducedCP = mpParams.value("reducedCP", 0) != 0;
     float minImp = mpParams.value("minImp", -1.0f);
     bool useZoom = mpParams.value("useZoom", 0) != 0;
     int nbColumns = mpParams.value("NumColumn", -1);
+    bool smoothDual = mpParams.value("SmoothDual", 0) != 0;
 
     // Parse SP_Parameters
     auto spParams = j["SP_Parameters"];
@@ -560,6 +562,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
     int sortColumn = spParams.value("sortColumn", -1);
     int newRequestLimit = spParams.value("newRequestLimit", -1);
 
+
     // Parse cplexParameters
     auto cplexParams = j["cplexParameters"];
     int bigM = cplexParams.value("BigM", -1);
@@ -583,7 +586,7 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         greedyReOptimize, vehicleReturn, timeWindows,
         WaitForReturn, numVehicleSwitch,
         static_cast<WarmStart>(initialStart),
-        MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
+        MIP_maxIncDegree, CP_IncDegree, reducedCP, minImp,
         useZoom, nbColumns, isTruncated, maxLabel, maxCommittedLabel,
         pruneNodes, pruneArcs, discardSuboptimalPath,
         isDominanceReleased, isPickDropPossible,
@@ -597,7 +600,8 @@ void ReadWrite::readParametersJsonFull(InputPaths &inputPaths, PInstance &pInsta
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
-        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy)
+        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy),
+        smoothDual
     );
 }
 void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName) {
@@ -637,7 +641,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     float timeWindows = defaultParams.value("timeWindows", -1.0f);
     int MIP_maxIncDegree = defaultParams.value("MIP_maxIncDegree", -1);
     int CP_IncDegree = defaultParams.value("CP_IncDegree", -1);
-    bool useMultiStage = defaultParams.value("useMultiStage", 0) != 0;
+    bool reducedCP = defaultParams.value("reducedCP", 0) != 0;
     float minImp = defaultParams.value("minImp", -1.0f);
     bool useZoom = defaultParams.value("useZoom", 0) != 0;
     bool isDominanceReleased = defaultParams.value("isDominanceReleased", 0) != 0;
@@ -703,6 +707,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int newRequestLimit = scenarioParams.value("newRequestLimit", -1);
     int strategy = scenarioParams.value("LabelingStrategy", -1);
     int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", -1);
+    bool smoothDual = scenarioParams.value("SmoothDual", 0) != 0;
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
@@ -720,7 +725,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         greedyReOptimize, vehicleReturn, timeWindows,
         WaitForReturn, numVehicleSwitch,
         static_cast<WarmStart>(initialStart),
-        MIP_maxIncDegree, CP_IncDegree, useMultiStage, minImp,
+        MIP_maxIncDegree, CP_IncDegree, reducedCP, minImp,
         useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
         pruneNodes, pruneArcs, discardSuboptimalPath,
         isDominanceReleased, isPickDropPossible,
@@ -734,7 +739,8 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
-        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy)
+        static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy),
+        smoothDual
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -843,9 +849,9 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
     parametersStream << "Instance,ModelSolver,alpha,beta,delta,epochLength,committedTime,informTimeLimit,"
-                        "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,warmStart,mainAlgorithm,"
+                        "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,"
                         "solutionMode,NumIter,GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,"
-                        "useMultiStage,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
+                        "reducedCP,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
                         "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,"
                         "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";

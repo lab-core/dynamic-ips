@@ -41,10 +41,11 @@ public:
     float penalty_;                     // penalty of not serving at the current period
     RequestStatus requestStatus_;       // status of request 0:no action 1:on board 2:complete
     float dual_;
+    float lastDual_;
     float marginalCost_;
     float InitialDual_;                // when in parameters we use penalties as duals, we save previous duals in it
     float minDual_;
-    float avgDual_;
+    float maxDual_;
     int allocVehicleID_;                // the vehicle that serves the request
     int solVehicleID_;                  // this is compared with initialVehicleID_ to calculate displacement
     int epochVehicleID_;
@@ -71,6 +72,7 @@ public:
 
     // Display function
     std::string toString() const;
+    void setMaxMinDual();
 };
 
 inline bool operator == (const PRequest &lhs, const PRequest &rhs) {return (lhs->getRequestId() == rhs->getRequestId()); }

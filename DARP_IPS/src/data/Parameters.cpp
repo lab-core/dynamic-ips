@@ -28,7 +28,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        int committedTime, int nbThreads, InitialDual initialDual, DualMethod dualMethod,
                        MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn,
                        float timeWindow, float WaitForReturn, int numVehicleSwitch,
-                       WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool useMultiStage,
+                       WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool reducedCP,
                        float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
                        bool isDominanceReleased, bool isDropPickPossible, LabelingStrategy LabelingStrategy,
@@ -37,7 +37,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                        int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
-                       LabelingReOptimizeStrategy labelingReOptimizeStrategy):
+                       LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual):
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, LabelingStrategy, labelingReOptimizeStrategy,
                    usePick, nbPick, sortPath, newRequestLimit),
@@ -47,8 +47,8 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         greedyReOptimize_(greedyReOptimize), saveScratch_(0), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
         WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
-        CP_IncDegree_(CP_IncDegree), useMultiStage_(useMultiStage), minImp_(minImp), useZoom_(useZoom),
-        nbColumn_(nbColumn), subAlgorithm_(subAlgorithm), constPortion_(constPortion),
+        CP_IncDegree_(CP_IncDegree), reducedCP_(reducedCP), minImp_(minImp), useZoom_(useZoom),
+        nbColumn_(nbColumn), subAlgorithm_(subAlgorithm), constPortion_(constPortion), smoothDual_(smoothDual),
         vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
         routeRecycle_(routeRecycle), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), modelSolver_(modelSolver),
         populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait) {}
@@ -73,6 +73,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# number of threads " << " = " << nbThreads_ << std::endl;
     repStr << std::setw(setwLength) << "# initial dual solution " << " = " << eu::toString(initialDual_) << std::endl;
     repStr << std::setw(setwLength) << "# dual method " << " = " << eu::toString(dualMethod_) << std::endl;
+    repStr << std::setw(setwLength) << "# smoothing dual " << " = " << smoothDual_ << std::endl;
     repStr << std::setw(setwLength) << "# main algorithm " << " = " << eu::toString(mainAlgorithm_) << std::endl;
     repStr << std::setw(setwLength) << "# solution mode " << " = " << eu::toString(solutionMode_) << std::endl;
     repStr << std::setw(setwLength) << "# Number of iter per epoch " << " = " << numIter_ << std::endl;
@@ -92,7 +93,7 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# warm start " << " = " << eu::toString(initialStart_) << std::endl;
     repStr << std::setw(setwLength) << "# Zoom max MIP Inc. degree " << " = " << MIP_maxIncDegree_ << std::endl;
     repStr << std::setw(setwLength) << "# max CP Inc. degree " << " = " << CP_IncDegree_ << std::endl;
-    repStr << std::setw(setwLength) << "# use Multi stage " << " = " << useMultiStage_ << std::endl;
+    repStr << std::setw(setwLength) << "# use Reduced CP " << " = " << reducedCP_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
     repStr << std::setw(setwLength) << "# is Zooming used " << " = " << useZoom_ << std::endl;
     repStr << std::setw(setwLength) << "# Column added to MP " << " = " << nbColumn_ << std::endl;
@@ -150,6 +151,7 @@ std::string Parameters::toStr() const {
     repStr << nbThreads_ << ",";
     repStr << eu::toString(initialDual_) << ",";
     repStr << eu::toString(dualMethod_) << ",";
+    repStr << smoothDual_ << ",";
     repStr << eu::toString(initialStart_) << ",";
     repStr << eu::toString(mainAlgorithm_) << ",";
     repStr << eu::toString(solutionMode_) << ",";
@@ -159,7 +161,7 @@ std::string Parameters::toStr() const {
     repStr << eu::toString(returnPolicy_) << ",";
     repStr << MIP_maxIncDegree_ << ",";
     repStr << CP_IncDegree_ << ",";
-    repStr << boolToString(useMultiStage_) << ",";
+    repStr << boolToString(reducedCP_) << ",";
     repStr << boolToString(useZoom_) << ",";
     repStr << nbColumn_ << ",";
     repStr << boolToString(isTruncated_) << ",";

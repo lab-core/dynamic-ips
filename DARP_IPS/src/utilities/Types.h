@@ -58,6 +58,7 @@ class MasterAlgorithm;
 class CG_Algorithm;
 class ISUD_Algorithm;
 class MIPSolver;
+class CPModeler;
 
 //-----------------------------------------------------------------------------
 //  Smart Pointer Type Aliases
@@ -93,6 +94,7 @@ using PCG_Algorithm = std::unique_ptr<CG_Algorithm>;
 using PISUD_Algorithm = std::unique_ptr<ISUD_Algorithm>;
 using PMIPSolver = std::unique_ptr<MIPSolver>;
 using PRuntimeMetrics = std::unique_ptr<RuntimeMetrics>;
+using PCPModeler = std::shared_ptr<CPModeler>;
 //-----------------------------------------------------------------------------
 //  Container Type Aliases
 //-----------------------------------------------------------------------------

@@ -129,6 +129,8 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
             }
             else if (newLabel->currentNode_->type_ == PICKUP)
                 totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
+            else if (newLabel->currentNode_->type_ == SINK)
+                PInitialStop_ = PLastStop_;
 
         }
     }

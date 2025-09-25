@@ -27,7 +27,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntParam_Crossover, 1);
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
-        model_->set(GRB_IntParam_UpdateMode, 0);                // Immediate updates
+        model_->set(GRB_IntParam_UpdateMode, 1);                // Immediate updates
         model_->set(GRB_StringParam_LogFile, outputLog);
         env_.set(GRB_IntParam_UpdateMode, 1);
 
@@ -80,15 +80,13 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
         // Add request constraints (= rhs)
         for (int i = 0; i < nbRequestTask_; ++i) {
   //          std::string constrName = "request_" + std::to_string(i);
-            GRBLinExpr expr = 0;
-            requestConstr_.push_back(model_->addConstr(expr == rhs));
+            requestConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs));
         }
 
         // Add vehicle constraints (= rhs)
         for (int i = 0; i < nbVehicles; ++i) {
  //           std::string constrName = "vehicle_" + std::to_string(i);
-            GRBLinExpr expr = 0;
-            vehicleConstr_.push_back(model_->addConstr(expr == rhs));
+            vehicleConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs));
         }
 
         // Set basic parameters
@@ -191,46 +189,24 @@ void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const
     }
 }
 
-// Begin batch update
-void GurobiModeler::beginBatchUpdate() {
-    /*try {
-        model_->set(GRB_IntParam_UpdateMode, 1); // Enable batch mode
-    } catch (GRBException& e) {
-        std::cerr << "Error in beginBatchUpdate: " << e.getMessage() << std::endl;
-        throw;
-    }*/
-}
-
 void GurobiModeler::convertToInt() {
-    beginBatchUpdate();
     for (auto& var : zVar_)
         var.set(GRB_CharAttr_VType, GRB_INTEGER);
 
     for (auto& var : routeVar_)
         var.set(GRB_CharAttr_VType, GRB_INTEGER);
-    endBatchUpdate();
+    model_->update();
 }
 
 void GurobiModeler::convertToFloat() {
-    beginBatchUpdate();
     for (auto& var : zVar_)
         var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
 
     for (auto& var : routeVar_)
         var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
-    endBatchUpdate();
+    model_->update();
 }
 
-// End batch update
-void GurobiModeler::endBatchUpdate() {
-    try {
-        model_->update();
-//        model_->set(GRB_IntParam_UpdateMode, 0); // Disable batch mode
-    } catch (GRBException& e) {
-        std::cerr << "Error in endBatchUpdate: " << e.getMessage() << std::endl;
-        throw;
-    }
-}
 
 // Set parameters
 void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) {
@@ -244,7 +220,6 @@ void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) {
         model_->set(GRB_IntParam_DegenMoves, 0);                // Disable degeneracy moves
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
-        model_->set(GRB_IntParam_UpdateMode, 0);                // Immediate updates
 
         model_->set(GRB_DoubleParam_TimeLimit, availableTime);      // time limit
 

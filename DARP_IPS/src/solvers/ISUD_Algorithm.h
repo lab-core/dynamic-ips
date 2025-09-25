@@ -15,7 +15,7 @@ public:
 
     // Gurobi solver
     PRP_Gurobi RPGurobiPro_;
-    PCP_Reduced CPGurobiPro_;
+    PCPModeler CPGurobiPro_;
 
     int maxIncDegree_;
 

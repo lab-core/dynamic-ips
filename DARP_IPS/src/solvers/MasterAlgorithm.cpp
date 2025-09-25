@@ -12,6 +12,7 @@
 #include "GurobiSolver/CP_Gurobi.h"
 #include "GurobiSolver/CP_Reduced.h"
 #include <unordered_set>
+#include "GurobiSolver/CPModeler.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -132,7 +133,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
             lagSolver_.reset();
         }
         else if (pInst->parameters_->initialDual_ == INIT_CP) {
-            solveCP_Gurobi(pInst, epoch, inputPaths, 0.0);
+            solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
             for (auto &requestObj : zSolution_) {
                 requestObj->dual_ = requestObj->penalty_;
             }
@@ -537,7 +538,15 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
         if (pInst->parameters_->sortColumn_ == COMP_C) {
             updateScore(pInst);
         }
+        for (int v = 0; v < pInst->nbVehicles_; ++v) {
+            if (!pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
+                !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
+                routesToAdd.push_back(pInst->vehicles_[v]->emptyRoute_);
+                pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
+            }
+        }
     }
+
     if (minReducedCost_ <= 0 || selectMode == CP) {
         for (auto & vehicleObj : pInst->vehicles_) {
             if (pInst->parameters_->sortColumn_ == NORMAL_RC)
@@ -566,7 +575,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                         if (routeObj->incompatibilityDegree_ < 3) {
+                         if (routeObj->incompatibilityDegree_ > 1) {
                         routesToAdd.push_back(routeObj);
                         //  numAdded++;
                            }
@@ -624,14 +633,18 @@ void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &r
 void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
     updateIncDegrees(pInst, true);
     nbColumnsAdded_ = 0;
+    for (int v = 0; v < pInst->nbVehicles_; ++v) {
+        pInst->vehicles_[v]->emptyRoute_->createColumn(pInst->nbRequests_);
+        routesToAdd.push_back(pInst->vehicles_[v]->emptyRoute_);
+    }
     for (auto & vehicleObj : pInst->vehicles_) {
         std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
+            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId() || routeObj->routeRequests_.empty())
                 continue;
             std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
             if (seen.insert(key).second) {
-                if (routeObj->incompatibilityDegree_ > 2) {
+                if (routeObj->incompatibilityDegree_ > 1) {
                     routesToAdd.push_back(routeObj);
                     nbColumnsAdded_++;
                 }
@@ -695,10 +708,15 @@ std::string MasterAlgorithm::save_MPResults(int epoch, const std::string& model,
     return repStr.str();
 }
 
-void MasterAlgorithm::setCurrentRoutes(const PInstance &pInst) const {
+void MasterAlgorithm::setCurrentRoutes(const PInstance &pInst) {
     pInst->resetAssignedVehicles();
     for (auto &routeObj : routeSolution_) {
         pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+    }
+    zSolution_.clear();
+    for (auto &requestObj: pInst->requests_) {
+        if (requestObj->solVehicleID_ == LARGE_CONSTANT)
+            zSolution_.push_back(requestObj);
     }
 }
 
@@ -861,48 +879,66 @@ void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &in
     /************************************************************************************************/
     //                                     COMPLEMENTARY PROBLEM
     /************************************************************************************************/
-    CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCPModel(pInst);
+    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
+    CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
     CPGurobiPro_->routesToAdd_.clear();
-    reFillRoutesToAddCP(pInst, CPGurobiPro_->routesToAdd_);
- //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    for (auto & vehicleObj : pInst->vehicles_) {
-        CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
-    }
-    if (CPGurobiPro_->routesToAdd_.size() > 0) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        CPGurobiPro_->buildModel_batch(pInst, false);
+    updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
+    CPTime_->start();
+    CPBuildTime_->start();
+    if (pInst->parameters_->reducedCP_) {
+        CPGurobiPro_->buildModel_batch(pInst);
         CPBuildTime_->stop();
-        CPGurobiPro_->solveCPDual(pInst, inputPaths);
-        CPIter_++;
-        CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
-        epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-        iterTime_ = masterTime_->dSinceStart().count();
-        (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CPGurobiPro_->IncRoute_.size()),
-                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
-
-        CPGurobiPro_.reset();
-        CPTime_->stop();
+        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
     }
+    else {
+        CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
+        CPGurobiPro_->updateModel();
+        CPBuildTime_->stop();
+        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, false);
+        setCurrentRoutes(pInst);
+    }
+    CPIter_++;
+    CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
+    setObjValue();
+    epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
+    iterTime_ = masterTime_->dSinceStart().count();
+    (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CPGurobiPro_->IncRoute_.size()),
+                                                masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+    CPGurobiPro_.reset();
+    CPTime_->stop();
 }
 
 void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     /************************************************************************************************/
     //                                     COMPLEMENTARY PROBLEM
     /************************************************************************************************/
-    CPGurobiPro_ = std::make_shared<CP_Reduced>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCPModel(pInst);
+    /*std:: vector<PRoute> routeBack = routeSolution_;
+    routeSolution_.clear();
+    for (auto & vehicleObj : pInst->vehicles_) {
+        availableRoutes_[vehicleObj->vehicleID_].push_back(vehicleObj->currentRoute_);
+        availableRoutes_[vehicleObj->vehicleID_].push_back(vehicleObj->emptyRoute_);
+        routeSolution_.push_back(vehicleObj->greedyRoute_);
+    }
+    setCurrentRoutes(pInst);*/
+    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
+    CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
     CPGurobiPro_->routesToAdd_.clear();
     reFillRoutesToAddCP(pInst, CPGurobiPro_->routesToAdd_);
     //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    for (auto & vehicleObj : pInst->vehicles_) {
+    /*for (auto & vehicleObj : pInst->vehicles_) {
         CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
-    }
-    if (CPGurobiPro_->routesToAdd_.size() > 0) {
+    }*/
+    if (!CPGurobiPro_->routesToAdd_.empty()) {
         CPTime_->start();
         CPBuildTime_->start();
-        CPGurobiPro_->buildModel_batch(pInst, true);
+        if (pInst->parameters_->reducedCP_) {
+            CPGurobiPro_->buildModel_batch(pInst);
+        }
+        else {
+            CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
+            CPGurobiPro_->updateModel();
+        }
         CPBuildTime_->stop();
         CPGurobiPro_->solveCPDual(pInst, inputPaths);
         CPIter_++;
@@ -911,32 +947,6 @@ void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPath
         CPTime_->stop();
     }
 }
-
-void MasterAlgorithm::solveCP_Dual_Gurobi_full(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    CPGurobiFull_ = std::make_shared<CP_Gurobi>(inputPaths.getOutputSolverLog());
-    CPGurobiFull_->initializeCPModel(pInst, pInst->nbVehicles_);
-    CPGurobiFull_->routesToAdd_.clear();
-    reFillRoutesToAddCP(pInst, CPGurobiFull_->routesToAdd_);
-    //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    for (auto & vehicleObj : pInst->vehicles_) {
-        CPGurobiFull_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
-    }
-    if (CPGurobiFull_->routesToAdd_.size() > 0) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        CPGurobiFull_->buildModel_Dual(pInst);
-        CPBuildTime_->stop();
-        CPGurobiFull_->solveCPDual(pInst, inputPaths);
-        CPIter_++;
-        CPEpochSolveTime_ += CPGurobiFull_->solveTime_->dSinceStart().count();
-        CPGurobiFull_.reset();
-        CPTime_->stop();
-    }
-}
-
 
 void MasterAlgorithm::buildBasis(const PInstance &pInst) {
     // 1. Triplet buffer

@@ -51,7 +51,6 @@ void RP_Gurobi::addZVar(PRequest &request) {
 void RP_Gurobi::updateRPModel(PInstance &pInst) {
     try {
         // Use batch mode for efficiency
-        beginBatchUpdate();
 
         // Add the new compatible columns to the model
         for (auto& routeObj : routesToAdd_) {
@@ -60,7 +59,7 @@ void RP_Gurobi::updateRPModel(PInstance &pInst) {
             }
         }
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in updateRPModel: " << e.getMessage() << std::endl;
@@ -72,8 +71,6 @@ void RP_Gurobi::updateRPModel(PInstance &pInst) {
 void RP_Gurobi::updateModel_batch(PInstance& pInst) {
     try {
         if (routesToAdd_.empty()) return;
-
-        beginBatchUpdate();
 
         const size_t numRoutes = routesToAdd_.size();
 
@@ -109,7 +106,7 @@ void RP_Gurobi::updateModel_batch(PInstance& pInst) {
         routeVar_.insert(routeVar_.end(), newVars.get(), newVars.get() + numRoutes);
 
         // Single update call
-        endBatchUpdate();
+        model_->update();
 
     } catch (const GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
@@ -128,7 +125,6 @@ void RP_Gurobi::buildModelRP(PInstance &pInst, std::vector<PRoute> &routeSolutio
         initializeModel(pInst, rhs, nbVehicles);
 
         // Use batch mode for efficiency
-        beginBatchUpdate();
 
         // Adding request columns (z variables)
         for (auto& zSol : pInst->requests_) {
@@ -151,7 +147,7 @@ void RP_Gurobi::buildModelRP(PInstance &pInst, std::vector<PRoute> &routeSolutio
             }
         }
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in buildModel: " << e.getMessage() << std::endl;
@@ -353,14 +349,10 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
     std::vector<PRoute> &routeSolution, const InputPaths &inputPaths, float availableTime, float preObj) {
     try {
         // Convert variables to integer
-        beginBatchUpdate();
-
-        // Convert z variables to integer
         for (auto& var : zVar_) {
             var.set(GRB_CharAttr_VType, GRB_INTEGER);
         }
 
-        // Convert route variables to integer
         for (auto& var : routeVar_) {
             var.set(GRB_CharAttr_VType, GRB_INTEGER);
         }
@@ -376,8 +368,7 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
 
         // Set time limit
         model_->set(GRB_DoubleParam_TimeLimit, availableTime);
-
-        endBatchUpdate();
+        model_->update();
 
         solveTime_->start();
         int status = solve();
@@ -389,19 +380,15 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         else {
             double currentObj = getObjValue();
 
-            if (currentObj >= preObj) {
-                // Solution is not better, convert back to continuous
-                convertToFloat();
-            }
-            else {
+            if (currentObj < preObj) {
                 objValue_ = static_cast<float>(currentObj);
 
                 // Saving the result
                 extractSolution(pInst, zSolution, routeSolution);
 
-                // Convert back to continuous for next iteration
-                convertToFloat();
             }
+            // Convert back to continuous for next iteration
+            convertToFloat();
         }
     }
     catch (GRBException& e) {
@@ -435,8 +422,6 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
             // Convert to integer
             std::cout << "----------------------- MP ------------------------" << std::endl;
 
-            beginBatchUpdate();
-
             // Convert z variables to integer
             for (auto& var : zVar_) {
                 var.set(GRB_CharAttr_VType, GRB_INTEGER);
@@ -450,7 +435,7 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
             // Set time limit
             model_->set(GRB_DoubleParam_TimeLimit, availableTime);
 
-            endBatchUpdate();
+            model_->update();
 
             solveTime_->start();
             status = solve();
@@ -587,7 +572,6 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
             // If LP objective is better than current integer solution
             if (lpObj < objValue_) {
                 // Fix variables at their current values
-                beginBatchUpdate();
                 // Convert variables back to continuous
                 for (auto& var : zVar_)
                     var.set(GRB_CharAttr_VType, GRB_CONTINUOUS);
@@ -628,7 +612,7 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
                     constr.set(GRB_DoubleAttr_RHS, 0.0);
                 }
 
-                endBatchUpdate();
+                model_->update();
 
                 // Solve auxiliary problem
                 solveTime_->start();
@@ -645,7 +629,6 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
                     getDuals(pInst);
 
                     // Reset changes
-                    beginBatchUpdate();
 
                     // Change back to minimization
                     model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
@@ -670,7 +653,7 @@ void RP_Gurobi::solveModelIntAux_P(const PInstance& pInst, std::vector<PRequest>
                         vehicleConstr_[i].set(GRB_DoubleAttr_RHS, vehicleRHS_[i]);
                     }
 
-                    endBatchUpdate();
+                    model_->update();
                 }
             }
         }
@@ -768,14 +751,13 @@ void RP_Gurobi::tuneModel(const InputPaths &inputPaths, float tuneTimeLimit,
         }
 
         // Restore original variable types
-        beginBatchUpdate();
         for (size_t i = 0; i < zVar_.size(); ++i) {
             zVar_[i].set(GRB_CharAttr_VType, originalZVTypes[i]);
         }
         for (size_t i = 0; i < routeVar_.size(); ++i) {
             routeVar_[i].set(GRB_CharAttr_VType, originalRouteVTypes[i]);
         }
-        endBatchUpdate();
+        model_->update();
 
         // Reset output settings
   //      model_->set(GRB_IntParam_OutputFlag, 0);

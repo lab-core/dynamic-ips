@@ -71,6 +71,7 @@ public:
     void addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);
     void setParameters(const PInstance &pInst, float availableTime);
     void getDuals(const PInstance &pInst);
+    void dump_cplex();
 
 };
 

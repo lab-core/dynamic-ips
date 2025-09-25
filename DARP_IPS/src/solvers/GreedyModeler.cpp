@@ -80,6 +80,15 @@ void GreedyModeler::GreedySolver(PInstance &PInst) {
     greedyTime_->stop();
 }
 
+void GreedyModeler::GreedyUpperbound(PInstance &PInst) {
+    PInst->parameters_->greedyReOptimize_ = false;
+    greedyTime_->start();
+    initialization(PInst);
+    solveInsertion(PInst);
+    float upperbound = createUpperbound();
+    greedyTime_->stop();
+}
+
 void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
     greedyAssignTime_->start();
     if (select == 1) {

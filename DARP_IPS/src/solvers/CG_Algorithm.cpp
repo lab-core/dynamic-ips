@@ -86,17 +86,24 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->stop();
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
-        for (auto & requestObj : zSolution_) {
-            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
-        }
+ //       if (epoch == 1) {
+            for (auto & requestObj : zSolution_) {
+                if (requestObj->dual_ == 0)
+                    requestObj->dual_ = requestObj->penalty_;
+
+            }
+ //       }
         for (auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = 0;
-        for (auto & vehicleObj : pInst->vehicles_)
-            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        for (auto & vehicleObj : pInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
+                MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        }
+        MPGurobiPro_->updateModel(pInst);
+        MPGurobiPro_->routesToAdd_.clear();
     }
     if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
-        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP ||
-            pInst->parameters_->initialDual_ == GREEDY_D)) {
+        (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)) {
         MPGurobiPro_->routesToAdd_.clear();
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
         /*for (auto & vehicleObj : pInst->vehicles_)
@@ -113,6 +120,17 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
  //       for (auto & vehicleObj : pInst->vehicles_)
  //           vehicleObj->dual_ = 0;
  //       resetMPGurobi(pInst, inputPaths);
+    }
+    if (pInst->parameters_->smoothDual_) {
+        for (auto & requestObj : pInst->requests_) {
+            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->lastDual_;
+            requestObj->lastDual_ = requestObj->dual_;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
+    for (auto & requestObj : pInst->requests_) {
+        requestObj->setMaxMinDual();
     }
     setObjValue();
     previousObj_ = objValue_;

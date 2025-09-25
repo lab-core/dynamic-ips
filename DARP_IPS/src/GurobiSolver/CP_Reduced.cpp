@@ -147,8 +147,6 @@ void CP_Reduced::resetForNextIteration() {
 
         // Get all variables and remove them
         // Remove existing solution variables
-        beginBatchUpdate();
-
         for (auto& var : routeIncVar_) {
             model_->remove(var);
         }
@@ -168,7 +166,7 @@ void CP_Reduced::resetForNextIteration() {
         normalConst_ = model_->addConstr(normalExpr == 1.0, "normalConst");
 
         // Update model once after all removals
-        endBatchUpdate();
+        model_->update();
 
     } catch (const GRBException& e) {
         std::cerr << "Gurobi error in resetForNextIteration: " << e.getMessage() << std::endl;
@@ -217,8 +215,6 @@ void CP_Reduced::initializeCPModel(const PInstance &pInst) {
 
 void CP_Reduced::buildModel(const PInstance &pInst, bool greedyBase) {
     try {
-        beginBatchUpdate();
-
         // Adding incompatible route columns
         for (auto& routeAdd : routesToAdd_) {
             if (greedyBase)
@@ -232,7 +228,7 @@ void CP_Reduced::buildModel(const PInstance &pInst, bool greedyBase) {
             addZVar(pInst->requests_[i]);
         }
 
-        endBatchUpdate();
+        model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
@@ -249,7 +245,6 @@ void CP_Reduced::buildModel_batch(const PInstance &pInst, bool greedyBase) {
             throw std::runtime_error("Model is not initialized");
         }
 
-        beginBatchUpdate();
         // Adding incompatible route columns
         addRouteVarBatch(pInst, greedyBase);
 
@@ -257,7 +252,7 @@ void CP_Reduced::buildModel_batch(const PInstance &pInst, bool greedyBase) {
         addZVarBatch(pInst);
 
         // Single update call
-        endBatchUpdate();
+        model_->update();
 
     } catch (const GRBException& e) {
         std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
@@ -345,7 +340,7 @@ void CP_Reduced::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution
                         pInst->vehicles_[routeObj->vehicleID_]->currentRoute_ = routeObj;
                     }
 
-                    endBatchUpdate();
+                    model_->update();
                     routeSolution.clear();
                     for (auto & vehicleObj: pInst->vehicles_) {
                         routeSolution.push_back(vehicleObj->currentRoute_);
