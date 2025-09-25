@@ -445,6 +445,8 @@ void Instance::addNewRequests(const PInstance &mainInst, float elapsedTime, int 
                     addRequest(mainInst->requests_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                    requests_.back()->taskIndex_ = orderCounter;
+                    orderCounter++;
                 }
 
             }
