@@ -64,8 +64,6 @@ int main(int argc, char** argv) {
         max_i = 2;
     else if (config->scenario_ == "nbPickup")
         max_i = 2;
-    /*else if (config->scenario_ == "Rebalance_2")
-        max_i = 11;*/
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < max_i; ++i) {
@@ -81,8 +79,7 @@ int main(int argc, char** argv) {
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
                 if (config->initialState_ < 2)
                     mainInst->nbVehicles_ = numVehicles;
-                /*if (config->scenario_ == "Rebalance_2")
-                    mainInst->nbVehicles_ = numVehicles + (i * 100);*/
+
 
                 ReadWrite::readParametersJson(inputPaths.getInputParamFile(), mainInst, config->scenario_);
                 mainInst->adjustParameters(config);

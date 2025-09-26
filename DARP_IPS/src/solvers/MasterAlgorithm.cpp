@@ -133,9 +133,10 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
             lagSolver_.reset();
         }
         else if (pInst->parameters_->initialDual_ == INIT_CP) {
-            solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
+  //          solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
             for (auto &requestObj : zSolution_) {
-                requestObj->dual_ = requestObj->penalty_;
+                if (requestObj->dual_ == 0)
+                    requestObj->dual_ = requestObj->penalty_;
             }
         }
     }

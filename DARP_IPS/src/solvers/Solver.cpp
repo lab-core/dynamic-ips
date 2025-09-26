@@ -147,7 +147,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             mainInst->parameters_->nbPick_ = 3;
             mainInst->parameters_->partialPricing_ = true;
         }*/
-        /*if (epoch_ == 0) {
+        if (epoch_ == 0) {
             // request duals
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
                 if (EpochInst->requests_[i]->solVehicleID_ != LARGE_CONSTANT)
@@ -161,7 +161,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (epoch_ != 0) {
             *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 //            *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
-        }*/
+        }
       //  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
       //  *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
@@ -1257,31 +1257,46 @@ void Solver::DA_Solver(PInstance &mainInst, InputPaths &inputPaths, bool middleS
         else
             *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
 
-        if (mainInst->parameters_->initialDual_ == GREEDY_D) {
+        if (mainInst->parameters_->initialDual_ == GREEDY_D || mainInst->parameters_->initialDual_ == INIT_CP) {
             // set duals with greedy
             EpochInst->nbNewRequests_ = 0;
             EpochInst->addNewRequests(mainInst, elapsedTime_, nbReceivedRequest);
 
 
             if (EpochInst->nbNewRequests_ > 0) {
-                EpochInst->parameters_->greedyReOptimize_ = false;
-                GreedyModel_->GreedyUpperbound(EpochInst);
+                if (mainInst->parameters_->initialDual_ == GREEDY_D) {
+                    EpochInst->parameters_->greedyReOptimize_ = false;
+                    GreedyModel_->GreedyUpperbound(EpochInst);
 
-                for (int i = 0; i < EpochInst->nbNewRequests_; ++i) {
-                    CG_Model_->MPGurobiPro_->requestConstr_.push_back(CG_Model_->MPGurobiPro_->model_->addConstr(GRBLinExpr() == 1));
+                    for (int i = 0; i < EpochInst->nbNewRequests_; ++i) {
+                        CG_Model_->MPGurobiPro_->requestConstr_.push_back(CG_Model_->MPGurobiPro_->model_->addConstr(GRBLinExpr() == 1));
+                    }
+                    CG_Model_->MPGurobiPro_->model_->update();
+                    CG_Model_->MPGurobiPro_->routesToAdd_.clear();
+                    for (auto & vehicleObj : EpochInst->vehicles_) {
+                        if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
+                            CG_Model_->MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+                    }
+                    for (int i = EpochInst->requests_.size() - EpochInst->nbNewRequests_; i < EpochInst->requests_.size(); ++i) {
+                        CG_Model_->MPGurobiPro_->addZVarFloat(EpochInst->requests_[i], POSITIVE);
+                    }
+                    CG_Model_->MPGurobiPro_->updateModel(EpochInst);
+                    CG_Model_->MPGurobiPro_->solveLPDual(EpochInst, inputPaths);
+  //                  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "DualGreedy");
                 }
-                CG_Model_->MPGurobiPro_->model_->update();
-                CG_Model_->MPGurobiPro_->routesToAdd_.clear();
-                for (auto & vehicleObj : EpochInst->vehicles_) {
-                    if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
-                        CG_Model_->MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+                else {
+                    EpochInst->parameters_->greedyReOptimize_ = false;
+                    std:: vector<PRoute> routeBack = CG_Model_->routeSolution_;
+                    GreedyModel_->GreedySolver(EpochInst);
+                    CG_Model_->routeSolution_.clear();
+                    for (auto& veh : EpochInst->vehicles_)
+                        CG_Model_->routeSolution_.push_back(veh->currentRoute_);
+                    CG_Model_->solveCP_Dual_Gurobi(EpochInst, epoch_, inputPaths, 0.0);
+  //                  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "DualCP");
+                    CG_Model_->routeSolution_ = routeBack;
+                    CG_Model_->setCurrentRoutes(EpochInst);
+                    CG_Model_->zSolution_.clear();
                 }
-                for (int i = EpochInst->requests_.size() - EpochInst->nbNewRequests_; i < EpochInst->requests_.size(); ++i) {
-                    CG_Model_->MPGurobiPro_->addZVarFloat(EpochInst->requests_[i], POSITIVE);
-                }
-                CG_Model_->MPGurobiPro_->updateModel(EpochInst);
-                CG_Model_->MPGurobiPro_->solveLPDual(EpochInst, inputPaths);
-  //              *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "DualGreedy");
             }
         }
         epoch_++;
