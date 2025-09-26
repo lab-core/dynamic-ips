@@ -1,39 +1,49 @@
 #!/bin/bash
 
-# Define constants for command parameters
-program="bin/realtime_DARP"
-map_file="sufficient_manhattan-vehicles-300"
-instance_dir="Instances_12-14"
-args="1500 6 1"
-param_dir="Parameters.txt"
+# Define fixed parameters
+vehicles_1="vehicles_uniform"
+vehicles_2="vehicles_byDemand"
+directory="Instances_30s"
+main_dir="datasets/$directory"
+param_dir="AnyParameters"
 
-DIRECTORY="Instances_12-14"
-MAIN_DIR="datasets/$DIRECTORY"
+# Define algorithms for each mode
+declare -A algorithms
+algorithms[1]="6"
+algorithms[2]="6"
 
-# List of instances based on the previous grouping approach
-instances_1000=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
-instances_1100=("20160316_12-120m" "20160512_12-120m")
-instances_1400=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
+# Define scenario for each mode
+declare -A scenario_files
+scenario_files_1=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1" "Dual_3_0" "Dual_3_1")
+scenario_files_2=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
 
-# Define mode and corresponding algorithm
-mode=2
-algorithm=6
+# Dynamically create the INSTANCES array
+INSTANCES=($(find "./$main_dir" -mindepth 1 -maxdepth 1 -type d -print | sort))
+instances=("20150828_12-120m")
 
-# Define parameter files for mode 2
-param_files=("Param_mode_2a.txt" "Param_mode_2b.txt" "Param_mode_2c.txt" "Param_mode_2d.txt")
+vehicle_counts=(1000)
 
-# Run the program for each instance and parameter file
-for param_file in "${param_files[@]}"; do
-  for instance in "${instances_1000[@]}"; do
-    "$program" "$map_file" "$DIRECTORY" "$instance" 1000 "$algorithm" "$mode" "$param_file" 0
-  done
-  for instance in "${instances_1100[@]}"; do
-    "$program" "$map_file" "$DIRECTORY" "$instance" 1100 "$algorithm" "$mode" "$param_file" 0
-  done
-  for instance in "${instances_1400[@]}"; do
-    "$program" "$map_file" "$DIRECTORY" "$instance" 1400 "$algorithm" "$mode" "$param_file" 0
+# Create a single array containing all instance-mode-parameter combinations
+declare -a jobs
+i=1
+
+for mode in 1; do
+  for algorithm in ${algorithms[$mode]}; do
+    for vehicle_count in "${vehicle_counts[@]}"; do
+      for instance_path in "${INSTANCES[@]}"; do
+        instance=$(basename "$instance_path")
+        for scenario in "${scenario_files_1[@]}"; do
+          jobs[$i]="--vehicle-folder $vehicles_1 --inst-folder $directory --instance-name $instance --num-vehicles $vehicle_count --main-algo $algorithm --sol-mode $mode --paramfile $param_dir --scenario $scenario --save-scratch 0 --initial-state 2"
+          ((i++))
+        done
+      done
+    done
   done
 done
 
-# Add a delay to avoid overloading the system
-sleep 60
+# Run all jobs sequentially
+for idx in "${!jobs[@]}"; do
+  echo "Running job $idx: ${jobs[$idx]}"
+  bin/realtime_DARP ${jobs[$idx]}
+  sleep 60
+done
