@@ -21,7 +21,7 @@ G1_paramfile="AnyParameters"
 G1_vehicle_counts=(1500 1600 1700)
 G1_algorithms=(6)
 G1_modes=(2)
-G1_scenarios=("Dual_1_0" "Dual_1_1")
+G1_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
@@ -33,7 +33,7 @@ G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(2)
-G2_scenarios=("Dual_1_0" "Dual_1_1")
+G2_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
 #G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
@@ -55,24 +55,24 @@ G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828
               "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
 
 # G4
-G4_vehicle_folder="vehicles_uniform"
+G4_vehicle_folder="vehicles_byDemand_w11"
 G4_paramfile="AnyParameters"
-G4_vehicle_counts=(2000 1500)
+G4_vehicle_counts=(1000 1100 1200)
 G4_algorithms=(6)
 G4_modes=(2)
-G4_scenarios=("Rebalance_2")
-G4_inst_folder="Instances_2h-7"
-G4_instances=("20150715_07-120m" "20160316_07-120m" "20160401_07-120m" "20160427_07-120m")
+G4_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
+G4_inst_folder="Instances_4h-11"
+G4_instances=("20160628_11-240m")
 
 # G5
-G5_vehicle_folder="vehicles_byDemand_w7"
+G5_vehicle_folder="vehicles_byDemand_w11"
 G5_paramfile="AnyParameters"
-G5_vehicle_counts=(1600 1700)
+G5_vehicle_counts=(1300 1400 1500)
 G5_algorithms=(6)
 G5_modes=(2)
-G5_scenarios=("SP_20")
-G5_inst_folder="Instances_16h-7"
-G5_instances=("20160329_07-960m" "20160628_07-960m")
+G5_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
+G5_inst_folder="Instances_4h-11"
+G5_instances=("20150926_11-240m" "20160521_11-240m")
 
 # G6
 G6_vehicle_folder="vehicles_byDemand_w7"
@@ -84,8 +84,10 @@ G6_scenarios=("SP_20")
 G6_inst_folder="Instances_16h-7"
 G6_instances=("20150917_07-960m")
 
+
+
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G4 G5)
 
 # -------------------------
 # Build job list
