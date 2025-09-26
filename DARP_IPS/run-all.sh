@@ -45,5 +45,4 @@ done
 for idx in "${!jobs[@]}"; do
   echo "Running job $idx: ${jobs[$idx]}"
   bin/realtime_DARP ${jobs[$idx]}
-  sleep 60
 done
