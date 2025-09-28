@@ -156,7 +156,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
             vehicleObj->dual_ = 0;
     }
     if (pInst->parameters_->initialDual_ == RANDOM) {
-        for (auto &requestObj : zSolution_) {
+        for (auto &requestObj : pInst->requests_) {
             requestObj->dual_ = (rand() % (int) requestObj->penalty_)+ 1;
         }
         for (auto & vehicleObj : pInst->vehicles_)
