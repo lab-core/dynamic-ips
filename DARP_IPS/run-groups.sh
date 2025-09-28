@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-36
+#SBATCH --array=1-9
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -21,7 +21,7 @@ G1_paramfile="AnyParameters"
 G1_vehicle_counts=(1500 1600 1700)
 G1_algorithms=(6)
 G1_modes=(2)
-G1_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
+G1_scenarios=("Dual_9")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_4h-11"
@@ -33,7 +33,7 @@ G2_paramfile="AnyParameters"
 G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(2)
-G2_scenarios=("Dual_1_0" "Dual_1_1" "Dual_7_0" "Dual_7_1")
+G2_scenarios=("Dual_9")
 #G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_4h-11"
@@ -87,7 +87,7 @@ G6_instances=("20150917_07-960m")
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G4 G5)
+ALL_GROUPS=(G1 G2)
 
 # -------------------------
 # Build job list

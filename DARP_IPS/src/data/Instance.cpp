@@ -335,7 +335,7 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
                 break;
         }
         else {
-            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
+            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
                 if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);

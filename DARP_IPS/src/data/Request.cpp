@@ -83,5 +83,4 @@ void Request::setMaxMinDual() {
         maxDual_ = dual_;
     if (minDual_ > dual_)
         minDual_ = dual_;
-
 }

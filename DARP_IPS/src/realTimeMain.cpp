@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "datasets/";
+    std::string dataDir = "my_datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names

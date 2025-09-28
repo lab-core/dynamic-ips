@@ -147,7 +147,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             mainInst->parameters_->nbPick_ = 3;
             mainInst->parameters_->partialPricing_ = true;
         }*/
-        if (epoch_ == 0) {
+        /*if (epoch_ == 0) {
             // request duals
             for (size_t i = 0; i < EpochInst->requests_.size(); ++i) {
                 if (EpochInst->requests_[i]->solVehicleID_ != LARGE_CONSTANT)
@@ -161,7 +161,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
         if (epoch_ != 0) {
             *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 //            *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
-        }
+        }*/
       //  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
       //  *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 

@@ -13,6 +13,7 @@
 #include "GurobiSolver/CP_Reduced.h"
 #include <unordered_set>
 #include "GurobiSolver/CPModeler.h"
+#include <cstdlib>
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -145,6 +146,21 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = box * requestObj->penalty_;
         }
+    }
+    if (pInst->parameters_->initialDual_ == ZERO) {
+        float box = 0.8;
+        for (auto &requestObj : zSolution_) {
+            requestObj->dual_ = 0;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
+    if (pInst->parameters_->initialDual_ == RANDOM) {
+        for (auto &requestObj : zSolution_) {
+            requestObj->dual_ = (rand() % (int) requestObj->penalty_)+ 1;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
     }
 }
 
@@ -588,9 +604,9 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                         }
                         break;
                     default: // CG and MIP:
-                        if (!routeObj->mpAdded_  && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_) {
                             routesToAdd.push_back(routeObj);
-                            numAdded++;
+ //                           numAdded++;
                         }
                         break;
                 }
