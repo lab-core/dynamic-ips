@@ -132,6 +132,7 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     for (auto & requestObj : pInst->requests_) {
         requestObj->setMaxMinDual();
     }
+    calcDualsStatistics(pInst);
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();

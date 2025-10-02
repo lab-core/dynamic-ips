@@ -14,6 +14,12 @@
 //---------------------------------------------------------------------------------------------
 //  ISUD algorithm to solve the master problem
 //---------------------------------------------------------------------------------------------
+struct DualSummary {
+    double maxDual;
+    double minDual;
+    double meanDual;
+    double medianDual;
+};
 
 class MasterAlgorithm {
 public:
@@ -25,6 +31,9 @@ public:
     vector2D<PRoute> availableRoutes_;
     int nbRoutes_;
     int nbColumnsAdded_;
+    int nbColumnsLess_50_;
+    int nbColumnsLess_100_;
+    int nbColumnsLess_200_;
     int nbVehicles_;
     float availableTime_;                   // time left from availableTime_ to solve MP
     float timeLimit_;                       // total available time to solve the MP
@@ -75,6 +84,8 @@ public:
     float vehicleChange_;
     std::vector<std::pair<int,int>> adjacencyPairs_;
     std::vector<std::pair<int,int>> vehiclePairs_;
+
+    DualSummary summaryDuals_{0, 0, 0, 0};
 
     myTools::Timer *masterTime_;
     myTools::Timer *RPTime_;
@@ -164,7 +175,10 @@ public:
     void exportBasisToCSV(const std::string &filename);
 
     void checkCoveredVehicles(PInstance &pInst);
+    void calcDualsStatistics(const PInstance &pInst);
 };
+
+
 
 
 #endif //MASTERALGORITHM_H

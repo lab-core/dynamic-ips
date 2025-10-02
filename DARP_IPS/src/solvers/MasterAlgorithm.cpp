@@ -50,6 +50,9 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
 
     nbRoutes_ = 0;
     nbColumnsAdded_ = 0;
+    nbColumnsLess_50_ = 0;
+    nbColumnsLess_100_ = 0;
+    nbColumnsLess_200_ = 0;
     nbCoveredTasks_ = 0;
     GreedyObjValue_ = 0;
 
@@ -149,7 +152,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     }
     if (pInst->parameters_->initialDual_ == ZERO) {
         float box = 0.8;
-        for (auto &requestObj : zSolution_) {
+        for (auto &requestObj : pInst->requests_) {
             requestObj->dual_ = 0;
         }
         for (auto & vehicleObj : pInst->vehicles_)
@@ -231,6 +234,9 @@ void MasterAlgorithm::initialization(PInstance &pInst, const InputPaths &inputPa
     masterTime_->start();
     MPEpochSolveTime_ = 0;
     nbColumnsAdded_ = 0;
+    nbColumnsLess_50_ = 0;
+    nbColumnsLess_100_ = 0;
+    nbColumnsLess_200_ = 0;
     RMPCounter_ = 0;
     SPIter_ = 0;
     epochTime_ = 0;
@@ -604,9 +610,9 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                         }
                         break;
                     default: // CG and MIP:
-                        if (!routeObj->mpAdded_) {
+                        if (!routeObj->mpAdded_ && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
- //                           numAdded++;
+                            numAdded++;
                         }
                         break;
                 }
@@ -813,7 +819,12 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
            << GreedyObjValue_ << ","
            << objValue_ << ","
            << lpObjValue_ << ","
-           << totalWaitTime_ << ",";
+           << totalWaitTime_ << ","
+            // add the dual stats here:
+           << summaryDuals_.maxDual << ","
+           << summaryDuals_.minDual << ","
+           << summaryDuals_.meanDual << ","
+           << summaryDuals_.medianDual << ",";
     return repStr.str();
 }
 
@@ -1352,6 +1363,34 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
                 }
             }
         }
+    }
+}
+
+void MasterAlgorithm::calcDualsStatistics(const PInstance &pInst) {
+    try {
+        std::vector<double> pi_values;
+        pi_values.reserve(pInst->requests_.size());
+
+        // Get request constraint duals
+        for (size_t i = 0; i < pInst->requests_.size(); ++i) {
+            pi_values.push_back(pInst->requests_[i]->dual_);
+        }
+
+        // Compute stats if we have requests
+        summaryDuals_.maxDual = *std::max_element(pi_values.begin(), pi_values.end());
+        summaryDuals_.minDual = *std::min_element(pi_values.begin(), pi_values.end());
+        summaryDuals_.meanDual = std::accumulate(pi_values.begin(), pi_values.end(), 0.0) / pi_values.size();
+
+        std::sort(pi_values.begin(), pi_values.end());
+        size_t n = pi_values.size();
+        if (n % 2 == 0)
+            summaryDuals_.medianDual = 0.5 * (pi_values[n/2 - 1] + pi_values[n/2]);
+        else
+            summaryDuals_.medianDual = pi_values[n/2];
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in getDuals: " << e.getMessage() << std::endl;
+        throw;
     }
 }
 

@@ -49,9 +49,10 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                                   "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
                                   "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                                   " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                                  "LinearObjective,waitTime,destructTime,RebalancingRuntime,GreedyTime,#Return,#Idle,"
-                                  "#passPerVehicle,#requestPerVehicle,#nodePerVehicle,"
-                                  "#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle,nbCommitted" << std::endl;
+                                  "LinearObjective,waitTime,maxDual,minDual,meanDual,medianDual,destructTime,"
+                                  "RebalancingRuntime,GreedyTime,#Return,#Idle,#passPerVehicle,#requestPerVehicle,"
+                                  "#nodePerVehicle,#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,"
+                                  "nbRecycle,nbCommitted,nbLess_50,nbLess_100,nbLess_200" << std::endl;
     }
     else {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
@@ -162,7 +163,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
             *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 //            *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
         }*/
-      //  *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
+//        *CG_Model_->pLogIterReqDualStream_ << EpochInst->saveReqDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
       //  *CG_Model_->pLogIterVehDualStream_ << EpochInst->saveVehDuals(epoch_, CG_Model_->RMPCounter_, "Dual");
 
         //***********************************************************************************//
@@ -525,7 +526,15 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
         nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
         nbNegativeFound += subProblem->nbNegativeColumns_;
         runtimeMetrics_->updateSubproblemMetrics(subProblem);
- //       (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+        if (subProblem->nbOutputs_ < 200) {
+            CG_Model_->nbColumnsLess_200_ ++;
+            if (subProblem->nbOutputs_ < 100) {
+                CG_Model_->nbColumnsLess_100_ ++;
+                if (subProblem->nbOutputs_ < 50)
+                    CG_Model_->nbColumnsLess_50_ ++;
+            }
+        }
+        (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
     }
 
 
@@ -1350,7 +1359,10 @@ std::string Solver::saveRuntimes(const PInstance &EpochInst) {
            << heuristicCG_ << ","
            << upperbound << ","
            << nbRecycle_ <<","
-           << EpochInst->nbCommitted_ <<"\n";
+           << EpochInst->nbCommitted_ <<","
+           << CG_Model_->nbColumnsLess_50_ <<","
+           << CG_Model_->nbColumnsLess_100_ <<","
+           << CG_Model_->nbColumnsLess_200_ <<"\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }
