@@ -50,6 +50,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                                  vehicle->departTime_, vehicle->numPassengers_);
     }
     selected_ = false;
+    PCurrentStop_ = PInitialStop_;
     PLastStop_ = PInitialStop_;
     totalDelay_ = 0;
     idleTime_ = 0;
@@ -130,8 +131,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
             else if (newLabel->currentNode_->type_ == PICKUP)
                 totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
             else if (newLabel->currentNode_->type_ == SINK)
-                PInitialStop_ = PLastStop_;
-
+                PCurrentStop_ = newLabel;
         }
     }
 }
@@ -143,6 +143,7 @@ GreedyRoute::GreedyRoute(const GreedyRoute &label) {
     idleTime_ = label.idleTime_;
     PLastStop_ = label.PLastStop_;
     PInitialStop_ = label.PInitialStop_;
+    PCurrentStop_ = label.PCurrentStop_;
     totalDelay_ = label.totalDelay_;
     idle_ = label.idle_;
 }
@@ -168,7 +169,7 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
     position->updatePosition(PLastStop_, PLastStop_, waitIncrease, lengthIncrease);
 
     // define the initial position to add the request just after all
-    PStopLabel prePick = PInitialStop_;
+    PStopLabel prePick = PCurrentStop_;
     PStopLabel preDrop;
     while (prePick != nullptr) {
         waitIncrease = INFINITY;
@@ -392,11 +393,14 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
             //           myTools::throwException("Route-Validation");
         }
 
-        if (currentLabel->parent_->leaveTime_ < currentLabel->currentNode_->related_Request_->requestTime_) {
-            std::cout << "Depart time violated at node : ";
-            std::cout << currentLabel->parent_->currentNode_->nodeID_ << std::endl;
-            //           myTools::throwException("Route-Validation");
+        if (currentLabel->currentNode_->type_ == PICKUP) {
+            if (currentLabel->parent_->leaveTime_ < currentLabel->currentNode_->related_Request_->requestTime_) {
+                std::cout << "Depart time violated at node : ";
+                std::cout << currentLabel->parent_->currentNode_->nodeID_ << std::endl;
+                //           myTools::throwException("Route-Validation");
+            }
         }
+
         if (update) {
             newRoute->routeNodes_.back()->related_Request_->allocVehicleID_ = newRoute->vehicleID_;
             newRoute->routeNodes_.back()->nodeStatus_ = DONE;
@@ -519,7 +523,7 @@ void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxD
     position->updatePosition(PLastStop_, PLastStop_, deltaDelay, DeltaT);
 
     // define the initial position to add the request just after all
-    PStopLabel prePick = PInitialStop_;
+    PStopLabel prePick = PCurrentStop_;
     PStopLabel preDrop;
     while ((prePick != nullptr) && (notFound)) {
         deltaDelay = INFINITY;

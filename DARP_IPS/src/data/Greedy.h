@@ -38,6 +38,7 @@ public:
     PVehicle* Vehicle_;
     PStopLabel PLastStop_;              // Last node in the partial path
     PStopLabel PInitialStop_;           // starting node of the route
+    PStopLabel PCurrentStop_;           // starting node of the route
     float totalDelay_;                  // total delay of the corresponding vehicle
     float departureTime_;               // departure time of the corresponding vehicle
     float idleTime_;                    // idle time of the corresponding vehicle

@@ -2,8 +2,8 @@
   "defaultParameters": {
     "alphaParam": 1.5,
     "betaParam": 360,
-    "deltaPram": 420,
-    "epochLength": 2,
+    "deltaPram": 540,
+    "epochLength": 5,
     "penaltyL": 30,
     "committedTime": 30,
     "nbThreads": 16,

@@ -86,7 +86,7 @@ INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 find_package(Threads REQUIRED)
 
 ######## Compiler message
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 message(STATUS "System: ${CMAKE_SYSTEM}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
