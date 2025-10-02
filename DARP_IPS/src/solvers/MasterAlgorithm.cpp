@@ -160,7 +160,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     }
     if (pInst->parameters_->initialDual_ == RANDOM) {
         for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = (rand() % (int) requestObj->penalty_)+ 1;
+            requestObj->dual_ = (rand() % (int) (0.5 * requestObj->penalty_))+ 1;
         }
         for (auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = 0;
