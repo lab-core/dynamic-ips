@@ -151,6 +151,7 @@ void Route::addNode(const PNode &node, float reachTime, float departTime) {
     plannedDepartTime_.push_back(departTime);
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
+        plannedDelay_.push_back(reachTime - node->initialReadyTime_);
         totalDelay_ += reachTime - node->initialReadyTime_;
     }
     routeNodes_.push_back(node);
@@ -173,13 +174,14 @@ void Route::removeNode(int nodeIndex) {
     plannedDepartTime_.erase(plannedDepartTime_.begin(), plannedDepartTime_.begin()+nodeIndex);
     plannedPassengers_.erase(plannedPassengers_.begin(), plannedPassengers_.begin()+nodeIndex);
     routeRequests_.clear();
+    plannedDelay_.clear();
     totalDelay_ = 0;
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
             totalDelay_ += plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
+            plannedDelay_.push_back(plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_);
         }
-
     }
 }
 

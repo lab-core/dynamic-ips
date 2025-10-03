@@ -36,7 +36,7 @@ public:
     float bestLabelReduceCost_;             // smallest reduced cost of active vehicles
     int nbActiveLabels_;                    // Number of active labels in labeling approach
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
-    std::bitset<LABEL_BIT_SIZE> prunedArcs_;
+    boost::dynamic_bitset<> prunedArcs_;
     float travelTimeFromSource_;              // is used in labeling for sorting successors_
     int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
     std::vector<PLabel> activeLabels_;      // list of active labels (non-extended labels)

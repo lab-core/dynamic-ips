@@ -6,7 +6,7 @@
 
 unsigned int Label::labelCount_ = 0;
 
-Label::Label(const Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
+Label::Label(const Vehicle *vehicle, PNode &source, int labelSize) : labelID_(labelCount_++) {
     char* name2 = new char[255];
     strncpy(name2, std::to_string(labelID_).c_str(), 255);
     name_ = name2;
@@ -23,9 +23,11 @@ Label::Label(const Vehicle *vehicle, PNode &source) : labelID_(labelCount_++) {
     openNode_.clear();
     nbCommitted_ = 0;
     openRequests_.reset();
-
+    openRequests_.resize(labelSize);
     completeRequests_.reset();
+    completeRequests_.resize(labelSize);
     extendCheck_.reset();
+    extendCheck_.resize(labelSize);
 //    prunedDirections_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
@@ -67,7 +69,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     isDropExtend_ = false;
     createTime_ = 0;
 }
-void Label::copyLabel(const Vehicle *vehicle, PNode &source) {
+void Label::copyLabel(const Vehicle *vehicle, PNode &source, int labelSize) {
     status_ = ACTIVE;
     load_ = vehicle->numPassengers_;
     passedTime_ = vehicle->departTime_;
@@ -81,10 +83,13 @@ void Label::copyLabel(const Vehicle *vehicle, PNode &source) {
     totalDelay_ = 0;
     openNode_.clear();
     openRequests_.reset();
+    openRequests_.resize(labelSize);
     nbCommitted_ = 0;
 
     completeRequests_.reset();
+    completeRequests_.resize(labelSize);
     extendCheck_.reset();
+    extendCheck_.resize(labelSize);
 //    prunedDirections_.reset();
     this->numCompleted_ = 0;
     numExtendCheck_ = 0;
@@ -107,11 +112,13 @@ void Label::copyLabel(const Label &label) {
     lambdaScore_ = label.lambdaScore_;
     totalDelay_ = label.totalDelay_;
     openNode_ = label.openNode_;
+    openRequests_.reset();
     openRequests_ = label.openRequests_;
     nbCommitted_ = label.nbCommitted_;
-
+    completeRequests_.reset();
     completeRequests_ = label.completeRequests_;
  //   prunedDirections_ = label.prunedDirections_;
+    extendCheck_.reset();
     extendCheck_ = label.completeRequests_;
     numCompleted_ = label.numCompleted_;
     numExtendCheck_ = label.numCompleted_;

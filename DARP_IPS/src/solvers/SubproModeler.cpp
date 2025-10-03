@@ -9,6 +9,8 @@ SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;
     reOptimize_ = false;
+    possibleFirstInsert_ = 0;
+    possibleSecondInsert_ = 0;
 }
 
 SubproModeler::~SubproModeler() = default;
@@ -16,6 +18,7 @@ SubproModeler::~SubproModeler() = default;
 // initialization of the subgraph
 void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
+    labelSize_ = pInst->requests_.size() + 2 * Vehicle_->capacity_;
     Vehicle_->graphRequests_.resize(pInst->nbRequests_);
     Vehicle_->graphRequests_.reset();
     nbTotalRequest_ = pInst->nbRequests_;
@@ -23,7 +26,7 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
     subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(Vehicle_)->vehicleID_]));
 
     // adding onboard nodes to the graph
-    if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
+    if (Vehicle_->currentRoute_->routeSize_ > 1) {
         for (int i = 1; i < (Vehicle_)->currentRoute_->routeSize_; ++i) {
             if ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                 subGraph_->onboards_.emplace_back(std::make_shared<Node>((Vehicle_)->currentRoute_->routeNodes_[i]));
@@ -40,12 +43,31 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
 
         bool addRequest = true;
         if (pInst->parameters_->pruneNodes_) {
-            float minWait = Vehicle_->departTime_ +
+            float reachTime = Vehicle_->departTime_ +
                             durationMatrix_[Vehicle_->departNode_->locationID_]
-                            [pInst->instGraph_->pickNodes_[i]->locationID_] -
-                            pInst->requests_[i]->earlyPick_;
+                            [pInst->instGraph_->pickNodes_[i]->locationID_];
 
-            addRequest = (minWait <= pInst->requests_[i]->penalty_);
+            addRequest = (reachTime <= pInst->requests_[i]->latestPickup_);
+            if (addRequest) {
+                if (subGraph_->onboards_.empty())
+                    possibleFirstInsert_ ++;
+                else {
+                    float remainedTime = subGraph_->onboards_[0]->related_Request_->maxTravelTime_ - Vehicle_->departTime_ +
+                                         subGraph_->onboards_[0]->pairNode_->departTime_;
+                    float travelTime = reachTime + pInst->instGraph_->pickNodes_[i]->serviceTime_ - Vehicle_->departTime_ +
+                                    durationMatrix_[pInst->instGraph_->pickNodes_[i]->locationID_][subGraph_->onboards_[0]->locationID_];
+                    if (travelTime <= remainedTime)
+                        possibleFirstInsert_ ++;
+                    else {
+                        float reachTime2 = Vehicle_->departTime_ + durationMatrix_[Vehicle_->departNode_->locationID_]
+                                [subGraph_->onboards_[0]->locationID_] + subGraph_->onboards_[0]->serviceTime_ +
+                                    durationMatrix_[subGraph_->onboards_[0]->locationID_]
+                                     [pInst->instGraph_->pickNodes_[i]->locationID_];
+                        if (reachTime2 <= pInst->requests_[i]->latestPickup_)
+                            possibleSecondInsert_ ++;
+                    }
+                }
+            }
             if (addRequest && reOptimize_) {
                 const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
                 addRequest = isRequestUnassigned || pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_);

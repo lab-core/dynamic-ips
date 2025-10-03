@@ -14,7 +14,6 @@
 //-----------------------------------------------------------------------------
 namespace constants {
     constexpr int LARGE_CONSTANT = 9999999;
-    constexpr int LABEL_BIT_SIZE = 1500;
     constexpr int MAX_ZONE = 350;
     constexpr int SENTENCE_SIZE = 50;
     constexpr int SERVICE_TIME = 30;
@@ -161,6 +160,7 @@ enum InitialDual : int {
     GREEDY_D = 7,
     ZERO = 8,
     RANDOM = 9,
+    DELAY = 10,
 };
 
 enum DualMethod : int {
@@ -282,8 +282,8 @@ namespace enum_strings {
         "GREEDY_START", "PRE_SOLUTION", "EMPTY_ROUTES ", "IP_SOLUTION "
     };
 
-    constexpr std::array<const char*, 10> initialDualNames = {
-        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP", "GREEDY_D", "ZERO", "RANDOM"
+    constexpr std::array<const char*, 11> initialDualNames = {
+        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP", "GREEDY_D", "ZERO", "RANDOM", "DELAY"
     };
 
     constexpr std::array<const char*, 7> dualMethodNames = {

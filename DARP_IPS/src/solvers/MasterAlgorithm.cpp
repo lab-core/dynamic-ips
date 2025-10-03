@@ -129,6 +129,30 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->adjustDuals();
     }
+    else if (pInst->parameters_->initialDual_ == ZERO) {
+        float box = 0.8;
+        for (auto &requestObj : pInst->requests_) {
+            requestObj->dual_ = 0;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
+    else if (pInst->parameters_->initialDual_ == RANDOM) {
+        for (auto &requestObj : pInst->requests_) {
+            requestObj->dual_ = (rand() % (int) requestObj->penalty_)+ 1;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
+    else if (pInst->parameters_->initialDual_ == DELAY) {
+        for (auto &vehicleObj : pInst->vehicles_) {
+            for (size_t i =0; i < vehicleObj->greedyRoute_->routeRequests_.size(); i++) {
+                vehicleObj->greedyRoute_->routeRequests_[i]->dual_ = vehicleObj->greedyRoute_->plannedDelay_[i] + 100;
+            }
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+    }
     else if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_) {
         if (pInst->parameters_->initialDual_ == LAGRANGIAN) {
             lagSolver_ = std::make_unique<LagrangianSolver>(pInst, objValue_,routeSolution_, zSolution_,
@@ -149,21 +173,6 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = box * requestObj->penalty_;
         }
-    }
-    if (pInst->parameters_->initialDual_ == ZERO) {
-        float box = 0.8;
-        for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = 0;
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-    }
-    if (pInst->parameters_->initialDual_ == RANDOM) {
-        for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = (rand() % (int) (0.5 * requestObj->penalty_))+ 1;
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
     }
 }
 
@@ -219,12 +228,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     }
 
     // create upper bound
-    pInst->parameters_->greedyReOptimize_ = false;
-    GreedyModel->greedyTime_->start();
-    GreedyModel->initialization(pInst);
-    GreedyModel->solveInsertion(pInst);
-    upperbound_ = GreedyModel->createUpperbound();
-    GreedyModel->greedyTime_->stop();
+    upperbound_ = GreedyModel->GreedyUpperbound(pInst);
     std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
 

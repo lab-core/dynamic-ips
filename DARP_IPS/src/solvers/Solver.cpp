@@ -63,7 +63,8 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
-    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,maxPick,#LGenerated,#LDominated,#LEliminated,"
+    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,nbOnboards,possibleFirstInsert,possibleInsert,"
+                                     "possibleSecondInsert,maxPick,#LGenerated,#LDominated,#LEliminated,"
                                      "#nbPrunedArcs,#nbPrunedPath,nbNegative,nbRoutes,BestRCost,runtime" << std::endl;
 
     /*pLogSolutionChange_ = new Tools::LogOutput(inputPaths.getOutputSolutionChange());
@@ -1275,7 +1276,7 @@ void Solver::DA_Solver(PInstance &mainInst, InputPaths &inputPaths, bool middleS
             if (EpochInst->nbNewRequests_ > 0) {
                 if (mainInst->parameters_->initialDual_ == GREEDY_D) {
                     EpochInst->parameters_->greedyReOptimize_ = false;
-                    GreedyModel_->GreedyUpperbound(EpochInst);
+                    float upperbound = GreedyModel_->GreedyUpperbound(EpochInst);
 
                     for (int i = 0; i < EpochInst->nbNewRequests_; ++i) {
                         CG_Model_->MPGurobiPro_->requestConstr_.push_back(CG_Model_->MPGurobiPro_->model_->addConstr(GRBLinExpr() == 1));

@@ -35,14 +35,14 @@ void LabelingSubProblem::sortSuccessors(const std::vector<PNode> &nodeList, bool
         if (nodeObj->type_ != SINK){
             nodeObj->successors_.clear();
             nodeObj->prunedArcs_.reset();
+            nodeObj->prunedArcs_.resize(labelSize_);
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
                     if (prunedArcs) {
-                        float minWait =
+                        float reachTime =
                                 (Vehicle_)->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
-                                durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_] -
-                                pickNodeObj->readyTime_;
-                        if (minWait > pickNodeObj->related_Request_->penalty_)
+                                durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_];
+                        if (reachTime > pickNodeObj->related_Request_->latestPickup_)
                             nodeObj->prunedArcs_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
                     }
                     nodeObj->successors_.push_back(&(*pickNodeObj));
@@ -69,10 +69,10 @@ void LabelingSubProblem::initialization() {
     if (!labelPool_.empty()){
         initialLabel = std::move(labelPool_.back());
         labelPool_.pop_back();
-        initialLabel->copyLabel(Vehicle_, subGraph_->sourceNodes_[0]);
+        initialLabel->copyLabel(Vehicle_, subGraph_->sourceNodes_[0], labelSize_);
     }
     else
-        initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0]);
+        initialLabel = std::make_shared<Label>(Vehicle_, subGraph_->sourceNodes_[0], labelSize_);
     initialNodeID_ = subGraph_->sourceNodes_[0]->nodeID_;
     initialLabel->travelResources_.resize(nbTotalRequest_ + (Vehicle_)->onboards_.size(),0);
     // update travel resource for the initial label based on the onboard requests
@@ -1148,6 +1148,10 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << (Vehicle_)->vehicleID_ << ",";
     repStr << subRequests_.size() << ",";
     repStr << subGraph_->nbNodes_-2 << ",";
+    repStr << Vehicle_->numPassengers_ << ",";
+    repStr << possibleFirstInsert_ << ",";
+    repStr << possibleSecondInsert_ << ",";
+    repStr << possibleFirstInsert_ + possibleSecondInsert_ << ",";
     repStr << maxPickup_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";

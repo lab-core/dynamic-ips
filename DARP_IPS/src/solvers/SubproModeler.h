@@ -22,6 +22,9 @@ public:
     int nbNegativeColumns_;                 // number negative reduced cost routes found
     int nbTotalRequest_;                    // equals to the number of requests in the corresponding graph
     bool reOptimize_;
+    int possibleFirstInsert_;
+    int possibleSecondInsert_;
+    int labelSize_;
 
     // Constructor and Destructor
     explicit SubproModeler(const PVehicle &vehicle);
