@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
-#SBATCH --time=3:10:00
-#SBATCH --array=1-54
+#SBATCH --mem=64G
+#SBATCH --time=10:10:00
+#SBATCH --array=1-18
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -18,10 +18,10 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="AnyParameters"
-G1_vehicle_counts=(1400 1500 1600 1700)
+G1_vehicle_counts=(1400 1500 1600)
 G1_algorithms=(6)
 G1_modes=(1)
-G1_scenarios=("Dual_1_0" "Dual_9_0" "Dual_10_0" "Dual_7_0")
+G1_scenarios=("Dual_1_0" "Dual_9_0")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_2h-11"
@@ -30,10 +30,10 @@ G1_instances=("20160329_11-120m" "20160628_11-120m")
 # G2
 G2_vehicle_folder="vehicles_byDemand_w11"
 G2_paramfile="AnyParameters"
-G2_vehicle_counts=(1500 1600 1700 1800)
+G2_vehicle_counts=(1500 1600 1700)
 G2_algorithms=(6)
 G2_modes=(1)
-G2_scenarios=("Dual_1_0" "Dual_9_0" "Dual_10_0" "Dual_7_0")
+G2_scenarios=("Dual_1_0" "Dual_9_0")
 #G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_2h-11"
