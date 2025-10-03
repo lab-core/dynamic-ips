@@ -26,6 +26,8 @@ public:
     float earlyPick_;                   // earliest possible pickup time for the request
     float initialEarlyPick_;
     float latestPickup_;                // latest possible pickup time for the request
+    float latestDrop_;
+
     float pickTime_;                    // actual pickup time of the request
     float dropTime_;                    // actual pickup time of the request
     float serviceTime_;                 // time to perform pick up or drop off

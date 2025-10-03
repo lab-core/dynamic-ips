@@ -287,6 +287,7 @@ void Vehicle::setRequestStatus(const PNode &node, float reachTime) const {
     if (node->type_ == PICKUP) {
         node->related_Request_->requestStatus_ = ON_BOARD;
         node->related_Request_->pickTime_ = reachTime;
+        node->related_Request_->latestDrop_ = reachTime + node->serviceTime_ + node->related_Request_->maxTravelTime_;
         node->related_Request_->allocVehicleID_ = vehicleID_;
     }
 

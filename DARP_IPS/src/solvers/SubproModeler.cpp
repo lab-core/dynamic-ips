@@ -52,19 +52,42 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
                 if (subGraph_->onboards_.empty())
                     possibleFirstInsert_ ++;
                 else {
-                    float remainedTime = subGraph_->onboards_[0]->related_Request_->maxTravelTime_ - Vehicle_->departTime_ +
-                                         subGraph_->onboards_[0]->pairNode_->departTime_;
-                    float travelTime = reachTime + pInst->instGraph_->pickNodes_[i]->serviceTime_ - Vehicle_->departTime_ +
-                                    durationMatrix_[pInst->instGraph_->pickNodes_[i]->locationID_][subGraph_->onboards_[0]->locationID_];
-                    if (travelTime <= remainedTime)
+                    // check first insertion
+
+                    float addedFirstTravelTime = computeDetourDelay(Vehicle_->departNode_,
+                        pInst->instGraph_->pickNodes_[i], subGraph_->onboards_[0]);
+
+                    bool possibleFirstInsert = true;
+                    for (auto &nodeObj: subGraph_->onboards_) {
+                        if (nodeObj->plannedReachtime_ + addedFirstTravelTime > nodeObj->related_Request_->latestDrop_) {
+                            possibleFirstInsert = false;
+                            break;
+                        }
+                    }
+                    if (possibleFirstInsert)
                         possibleFirstInsert_ ++;
                     else {
-                        float reachTime2 = Vehicle_->departTime_ + durationMatrix_[Vehicle_->departNode_->locationID_]
-                                [subGraph_->onboards_[0]->locationID_] + subGraph_->onboards_[0]->serviceTime_ +
-                                    durationMatrix_[subGraph_->onboards_[0]->locationID_]
-                                     [pInst->instGraph_->pickNodes_[i]->locationID_];
-                        if (reachTime2 <= pInst->requests_[i]->latestPickup_)
-                            possibleSecondInsert_ ++;
+                        // check second insertion
+                        float reachTime2 = subGraph_->onboards_[0]->plannedReachtime_ + subGraph_->onboards_[0]->serviceTime_ +
+                                    durationMatrix_[subGraph_->onboards_[0]->locationID_][pInst->instGraph_->pickNodes_[i]->locationID_];
+                        if (reachTime2 <= pInst->requests_[i]->latestPickup_) {
+                            if (subGraph_->onboards_.size() == 1)
+                                possibleSecondInsert_ ++;
+                            else {
+                                float addedSecondTravelTime = computeDetourDelay(subGraph_->onboards_[0],
+                                    pInst->instGraph_->pickNodes_[i], subGraph_->onboards_[1]);
+
+                                bool possibleSecondInsert = true;
+                                for (int j = 1; j < subGraph_->onboards_.size(); j++) {
+                                    if (subGraph_->onboards_[j]->plannedReachtime_ + addedSecondTravelTime > subGraph_->onboards_[j]->related_Request_->latestDrop_) {
+                                        possibleSecondInsert = false;
+                                        break;
+                                    }
+                                }
+                                if (possibleSecondInsert)
+                                    possibleSecondInsert_ ++;
+                            }
+                        }
                     }
                 }
             }

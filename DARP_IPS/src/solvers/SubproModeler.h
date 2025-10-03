@@ -33,6 +33,17 @@ public:
     // calculation of penalties and initialization of the subgraph
     void initSubGraph(const PInstance &pInst);
     void setNodeIndices() const;
+
+    inline float computeDetourDelay(PNode before, PNode pick, PNode after)
+    {
+        // delay = (before→pick + service(pick) + pick→after) - (before→after)
+        float detour = durationMatrix_[before->locationID_][pick->locationID_]
+               + pick->serviceTime_
+               + durationMatrix_[pick->locationID_][after->locationID_]
+               - durationMatrix_[before->locationID_][after->locationID_];
+
+        return detour;
+    }
 };
 
 
