@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=16G
+#SBATCH --mem=36G
 #SBATCH --time=5:10:00
 #SBATCH --array=1-54
 #SBATCH --error=slurm-%A_%a.err
@@ -25,7 +25,7 @@ G1_scenarios=("Dual_1" "Dual_9" "Dual_1_R" "Dual_9_R" "Dual_1_P" "Dual_9_P")
 #G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 #G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_2h-11"
-G1_instances=("20160329_11-120m" "20160628_11-120m")
+G1_instances=("20160329_11-120m")
 
 # G2
 G2_vehicle_folder="vehicles_byDemand_w11"
