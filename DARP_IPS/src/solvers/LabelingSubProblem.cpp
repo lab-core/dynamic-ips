@@ -79,10 +79,7 @@ void LabelingSubProblem::initialization() {
     for (auto &nodeObj: subGraph_->onboards_) {
         initialLabel->openNode_.push_back(&(*nodeObj));
         initialLabel->openRequests_.set(nodeObj->related_Request_->taskIndexLabel_, true);
-        float remainedTime = nodeObj->related_Request_->maxTravelTime_ - Vehicle_->departTime_ +
-                             nodeObj->pairNode_->departTime_;
-
-        initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = remainedTime;
+        initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = nodeObj->related_Request_->latestDrop_ - Vehicle_->departTime_;
     }
 
     /*if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
@@ -1082,6 +1079,8 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
     const PInstance &pInst, int nbRequests) {
     nbNegativeColumns_ = 0;
     availableRoutes.clear();
+    boost::dynamic_bitset<> unCoveredRequests;
+    unCoveredRequests.resize(nbRequests);
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         if (labelObj->numCompleted_ > 0) {
             PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
@@ -1090,6 +1089,15 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
                 if (newRoute->reducedCost_ < -0.01)
                     nbNegativeColumns_ ++;
                 nbOutputs_++;
+                if (newRoute->routeRequests_.size() == 2)
+                    nbTwoPickGenerated_++;
+                else if (newRoute->routeRequests_.size() == 1)
+                    nbOnePickGenerated_++;
+                for (auto & requestObj : newRoute->routeRequests_) {
+                    if (!requestObj->insertedVehicles_.test(Vehicle_->vehicleID_)) {
+                        unCoveredRequests.set(requestObj->taskIndexLabel_,1);
+                    }
+                }
                 availableRoutes.emplace_back(std::move(newRoute));
             }
         }
@@ -1098,6 +1106,7 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
         for (auto & labelObj : nodeObj.second->activeLabels_)
             labelPool_.push_back(std::move(labelObj));
     }
+    nbOutCover_ = unCoveredRequests.count();
 }
 
 void LabelingSubProblem::CollectLabels() {
@@ -1149,9 +1158,9 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << subRequests_.size() << ",";
     repStr << subGraph_->nbNodes_-2 << ",";
     repStr << Vehicle_->numPassengers_ << ",";
-    repStr << possibleFirstInsert_ << ",";
-    repStr << possibleSecondInsert_ << ",";
-    repStr << possibleFirstInsert_ + possibleSecondInsert_ << ",";
+    repStr << Vehicle_->onboards_.size() << ",";
+    repStr << Vehicle_->currentRoute_->routeRequests_.size() << ",";
+    repStr << possibleInsert_ << ",";
     repStr << maxPickup_ << ",";
     repStr << nbGenerated_ << ",";
     repStr << nbDominated_ << ",";
@@ -1161,7 +1170,14 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << nbNegativeColumns_ << ",";
     repStr << nbOutputs_ << ",";
     repStr << Vehicle_->bestReducedCost_ << ",";
-    repStr << subproTime_->dSinceStart().count() << "\n";
+    repStr << subproTime_->dSinceStart().count() << ",";
+    repStr << Vehicle_->stateChanged_ << ",";
+    repStr << Vehicle_->removePickup_ << ",";
+    repStr << Vehicle_->removeDrop_ << ",";
+    repStr << nbTwoPickGenerated_ << ",";
+    repStr << nbOnePickGenerated_ << ",";
+    repStr << nbOutCover_ << ",";
+    repStr << nbPriorCover_ << "\n";
     return repStr.str();
 }
 

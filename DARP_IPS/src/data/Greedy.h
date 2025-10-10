@@ -92,8 +92,8 @@ public:
 //---------------------------------------------------------------------------------------------
 
 struct insertPosition {
-    PStopLabel prePickup_;          // best stopLabel to insert pick noe after
-    PStopLabel preDrop_;            // best stopLabel to insert drop noe after
+    PStopLabel prePickup_;          // best stopLabel to insert pick new after
+    PStopLabel preDrop_;            // best stopLabel to insert drop new after
     float deltaDelay_{};              // potential increase in wait time after insertion
     float deltaLength_{};             // potential increase in length after insertion
 

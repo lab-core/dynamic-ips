@@ -63,9 +63,10 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
 
 
     pLogEpochSubRuntimeStream_ = new Tools::LogOutput(inputPaths.getOutputSubproSize());
-    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,nbOnboards,possibleFirstInsert,possibleInsert,"
-                                     "possibleSecondInsert,maxPick,#LGenerated,#LDominated,#LEliminated,"
-                                     "#nbPrunedArcs,#nbPrunedPath,nbNegative,nbRoutes,BestRCost,runtime" << std::endl;
+    (*pLogEpochSubRuntimeStream_) << "Epoch,vehicleID,nbRequests,nbNodes,nbOnboards,nbOnboards_nodes,plannedPick,"
+                                     "possibleInsert,maxPick,#LGenerated,#LDominated,#LEliminated,"
+                                     "#nbPrunedArcs,#nbPrunedPath,nbNegative,nbRoutes,BestRCost,runtime,stateChanged,"
+                                     "removePick,removeDrop,#TwoPickRoute,#OnePickRoute,#newCovered,#PriorCover" << std::endl;
 
     /*pLogSolutionChange_ = new Tools::LogOutput(inputPaths.getOutputSolutionChange());
     (*pLogSolutionChange_) << "Epoch,#SubProblems,#Requests,#NewArrival,#PreScheduled, #ReScheduled, "
@@ -470,20 +471,19 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
 
             // Handle route recycling
             if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING &&
-                !vehicleObj->currentRoute_->routeRequests_.empty() && EpochInst->nbNewRequests_ > 0 &&
-                EpochInst->nbNewRequests_ <= mainInst->parameters_->newRequestLimit_) {
+                !vehicleObj->currentRoute_->routeRequests_.empty()) {
                 if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_ROUTE) {
                     subProSolve.back()->reOptimize_ = true;
                     nbRecycle_ ++;
                 }
-                 else {
+                else {
                      subProSolve.back()->reOptimize_ = true;
                      nbRecycle_ ++;
-                     subProSolve.back()->availableRoutes_ = std::move(availableRoutes[vehicleObj->vehicleID_]);
-                     subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
-                     /*if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_GRAPH)
-                         vehicleObj->checkCoveredRequests(availableRoutes[vehicleObj->vehicleID_], EpochInst->nbRequests_);*/
-                 }
+                     if (EpochInst->parameters_->labelingReOptimizeStrategy_ == RE_INSERT) {
+                         subProSolve.back()->availableRoutes_ = std::move(availableRoutes[vehicleObj->vehicleID_]);
+                         subProSolve.back()->availableRoutes_.push_back(vehicleObj->currentRoute_);
+                     }
+                }
             }
             availableRoutes[vehicleObj->vehicleID_].clear();
         }
@@ -535,7 +535,9 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
                     CG_Model_->nbColumnsLess_50_ ++;
             }
         }
-        (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+        if (epoch_ >= 720 && epoch_ < 1440 && (epoch_ - 720) % 18 == 0) {
+            (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+        }
     }
 
 

@@ -38,6 +38,8 @@ public:
     boost::dynamic_bitset<> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
     int numPickup_;
     bool stateChanged_;
+    bool removePickup_;
+    bool removeDrop_;
     int preSolvePick_;
 
     // KPIs

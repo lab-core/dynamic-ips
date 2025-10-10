@@ -178,7 +178,6 @@ void Route::removeNode(int nodeIndex) {
     totalDelay_ = 0;
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
-            routeNodes_[i]->plannedReachtime_ = plannedReachTime_[i];
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
             totalDelay_ += plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
             plannedDelay_.push_back(plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_);

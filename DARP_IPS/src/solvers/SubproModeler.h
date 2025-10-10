@@ -22,8 +22,11 @@ public:
     int nbNegativeColumns_;                 // number negative reduced cost routes found
     int nbTotalRequest_;                    // equals to the number of requests in the corresponding graph
     bool reOptimize_;
-    int possibleFirstInsert_;
-    int possibleSecondInsert_;
+    int nbOnePickGenerated_;
+    int nbTwoPickGenerated_;
+    int nbOutCover_;
+    int nbPriorCover_;
+    int possibleInsert_;
     int labelSize_;
 
     // Constructor and Destructor
@@ -33,18 +36,26 @@ public:
     // calculation of penalties and initialization of the subgraph
     void initSubGraph(const PInstance &pInst);
     void setNodeIndices() const;
-
-    inline float computeDetourDelay(PNode before, PNode pick, PNode after)
-    {
-        // delay = (before→pick + service(pick) + pick→after) - (before→after)
-        float detour = durationMatrix_[before->locationID_][pick->locationID_]
-               + pick->serviceTime_
-               + durationMatrix_[pick->locationID_][after->locationID_]
-               - durationMatrix_[before->locationID_][after->locationID_];
-
-        return detour;
-    }
+    bool checkInsertionPossibility(PNode &pick);
 };
+
+inline float computeDetourDelay(PNode &before, PNode &pick, PNode &after)
+{
+    // delay = (before→pick + service(pick) + pick→after) - (before→after)
+    float detour = durationMatrix_[before->locationID_][pick->locationID_]
+           + pick->serviceTime_
+           + durationMatrix_[pick->locationID_][after->locationID_]
+           - durationMatrix_[before->locationID_][after->locationID_];
+
+    return detour;
+}
+inline bool isPickupProfitable(PNode &before, PNode &pick, float beforeDepartTime)
+{
+    float reachTime = beforeDepartTime + durationMatrix_[before->locationID_][pick->locationID_];
+    if (reachTime <= pick->related_Request_->latestPickup_ && (reachTime - pick->related_Request_->initialEarlyPick_ - pick->related_Request_->dual_ < 1))
+        return true;
+    return false;
+}
 
 
 #endif //SUBPROMODELER_H

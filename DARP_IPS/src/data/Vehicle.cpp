@@ -29,6 +29,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, c
     idle_ = true;
     numPickup_ = 1;
     stateChanged_ = false;
+    removeDrop_ = false;
+    removePickup_ = false;
     preSolvePick_ = 2;
 }
 
@@ -73,7 +75,14 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
     currentRoute_ = currentRoute;
     for (int i = 0; i < currentRoute->routeRequests_.size(); ++i) {
         currentRoute->routeRequests_[i]->solVehicleID_  = vehicleID_;
+        currentRoute->routeRequests_[i]->coveredVehicles_.set(vehicleID_,true);
         // currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
+    }
+    for (int i = 1; i < currentRoute->routeNodes_.size(); ++i) {
+        if (currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)
+            currentRoute_->routeNodes_[i]->related_Request_->latestDrop_ =
+            currentRoute_->routeNodes_[i]->pairNode_->reachTime_ + currentRoute_->routeNodes_[i]->pairNode_->serviceTime_ +
+                currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_;
     }
 }
 
@@ -104,6 +113,8 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
     else
         committedTime = mainInst->parameters_->epochLength_;
     stateChanged_ = false;
+    removePickup_ = false;
+    removeDrop_ = false;
     /*if (mainInst->parameters_->vehicleReturn_ && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime - committedTime
     && currentRoute_->routeSize_ == 1){
         if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
@@ -123,7 +134,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 onboards_.clear();
                 int breakIndex = 0;
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-    //                stateChanged_ = true;
+                    stateChanged_ = true;
                     mainInst->nbStateChanged_++;
                     currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
@@ -144,7 +155,8 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 
                     // set request status
                     if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                        stateChanged_ = true;
+                        removePickup_ = true;
+ //                       stateChanged_ = true;
                         // currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
                         if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
                             removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
@@ -155,6 +167,8 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                                 mainInst->lastCommittedRequests_.push_back(currentRoute_->routeNodes_[i]->related_Request_);
                         }
                     }
+                    else
+                        removeDrop_ = true;
 
                     setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
 
@@ -181,6 +195,10 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                         if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
                             currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
                             onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
+                            currentRoute_->routeNodes_[i]->related_Request_->latestDrop_ =
+                                currentRoute_->routeNodes_[i]->pairNode_->reachTime_ +
+                                    currentRoute_->routeNodes_[i]->pairNode_->serviceTime_ +
+                                    currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_;
                         }
                     }
                 }

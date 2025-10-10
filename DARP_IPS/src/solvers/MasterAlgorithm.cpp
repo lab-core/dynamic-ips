@@ -1344,25 +1344,20 @@ void MasterAlgorithm::exportBasisToCSV(const std::string& filename) {
 
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
     for (auto & requestObj: pInst->requests_) {
-        requestObj->coveredVehicles_.reset();
-        requestObj->coveredVehicles_.resize(nbVehicles_);
+  //      requestObj->coveredVehicles_.reset();
+  //      requestObj->coveredVehicles_.resize(nbVehicles_);
+        requestObj->insertedVehicles_.reset();
+        requestObj->insertedVehicles_.resize(nbVehicles_);
     }
-    if (pInst->parameters_->LabelingStrategy_ == PULLING) {
-        for (auto & requestObj: pInst->requests_) {
-            requestObj->coveredVehicles_.flip();
+    for (auto & vehicleObj : pInst->vehicles_) {
+        for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
+            requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
         }
     }
-    else {
+    if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
         for (auto & vehicleObj : pInst->vehicles_) {
             for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
                 for (auto & requestObj: routeObj->routeRequests_) {
-                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
-                }
-            }
-        }
-        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
-            for (auto & vehicleObj : pInst->vehicles_) {
-                for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
                     requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
                 }
             }

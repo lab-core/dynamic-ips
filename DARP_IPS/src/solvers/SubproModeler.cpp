@@ -9,8 +9,11 @@ SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     nbNegativeColumns_ = 0;
     nbTotalRequest_ = 0;
     reOptimize_ = false;
-    possibleFirstInsert_ = 0;
-    possibleSecondInsert_ = 0;
+    nbOnePickGenerated_ = 0;
+    nbTwoPickGenerated_ = 0;
+    nbOutCover_ = 0;
+    possibleInsert_ = 0;
+    nbPriorCover_ = 0;
 }
 
 SubproModeler::~SubproModeler() = default;
@@ -18,6 +21,7 @@ SubproModeler::~SubproModeler() = default;
 // initialization of the subgraph
 void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
+    possibleInsert_ = 0;
     labelSize_ = pInst->requests_.size() + 2 * Vehicle_->capacity_;
     Vehicle_->graphRequests_.resize(pInst->nbRequests_);
     Vehicle_->graphRequests_.reset();
@@ -42,77 +46,45 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
         if (pInst->requests_[i]->requestStatus_ != NO_ACTION) continue;
 
         bool addRequest = true;
+        bool insertRequest = false;
         if (pInst->parameters_->pruneNodes_) {
-            float reachTime = Vehicle_->departTime_ +
-                            durationMatrix_[Vehicle_->departNode_->locationID_]
-                            [pInst->instGraph_->pickNodes_[i]->locationID_];
+            addRequest = isPickupProfitable(Vehicle_->departNode_, pInst->instGraph_->pickNodes_[i],Vehicle_->departTime_);
+        }
 
-            addRequest = (reachTime <= pInst->requests_[i]->latestPickup_);
-            if (addRequest) {
-                if (subGraph_->onboards_.empty())
-                    possibleFirstInsert_ ++;
-                else {
-                    // check first insertion
-
-                    float addedFirstTravelTime = computeDetourDelay(Vehicle_->departNode_,
-                        pInst->instGraph_->pickNodes_[i], subGraph_->onboards_[0]);
-
-                    bool possibleFirstInsert = true;
-                    for (auto &nodeObj: subGraph_->onboards_) {
-                        if (nodeObj->plannedReachtime_ + addedFirstTravelTime > nodeObj->related_Request_->latestDrop_) {
-                            possibleFirstInsert = false;
-                            break;
-                        }
-                    }
-                    if (possibleFirstInsert)
-                        possibleFirstInsert_ ++;
-                    else {
-                        // check second insertion
-                        float reachTime2 = subGraph_->onboards_[0]->plannedReachtime_ + subGraph_->onboards_[0]->serviceTime_ +
-                                    durationMatrix_[subGraph_->onboards_[0]->locationID_][pInst->instGraph_->pickNodes_[i]->locationID_];
-                        if (reachTime2 <= pInst->requests_[i]->latestPickup_) {
-                            if (subGraph_->onboards_.size() == 1)
-                                possibleSecondInsert_ ++;
-                            else {
-                                float addedSecondTravelTime = computeDetourDelay(subGraph_->onboards_[0],
-                                    pInst->instGraph_->pickNodes_[i], subGraph_->onboards_[1]);
-
-                                bool possibleSecondInsert = true;
-                                for (int j = 1; j < subGraph_->onboards_.size(); j++) {
-                                    if (subGraph_->onboards_[j]->plannedReachtime_ + addedSecondTravelTime > subGraph_->onboards_[j]->related_Request_->latestDrop_) {
-                                        possibleSecondInsert = false;
-                                        break;
-                                    }
-                                }
-                                if (possibleSecondInsert)
-                                    possibleSecondInsert_ ++;
-                            }
-                        }
-                    }
-                }
-            }
-            if (addRequest && reOptimize_) {
-                const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
-                addRequest = isRequestUnassigned || pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_);
-
-                /*switch (pInst->parameters_->labelingReOptimizeStrategy_) {
-                    case BY_GRAPH: {
-                        // For graph-based strategy, check if request is covered by vehicle's graph
-                        const bool isRequestCovered = Vehicle_->coveredRequests.test(pInst->requests_[i]->taskIndex_);
-                        addRequest = isRequestCovered || isRequestUnassigned;
-                        break;
-                    }
-                    case BY_ROUTE: {
-                        // For route-based strategy, check if request is covered by current route
-                        const bool isRequestCovered = Vehicle_->currentRoute_->column_.test(pInst->requests_[i]->taskIndex_);
-                        addRequest = isRequestCovered || isRequestUnassigned;
-                        break;
-                    }
-                    default:
-                        break;
-                }*/
+        if (pInst->parameters_->LabelingStrategy_ == RE_PULLING && Vehicle_->currentRoute_->routeRequests_.empty()) {
+            float reachTime = Vehicle_->departTime_ + durationMatrix_[Vehicle_->departNode_->locationID_][pInst->instGraph_->pickNodes_[i]->locationID_];
+            if (reachTime - pInst->instGraph_->pickNodes_[i]->initialReadyTime_ - pInst->requests_[i]->dual_ > 1 ) {
+                addRequest = false;
             }
         }
+
+        if (addRequest) {
+            if (pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_))
+                nbPriorCover_ ++;
+
+            const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
+            if (isRequestUnassigned || pInst->requests_[i]->committedPickTime_ < LARGE_CONSTANT) {
+                possibleInsert_ ++;
+                insertRequest = true;
+                pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
+            }
+            else {
+                if (!Vehicle_->stateChanged_ || !Vehicle_->removeDrop_) {
+                    if (pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
+                        possibleInsert_ ++;
+                        insertRequest = true;
+                        pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
+                    }
+                }
+                else if (checkInsertionPossibility(pInst->instGraph_->pickNodes_[i])) {
+                    possibleInsert_ ++;
+                    insertRequest = true;
+                    pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
+                }
+            }
+        }
+        if (reOptimize_)
+            addRequest = addRequest && insertRequest;
 
         if (addRequest) {
             subRequests_.push_back(pInst->requests_[i]);
@@ -157,5 +129,30 @@ void SubproModeler::setNodeIndices() const {
     }
 }
 
-
-
+bool SubproModeler::checkInsertionPossibility(PNode &pick) {
+    if (subGraph_->onboards_.empty())
+        return true;
+    for (size_t j = 0; j < Vehicle_->emptyRoute_->routeNodes_.size(); j++) {
+        PNode before = Vehicle_->emptyRoute_->routeNodes_[j];
+        float beforeDepartTime = Vehicle_->emptyRoute_->plannedDepartTime_[j];
+        int beforeLoad = Vehicle_->emptyRoute_->plannedPassengers_[j];
+        if (beforeLoad + pick->related_Request_->nbPassengers_ <= Vehicle_->capacity_ &&
+            isPickupProfitable(before, pick, beforeDepartTime)) {
+            if (j < Vehicle_->emptyRoute_->routeNodes_.size()-1) {
+                float detourDelay = computeDetourDelay(before, pick,Vehicle_->emptyRoute_->routeNodes_[j+1]);
+                bool dropFeasible = true;
+                for (size_t k = j+1; k < Vehicle_->emptyRoute_->routeNodes_.size(); k++) {
+                    if (Vehicle_->emptyRoute_->plannedReachTime_[k] + detourDelay >
+                        Vehicle_->emptyRoute_->routeNodes_[k]->related_Request_->latestDrop_) {
+                        dropFeasible = false;
+                        break;
+                    }
+                }
+                if (dropFeasible) return true;
+            }
+            else
+                return true;
+        }
+    }
+    return false;
+}

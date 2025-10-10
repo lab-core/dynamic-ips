@@ -286,6 +286,11 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
     for (auto & requestObj: penaltyRequests) {
         if (mainInst->parameters_->timeWindow_ == 0 || requestObj->latestPickup_ >= simulationStartTime_ + elapsedTime) {
             addRequest(requestObj);
+            requestObj->coveredVehicles_.reset();
+            requestObj->coveredVehicles_.resize(nbVehicles_);
+ //           requestObj->coveredVehicles_.flip();
+            requestObj->insertedVehicles_.reset();
+            requestObj->insertedVehicles_.resize(nbVehicles_);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
             instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
         }
@@ -326,6 +331,10 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
                 if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);
+                    mainInst->requests_[i]->insertedVehicles_.reset();
+                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
+                    mainInst->requests_[i]->coveredVehicles_.reset();
+                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
                 }
@@ -339,6 +348,10 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
                 if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);
+                    mainInst->requests_[i]->insertedVehicles_.reset();
+                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
+                    mainInst->requests_[i]->coveredVehicles_.reset();
+                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
                 }

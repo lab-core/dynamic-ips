@@ -57,6 +57,7 @@ public:
     int dropZoneID_;
     int nbSwitch_;
     boost::dynamic_bitset<> coveredVehicles_;
+    boost::dynamic_bitset<> insertedVehicles_;
 
 
     // Constructor and Destructor

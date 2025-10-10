@@ -27,7 +27,6 @@ public:
     NodeType type_;                         // node type: pick up, drop off, source, sink
     NodeType initialType_;                  // initial type (the type maybe change to source)
     float reachTime_;                       // the time that a vehicle reaches to the node
-    float plannedReachtime_;
     float departTime_;                      // the time that a vehicle reaches to the node
     int nbPassengers_;                      // number of passengers to pick up or drop off
     float serviceTime_;                     // time to perform pick up or drop off
