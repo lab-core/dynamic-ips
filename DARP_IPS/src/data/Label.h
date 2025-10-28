@@ -36,6 +36,7 @@ public:
     int nbCommitted_;
     float reducedCost_;
     float totalDelay_;
+    float totalTripDelay_;
     LabelStatus status_;
     int nbPickUp_;                                  // the number of time the vehicle visit pick up points
     boost::dynamic_bitset<> extendCheck_;         // check the elementary condition of the path
@@ -60,7 +61,7 @@ public:
     bool checkSubsetOpen(const PLabel &otherLabel) const;
     bool checkSubsetComplete(const PLabel &otherLabel) const;
 
-    void extend(Node *outNode, bool isDropPickPossible);
+    void extend(Node *outNode, bool isDropPickPossible, float wait_W1, float ride_W2);
     // this function checks the feasibility of the label before extension
     bool isExtendFeasible(const Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
                           int &nbEliminated, int &nbPrunedArcs);

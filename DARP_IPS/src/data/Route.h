@@ -24,12 +24,15 @@ public:
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
     float totalDelay_;                          // sum of waiting times of the requests served by the route
+    float totalTripDelay_;
+    float objCoef_;
     vector<PNode> routeNodes_;                  // the ordered list of the nodes that are visited within the route
     std::vector<PRequest> routeRequests_;       // list of requests served by the route
     std::vector<float> plannedDelay_;
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<float> plannedDepartTime_;      // time that vehicle is planned to reach each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
+    std::vector<float> rideTime_;      // time that vehicle is planned to reach each node
     float reducedCost_;
     int incompatibilityDegree_;
     unsigned int routeSize_;                    //number of stops in the route including start and stop
@@ -80,15 +83,17 @@ public:
     bool equal(const Route& routeObj) const {
         return this->column_ == routeObj.column_
             && this->routeSize_ == routeObj.routeSize_
-            && this->totalDelay_ == routeObj.totalDelay_;
+            && this->totalDelay_ == routeObj.totalDelay_
+            && this->totalTripDelay_ == routeObj.totalTripDelay_;
     }
     void createColumn(int nbRequests);
+    void calculateTripDelay(float wait_W1, float ride_W2);
 };
 
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
     std::cout << "comparing";
     return (
-            ((lhs->totalDelay_ == rhs->totalDelay_) && (lhs->routeSize_ == rhs->routeSize_)&&
+            ((lhs->objCoef_ == rhs->objCoef_) && (lhs->routeSize_ == rhs->routeSize_)&&
              (lhs->plannedReachTime_.back() == rhs->plannedReachTime_.back()) &&
              (lhs->vehicleID_ == rhs->vehicleID_ ))
     );

@@ -40,6 +40,7 @@ public:
 
 
     int nbPassengers_;                  // number of passengers to pick up or drop off
+    float Req_W3_;
     float penalty_;                     // penalty of not serving at the current period
     RequestStatus requestStatus_;       // status of request 0:no action 1:on board 2:complete
     float dual_;

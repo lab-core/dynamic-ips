@@ -85,7 +85,7 @@ void RP_Gurobi::updateModel_batch(PInstance& pInst) {
         size_t k = 0;
         // Fill arrays with range-based loop
         for (const auto& routeObj : routesToAdd_) {
-            obj[k] = routeObj->totalDelay_;
+            obj[k] = routeObj->objCoef_;
             columns[k] = createColumn(routeObj, POSITIVE, pInst);
             compRoutes_.emplace_back(routeObj);
             routeObj->mpAdded_ = true;
@@ -803,7 +803,7 @@ void RP_Gurobi::recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &
             }
             else {
                 // Update objective coefficient
-                routeVar_[i].set(GRB_DoubleAttr_Obj, compRoutes_[i]->totalDelay_);
+                routeVar_[i].set(GRB_DoubleAttr_Obj, compRoutes_[i]->objCoef_);
             }
         }
 

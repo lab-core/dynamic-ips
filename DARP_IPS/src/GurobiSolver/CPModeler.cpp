@@ -135,7 +135,7 @@ void CPModeler::addRouteVar(const PRoute &newRoute, const PRoute &currentVehicle
     try {
         GRBColumn col = createRouteColumn(newRoute, currentVehicleRoute);
  //       if (newRoute->IncScore_ > 0) {
-            double objCoeff = newRoute->totalDelay_ - currentVehicleRoute->totalDelay_;
+            double objCoeff = newRoute->objCoef_ - currentVehicleRoute->objCoef_;
 
             // Create variable
             GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
@@ -155,7 +155,7 @@ void CPModeler::addRouteVar(const PRoute &newRoute, VarSign sign) {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
         GRBColumn col = createRouteColumn(newRoute, sign);
 
-        double objCoeff = signMultiplier * newRoute->totalDelay_;
+        double objCoeff = signMultiplier * newRoute->objCoef_;
 
         if (sign == NEGATIVE) {
             // Call parent class method for negative sign
@@ -187,7 +187,7 @@ void CPModeler::addZVar(const PRequest &request) {
         col.addTerm(1.0, normalConst_);
 
         // Create variable
-        GRBVar var = model_->addVar(0.0, GRB_INFINITY, request->penalty_, GRB_CONTINUOUS, col, request->name_);
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, request->Req_W3_ * request->penalty_, GRB_CONTINUOUS, col, request->name_);
         zIncVar_.push_back(var);
     }
     catch (GRBException& e) {
@@ -206,7 +206,7 @@ void CPModeler::addZVar(const PRequest &request, VarSign sign) {
             col.addTerm(-1, requestConstr_[request->taskIndex_]);
 
             // Create variable
-            GRBVar var = model_->addVar(0.0, GRB_INFINITY, (-1) * request->penalty_, GRB_CONTINUOUS,
+            GRBVar var = model_->addVar(0.0, GRB_INFINITY, (-1) * request->Req_W3_ * request->penalty_, GRB_CONTINUOUS,
                                         col, request->name_);
             zSolVar_.push_back(var);
         }
@@ -233,7 +233,7 @@ void CPModeler::addRouteVarBatch(const PInstance &pInst) {
     // Fill arrays with range-based loop
     size_t k = 0;
     for (const auto& routeObj : routesToAdd_) {
-        obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->totalDelay_;
+        obj[k] = routeObj->objCoef_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->objCoef_;
         columns[k] = createRouteColumn(routeObj, pInst->vehicles_[routeObj->vehicleID_]->currentRoute_);
         IncRoute_.emplace_back(routeObj);
         routeObj->cpAdded_ = true;
@@ -266,7 +266,7 @@ void CPModeler::addRouteSolVarBatch(const std::vector<PRoute> &routeSolution) {
     // Fill arrays with range-based loop
     size_t k = 0;
     for (const auto& routeObj : routeSolution) {
-        obj[k] = (-1) * routeObj->totalDelay_ ;
+        obj[k] = (-1) * routeObj->objCoef_ ;
         columns[k] = createRouteColumn(routeObj, NEGATIVE);
         routeObj->cpAdded_ = true;
         ++k;
@@ -294,7 +294,7 @@ void CPModeler::addRouteIncVarBatch() {
     // Fill arrays with range-based loop
     size_t k = 0;
     for (const auto& routeObj : routesToAdd_) {
-        obj[k] = routeObj->totalDelay_;
+        obj[k] = routeObj->objCoef_;
         columns[k] = createRouteColumn(routeObj, POSITIVE);
         columns[k].addTerm(1.0, normalConst_);
         IncRoute_.emplace_back(routeObj);
@@ -324,7 +324,7 @@ void CPModeler::addZVarBatch(const PInstance &pInst) {
     //    if (req->solVehicleID_ < LARGE_CONSTANT) {
             lb.push_back(0.0);
             ub.push_back(GRB_INFINITY);
-            obj.push_back(req->penalty_);
+            obj.push_back(req->Req_W3_ * req->penalty_);
             vtype.push_back(GRB_CONTINUOUS);
 
             GRBColumn col;

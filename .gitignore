@@ -5,13 +5,16 @@ DARP_IPS/cmake-build-release/*
 .DS_Store
 **/.DS_Store
 *.csv
+**/.pyc
+**/.xml
 
-DARP_IPS/datasets/Instances-120/*
-DARP_Python/NYC/*
-DARP_IPS/datasets/sufficient_manhattan-vehicles-300/high_cap/*
-DARP_IPS/datasets/manhattan-vehicles/*
-TestDARP1/*
-DARP_IPS/datasets/Final/*
-DARP_IPS/datasets/Instances_12-14_Last/*
-DARP_IPS/datasets/Instances-120_Last/*
-DARP_IPS/datasets/Instances_12-14_Last/*
+
+
+DARP_IPS/.idea/*
+DARP_Python/*
+DARP_IPS/datasets/Instances_30s/*
+DARP_Python/.idea/*
+DARP_IPS/.vscode/launch.json
+DARP_IPS/.vscode/settings.json
+DARP_IPS/.vscode/tasks.json
+DARP_IPS/src/solvers/.idea/workspace.xml

@@ -68,11 +68,11 @@ public:
     // function to update vehicle depart time at each time and
     // update the situation of nodes and ride requests
     void updateStateTime(const PInstance & mainInst, float elapsedTime, boost::dynamic_bitset<> &removedRequests);
-    void updateCurrentRoute(float elapsedTime);
+    void updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2);
 
     // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch
     void finalizeSolutionRoutes(float elapsedTime);
-    void updateDepartTime(float departTime);
+    void updateDepartTime(float departTime, float wait_W1, float ride_W2);
     void handleIdleState(float epochEndTime);
     void setRequestStatus(const PNode &node, float reachTime) const;
     void adjustDuals();

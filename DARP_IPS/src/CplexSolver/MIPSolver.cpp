@@ -75,7 +75,7 @@ void MIPSolver::buildModel(PInstance &pInst){
     IloExpr objExpr(env_);
     for (auto & pickNode : pInst->instGraph_->pickNodes_) {
         i = pickNode->related_Request_->taskIndex_;
-        objExpr += Z_[i] * pickNode->related_Request_->penalty_;
+        objExpr += Z_[i] * pickNode->related_Request_->Req_W3_ * pickNode->related_Request_->penalty_;
         for (auto & vehicleObj : pInst->vehicles_) {
             objExpr += (U_[vehicleObj->vehicleID_][pickNode->nodeIndex_] - pickNode->readyTime_);
         }
@@ -419,6 +419,7 @@ void MIPSolver::solveModel(PInstance &pInst, InputPaths &inputPaths) {
                         }
                     }
                 }
+                newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
                 vehicleObj->setCurrentRoute(newRoute);
                 routeSolution_.push_back(std::move(newRoute));
             }

@@ -8,7 +8,7 @@ void CP_Reduced::addRouteVar(const PRoute &newRoute, const PRoute &currentVehicl
     try {
         GRBColumn col = createCPColumnM1(newRoute, currentVehicleRoute);
         if (newRoute->IncScore_ > 0) {
-            double objCoeff = newRoute->totalDelay_ - currentVehicleRoute->totalDelay_;
+            double objCoeff = newRoute->objCoef_ - currentVehicleRoute->objCoef_;
 
             // Create variable
             GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
@@ -38,11 +38,11 @@ void CP_Reduced::addRouteVarBatch(const PInstance &pInst, bool greedyBase) {
     size_t k = 0;
     for (const auto& routeObj : routesToAdd_) {
         if (greedyBase) {
-            obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->greedyRoute_->totalDelay_;
+            obj[k] = routeObj->objCoef_ - pInst->vehicles_[routeObj->vehicleID_]->greedyRoute_->objCoef_;
             columns[k] = createCPColumnM1(routeObj, pInst->vehicles_[routeObj->vehicleID_]->greedyRoute_);
         }
         else {
-            obj[k] = routeObj->totalDelay_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->totalDelay_;
+            obj[k] = routeObj->objCoef_ - pInst->vehicles_[routeObj->vehicleID_]->currentRoute_->objCoef_;
             columns[k] = createCPColumnM1(routeObj, pInst->vehicles_[routeObj->vehicleID_]->currentRoute_);
         }
         IncRoute_.emplace_back(routeObj);
@@ -68,7 +68,7 @@ void CP_Reduced::addZVar(const PRequest &request) {
     try {
         GRBColumn col;
         double objCoeff;
-        objCoeff = request->penalty_;
+        objCoeff = request->Req_W3_ * request->penalty_;
         col.addTerm(1.0, requestConstr_[request->taskIndex_]);
         col.addTerm(1.0, normalConst_);
 
@@ -96,7 +96,7 @@ void CP_Reduced::addZVarBatch(const PInstance& pInst) {
     for (int i = 0; i < n; ++i) {
         if (pInst->requests_[i]->committedPickTime_ == LARGE_CONSTANT) {
             const auto& req = pInst->requests_[i];
-            obj[i]   = req->penalty_;
+            obj[i]   = req->Req_W3_ * req->penalty_;
             cols[i].addTerm(1.0, requestConstr_[req->taskIndex_]);
             cols[i].addTerm(1.0, normalConst_);
             //       names[i] = req->name_;

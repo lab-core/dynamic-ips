@@ -116,7 +116,7 @@ bool LabelingSubProblem::labelExtend(const PLabel &parentLabel, Node *outNode, b
         newLabel = std::make_shared<Label>(*parentLabel);
     }
 
-    newLabel->extend(outNode, solverOptions_->isDropPickPossible_);
+    newLabel->extend(outNode, solverOptions_->isDropPickPossible_, solverOptions_->Wait_W1_, solverOptions_->Ride_W2_);
     nbGenerated_++;
     if (!newLabel->isEliminated()) {
         if (!isLabelAdded(newLabel, outNode, Terminate))
@@ -140,7 +140,7 @@ bool LabelingSubProblem::labelExtendPick(const PLabel &parentLabel, Node *outNod
         newLabel = std::make_shared<Label>(*parentLabel);
     }
 
-    newLabel->extend(outNode, solverOptions_->isDropPickPossible_);
+    newLabel->extend(outNode, solverOptions_->isDropPickPossible_, solverOptions_->Wait_W1_, solverOptions_->Ride_W2_);
     nbGenerated_++;
     if (!newLabel->isEliminated()) {
         if (outNode->bestLabelReduceCost_ > newLabel->reducedCost_)
@@ -1351,7 +1351,7 @@ void LabelingSubProblem::constructLabels(const PLabel &initialLabel) {
 
             // Extend the label
             newLabel->extend(&(*subGraph_->nodes_[route->routeNodes_[i]->nodeID_]),
-                             solverOptions_->isDropPickPossible_);
+                             solverOptions_->isDropPickPossible_, solverOptions_->Wait_W1_, solverOptions_->Ride_W2_);
 
             bool isRepeated = false;
             for (auto &labelObj: newLabel->pathNode_.back()->activeLabels_) {

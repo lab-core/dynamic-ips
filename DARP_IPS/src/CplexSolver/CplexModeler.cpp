@@ -70,7 +70,7 @@ void CplexModeler::addZVarInt(IloNumVarArray &zVar, const PRequest &request, Var
 
     try {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
-        IloNumColumn numVar = objFunction_(signMultiplier * request->penalty_) +
+        IloNumColumn numVar = objFunction_(signMultiplier * request->Req_W3_ * request->penalty_) +
                               requestConst_[request->taskIndex_](signMultiplier);
 
         IloNumVar newVar(numVar, 0, IloInfinity, ILOINT);
@@ -87,7 +87,7 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, const PRequest &request, V
 
     try {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
-        IloNumColumn numVar = objFunction_(signMultiplier * request->penalty_) +
+        IloNumColumn numVar = objFunction_(signMultiplier * request->Req_W3_ * request->penalty_) +
                               requestConst_[request->taskIndex_](signMultiplier);
         IloNumVar newVar(numVar, 0, IloInfinity, ILOFLOAT);
         newVar.setName(request->name_);
@@ -102,7 +102,7 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, const PRequest &request, V
 void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, const PRequest &request) {
 
     try {
-        IloNumColumn uCol = objFunction_(0.8 * request->penalty_) +
+        IloNumColumn uCol = objFunction_(0.8 * request->Req_W3_ * request->penalty_) +
                               requestConst_[request->taskIndex_](1);
         uVar.add(IloNumVar(uCol, 0.0, 0.0, ILOFLOAT));
 
@@ -124,7 +124,7 @@ void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRou
         IloNumArray columnVar(env_, nbRequestTask_);
         createPattern(columnVar, newRoute, sign);
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
-        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->totalDelay_) + requestConst_(columnVar)
+        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->objCoef_) + requestConst_(columnVar)
                      + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](signMultiplier);
 
         routeVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
@@ -141,8 +141,8 @@ void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newR
     try {
         IloNumArray columnVar(env_, nbRequestTask_);
         createPattern(columnVar, newRoute, sign);
-        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
-        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->totalDelay_) + requestConst_(columnVar)
+        float signMultiplier = (sign == POSITIVE) ? 1.0 : -1.0;
+        IloNumColumn numVar = objFunction_(signMultiplier * newRoute->objCoef_) + requestConst_(columnVar)
                      + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](signMultiplier);
 
         routeVar.add(IloNumVar(numVar, 0,IloInfinity,ILOFLOAT));

@@ -12,10 +12,11 @@
 SolverBase::SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
                        LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
-                       bool usePick, int nbPick, SortPaths pathSort, int newRequestLimit) :
-        isTruncated_(isTruncated), MaxLabel_(maxLabel), MaxCommittedLabel_(MaxCommittedLabel),
-        isDominanceReleased_(isDominanceReleased), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs),
-        discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible),
+                       bool usePick, int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2,
+                       bool req_W3) :
+        isTruncated_(isTruncated), MaxLabel_(maxLabel), MaxCommittedLabel_(MaxCommittedLabel), Wait_W1_(wait_W1),
+        isDominanceReleased_(isDominanceReleased), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), Req_W3_(req_W3),
+        discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), Ride_W2_(ride_W2),
         LabelingStrategy_(LabelingStrategy), labelingReOptimizeStrategy_(labelingReOptimizeStrategy),
         usePick_(usePick), nbPick_(nbPick), sortPath_(pathSort), newRequestLimit_(newRequestLimit) {}
 
@@ -37,10 +38,11 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                        int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
-                       LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual):
+                       LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1,
+                       float ride_W2, bool req_W3):
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, LabelingStrategy, labelingReOptimizeStrategy,
-                   usePick, nbPick, sortPath, newRequestLimit),
+                   usePick, nbPick, sortPath, newRequestLimit, wait_W1, ride_W2, req_W3),
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter), dualMethod_(dualMethod),
@@ -65,6 +67,9 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# alpha Parameter " << " = " << alphaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# beta Parameter " << " = " << betaParam_ << std::endl;
     repStr << std::setw(setwLength) << "# delta Parameter" << " = " << deltaPram_ << std::endl;
+    repStr << std::setw(setwLength) << "# Wait Obj. weight" << " = " << Wait_W1_ << std::endl;
+    repStr << std::setw(setwLength) << "# Trip Delay Obj. weight" << " = " << Ride_W2_ << std::endl;
+    repStr << std::setw(setwLength) << "# Use #Customer in Obj" << " = " << Req_W3_ << std::endl;
     if (solutionMode_ == DYNAMIC)
         repStr << std::setw(setwLength) << "# epoch Length " << " = " << epochLength_ << " (s)" << std::endl;
     if (solutionMode_ == ANYTIME)
@@ -139,50 +144,53 @@ std::string Parameters::toString() const {
 
 std::string Parameters::toStr() const {
     std::stringstream repStr;
-    repStr << eu::toString(modelSolver_) << ",";
-    repStr << alphaParam_ << ",";
-    repStr << betaParam_ << ",";
-    repStr << deltaPram_ << ",";
-    repStr << epochLength_ << ",";
-    repStr << committedTime_ << ",";
-    repStr << informTimeLimit_ << ",";
-    repStr << pickupDeviationWindow_ << ",";
-    repStr << maxWait_ << ",";
-    repStr << nbThreads_ << ",";
-    repStr << eu::toString(initialDual_) << ",";
-    repStr << eu::toString(dualMethod_) << ",";
-    repStr << smoothDual_ << ",";
-    repStr << eu::toString(initialStart_) << ",";
-    repStr << eu::toString(mainAlgorithm_) << ",";
-    repStr << eu::toString(solutionMode_) << ",";
-    repStr << numIter_ << ",";
-    repStr << boolToString(greedyReOptimize_) << ",";
-    repStr << boolToString(vehicleReturn_) << ",";
-    repStr << eu::toString(returnPolicy_) << ",";
-    repStr << MIP_maxIncDegree_ << ",";
-    repStr << CP_IncDegree_ << ",";
-    repStr << boolToString(reducedCP_) << ",";
-    repStr << boolToString(useZoom_) << ",";
-    repStr << nbColumn_ << ",";
-    repStr << boolToString(isTruncated_) << ",";
-    repStr << MaxLabel_ << ",";
-    repStr << MaxCommittedLabel_ << ",";
-    repStr << boolToString(isDominanceReleased_) << ",";
-    repStr << boolToString(isDropPickPossible_) << ",";
-    repStr << boolToString(pruneNodes_) << ",";
-    repStr << boolToString(pruneArcs_) << ",";
-    repStr << boolToString(discardSuboptimalPath_) << ",";
-    repStr << eu::toString(LabelingStrategy_) << ",";
-    repStr << eu::toString(labelingReOptimizeStrategy_) << ",";
-    repStr << boolToString(vehiclePortion_) << ",";
-    repStr << boolToString(dynamicPricing_) << ",";
-    repStr << boolToString(partialPricing_) << ",";
-    repStr << boolToString(routeRecycle_) << ",";
-    repStr << newRequestLimit_ << ",";
-    repStr << nbPick_ << ",";
-    repStr << eu::toString(sortPath_) << ",";
-    repStr << eu::toString(sortColumn_) << ",";
-    repStr << MIPGap_ << "\n";
+    repStr << eu::toString(modelSolver_) << ","
+           << alphaParam_ << ","
+           << betaParam_ << ","
+           << deltaPram_ << ","
+           << Wait_W1_ << ","
+           << Ride_W2_ << ","
+           << Req_W3_ << ","
+           << epochLength_ << ","
+           << committedTime_ << ","
+           << informTimeLimit_ << ","
+           << pickupDeviationWindow_ << ","
+           << maxWait_ << ","
+           << nbThreads_ << ","
+           << eu::toString(initialDual_) << ","
+           << eu::toString(dualMethod_) << ","
+           << smoothDual_ << ","
+           << eu::toString(initialStart_) << ","
+           << eu::toString(mainAlgorithm_) << ","
+           << eu::toString(solutionMode_) << ","
+           << numIter_ << ","
+           << boolToString(greedyReOptimize_) << ","
+           << boolToString(vehicleReturn_) << ","
+           << eu::toString(returnPolicy_) << ","
+           << MIP_maxIncDegree_ << ","
+           << CP_IncDegree_ << ","
+           << boolToString(reducedCP_) << ","
+           << boolToString(useZoom_) << ","
+           << nbColumn_ << ","
+           << boolToString(isTruncated_) << ","
+           << MaxLabel_ << ","
+           << MaxCommittedLabel_ << ","
+           << boolToString(isDominanceReleased_) << ","
+           << boolToString(isDropPickPossible_) << ","
+           << boolToString(pruneNodes_) << ","
+           << boolToString(pruneArcs_) << ","
+           << boolToString(discardSuboptimalPath_) << ","
+           << eu::toString(LabelingStrategy_) << ","
+           << eu::toString(labelingReOptimizeStrategy_) << ","
+           << boolToString(vehiclePortion_) << ","
+           << boolToString(dynamicPricing_) << ","
+           << boolToString(partialPricing_) << ","
+           << boolToString(routeRecycle_) << ","
+           << newRequestLimit_ << ","
+           << nbPick_ << ","
+           << eu::toString(sortPath_) << ","
+           << eu::toString(sortColumn_) << ","
+           << MIPGap_ << "\n";
     return repStr.str();
 }
 
@@ -193,10 +201,11 @@ std::string Parameters::toStr() const {
 
 solverOption::solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
                            SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
-                           bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit) :
+                           bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit,
+                           float wait_W1, float ride_W2, bool req_W3) :
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, labelingStrategy, LabelingReOptimizeStrategy{},
-                   false, nbPick, pathSort, newRequestLimit) {}
+                   false, nbPick, pathSort, newRequestLimit, wait_W1, ride_W2, req_W3) {}
 
 solverOption::~solverOption() = default;
 
@@ -215,8 +224,8 @@ solverOption::solverOption(const PParameters &MainParams) :
                    MainParams->isDominanceReleased_, MainParams->pruneNodes_, MainParams->pruneArcs_,
                    MainParams->discardSuboptimalPath_, MainParams->isDropPickPossible_,
                    MainParams->LabelingStrategy_, MainParams->labelingReOptimizeStrategy_,
-                   MainParams->usePick_, MainParams->nbPick_, MainParams->sortPath_,
-                   MainParams->newRequestLimit_) {}
+                   MainParams->usePick_, MainParams->nbPick_, MainParams->sortPath_, MainParams->newRequestLimit_,
+                   MainParams->Wait_W1_, MainParams->Ride_W2_, MainParams->Req_W3_) {}
 
 // Display function
 std::string solverOption::toString() const {
@@ -236,6 +245,9 @@ std::string solverOption::toString() const {
     repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# new Request limit to recycle " << " = " << newRequestLimit_ << std::endl;
+    repStr << std::setw(setwLength) << "# Wait Obj. weight" << " = " << Wait_W1_ << std::endl;
+    repStr << std::setw(setwLength) << "# Trip Delay Obj. weight" << " = " << Ride_W2_ << std::endl;
+    repStr << std::setw(setwLength) << "# Consider Customers in Obj." << " = " << Req_W3_ << std::endl;
     return repStr.str();
 
 }

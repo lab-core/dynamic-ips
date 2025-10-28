@@ -62,6 +62,7 @@ void Vehicle::setEmptyRoute(const PInstance &pInst) {
             }
         }
     }
+    emptyRoute_->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
     emptyRoute_->totalLength_ = emptyRoute_->plannedDepartTime_.back() - departTime_;
     emptyRoute_->createColumn(pInst->nbRequests_);
 }
@@ -75,7 +76,8 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
     currentRoute_ = currentRoute;
     for (int i = 0; i < currentRoute->routeRequests_.size(); ++i) {
         currentRoute->routeRequests_[i]->solVehicleID_  = vehicleID_;
-        currentRoute->routeRequests_[i]->coveredVehicles_.set(vehicleID_,true);
+
+  //      currentRoute->routeRequests_[i]->coveredVehicles_.set(vehicleID_,true);
         // currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
     }
     for (int i = 1; i < currentRoute->routeNodes_.size(); ++i) {
@@ -203,6 +205,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                     }
                 }
                 currentRoute_->removeNode(breakIndex);
+                currentRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_, mainInst->parameters_->Ride_W2_);
             }
         }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
@@ -263,7 +266,7 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
     }
 }
 
-void Vehicle::updateDepartTime(float departTime) {
+void Vehicle::updateDepartTime(float departTime, float wait_W1, float ride_W2) {
     currentRoute_->plannedDepartTime_[0] = departTime;
     solutionRoute_->routeNodes_.back()->departTime_ = departTime;
     solutionRoute_->plannedDepartTime_.back() = departTime;
@@ -275,16 +278,18 @@ void Vehicle::updateDepartTime(float departTime) {
     for (int i = 1; i < currentRoute_->routeNodes_.size(); ++i) {
         newRoute->addNode(currentRoute_->routeNodes_[i]);
     }
+    newRoute->calculateTripDelay(wait_W1, ride_W2);
     currentRoute_->plannedDepartTime_ = newRoute->plannedDepartTime_;
     currentRoute_->plannedReachTime_ = newRoute->plannedReachTime_;
     currentRoute_->totalDelay_ = newRoute->totalDelay_;
+    currentRoute_->totalTripDelay_ = newRoute->totalTripDelay_;
 }
 
-void Vehicle::updateCurrentRoute(float elapsedTime) {
+void Vehicle::updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2) {
     float departure = std::max(elapsedTime + 5, departNode_->reachTime_+ departNode_->serviceTime_);
     if (departure < departTime_) {
         idleTime_ -= (departTime_ - departure);
-        updateDepartTime(departure);
+        updateDepartTime(departure, wait_W1, ride_W2);
     }
     idle_ = false;
 }
@@ -329,7 +334,7 @@ void Vehicle::adjustDuals() {
             totalDual += currentRoute_->routeRequests_[i]->dual_;
         }
         for (int i = 0; i < currentRoute_->routeRequests_.size(); ++i) {
-            currentRoute_->routeRequests_[i]->dual_ *= (currentRoute_->totalDelay_ - dual_)/ totalDual;
+            currentRoute_->routeRequests_[i]->dual_ *= (currentRoute_->objCoef_ - dual_)/ totalDual;
         }
     }
     dual_ = 0.0;

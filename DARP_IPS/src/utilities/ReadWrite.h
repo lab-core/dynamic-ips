@@ -37,7 +37,6 @@ public:
     static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat);
 
     // Read the parameters datafile
-    static void readParametersJsonFull(InputPaths &inputPaths, PInstance &pInstance);
     static void readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName);
     static void readZones(const std::string& strZoneFile, const PInstance &pInstance);
 

@@ -19,6 +19,7 @@ Label::Label(const Vehicle *vehicle, PNode &source, int labelSize) : labelID_(la
     labelScore_ = 0;
     lambdaScore_ = 0;
     totalDelay_ = 0;
+    totalTripDelay_ = 0;
     status_ = ACTIVE;
     openNode_.clear();
     nbCommitted_ = 0;
@@ -52,6 +53,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     labelScore_ = label.labelScore_;
     lambdaScore_ = label.lambdaScore_;
     totalDelay_ = label.totalDelay_;
+    totalTripDelay_ = label.totalTripDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
     nbCommitted_ = label.nbCommitted_;
@@ -81,6 +83,7 @@ void Label::copyLabel(const Vehicle *vehicle, PNode &source, int labelSize) {
     labelScore_ = 0;
     lambdaScore_ = 0;
     totalDelay_ = 0;
+    totalTripDelay_ = 0;
     openNode_.clear();
     openRequests_.reset();
     openRequests_.resize(labelSize);
@@ -111,6 +114,7 @@ void Label::copyLabel(const Label &label) {
     labelScore_ = label.labelScore_;
     lambdaScore_ = label.lambdaScore_;
     totalDelay_ = label.totalDelay_;
+    totalTripDelay_ = label.totalTripDelay_;
     openNode_ = label.openNode_;
     openRequests_.reset();
     openRequests_ = label.openRequests_;
@@ -158,7 +162,7 @@ bool Label::checkSubsetComplete(const PLabel &otherLabel) const {
     return true;
 }
 
-void Label::extend(Node *outNode, bool isDropPickPossible) {
+void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float ride_W2) {
     load_ += outNode->nbPassengers_;
     float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
     if (outNode->type_ == PICKUP)
@@ -172,6 +176,10 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
                                                                         passedTime_);
     }
     if (outNode->type_ == DROPOFF) {
+        float rideTolerance = outNode->related_Request_->maxTravelTime_ - outNode->related_Request_->minTravelTime_;
+        float tripDelay = rideTolerance - travelResources_[outNode->related_Request_->taskIndexLabel_] - outNode->serviceTime_;
+        totalTripDelay_ += outNode->related_Request_->Req_W3_ * tripDelay;
+        reducedCost_ += ride_W2 * outNode->related_Request_->Req_W3_ * tripDelay;
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
         for (int i = 0; i < openNode_.size(); i++){
             if ((openNode_[i])->nodeID_ == outNode->nodeID_){
@@ -189,15 +197,15 @@ void Label::extend(Node *outNode, bool isDropPickPossible) {
         extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
         numExtendCheck_++;
         openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
-        reducedCost_ -= (outNode->related_Request_)->dual_;
+        reducedCost_ -= (outNode->related_Request_->dual_);
         if (outNode->related_Request_->committedPickTime_ != LARGE_CONSTANT)
             nbCommitted_++;
         /*if (travelTime > 0){
             nbPickUp_++;
         }*/
         nbPickUp_ ++;
-        totalDelay_ += (reachedTime_ - outNode->initialReadyTime_);
-        reducedCost_ += (reachedTime_ - outNode->initialReadyTime_);
+        totalDelay_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
+        reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ *(reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
         lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
@@ -339,10 +347,11 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
     }
     if (newRoute->routeRequests_.empty() && !pInst->vehicles_[newRoute->vehicleID_]->onboards_.empty())
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
+    newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
     if (!newRoute->routeRequests_.empty()) {
         newRoute->score_ = reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
         newRoute->waitScore_ = newRoute->totalDelay_ / static_cast<float>(newRoute->routeRequests_.size());
-        newRoute->lambda_ = newRoute->totalDelay_ /(newRoute->totalDelay_ - reducedCost_ + 0.0001f);
+        newRoute->lambda_ = newRoute->objCoef_ /(newRoute->objCoef_ - reducedCost_ + 0.0001f);
 
     }
     else {
@@ -351,6 +360,11 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
         newRoute->waitScore_ = 0;
     }
     newRoute->createTime_ = createTime_;
+
+    if (totalTripDelay_ != newRoute->totalTripDelay_) {
+        std::cout << "Total trip delay of the label partial path is not the same as the route delay" << std::endl;
+        throw myTools::myException("Label convert problem!!!", __FILE__,__LINE__);
+    }
     if (totalDelay_ != newRoute->totalDelay_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
         std::cout << "label: " << std::endl;

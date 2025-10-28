@@ -502,6 +502,7 @@ void CPLEXSubProblem::extractSingleSolution(PInstance &pInst, std::vector<PRoute
             std::cout << "Warning: Route construction failed - maximum iterations reached" << std::endl;
             return;
         }
+        newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
 
         availableRoutes.push_back(newRoute);
 

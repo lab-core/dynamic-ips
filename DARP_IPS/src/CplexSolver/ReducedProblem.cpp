@@ -573,10 +573,10 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
             //            pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] - DualAuxSolver_->epsilonVar_[r] <= compRoutes_[r]->totalDelay_);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] >= compRoutes_[r]->totalDelay_);
-                        DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] == compRoutes_[r]->totalDelay_);
+                        DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] == compRoutes_[r]->objCoef_);
                     }
                     else {
-                        DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] <= compRoutes_[r]->totalDelay_);
+                        DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] <= compRoutes_[r]->objCoef_);
                         DualAuxSolver_->epsilonVar_[r].setUB(0.0);
                     }
                 }

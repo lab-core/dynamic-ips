@@ -128,7 +128,7 @@ void GurobiModeler::addZVarInt(const PRequest& request, VarSign sign) {
         GRBColumn col;
         col.addTerm(signMultiplier, requestConstr_[request->taskIndex_]);
 
-        double objCoeff = signMultiplier * request->penalty_;
+        double objCoeff = signMultiplier * request->Req_W3_ * request->penalty_;
         GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, request->name_);
         zVar_.push_back(var);
 
@@ -146,7 +146,7 @@ void GurobiModeler::addZVarFloat(const PRequest& request, VarSign sign) {
         GRBColumn col;
         col.addTerm(signMultiplier, requestConstr_[request->taskIndex_]);
 
-        double objCoeff = signMultiplier * request->penalty_;
+        double objCoeff = signMultiplier * request->Req_W3_ * request->penalty_;
         GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, request->name_);
         zVar_.push_back(var);
 
@@ -163,7 +163,7 @@ void GurobiModeler::addRouteVarInt(const PRoute& newRoute, VarSign sign, const P
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
-        double objCoeff = signMultiplier * newRoute->totalDelay_;
+        double objCoeff = signMultiplier * newRoute->objCoef_;
         GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, nullptr);
         routeVar_.push_back(var);
 
@@ -179,7 +179,7 @@ void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
-        double objCoeff = signMultiplier * newRoute->totalDelay_;
+        double objCoeff = signMultiplier * newRoute->objCoef_;
         GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_CONTINUOUS, col, nullptr);
         routeVar_.push_back(var);
 

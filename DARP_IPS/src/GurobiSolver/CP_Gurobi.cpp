@@ -78,7 +78,7 @@ void CP_Gurobi::initializeCPModel(const PInstance& pInst, int nbVehicles) {
 void CP_Gurobi::addZVar(const PRequest& request, VarSign sign) {
     try {
         int signMultiplier = (sign == POSITIVE) ? 1 : -1;
-        double objCoeff = signMultiplier * request->penalty_;
+        double objCoeff = signMultiplier * request->Req_W3_ * request->penalty_;
 
         // Build column coefficient expression
         GRBColumn col;
@@ -113,10 +113,10 @@ void CP_Gurobi::addZVar(const PRequest& request, VarSign sign) {
 // Add route variable to the model
 void CP_Gurobi::addRouteVar(const PRoute& newRoute, VarSign sign, const PInstance& pInst) {
     try {
-        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        float signMultiplier = (sign == POSITIVE) ? 1.0 : -1.0;
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
-        double objCoeff = signMultiplier * newRoute->totalDelay_;
+        double objCoeff = signMultiplier * newRoute->objCoef_;
 
         if (sign == NEGATIVE) {
             // Call parent class method for negative sign
@@ -336,7 +336,7 @@ void CP_Gurobi::updateModel_Batch(const PInstance& pInst) {
         // Fill arrays with range-based loop
         size_t k = 0;
         for (const auto& routeObj : routesToAdd_) {
-            obj[k] = routeObj->totalDelay_;
+            obj[k] = routeObj->objCoef_;
             columns[k] = createColumn(routeObj, POSITIVE, pInst);
             columns[k].addTerm(routeObj->incompatibilityDegree_, normalConst_);
             IncRoute_.emplace_back(routeObj);

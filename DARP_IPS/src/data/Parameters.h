@@ -28,12 +28,15 @@ public:
     int nbPick_{};
     SortPaths sortPath_;
     int newRequestLimit_{};
+    float Wait_W1_;
+    float Ride_W2_;
+    bool Req_W3_;
 
     // Constructor
     SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
-               LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
-               bool usePick, int nbPick, SortPaths pathSort, int newRequestLimit);
+               LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool usePick,
+               int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2, bool req_W3);
 
     virtual ~SolverBase() = default;
 
@@ -110,13 +113,14 @@ public:
                bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
-               LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual);
+               LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1, float ride_W2,
+               bool req_W3);
 
     virtual ~Parameters();
 
     // Display function
-    std::string toString() const override;
-    std::string toStr() const;
+    [[nodiscard]] std::string toString() const override;
+    [[nodiscard]] std::string toStr() const;
 };
 
 
@@ -127,7 +131,8 @@ struct solverOption : public SolverBase {
     // Constructor and Destructor
     solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
                  SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
-                 bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit);
+                 bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit,float wait_W1,
+                 float ride_W2, bool req_W3);
 
     explicit solverOption(const PParameters &MainParams);
 

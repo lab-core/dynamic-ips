@@ -30,17 +30,11 @@ public:
     void initialization(PInstance &PInst);
     // this function converts GreedyRoute to Route
     void solutionToRoute(const PInstance &PInst);
-    float createUpperbound();
+    float createUpperbound(float wait_W1, float ride_W2);
     void GreedySolver(PInstance &PInst);
     float GreedyUpperbound(PInstance &PInst);
-    void GreedyAssignment(PInstance &PInst, int select);
     void solveInsertion(const PInstance &PInst);
-    void solveAssignment(const PInstance &PInst,int select);
     void setObjValue();
 };
-
-// this function assigns requests to vehicles based on the minimum delay possible and do not consider ride-sharing
-// any pickup is followed by the drop-off
-void GreedySolver_noShare(const PInstance& PInst);
 
 #endif //GREEDY_MODELLER_H

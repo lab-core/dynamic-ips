@@ -15,6 +15,7 @@ unsigned int Route::routeCount_ = 0;
 // Constructor and Destructor
 Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     totalDelay_ = 0.0;
+    totalTripDelay_ = 0.0;
     reducedCost_ = 0.0;
     routeSize_ = 0;
     incompatibilityDegree_ = 0;
@@ -31,6 +32,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     totalLength_ = 0;
     isCompatible_ = true;
     nbCommitted_ = 0;
+    objCoef_ = 0.0;
 }
 Route::~Route(){
     delete[] name_;
@@ -76,7 +78,7 @@ void Route::addNode(const PNode &node) {
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
         plannedDelay_.push_back(reachTime - node->initialReadyTime_);
-        totalDelay_ += reachTime - node->initialReadyTime_;
+        totalDelay_ += node->related_Request_->Req_W3_ * (reachTime - node->initialReadyTime_);
         if (node->related_Request_->committedPickTime_ != LARGE_CONSTANT)
             nbCommitted_++;
     }
@@ -94,6 +96,7 @@ bool Route::reConstructRoute(PVehicle & vehicle){
                 return false;
         }
     }
+    totalTripDelay_ = newRoute->totalTripDelay_;
     plannedDepartTime_ = newRoute->plannedDepartTime_;
     plannedReachTime_ = newRoute->plannedReachTime_;
     plannedDelay_ = newRoute->plannedDelay_;
@@ -152,7 +155,7 @@ void Route::addNode(const PNode &node, float reachTime, float departTime) {
     if (node->initialType_ == PICKUP) {
         routeRequests_.push_back(node->related_Request_);
         plannedDelay_.push_back(reachTime - node->initialReadyTime_);
-        totalDelay_ += reachTime - node->initialReadyTime_;
+        totalDelay_ += node->related_Request_->Req_W3_ * (reachTime - node->initialReadyTime_);
     }
     routeNodes_.push_back(node);
 }
@@ -179,7 +182,7 @@ void Route::removeNode(int nodeIndex) {
     for (int i = 1; i < routeNodes_.size(); ++i) {
         if (routeNodes_[i]->initialType_ == PICKUP) {
             routeRequests_.push_back(routeNodes_[i]->related_Request_);
-            totalDelay_ += plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
+            totalDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * (plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_);
             plannedDelay_.push_back(plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_);
         }
     }
@@ -194,6 +197,7 @@ std::string Route::toString() const {
     repStr << "#\t" << std::setw(25) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
     repStr << "#\t" << std::setw(25) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
     repStr << "#\t" << std::setw(25) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- TRIP_DELAY (seconds)" << totalTripDelay_ << std::endl;
 
     repStr << "#" << std::endl;
 
@@ -378,6 +382,25 @@ void Route::createColumn(int nbRequests) {
         column_->add(requestObj->taskIndex_);*/
     for (auto & requestObj: routeRequests_)
         column_.set(requestObj->taskIndex_, true);
+}
+
+void Route::calculateTripDelay(float wait_W1, float ride_W2) {
+    totalTripDelay_ = 0.0;
+    for (size_t i = 0; i < routeNodes_.size(); ++i) {
+        if (routeNodes_[i]->type_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+            totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * (plannedReachTime_[i] - (routeNodes_[i]->related_Request_->pickTime_ + routeNodes_[i]->serviceTime_) -
+                routeNodes_[i]->related_Request_->minTravelTime_);
+        }
+        else if (routeNodes_[i]->type_ == PICKUP) {
+            for (size_t j = i + 1; j < routeNodes_.size(); ++j) {
+                if (routeNodes_[i]->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
+                    totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * (plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_);
+                    break;
+                }
+            }
+        }
+    }
+    objCoef_ = wait_W1 * totalDelay_ + ride_W2 * totalTripDelay_;
 }
 
 

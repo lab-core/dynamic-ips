@@ -26,6 +26,7 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
     previousObj_ =0;
     lpObjValue_ = 0;
     totalWaitTime_ = 0;
+    totalTripDelay_ = 0;
     masterTime_ = new myTools::Timer(); masterTime_->init();
     RPTime_ = new myTools::Timer(); RPTime_->init();
     CPTime_ = new myTools::Timer(); CPTime_->init();
@@ -69,7 +70,8 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
     (*pLogIterReqDualStream_) << "Epoch,MPIter,RequestID,InitialDual,Dual,MinDual,MaxDual,AvgDual,Model,Penalty,diff" << std::endl;
 
     pLogIterVehDualStream_ = new Tools::LogOutput(inputPaths.getOutputVehDuals());
-    (*pLogIterVehDualStream_) << "Epoch,MPIter,VehicleID,InitialDual,Dual,Model,delay,nbNodes,nbRequests,totalLength,stateChaneged" << std::endl;
+    (*pLogIterVehDualStream_) << "Epoch,MPIter,VehicleID,InitialDual,Dual,Model,delay,tripDelay,objCoef"
+                                 "nbNodes,nbRequests,totalLength,stateChaneged" << std::endl;
 }
 
 MasterAlgorithm::~MasterAlgorithm() {
@@ -114,7 +116,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     }
     else if (pInst->parameters_->initialDual_ == LAST_LP) {
         for (auto &requestObj : zSolution_) {
-            requestObj->dual_ = requestObj->penalty_;
+            requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
         /*for (auto & requestObj : pInst->requests_) {
             requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->penalty_;
@@ -139,7 +141,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     }
     else if (pInst->parameters_->initialDual_ == RANDOM) {
         for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = (rand() % (int) requestObj->penalty_)+ 1;
+            requestObj->dual_ = (rand() % (int) requestObj->penalty_);
         }
         for (auto & vehicleObj : pInst->vehicles_)
             vehicleObj->dual_ = 0;
@@ -189,7 +191,7 @@ void MasterAlgorithm::setLastDuals(PInstance &pInst) {
 
 void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModeler &GreedyModel){
     if (pInst->parameters_->initialStart_ == EMPTY_ROUTES){
-        zSolution_.capacity();
+        zSolution_.clear();
         routeSolution_.clear();
         for (auto &requestObj : pInst->requests_) {
             zSolution_.push_back(requestObj);
@@ -486,6 +488,7 @@ std::string MasterAlgorithm::toString() const {
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "# TOTAL OBJECTIVE (WAITING TIMES + PENALTIES) = " << objValue_ << std::endl;
     repStr << "# TOTAL WAITING TIMES                         = " << totalWaitTime_ << std::endl;
+    repStr << "# TOTAL TRIP DELAY                            = " << totalTripDelay_ << std::endl;
     repStr << "# NUMBER OF UN-SERVED REQUESTS                 = " << zSolution_.size() << std::endl;
     repStr << "#" << std::endl;
 
@@ -529,18 +532,18 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
     maxReducedCost_ = INFINITY;
     for (auto & vehicleObj : pInst->vehicles_){
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
-            routeObj->reducedCost_ = routeObj->totalDelay_ - vehicleObj->dual_;
+            routeObj->reducedCost_ = routeObj->objCoef_ - vehicleObj->dual_;
             for (auto & nodeObj: routeObj->routeNodes_){
                 if (nodeObj->type_ == PICKUP){
-                    routeObj->reducedCost_ -= nodeObj->related_Request_->dual_;
+                    routeObj->reducedCost_ -= nodeObj->related_Request_->Req_W3_ * nodeObj->related_Request_->dual_;
                 }
             }
             if (minReducedCost_ > routeObj->reducedCost_ )
                 minReducedCost_ = routeObj->reducedCost_;
             if (!routeObj->routeRequests_.empty()) {
                 routeObj->score_ = routeObj->reducedCost_ / static_cast<float>(routeObj->routeRequests_.size());
-                routeObj->lambda_ = routeObj->totalDelay_ / (routeObj->totalDelay_ - routeObj->reducedCost_ + 0.0001f);
-                routeObj->waitScore_ = 0;
+                routeObj->lambda_ = routeObj->objCoef_ / (routeObj->objCoef_ - routeObj->reducedCost_ + 0.0001f);
+  //              routeObj->waitScore_ = 0;
                 /*for (int i = 0; i < routeObj->routeRequests_.size(); ++i) {
                     if (routeObj->routeRequests_[i]->plannedDelay_ != LARGE_CONSTANT)
                         routeObj->waitScore_ += routeObj->plannedDelay_[i] - routeObj->routeRequests_[i]->plannedDelay_;
@@ -750,12 +753,14 @@ void MasterAlgorithm::setCurrentRoutes(const PInstance &pInst) {
 void MasterAlgorithm::setObjValue() {
     objValue_ = 0.0;
     totalWaitTime_ = 0.0;
+    totalTripDelay_ = 0.0;
     for (auto & routeObj : routeSolution_) {
-        objValue_ += routeObj->totalDelay_;
+        objValue_ += routeObj->objCoef_;
         totalWaitTime_ += routeObj->totalDelay_;
+        totalTripDelay_ += routeObj->totalTripDelay_;
     }
     for (auto & zRequest : zSolution_) {
-        objValue_+= zRequest->penalty_;
+        objValue_+= zRequest->Req_W3_ * zRequest->penalty_;
     }
 }
 
@@ -824,6 +829,7 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
            << objValue_ << ","
            << lpObjValue_ << ","
            << totalWaitTime_ << ","
+           << totalTripDelay_ << "'"
             // add the dual stats here:
            << summaryDuals_.maxDual << ","
            << summaryDuals_.minDual << ","
@@ -1145,7 +1151,7 @@ void MasterAlgorithm::computePsudoInverse(const PInstance &pInst) {
     int nCols = pInst->nbVehicles_ + static_cast<int>(zSolution_.size());
     Eigen::VectorXd cB(nCols);
     for (int v = 0; v < pInst->nbVehicles_; ++v)
-        cB[v] = routeSolution_[v]->totalDelay_;
+        cB[v] = routeSolution_[v]->objCoef_;
     for (int i = 0; i < (int)zSolution_.size(); ++i)
         cB[pInst->nbVehicles_ + i] = zSolution_[i]->penalty_;
 
@@ -1172,7 +1178,7 @@ void MasterAlgorithm::buildCostVector(const PInstance &pInst) {
 
     // Costs for current solution routes
     for (const auto& route : routeSolution_) {
-        costVector_(currentCol) = route->totalDelay_;
+        costVector_(currentCol) = route->objCoef_;
         currentCol++;
     }
 
@@ -1184,7 +1190,7 @@ void MasterAlgorithm::buildCostVector(const PInstance &pInst) {
 
     // Costs for additional routes in basis
     for (const auto& route : addedRouteToBase_) {
-        costVector_(currentCol) = route->totalDelay_;
+        costVector_(currentCol) = route->objCoef_;
         currentCol++;
     }
 }

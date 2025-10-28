@@ -49,7 +49,7 @@ Solver::Solver(const PInstance & mainInst, InputPaths &inputPaths) {
                                   "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,"
                                   "#SP Iter,totalColumn,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                                   " #nbPrunedPath,nbNegative,#ColumnsAdded,#RecycledColumns,GreedyObj,Objective,"
-                                  "LinearObjective,waitTime,maxDual,minDual,meanDual,medianDual,destructTime,"
+                                  "LinearObjective,waitTime,TripDelay,maxDual,minDual,meanDual,medianDual,destructTime,"
                                   "RebalancingRuntime,GreedyTime,#Return,#Idle,#passPerVehicle,#requestPerVehicle,"
                                   "#nodePerVehicle,#StateChanged,nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,"
                                   "nbRecycle,nbCommitted,nbLess_50,nbLess_100,nbLess_200" << std::endl;
@@ -275,7 +275,9 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
             if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
-                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ +
+                    elapsedTime_+ simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_,
+                    EpochInst->parameters_->Ride_W2_);
             }
         }
     }
@@ -399,7 +401,8 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
             if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
-                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+
+                simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
             }
         }
     }
@@ -757,8 +760,10 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
             if (mainInst->parameters_->routeRecycle_ && !CG_Model_->availableRoutes_.empty())
                 reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
         }
-        else
+        else {
             EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
+            EpochInst->updatePenalties(elapsedTime_);
+        }
         for (auto &vehicleObj: mainInst->vehicles_){
             if (EpochInst->nbRequests_ != 0) {
                 vehicleObj->currentRoute_->createColumn(EpochInst->nbRequests_);
@@ -833,6 +838,7 @@ void Solver::anyTimeSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
     elapsedTime_ = simulationTime_->dSinceInit().count();
     for (auto & vehicleObj : mainInst->vehicles_) {
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_ + elapsedTime_);
+        vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
     }
     rebalancingTime_->stop();
 }
@@ -890,6 +896,7 @@ void Solver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bool midd
         for (auto & vehicleObj : mainInst->vehicles_) {
             vehicleObj->departNode_->departTime_ = vehicleObj->currentRoute_->plannedDepartTime_[0];
             vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_ + saveTime);
+            vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
         }
     }
 }
@@ -1069,6 +1076,7 @@ void Solver::dynamicSolver(PInstance &mainInst, InputPaths &inputPaths, bool mid
     for (auto & vehicleObj : mainInst->vehicles_) {
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_
                                            + static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_);
+        vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
     }
     rebalancingTime_->stop();
 
@@ -1177,8 +1185,10 @@ void Solver::DA_Solver(PInstance &mainInst, InputPaths &inputPaths, bool middleS
             if (mainInst->parameters_->routeRecycle_ && !CG_Model_->availableRoutes_.empty())
                 reconstructAvailableRoutes(mainInst, CG_Model_->availableRoutes_);
         }
-        else
+        else {
             EpochInst->buildPartialData(mainInst, elapsedTime_, nbReceivedRequest);
+            EpochInst->updatePenalties(elapsedTime_);
+        }
 
         for (auto &vehicleObj: mainInst->vehicles_){
             if (EpochInst->nbRequests_ != 0) {
@@ -1317,6 +1327,7 @@ void Solver::DA_Solver(PInstance &mainInst, InputPaths &inputPaths, bool middleS
 
     for (auto & vehicleObj : mainInst->vehicles_) {
         vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_+ elapsedTime_);
+        vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
     }
     rebalancingTime_->stop();
 
@@ -1540,9 +1551,10 @@ void Solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availa
         }
         newRoute->addNode(pInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
         newRoute->addNode(pInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
-        newRoute->reducedCost_ = newRoute->totalDelay_ - requestObj->dual_ - vehicle->dual_;
+        newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
+        newRoute->reducedCost_ = newRoute->objCoef_ - requestObj->dual_ - vehicle->dual_;
         newRoute->score_ = newRoute->reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
-        newRoute->lambda_ = newRoute->totalDelay_/(newRoute->totalDelay_ - newRoute->reducedCost_ + 0.001f);
+        newRoute->lambda_ = newRoute->objCoef_/(requestObj->dual_ + vehicle->dual_ + 0.001f);
         newRoute->totalLength_ = newRoute->plannedDepartTime_.back() - vehicle->departTime_;
         if (newRoute->reducedCost_ < 0)
             nbNegative++;
@@ -1575,6 +1587,9 @@ void Solver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRou
             for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
                 if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
+                else
+                    availableRoutes[vehicleObj->vehicleID_][i]->calculateTripDelay(mainInst->parameters_->Wait_W1_,
+                        mainInst->parameters_->Ride_W2_);
             }
         }
     }
@@ -1595,7 +1610,8 @@ void Solver::returnVehicles(const PInstance & EpochInst) const {
                     PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
                     vehicleObj->currentRoute_->addSink(sinkNode);
                     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+ simulationTime_->dSinceStart().count());
+                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+
+                        simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
                 }
             }
         }
@@ -1656,7 +1672,8 @@ void Solver::returnVehiclesZone(const PInstance & EpochInst) const {
                         vehicleObj->currentRoute_->addSink(sinkNode);
                         if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                             vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_
-                                + elapsedTime_ + simulationTime_->dSinceStart().count());
+                                + elapsedTime_ + simulationTime_->dSinceStart().count(),
+                                EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
                         break; // Assign to the nearest eligible successor.
                         }
                 }
@@ -1778,7 +1795,8 @@ void Solver::returnVehiclesAssign(const PInstance & EpochInst) const {
                     idleVehicles[v]->currentRoute_->addSink(sinkNode);
                     if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                         idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
-                            + elapsedTime_ + simulationTime_->dSinceStart().count());
+                            + elapsedTime_ + simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_,
+                            EpochInst->parameters_->Ride_W2_);
                     break;
                 }
     }
@@ -1877,7 +1895,8 @@ void Solver::returnVehiclesAlonsoCplex(const PInstance & EpochInst) const {
                             idleVehicles[v]->currentRoute_->addSink(sinkNode);
                             if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                                 idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
-                                    + elapsedTime_ + simulationTime_->dSinceStart().count());
+                                    + elapsedTime_ + simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_,
+                                    EpochInst->parameters_->Ride_W2_);
                             break;
                         }
             }
@@ -1993,7 +2012,8 @@ void Solver::returnVehiclesAlonso(const PInstance & EpochInst) const {
                                 idleVehicles[v]->currentRoute_->addSink(sinkNode);
                                 if (EpochInst->parameters_->solutionMode_ == ANYTIME)
                                     idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
-                                        + elapsedTime_ + simulationTime_->dSinceStart().count());
+                                        + elapsedTime_ + simulationTime_->dSinceStart().count(),
+                                        EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
                                 break;
                             }
                         }

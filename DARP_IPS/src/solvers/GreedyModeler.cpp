@@ -47,10 +47,12 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
         if (PInst->parameters_->solutionMode_ == STATIC) {
             PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->idleTime_ += greedySol->idleTime_;
             newRoute = greedySol->greedyLabelToRoute(true);
+            newRoute->calculateTripDelay(PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
 
         }
         else {
             newRoute = greedySol->greedyLabelToRoute(false);
+            newRoute->calculateTripDelay(PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
         }
         newRoute->createColumn(PInst->nbRequests_);
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->setCurrentRoute(newRoute);
@@ -60,11 +62,12 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
     greedyRouteList_.clear();
 }
 
-float GreedyModeler::createUpperbound() {
+float GreedyModeler::createUpperbound(float wait_W1, float ride_W2) {
     float upperbound = 0;
     for (auto & greedySol : greedyRouteList_) {
         (*greedySol->Vehicle_)->greedyRoute_ = greedySol->greedyLabelToRoute(false);
-        upperbound += (*greedySol->Vehicle_)->greedyRoute_->totalDelay_;
+        (*greedySol->Vehicle_)->greedyRoute_->calculateTripDelay(wait_W1, ride_W2);
+        upperbound += (*greedySol->Vehicle_)->greedyRoute_->objCoef_;
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
     }
@@ -85,46 +88,30 @@ float GreedyModeler::GreedyUpperbound(PInstance &PInst) {
     greedyTime_->start();
     initialization(PInst);
     solveInsertion(PInst);
-    float upperbound = createUpperbound();
+    float upperbound = createUpperbound(PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
     greedyTime_->stop();
     return upperbound;
 }
 
-void GreedyModeler::GreedyAssignment(PInstance &PInst, int select) {
-    greedyAssignTime_->start();
-    if (select == 1) {
-        for (auto & greedySol : greedyRouteList_) {
-            greedySol.reset();
-        }
-        greedyRouteList_.clear();
-        initialization(PInst);
-    }
-
-    solveAssignment(PInst, select);
-    /*for (auto & greedySol : greedyRouteList_) {
-        greedySol.reset();
-    }
-    greedyRouteList_.clear();*/
-    greedyAssignTime_->stop();
-}
 
 void GreedyModeler::solveInsertion(const PInstance &PInst) {
-    std::vector<float> possibleDelay;
+    std::vector<float> deltaObjective;
     for (int i = 0; i < PInst->requests_.size(); i++) {
         if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
             if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                possibleDelay.clear();
+                deltaObjective.clear();
                 for (auto &GRoute: greedyRouteList_) {
 
                     GRoute->findInsertPlace(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
-                                            positionList_[(*GRoute->Vehicle_)->vehicleID_]);
+                                            positionList_[(*GRoute->Vehicle_)->vehicleID_], PInst->parameters_->Wait_W1_,
+                                            PInst->parameters_->Ride_W2_);
 
-                    possibleDelay.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaDelay_);
+                    deltaObjective.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaObjective_);
                 }
                 unsigned int vehicle_ID =
-                        std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-                PInst->requests_[i]->marginalCost_ = possibleDelay[vehicle_ID];
+                        std::min_element(deltaObjective.begin(), deltaObjective.end()) - deltaObjective.begin();
+                PInst->requests_[i]->marginalCost_ = deltaObjective[vehicle_ID];
 
                 greedyRouteList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                             PInst->instGraph_->dropNodes_[i],
@@ -138,58 +125,9 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
         GreedyObj->updateTailDepart();
 }
 
-
-
-void GreedyModeler::solveAssignment(const PInstance &PInst, int select) {
-    std::vector<float> possibleDelay;
-    for (int i = 0; i < PInst->requests_.size(); i++) {
-        if (PInst->requests_[i]->requestStatus_ == NO_ACTION) {
-            possibleDelay.clear();
-
-            for (auto & GreedyObj : greedyRouteList_){
-                if (!GreedyObj->selected_){
-                    GreedyObj->findAssignedPlace(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
-                                                 PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
-                                                 positionList_[(*GreedyObj->Vehicle_)->vehicleID_]);
-
-                    possibleDelay.push_back(positionList_[(*GreedyObj->Vehicle_)->vehicleID_]->deltaDelay_);
-                }
-                else
-                    possibleDelay.push_back(INFINITY);
-            }
-            unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            greedyRouteList_[vehicle_ID]->selected_ = true;
-            PInst->selectedVehicles_[vehicle_ID] = select;
-        }
-    }
-}
-
 void GreedyModeler::setObjValue() {
     objValue_ = 0.0;
     for (auto & GreedyObj : greedyRouteList_)
         objValue_ += GreedyObj->totalDelay_;
 }
 
-
-// this function assigns requests to vehicles based on the minimum delay possible and do not consider ride-sharing
-// any pickup is followed by the drop-off
-void GreedySolver_noShare(const PInstance &PInst) {
-    std::vector<float> possibleDelay;
-    for (auto & requestObj : PInst->requests_) {
-        if (requestObj->requestStatus_ == NO_ACTION) {
-            possibleDelay.clear();
-            std::string pickID = myTools::createNodeID(requestObj->getRequestId(), PICKUP);
-            std::string dropID = myTools::createNodeID(requestObj->getRequestId(), DROPOFF);
-
-            for (auto &vehicleObj: PInst->vehicles_) {
-                float requestPickTime = vehicleObj->currentRoute_->plannedReachTime_.back() +
-                                        vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ +
-                                        durationMatrix_[vehicleObj->currentRoute_->routeNodes_.back()->locationID_][PInst->instGraph_->nodes_[pickID]->locationID_];
-                possibleDelay.push_back(requestPickTime);
-            }
-            unsigned int vehicle_ID = std::min_element(possibleDelay.begin(), possibleDelay.end()) - possibleDelay.begin();
-            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode(PInst->instGraph_->nodes_[pickID]);
-            PInst->vehicles_[vehicle_ID]->currentRoute_->addNode(PInst->instGraph_->nodes_[dropID]);
-        }
-    }
-}

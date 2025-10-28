@@ -45,6 +45,7 @@ Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick
     nbSwitch_ = 0;
     marginalCost_ = 0.0;
     latestDrop_ = 0.0;
+    Req_W3_ = 1.0;
 }
 
 Request::~Request() {

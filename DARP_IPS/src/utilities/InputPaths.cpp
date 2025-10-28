@@ -19,7 +19,7 @@ InputPaths::InputPaths(std::string  datadir, PConfig& config) : dataDir_(std::mo
     instanceDir_ = "";
     input_durationData_ = "";
     input_durationData_ = dataDir_ + "edge_time_matrix.txt";
-    input_paramFile_ = dataDir_ + config->paramFile_ + ".json";
+    input_paramFile_ = config->paramFile_ + ".json";
     input_zones_ = dataDir_ + "Zones.txt";
     input_vehicleFileGeneral_ = dataDir_ + config->vehicleFolder_ + "/" + config->vehicleFileName_ + ".txt";
     input_onboardsFileGeneral_ = dataDir_ + config->vehicleFolder_ + "/ONBOARDS_" + config->vehicleFileName_ + ".txt";

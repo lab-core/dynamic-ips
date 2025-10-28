@@ -102,8 +102,12 @@ std::string Instance::toString() const {
 std::string Instance::solutionToString() {
     int numServed = 0;                  // total requests in routes
 
-    float totalWaiting = 0;             // total route waiting times
+    float totalRequestsWaiting = 0;             // total route waiting times
+    float totalWeightedWaiting = 0;             // total route waiting times
+    float totalRouteWaiting = 0;
+    float totalObj = 0;
     float totalTripDelay = 0;           // total trip delay considering initial onboards
+    float totalWeightedTripDelay = 0;
     int totalNumServed = 0;             // total requests served considering initial onboards
     int totalCustomers = 0;
     float penalty = 0;                 // total penalty of unserved
@@ -162,8 +166,10 @@ std::string Instance::solutionToString() {
                 std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
 //                myTools::throwException("Trip delay Validation");
             }
-
+            totalRequestsWaiting += requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_;
+            totalWeightedWaiting += requests_[i]->nbPassengers_ * (requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_);
             totalTripDelay += travelTime - requests_[i]->minTravelTime_;
+            totalWeightedTripDelay += requests_[i]->nbPassengers_ * (travelTime - requests_[i]->minTravelTime_);
             totalNumServed ++;
             totalCustomers += requests_[i]->nbPassengers_;
         }
@@ -173,7 +179,7 @@ std::string Instance::solutionToString() {
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             repStr << std::right << std::setw(9) << "-------" << " (s)  ";
             NumRejected++;
-            penalty += requests_[i]->penalty_;
+            penalty += requests_[i]->Req_W3_ * requests_[i]->penalty_;
         }
 
         repStr << std::setw(7) << requests_[i]->nbPassengers_ << std::endl;
@@ -182,7 +188,8 @@ std::string Instance::solutionToString() {
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
     for (const auto &vehicleObj : vehicles_) {
-        totalWaiting += vehicleObj->solutionRoute_->totalDelay_;
+        totalRouteWaiting += vehicleObj->solutionRoute_->totalDelay_;
+        totalObj += vehicleObj->solutionRoute_->objCoef_;
         numServed += static_cast<int>(vehicleObj->solutionRoute_->routeRequests_.size());
         idleTime += vehicleObj->idleTime_;
         serviceTime += vehicleObj->serviceTime_;
@@ -199,17 +206,23 @@ std::string Instance::solutionToString() {
     }
     repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "#" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# FINAL OBJECTIVE VALUE" << " = " << penalty + totalWaiting << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WAIT TIME" << " = " << totalWaiting << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# FINAL OBJECTIVE VALUE" << " = " << penalty + totalObj << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL ROUTE WAIT TIME" << " = " << totalRouteWaiting << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUEST  WAIT TIME" << " = " << totalRequestsWaiting << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED WAIT TIME" << " = " << totalWeightedWaiting << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED TRIP DELAY" << " = " << totalWeightedTripDelay << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL SERVICE TIME" << " = " << serviceTime << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE EMPTY TIME" << " = " << driveEmptyTime << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL RETURN EMPTY TIME" << " = " << returnEmptyTime << " (s)" << std::endl;
     repStr << "#" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WAIT TIME" << " = " << totalWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL ROUTE WAIT TIME" << " = " << totalRouteWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUEST WAIT TIME" << " = " << totalRequestsWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED WAIT TIME" << " = " << totalWeightedWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay/SECONDS_PER_MINUTE << " (min)" << std::endl;
+    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED TRIP DELAY" << " = " << totalWeightedTripDelay/SECONDS_PER_MINUTE << " (min)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL IDLE TIME" << " = " << idleTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL SERVICE TIME" << " = " << serviceTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
@@ -227,9 +240,10 @@ std::string Instance::solutionToString() {
     repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
 
     if (numServed != 0) {
-        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER REQUEST" << " = " << totalWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
-        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER PASSENGER" << " = " << totalWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
+        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER REQUEST" << " = " << totalRequestsWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
+        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER PASSENGER" << " = " << totalWeightedWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
         repStr << std::setw(SENTENCE_SIZE) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(numServed) << " (s)" << std::endl;
+        repStr << std::setw(SENTENCE_SIZE) << "# TRIP DELAY PER PASSENGER" << " = " << totalWeightedTripDelay/static_cast<float>(totalCustomers) << " (s)" << std::endl;
     }
     repStr << std::setw(SENTENCE_SIZE) << "# PASSENGERS IN VEHICLE" << " = " << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
@@ -257,9 +271,9 @@ std::string Instance::solutionToString() {
     else if (totalCustomers < 40000)
         instRepStr_ << "40000 <" << ",";
 
-    instRepStr_ << totalNumServed <<"," << NumRejected <<"," << totalWaiting/static_cast<float>(numServed) << ",";
-    instRepStr_ << totalWaiting/static_cast<float>(totalCustomers) << ",";
-    instRepStr_ << totalTripDelay/static_cast<float>(numServed) << ",";
+    instRepStr_ << totalNumServed <<"," << NumRejected <<"," << totalRequestsWaiting/static_cast<float>(numServed) << ",";
+    instRepStr_ << totalWeightedWaiting/static_cast<float>(totalCustomers) << ",";
+    instRepStr_ << totalTripDelay/static_cast<float>(numServed) << "," << totalWeightedTripDelay/static_cast<float>(totalCustomers) << ",";
     instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
     instRepStr_ << nbIdle << ",";
     instRepStr_ << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << ",";
@@ -807,11 +821,12 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
 
             Tools::LogOutput finalInstanceStream(inputPaths.getOutputSummary(), true); // append mode
             finalInstanceStream
-                        << "VehicleFile,paramFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,#customers,"
-                           "customer Group,#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,idle time/vehicle,"
-                           "#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,#IMP Iter,#RP Iter,#CP Iter,#Zoom Iter,"
-                           "#SP Iter ,MASTER time,RP time,CP time,Zoom time,SP time,Greedy time,Rebalance time,"
-                           "Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,CPSuccess,CPFails,CGSuccess\n";
+                        << "VehicleFile,paramFile,Name,Instance,Algorithm,Mode,#vehicles,#requests,#initialOnboards,"
+                           "#customers,customer Group,#served Req,#Rejected Req,wait/req,wait/cust,tripDelay/req,"
+                           "tripDelay/cust,idle time/vehicle,#Idle Vehicles,#pass in vehicle,#epoch,#LMP Iter,"
+                           "#IMP Iter,#RP Iter,#CP Iter,#Zoom Iter,#SP Iter ,MASTER time,RP time,CP time,Zoom time,"
+                           "SP time,Greedy time,Rebalance time,Total time,RP/ISUD,CP/ISUD,MASTER/Total,SP/Total,"
+                           "CPSuccess,CPFails,CGSuccess\n";
 
             // Write data row
             finalInstanceStream << config->vehicleFolder_ << "," << config->scenario_ << ",";
@@ -836,7 +851,7 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
 std::string Instance::saveVehicleResults() const {
     std::stringstream repStr;
     repStr << "VehicleID,startID,capacity,startTime,endTime,LastVisitTime,#Stops,#RequestsServed,WaitTime,"
-              "idleTime,serviceTime,driveFullTime,driveEmptyTime,returnEmptyTime" << std::endl;
+              "TripDelay,idleTime,serviceTime,driveFullTime,driveEmptyTime,returnEmptyTime" << std::endl;
 
     for (auto & vehicleObj : vehicles_) {
         repStr << vehicleObj->vehicleID_ << ",";
@@ -848,6 +863,7 @@ std::string Instance::saveVehicleResults() const {
         repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
         repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
         repStr << vehicleObj->solutionRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->solutionRoute_->totalTripDelay_ << ",";
         repStr << vehicleObj->idleTime_ << ",";
         repStr << vehicleObj->serviceTime_ << ",";
         repStr << vehicleObj->driveFullTime_ << ",";
@@ -1096,6 +1112,8 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         repStr << vehicleObj->dual_ << ",";
         repStr << model << ",";
         repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->totalTripDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->objCoef_ << ",";
         repStr << vehicleObj->currentRoute_->routeSize_ << ",";
         repStr << vehicleObj->currentRoute_->routeRequests_.size() << ",";
         repStr << vehicleObj->currentRoute_->totalLength_ << ",";

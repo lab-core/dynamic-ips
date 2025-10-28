@@ -31,7 +31,7 @@ void ComplementPro::addZVar(IloNumVarArray zVar, const PRequest &request, VarSig
     if (sign == NEGATIVE)
         addZVarFloat(zVar, request, sign);
     else if (sign == POSITIVE) {
-        IloNumVar numVar = IloNumVar(objFunction_(request->penalty_) +
+        IloNumVar numVar = IloNumVar(objFunction_(request->Req_W3_ * request->penalty_) +
                                      requestConst_[request->taskIndex_](1) +
                                      normalConst_(1));
         numVar.setName(request->name_);
@@ -47,7 +47,7 @@ void ComplementPro::addRouteVar(IloNumVarArray routeVar, const PRoute &newRoute,
     else {
         IloNumArray columnVar(env_, nbRequestTask_);
         createPattern(columnVar, newRoute, POSITIVE);
-        IloNumVar numVar = IloNumVar(objFunction_(newRoute->totalDelay_) + requestConst_(columnVar)
+        IloNumVar numVar = IloNumVar(objFunction_(newRoute->objCoef_) + requestConst_(columnVar)
                                      + vehicleConst_[pInst->vehicles_[newRoute->vehicleID_]->vehicleIndex_](1)
                                      + normalConst_(newRoute->incompatibilityDegree_));
         numVar.setName(newRoute->name_);

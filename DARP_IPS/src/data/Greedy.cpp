@@ -52,7 +52,8 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
     selected_ = false;
     PCurrentStop_ = PInitialStop_;
     PLastStop_ = PInitialStop_;
-    totalDelay_ = 0;
+    totalDelay_ = 0.0;
+    totalTripDelay_ = 0.0;
     idleTime_ = 0;
     departureTime_ = vehicle->departTime_;
     // just onboards are added and the previous solution is not considered
@@ -79,6 +80,8 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                                             onboardNode->pairNode_->departTime_;
 
             PLastStop_ = newDropLabel;
+            float tripDelay = dropTime - onboardNode->pairNode_->departTime_ - onboardNode->related_Request_->minTravelTime_;
+            totalTripDelay_ += onboardNode->related_Request_->Req_W3_ * tripDelay;
         }
     }
     // build the previous solution
@@ -102,10 +105,7 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
             newLabel->parent_ = PLastStop_;
             PLastStop_->child_ = newLabel;
             PLastStop_ = newLabel;
-            /*if (newLabel->currentNode_->nodeStatus_ == COMMITTED) {
-                PCurrentStop_ = newLabel;
-                departureTime_ = newLabel->leaveTime_;
-            }*/
+
             if (newLabel->currentNode_->type_ == DROPOFF) {
                 if (newLabel->currentNode_->related_Request_->requestStatus_ == NO_ACTION) {
                     PStopLabel currentLabel = PLastStop_;
@@ -118,6 +118,9 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                             newLabel->travelResource_ = newLabel->currentNode_->related_Request_->maxTravelTime_ -
                                                         (*Vehicle_)->currentRoute_->plannedReachTime_[i] +
                                                         currentLabel->parent_->leaveTime_;
+                            float tripDelay = (*Vehicle_)->currentRoute_->plannedReachTime_[i] -
+                                currentLabel->parent_->leaveTime_ - newLabel->currentNode_->related_Request_->minTravelTime_;
+                            totalTripDelay_ +=  newLabel->currentNode_->related_Request_->Req_W3_ * tripDelay;
                             break;
                         }
                         currentLabel = currentLabel->parent_;
@@ -126,10 +129,14 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                     newLabel->travelResource_ = newLabel->currentNode_->related_Request_->maxTravelTime_ -
                                                 (*Vehicle_)->currentRoute_->plannedReachTime_[i] +
                                                 (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_;
+                    float tripDelay = (*Vehicle_)->currentRoute_->plannedReachTime_[i] -
+                        (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_ -
+                            newLabel->currentNode_->related_Request_->minTravelTime_;
+                    totalTripDelay_ += newLabel->currentNode_->related_Request_->Req_W3_ * tripDelay;
                 }
             }
             else if (newLabel->currentNode_->type_ == PICKUP)
-                totalDelay_ += (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
+                totalDelay_ += newLabel->currentNode_->related_Request_->Req_W3_ * (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
             else if (newLabel->currentNode_->type_ == SINK)
                 PCurrentStop_ = newLabel;
         }
@@ -146,6 +153,7 @@ GreedyRoute::GreedyRoute(const GreedyRoute &label) {
     PCurrentStop_ = label.PCurrentStop_;
     totalDelay_ = label.totalDelay_;
     idle_ = label.idle_;
+    totalTripDelay_ = label.totalTripDelay_;
 }
 
 GreedyRoute::~GreedyRoute() = default;
@@ -160,90 +168,105 @@ void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) con
 
 // this function find a position to insert pickup point and add drop off point
 void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
-                                  std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position) {
-    float waitIncrease = INFINITY;
+                                  std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position,
+                                  float wait_W1, float ride_W2) {
 
-    // Tour length increase
-    float lengthIncrease = INFINITY;
-
-    position->updatePosition(PLastStop_, PLastStop_, waitIncrease, lengthIncrease);
+    position->updatePosition(PLastStop_, PLastStop_, LARGE_CONSTANT, LARGE_CONSTANT, wait_W1, ride_W2);
+    // Quick capacity check
+    if (PLastStop_->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_) {
+        throw myTools::myException("Instance error: capacity exceeded, consider splitting trip.", __FILE__, __LINE__);
+    }
 
     // define the initial position to add the request just after all
     PStopLabel prePick = PCurrentStop_;
-    PStopLabel preDrop;
     while (prePick != nullptr) {
-        waitIncrease = INFINITY;
+        // Skip if already infeasible by capacity
+        if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_) {
+            prePick = prePick->child_;
+            continue;
+        }
+
         if (prePick == PLastStop_) {
-            if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_){
-                throw myTools::myException("Instance error: capacity exceeded, consider splitting trip.", __FILE__, __LINE__);
-            }
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
-            waitIncrease = pickTime - pickNode->initialReadyTime_;
-            lengthIncrease = (pickTime - departureTime_) +
-                             (pickNode->serviceTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_]);
-            preDrop = PLastStop_;
-            if (waitIncrease < position->deltaDelay_) {
-                if (lengthIncrease < position->deltaLength_)
-                    position->updatePosition(prePick, preDrop, waitIncrease, lengthIncrease);
+            float waitIncrease = pickNode->related_Request_->Req_W3_ * (pickTime - pickNode->initialReadyTime_);
+            // trip delay is not increased due to direct drop
+            float objIncrease = wait_W1 *  waitIncrease + ride_W2 * 0.0;
+            if (objIncrease < position->deltaObjective_) {
+                position->updatePosition(prePick, PLastStop_, waitIncrease, 0.0, wait_W1, ride_W2);
             }
         }
         else {
-            float endTime = PLastStop_->leaveTime_;
-            float curWait = totalDelay_;
-            // insert pick up node
-            insertNode(prePick, pickNode, greedyLabelPool);
-            PStopLabel pickLabel = prePick->child_;
-
-            // check the feasibility
-            if (!isAnyViolation(prePick->child_)){
-                preDrop = prePick->child_;
-                PStopLabel endLabel = nullptr;
-                PStopLabel currentIndex = pickLabel;
-                // find the position to insert drop node
-                while (currentIndex->child_ != nullptr) {
-                    if (currentIndex->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
-                        endLabel = currentIndex->child_;
-                        break;
-                    } else
-                        currentIndex = currentIndex->child_;
-                }
-                while (preDrop != endLabel) {
-                    // insert drop node
-                    insertNode(preDrop, dropNode, greedyLabelPool);
-                    PStopLabel dropLabel = preDrop->child_;
-                    dropLabel->travelResource_ = maxDuration - (dropLabel->reachTime_ - pickLabel->leaveTime_);
-
-                    // check the feasibility
-                    if (!isAnyViolation(prePick->child_)){
-                        waitIncrease = totalDelay_ - curWait;
-                        lengthIncrease = PLastStop_->leaveTime_ - endTime;
-                        if (waitIncrease < position->deltaDelay_) {
-                            if (preDrop == pickLabel)
-                                position->updatePosition(prePick, prePick, waitIncrease, lengthIncrease);
-                            else
-                                position->updatePosition(prePick, preDrop, waitIncrease, lengthIncrease);
-                        } else if (waitIncrease == position->deltaDelay_) {
-                            if (lengthIncrease < position->deltaLength_) {
-                                if (preDrop == pickLabel)
-                                    position->updatePosition(prePick, prePick, waitIncrease, lengthIncrease);
-                                else
-                                    position->updatePosition(prePick, preDrop, waitIncrease, lengthIncrease);
-                            }
-                        }
-                    }
-                    removeLabel(dropLabel, greedyLabelPool);
-                    preDrop = preDrop->child_;
-                }
-            }
-            removeLabel(pickLabel, greedyLabelPool);
+            // Try insertion at this position
+            tryInsertionAt(prePick, pickNode, dropNode, maxDuration, greedyLabelPool, position, wait_W1, ride_W2);
         }
         prePick = prePick->child_;
     }
 }
 
+PStopLabel GreedyRoute::findCapacityLimit(const PStopLabel &startLabel) const {
+    PStopLabel current = startLabel;
+    while (current->child_ != nullptr) {
+        if (current->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
+            return current->child_;
+        }
+        current = current->child_;
+    }
+    return nullptr;
+}
 
-void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool) {
+void GreedyRoute::tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dropNode, float maxDuration,
+    std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1, float ride_W2) {
+    float baseDelay = totalDelay_;
+    float baseTripDelay = totalTripDelay_;
+    PStopLabel emptyLabel;
+
+    // Insert pickup
+    insertNode(prePick, pickNode, greedyLabelPool, emptyLabel);
+    PStopLabel pickLabel = prePick->child_;
+
+    if (isAnyViolation(pickLabel)) {
+        removeLabel(pickLabel, greedyLabelPool, emptyLabel);
+        return;
+    }
+
+    // Find valid drop positions
+    PStopLabel preDrop = pickLabel;
+    PStopLabel capacityLimit = findCapacityLimit(pickLabel);
+
+    while (preDrop != capacityLimit) {
+        insertNode(preDrop, dropNode, greedyLabelPool, pickLabel);
+        PStopLabel dropLabel = preDrop->child_;
+        dropLabel->travelResource_ = maxDuration - (dropLabel->reachTime_ - pickLabel->leaveTime_);
+
+        if (!isAnyViolation(pickLabel)) {
+            float waitIncrease = totalDelay_ - baseDelay;
+            float tripDelayIncrease = totalTripDelay_ - baseTripDelay;
+            float objIncrease = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
+
+            // Compare objective increase
+            if (objIncrease < position->deltaObjective_) {
+                PStopLabel dropPos = (preDrop == pickLabel) ? prePick : preDrop;
+                position->updatePosition(prePick, dropPos, waitIncrease,
+                                       tripDelayIncrease, wait_W1, ride_W2);
+            }
+            else if (objIncrease == position->deltaObjective_) {
+                if (tripDelayIncrease < position->deltaTripDelay_) {
+                    PStopLabel dropPos = (preDrop == pickLabel) ? prePick : preDrop;
+                    position->updatePosition(prePick, dropPos, waitIncrease,
+                                           tripDelayIncrease, wait_W1, ride_W2);
+                }
+            }
+        }
+
+        removeLabel(dropLabel, greedyLabelPool, pickLabel);
+        preDrop = preDrop->child_;
+    }
+
+    removeLabel(pickLabel, greedyLabelPool, emptyLabel);
+}
+
+void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel) {
     // calculate reach time
     float reachTime = labelToNodeReachTime(preLabel, newNode);
     // update depart time
@@ -277,18 +300,42 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
 
         updateReachTimes(newLabel);
     }
+    // Update totalDelay for PICKUP nodes
     if (newNode->type_ == PICKUP){
         if (reachTime - newNode->related_Request_->earlyPick_ < 0 )
             throw myTools::myException("Negative waiting time encountered in insertNode.", __FILE__, __LINE__);
 
-        totalDelay_ += (reachTime - newNode->initialReadyTime_);
+        totalDelay_ += newNode->related_Request_->Req_W3_ * (reachTime - newNode->initialReadyTime_);
+    }
+    // Update totalTripDelay for DROPOFF nodes
+    else if (newNode->type_ == DROPOFF) {
+        float rideTime;
+        if (pickLabel == nullptr) {
+            // Paired with node in graph (not in route yet)
+            rideTime = reachTime - newNode->pairNode_->departTime_;
+        } else {
+            // Paired with pickup label in route
+            rideTime = reachTime - pickLabel->leaveTime_;
+        }
+        float tripDelay = rideTime - newNode->related_Request_->minTravelTime_;
+        totalTripDelay_ += newNode->related_Request_->Req_W3_ * tripDelay;
     }
 }
 
-void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool) {
+void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel) {
     greedyLabelPool.push_back(label);
     if (label->currentNode_->type_ == PICKUP) {
-        totalDelay_ -= label->reachTime_ - label->currentNode_->initialReadyTime_;
+        totalDelay_ -= label->currentNode_->related_Request_->Req_W3_ * (label->reachTime_ - label->currentNode_->initialReadyTime_);
+    }
+    else if (label->currentNode_->type_ == DROPOFF) {
+        float rideTime;
+        if (pickLabel == nullptr) {
+            rideTime = label->reachTime_ - label->currentNode_->pairNode_->departTime_;
+        } else {
+            rideTime = label->reachTime_ - pickLabel->leaveTime_;
+        }
+        float tripDelay = rideTime - label->currentNode_->related_Request_->minTravelTime_;
+        totalTripDelay_ -= label->currentNode_->related_Request_->Req_W3_ * tripDelay;
     }
     if (label->child_ == nullptr){
         label->parent_->child_ = nullptr;
@@ -307,17 +354,18 @@ void GreedyRoute::insertRequest(const PInsertPosition &position, PNode &pickNode
                                 std::vector<PStopLabel> &greedyLabelPool) {
     PStopLabel pickLabel;
     PStopLabel dropLabel;
+    PStopLabel emptyLabel;
     // if pick up and drop off are inserted in the same slot
     if (position->prePickup_ == position->preDrop_) {
-        insertNode(position->prePickup_, pickNode, greedyLabelPool);
+        insertNode(position->prePickup_, pickNode, greedyLabelPool, emptyLabel);
         pickLabel = position->prePickup_->child_;
-        insertNode(pickLabel, dropNode, greedyLabelPool);
+        insertNode(pickLabel, dropNode, greedyLabelPool, pickLabel);
         dropLabel = pickLabel->child_;
     }
     else {
-        insertNode(position->prePickup_, pickNode, greedyLabelPool);
+        insertNode(position->prePickup_, pickNode, greedyLabelPool, emptyLabel);
         pickLabel = position->prePickup_->child_;
-        insertNode(position->preDrop_, dropNode, greedyLabelPool);
+        insertNode(position->preDrop_, dropNode, greedyLabelPool, pickLabel);
         dropLabel = position->preDrop_->child_;
     }
 
@@ -341,42 +389,56 @@ float GreedyRoute::labelToNodeReachTime(const PStopLabel &preLabel, const PNode 
 void GreedyRoute::updateReachTimes(const PStopLabel &preLabel) {
     PStopLabel currentLabel = preLabel;
     while (currentLabel->child_ != nullptr) {
+        PStopLabel childLabel = currentLabel->child_;
+        PNode childNode = currentLabel->child_->currentNode_;
         // calculate child reach time
-        float childReachTime = labelToNodeReachTime(currentLabel, currentLabel->child_->currentNode_);
-        if (currentLabel->currentNode_->type_ != SOURCE){
-            if (currentLabel->child_->currentNode_->type_ == PICKUP){
-                if (currentLabel->leaveTime_ < currentLabel->child_->currentNode_->related_Request_->requestTime_)
-                    currentLabel->leaveTime_ = currentLabel->child_->currentNode_->related_Request_->requestTime_;
-            }
-        }
+        float childReachTime = labelToNodeReachTime(currentLabel, childNode);
 
         // update total delay
-        if (currentLabel->child_->currentNode_->type_ == PICKUP) {
-            float preDelay = currentLabel->child_->reachTime_ - currentLabel->child_->currentNode_->initialReadyTime_;
-            float newDelay = childReachTime - currentLabel->child_->currentNode_->initialReadyTime_;
-            totalDelay_ += (newDelay - preDelay);
-            if (totalDelay_ < 0 ) {
-                std::cout << "error";
-                std::cout << toString() << std::endl;
+        if (childNode->type_ == PICKUP) {
+            // Handle request time constraint for departures
+            if (currentLabel->currentNode_->type_ != SOURCE) {
+                if (currentLabel->leaveTime_ < childNode->related_Request_->requestTime_)
+                    currentLabel->leaveTime_ = childNode->related_Request_->requestTime_;
+            }
+
+            float oldDelay = childLabel->reachTime_ - childNode->initialReadyTime_;
+            float newDelay = childReachTime - childNode->initialReadyTime_;
+
+            totalDelay_ += childNode->related_Request_->Req_W3_ * (newDelay - oldDelay);
+            if (totalDelay_ < -0.001f ) {
+                throw myTools::myException("Negative total delay after updating route.", __FILE__, __LINE__);
             }
         }
-        else if (currentLabel->child_->currentNode_->type_ == DROPOFF) {
-            if (currentLabel->child_->pair_ == nullptr) {
-                currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
-                                                        childReachTime + currentLabel->child_->currentNode_->pairNode_->departTime_;
+        else if (childNode->type_ == DROPOFF) {
+            // Calculate old trip delay
+            float oldRideTime;
+            if (childLabel->pair_ == nullptr) {
+                oldRideTime = childLabel->reachTime_ - childNode->pairNode_->departTime_;
             } else {
-                currentLabel->child_->travelResource_ = currentLabel->child_->currentNode_->related_Request_->maxTravelTime_ -
-                                                        (childReachTime - currentLabel->child_->pair_->leaveTime_);
+                oldRideTime = childLabel->reachTime_ - childLabel->pair_->leaveTime_;
             }
+            float oldTripDelay = oldRideTime - childNode->related_Request_->minTravelTime_;
+
+            // Calculate new trip delay
+            float newRideTime;
+            if (childLabel->pair_ == nullptr) {
+                newRideTime = childReachTime - childNode->pairNode_->departTime_;
+                childLabel->travelResource_ = childNode->related_Request_->maxTravelTime_ - newRideTime;
+            } else {
+                newRideTime = childReachTime - childLabel->pair_->leaveTime_;
+                childLabel->travelResource_ = childNode->related_Request_->maxTravelTime_ - newRideTime;
+            }
+            float newTripDelay = newRideTime - childNode->related_Request_->minTravelTime_;
+
+            // Update total with delta
+            totalTripDelay_ += childNode->related_Request_->Req_W3_ * (newTripDelay - oldTripDelay);
         }
-        currentLabel->child_->reachTime_ = childReachTime;
-        currentLabel->child_->leaveTime_ = childReachTime + currentLabel->child_->currentNode_->serviceTime_;
-        currentLabel->child_->nbPassengers_ = currentLabel->nbPassengers_ + currentLabel->child_->currentNode_->nbPassengers_;
+        childLabel->reachTime_ = childReachTime;
+        childLabel->leaveTime_ = childReachTime + childNode->serviceTime_;
+        childLabel->nbPassengers_ = currentLabel->nbPassengers_ + childNode->nbPassengers_;
 
         currentLabel = currentLabel->child_;
-    }
-    if (totalDelay_ < 0 ) {
-        throw myTools::myException("Negative total delay after updating route.", __FILE__, __LINE__);
     }
 }
 
@@ -435,6 +497,7 @@ std::string GreedyRoute::toString() const {
     repStr << "#" << std::left << std::endl;
     repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TRIP_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departureTime_ << std::endl;
     repStr << "#" << std::endl;
@@ -503,87 +566,18 @@ bool GreedyRoute::isAnyViolation(const PStopLabel &startLabel) const {
             }
         }
         else if (currentLabel->currentNode_->type_ == PICKUP) {
-            if (currentLabel->reachTime_ < currentLabel->currentNode_->readyTime_
-  //              || currentLabel->reachTime_ > currentLabel->currentNode_->related_Request_->latestPickup_
-                )
+            if (currentLabel->reachTime_ < currentLabel->currentNode_->readyTime_)
                 return true;
+            if (currentLabel->currentNode_->related_Request_->committedPickTime_ < LARGE_CONSTANT) {
+                if (currentLabel->reachTime_ > currentLabel->currentNode_->related_Request_->latestPickup_)
+                    return true;
+            }
         }
         currentLabel = currentLabel->child_;
     }
     return false;
 }
 
-void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
-                                    std::vector<PStopLabel> &removedLabels, const PInsertPosition &position) {
-    float deltaDelay = INFINITY;
-    bool notFound = true;
-    // Tour length increase
-    float DeltaT = INFINITY;
-
-    position->updatePosition(PLastStop_, PLastStop_, deltaDelay, DeltaT);
-
-    // define the initial position to add the request just after all
-    PStopLabel prePick = PCurrentStop_;
-    PStopLabel preDrop;
-    while ((prePick != nullptr) && (notFound)) {
-        deltaDelay = INFINITY;
-        if (prePick == PLastStop_) {
-            if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_){
-                throw myTools::myException("Instance error! split the trip!", __FILE__, __LINE__);
-            }
-            // it stays at tail and then departs to the pickup point
-            float pickTime = labelToNodeReachTime(prePick, pickNode);
-            deltaDelay =  pickTime - pickNode->initialReadyTime_;
-            DeltaT = (pickTime - departureTime_) +
-                     (pickNode->serviceTime_ + durationMatrix_[pickNode->locationID_][dropNode->locationID_]);
-            preDrop = PLastStop_;
-            if (deltaDelay  < position->deltaDelay_) {
-                if (DeltaT < position->deltaLength_)
-                    position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
-            }
-        }
-        else {
-            float endTime = PLastStop_->leaveTime_;
-            float curDelay = totalDelay_;
-
-            insertNode(prePick, pickNode, removedLabels);
-            PStopLabel pickLabel = prePick->child_;
-            if (!isAnyViolation(prePick->child_)){
-                preDrop = prePick->child_;
-                PStopLabel endLabel = nullptr;
-                PStopLabel currentIndex = pickLabel;
-                while (currentIndex->child_ != nullptr) {
-                    if (currentIndex->child_->nbPassengers_ > (*Vehicle_)->capacity_) {
-                        endLabel = currentIndex->child_;
-                        break;
-                    } else
-                        currentIndex = currentIndex->child_;
-                }
-                while (preDrop != endLabel) {
-                    insertNode(preDrop, dropNode, removedLabels);
-                    PStopLabel dropLabel = preDrop->child_;
-                    dropLabel->travelResource_ = maxDuration - (dropLabel->reachTime_ - pickLabel->leaveTime_);
-                    if (!isAnyViolation(prePick->child_)){
-                        deltaDelay = totalDelay_ - curDelay;
-                        DeltaT = PLastStop_->leaveTime_ - endTime;
-
-                        if (deltaDelay < position->deltaDelay_) {
-                            if (preDrop == pickLabel)
-                                position->updatePosition(prePick, prePick, deltaDelay,DeltaT);
-                            else
-                                position->updatePosition(prePick, preDrop, deltaDelay,DeltaT);
-                            notFound = false;
-                        }
-                    }
-                    removeLabel(dropLabel, removedLabels);
-                    preDrop = preDrop->child_;
-                }
-            }
-            removeLabel(pickLabel, removedLabels);
-        }
-        prePick = prePick->child_;
-    }
-}
 //---------------------------------------------------------------------------------------------
 //  INSERT POSITION STRUCT
 //  This structure is used to determine the best position to insert requests in a route.
@@ -595,10 +589,12 @@ void GreedyRoute::findAssignedPlace(PNode &pickNode, PNode &dropNode, float maxD
 insertPosition::insertPosition() = default;
 
 void insertPosition::updatePosition(const PStopLabel &prePickup, const PStopLabel &preDrop, float waitIncrease,
-                                    float lengthIncrease) {
+                                    float tripDelayIncrease, float wait_W1, float ride_W2) {
     prePickup_ = prePickup;
     preDrop_ = preDrop;
     deltaDelay_ = waitIncrease;
-    deltaLength_ = lengthIncrease;
+    deltaTripDelay_ = tripDelayIncrease;
+
+    deltaObjective_ = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
 }
 
