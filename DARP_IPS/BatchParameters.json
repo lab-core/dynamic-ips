@@ -13,7 +13,7 @@
     "timeWindows": 0,
     "MIP_maxIncDegree": 2,
     "CP_IncDegree": 10,
-    "useMultiStage": 0,
+    "reducedCP": 0,
     "minImp": 0.0025,
     "useZoom": 0,
     "isDominanceReleased": 0,

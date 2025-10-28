@@ -1,9 +1,9 @@
 {
   "defaultParameters": {
-    "alphaParam": 1.5,
-    "betaParam": 240,
-    "deltaPram": 420,
-    "epochLength": 30,
+    "alphaParam": 1.2,
+    "betaParam": 900,
+    "deltaPram": 600,
+    "epochLength": 5,
     "penaltyL": 30,
     "committedTime": 30,
     "nbThreads": 16,
@@ -29,6 +29,8 @@
   },
   "scenarios": {
     "test": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -60,6 +62,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "Rebalance_no": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 0,
       "WaitForReturn": 9999999,
       "MaxWait": 9999999,
@@ -91,6 +95,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_1": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 60,
@@ -122,6 +128,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_2": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -153,6 +161,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_3": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 180,
@@ -184,6 +194,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_4": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 240,
@@ -215,6 +227,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Rebalance_5": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 300,
@@ -246,6 +260,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "nbPickup": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 0,
       "WaitForReturn": 60,
       "MaxWait": 9999999,
@@ -276,7 +292,10 @@
       "LabelingStrategy": 1,
       "LabelingReOptimizeStrategy": 1
     },
-    "Dual_1_0": {
+    "Dual_1": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "Req_W3": 0,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -296,9 +315,9 @@
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
+      "isDropPickPossible": 1,
       "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
+      "Partial_Pricing": 0,
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
@@ -307,7 +326,9 @@
       "LabelingStrategy": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "Dual_7_0": {
+    "Dual_9": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -315,7 +336,7 @@
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "InitialDual": 7,
+      "InitialDual": 9,
       "DualMethod" : 0,
       "SmoothDual" : 0,
       "warmStart": 1,
@@ -327,9 +348,9 @@
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
+      "isDropPickPossible": 1,
       "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
+      "Partial_Pricing": 0,
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
@@ -338,7 +359,9 @@
       "LabelingStrategy": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "Dual_1_1": {
+    "Dual_1_R": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -348,7 +371,7 @@
       "pickupDeviationWindow": 60,
       "InitialDual": 1,
       "DualMethod" : 0,
-      "SmoothDual" : 1,
+      "SmoothDual" : 0,
       "warmStart": 1,
       "NumIter": 1,
       "NumColumn": 50,
@@ -358,18 +381,20 @@
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
+      "isDropPickPossible": 1,
       "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
+      "Partial_Pricing": 0,
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 150,
-      "LabelingStrategy": 1,
+      "LabelingStrategy": 2,
       "LabelingReOptimizeStrategy": 2
     },
-    "Dual_7_1": {
+    "Dual_9_R": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -377,38 +402,7 @@
       "numVehicleSwitch": 1000,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "InitialDual": 7,
-      "DualMethod" : 0,
-      "SmoothDual" : 1,
-      "warmStart": 1,
-      "NumIter": 1,
-      "NumColumn": 50,
-      "isTruncated": 1,
-      "MaxLabel": 15,
-      "MaxCommittedLabel": 0,
-      "pruneNodes": 1,
-      "pruneArcs": 1,
-      "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
-      "nbPick": 2,
-      "sortPath": 0,
-      "sortColumn": 1,
-      "Route_Recycle": 0,
-      "newRequestLimit": 150,
-      "LabelingStrategy": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Dual_3_0": {
-      "vehicleReturn": 1,
-      "WaitForReturn": 60,
-      "MaxWait": 120,
-      "returnType": 2,
-      "numVehicleSwitch": 1000,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "InitialDual": 3,
+      "InitialDual": 9,
       "DualMethod" : 0,
       "SmoothDual" : 0,
       "warmStart": 1,
@@ -420,49 +414,20 @@
       "pruneNodes": 1,
       "pruneArcs": 1,
       "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
+      "isDropPickPossible": 1,
       "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
+      "Partial_Pricing": 0,
       "nbPick": 2,
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 0,
       "newRequestLimit": 150,
-      "LabelingStrategy": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Dual_3_1": {
-      "vehicleReturn": 1,
-      "WaitForReturn": 60,
-      "MaxWait": 120,
-      "returnType": 2,
-      "numVehicleSwitch": 1000,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "InitialDual": 3,
-      "DualMethod" : 0,
-      "SmoothDual" : 1,
-      "warmStart": 1,
-      "NumIter": 1,
-      "NumColumn": 50,
-      "isTruncated": 1,
-      "MaxLabel": 15,
-      "MaxCommittedLabel": 0,
-      "pruneNodes": 1,
-      "pruneArcs": 1,
-      "discardSuboptimalPath": 1,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 0,
-      "Partial_Pricing": 1,
-      "nbPick": 2,
-      "sortPath": 0,
-      "sortColumn": 1,
-      "Route_Recycle": 0,
-      "newRequestLimit": 150,
-      "LabelingStrategy": 1,
+      "LabelingStrategy": 2,
       "LabelingReOptimizeStrategy": 2
     },
     "DualMethod_2": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -493,7 +458,75 @@
       "LabelingStrategy": 1,
       "LabelingReOptimizeStrategy": 1
     },
+    "Dual_1_P": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 120,
+      "returnType": 2,
+      "numVehicleSwitch": 1000,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "InitialDual": 1,
+      "DualMethod" : 0,
+      "SmoothDual" : 0,
+      "warmStart": 1,
+      "NumIter": 1,
+      "NumColumn": 50,
+      "isTruncated": 1,
+      "MaxLabel": 15,
+      "MaxCommittedLabel": 0,
+      "pruneNodes": 1,
+      "pruneArcs": 1,
+      "discardSuboptimalPath": 1,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 0,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "sortPath": 0,
+      "sortColumn": 1,
+      "Route_Recycle": 0,
+      "newRequestLimit": 150,
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "Dual_9_P": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 120,
+      "returnType": 2,
+      "numVehicleSwitch": 1000,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "InitialDual": 9,
+      "DualMethod" : 0,
+      "SmoothDual" : 0,
+      "warmStart": 1,
+      "NumIter": 1,
+      "NumColumn": 50,
+      "isTruncated": 1,
+      "MaxLabel": 15,
+      "MaxCommittedLabel": 0,
+      "pruneNodes": 1,
+      "pruneArcs": 1,
+      "discardSuboptimalPath": 1,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 0,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "sortPath": 0,
+      "sortColumn": 1,
+      "Route_Recycle": 0,
+      "newRequestLimit": 150,
+      "LabelingStrategy": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
     "DualMethod_4": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -523,6 +556,8 @@
       "LabelingStrategy": 1
     },
     "DualMethod_5": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -552,6 +587,8 @@
       "LabelingStrategy": 1
     },
     "Dynamic": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -582,6 +619,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "Partial": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -612,6 +651,8 @@
       "LabelingReOptimizeStrategy": 1
     },
     "SP_10": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -642,6 +683,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "SP_20": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -672,6 +715,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "SP_30": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -702,6 +747,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "SP_40": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -732,6 +779,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "SP_50": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -762,6 +811,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "SP_150": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
@@ -792,6 +843,8 @@
       "LabelingReOptimizeStrategy": 2
     },
     "greedy": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 60,
       "MaxWait": 120,
