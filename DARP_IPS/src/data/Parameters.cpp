@@ -12,13 +12,13 @@
 SolverBase::SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
                        LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
-                       bool usePick, int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2,
+                       int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2,
                        bool req_W3) :
         isTruncated_(isTruncated), MaxLabel_(maxLabel), MaxCommittedLabel_(MaxCommittedLabel), Wait_W1_(wait_W1),
         isDominanceReleased_(isDominanceReleased), pruneNodes_(pruneNodes), pruneArcs_(pruneArcs), Req_W3_(req_W3),
         discardSuboptimalPath_(discardSuboptimalPath), isDropPickPossible_(isDropPickPossible), Ride_W2_(ride_W2),
         LabelingStrategy_(LabelingStrategy), labelingReOptimizeStrategy_(labelingReOptimizeStrategy),
-        usePick_(usePick), nbPick_(nbPick), sortPath_(pathSort), newRequestLimit_(newRequestLimit) {}
+        nbPick_(nbPick), sortPath_(pathSort), newRequestLimit_(newRequestLimit) {}
 
 //************************************************************************
 //                     FUNCTIONS FOR PARAMETERS CLASS
@@ -34,7 +34,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
                        bool isDominanceReleased, bool isDropPickPossible, LabelingStrategy LabelingStrategy,
                        SubproblemAlgorithm subAlgorithm, bool constPortion, bool vehiclePortion,
-                       bool dynamicPricing, bool partialPricing, bool routeRecycle, bool usePick, int nbPick,
+                       bool dynamicPricing, bool partialPricing, bool routeRecycle, int nbPick,
                        SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                        int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
@@ -42,7 +42,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        float ride_W2, bool req_W3):
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, LabelingStrategy, labelingReOptimizeStrategy,
-                   usePick, nbPick, sortPath, newRequestLimit, wait_W1, ride_W2, req_W3),
+                   nbPick, sortPath, newRequestLimit, wait_W1, ride_W2, req_W3),
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter), dualMethod_(dualMethod),
@@ -50,7 +50,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         WaitForReturn_(WaitForReturn), numVehicleSwitch_(numVehicleSwitch), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
         CP_IncDegree_(CP_IncDegree), reducedCP_(reducedCP), minImp_(minImp), useZoom_(useZoom),
-        nbColumn_(nbColumn), subAlgorithm_(subAlgorithm), constPortion_(constPortion), smoothDual_(smoothDual),
+        nbColumn_(nbColumn), subAlgorithm_(subAlgorithm), smoothDual_(smoothDual),
         vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
         routeRecycle_(routeRecycle), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), modelSolver_(modelSolver),
         populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait) {}
@@ -118,12 +118,9 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << eu::toString(LabelingStrategy_) << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Reoptimize Strategy " << " = " << eu::toString(labelingReOptimizeStrategy_) << std::endl;
     repStr << std::setw(setwLength) << "# SubProblem solution Method " << " = " << eu::toString(subAlgorithm_) << std::endl;
-    repStr << std::setw(setwLength) << "# portion of constraints for MP " << " = " << constPortion_ << std::endl;
-    repStr << std::setw(setwLength) << "# solve for vehicle portion " << " = " << vehiclePortion_ << std::endl;
     repStr << std::setw(setwLength) << "# use Dynamic Pricing " << " = " << dynamicPricing_ << std::endl;
     repStr << std::setw(setwLength) << "# use Partial Pricing " << " = " << partialPricing_ << std::endl;
     repStr << std::setw(setwLength) << "# Recycle Routes " << " = " << routeRecycle_ << std::endl;
-    repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of paths " << " = " << eu::toString(sortPath_) << std::endl;
     repStr << std::setw(setwLength) << "# Sorting mode of columns " << " = " << eu::toString(sortColumn_) << std::endl;
@@ -205,7 +202,7 @@ solverOption::solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel
                            float wait_W1, float ride_W2, bool req_W3) :
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, labelingStrategy, LabelingReOptimizeStrategy{},
-                   false, nbPick, pathSort, newRequestLimit, wait_W1, ride_W2, req_W3) {}
+                   nbPick, pathSort, newRequestLimit, wait_W1, ride_W2, req_W3) {}
 
 solverOption::~solverOption() = default;
 
@@ -224,7 +221,7 @@ solverOption::solverOption(const PParameters &MainParams) :
                    MainParams->isDominanceReleased_, MainParams->pruneNodes_, MainParams->pruneArcs_,
                    MainParams->discardSuboptimalPath_, MainParams->isDropPickPossible_,
                    MainParams->LabelingStrategy_, MainParams->labelingReOptimizeStrategy_,
-                   MainParams->usePick_, MainParams->nbPick_, MainParams->sortPath_, MainParams->newRequestLimit_,
+                   MainParams->nbPick_, MainParams->sortPath_, MainParams->newRequestLimit_,
                    MainParams->Wait_W1_, MainParams->Ride_W2_, MainParams->Req_W3_) {}
 
 // Display function
@@ -242,7 +239,6 @@ std::string solverOption::toString() const {
     repStr << std::setw(setwLength) << "# Remove suboptimal labels " << " = " << discardSuboptimalPath_ << std::endl;
     repStr << std::setw(setwLength) << "# Is Pickup allowed after Drop " << " = " << isDropPickPossible_ << std::endl;
     repStr << std::setw(setwLength) << "# Labeling Strategy " << " = " << eu::toString(LabelingStrategy_) << std::endl;
-    repStr << std::setw(setwLength) << "# number of pickups is limited " << " = " << usePick_ << std::endl;
     repStr << std::setw(setwLength) << "# number of pickups allowed " << " = " << nbPick_ << std::endl;
     repStr << std::setw(setwLength) << "# new Request limit to recycle " << " = " << newRequestLimit_ << std::endl;
     repStr << std::setw(setwLength) << "# Wait Obj. weight" << " = " << Wait_W1_ << std::endl;

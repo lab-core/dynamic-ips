@@ -23,8 +23,6 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
     possibleInsert_ = 0;
     labelSize_ = pInst->requests_.size() + 2 * Vehicle_->capacity_;
-    Vehicle_->graphRequests_.resize(pInst->nbRequests_);
-    Vehicle_->graphRequests_.reset();
     nbTotalRequest_ = pInst->nbRequests_;
     subGraph_->addNewNode(std::make_shared<Node>((Vehicle_)->departNode_));
     subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(Vehicle_)->vehicleID_]));
@@ -96,8 +94,6 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
 
             pickNode->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][pickNode->locationID_];
             dropNode->travelTimeFromSource_ = durationMatrix_[subGraph_->sourceNodes_[0]->locationID_][dropNode->locationID_];
-
-            Vehicle_->graphRequests_.set(pInst->requests_[i]->taskIndex_, true);
         }
     }
 

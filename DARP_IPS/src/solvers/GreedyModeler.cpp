@@ -116,7 +116,6 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
                 greedyRouteList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                             PInst->instGraph_->dropNodes_[i],
                                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);
-                greedyRouteList_[vehicle_ID]->idle_ = false;
                 PInst->selectedVehicles_[vehicle_ID]++;
             }
         }
@@ -128,6 +127,6 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
 void GreedyModeler::setObjValue() {
     objValue_ = 0.0;
     for (auto & GreedyObj : greedyRouteList_)
-        objValue_ += GreedyObj->totalDelay_;
+        objValue_ += GreedyObj->totalWait_;
 }
 

@@ -15,7 +15,7 @@
 
 class Vehicle {
 public:
-    int vehicleID_;                         // vehicle ID
+    int vehicleID_;                         // Unique ID for each vehicle instance
     float startTime_;                       // vehicle start time
     float endTime_;                         // vehicle end time
     int capacity_;                          // vehicle capacity
@@ -26,21 +26,18 @@ public:
     std::vector<std::string> onboards_;     // list of the nodeIDs for drop-off points for the onboard passengers
 
     PRoute currentRoute_;                   // current vehicle plan
-    PRoute greedyRoute_;                   // current vehicle plan
+    PRoute greedyRoute_;                    // route creating based on greedy insertion in initialization
     PRoute solutionRoute_;                  // actual vehicle plan (performed plan)
     PRoute emptyRoute_;                     // empty route which may contain a drop of points
-    float dual_;
-    float InitialDual_;                    // used to dave duals when we use penalties as the duals
-    float bestReducedCost_;                // best reduced cost of the routes generated after solving its subproblem
-    float score_;                           // calculated based on the earliest possible pickup (vehicle portion)
-    bool idle_;
+    float dual_;                            // vehicle duals (sigma)
+    float InitialDual_;                     // vehicle duals (sigma) used to save duals
+    float bestReducedCost_;                 // best reduced cost of the routes generated after solving its subproblem
     int vehicleIndex_;                      // used for considering a part of vehicle constraints in the Master problems
-    boost::dynamic_bitset<> graphRequests_;// is not used now (help in selecting column disjoint columns to insert)
-    int numPickup_;
-    bool stateChanged_;
-    bool removePickup_;
-    bool removeDrop_;
-    int preSolvePick_;
+    int numPickup_;                         // the selected limit for the number of pickups to solve SP
+    bool stateChanged_;                     // has the state of the vehicle changed from last epoch (remove stops)
+    bool removePickup_;                     // is a pickup stop node removed from the last epoch
+    bool removeDrop_;                       // is a drop-off stop node, remove from the last epoch
+    int preSolvePickLimit_;                 // the limit on the number of pickups in the prior solution of SP
 
     // KPIs
     float idleTime_;                        // idle time of the vehicle
@@ -48,12 +45,10 @@ public:
     float driveFullTime_;                   // time the vehicle drives with passengers
     float driveEmptyTime_;                  // time the vehicle drives empty to reach passengers
     float returnEmptyTime_;                 // time the vehicle drives empty to return
-//    boost::dynamic_bitset<> coveredRequests;
 
 
     // Constructor and Destructor
     Vehicle(int vehicleId, int capacity, float departTime, float endTime, const PNode &departNode, const PNode & sinkNode);
-
     virtual ~Vehicle();
 
     // Setters
@@ -65,18 +60,26 @@ public:
     // Display function
     std::string toString() const;
 
-    // function to update vehicle depart time at each time and
+    // function to update vehicle departure time at each time and
     // update the situation of nodes and ride requests
     void updateStateTime(const PInstance & mainInst, float elapsedTime, boost::dynamic_bitset<> &removedRequests);
-    void updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2);
 
-    // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch
-    void finalizeSolutionRoutes(float elapsedTime);
+    // function used to update the departure time of the route created for the vehicle in anytime mode when epoch<30 (s)
+    void updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2);
+    // helper function in updateCurrentRoute
     void updateDepartTime(float departTime, float wait_W1, float ride_W2);
+
+    // this function is called at the end of the algorithm to set the final stos of the solution based on the final epoch
+    void finalizeSolutionRoutes(float elapsedTime);
+
+    // Handle idle state for vehicles with no stops
     void handleIdleState(float epochEndTime);
+
+    // update the state of a request when its pick/drop node is visited by a vehicle
     void setRequestStatus(const PNode &node, float reachTime) const;
+
+    // function to adjust duals and make sure their summation equals c_r
     void adjustDuals();
- //   void checkCoveredRequests(std::vector<PRoute> &availableRoutes, int nbRequests);
 };
 
 

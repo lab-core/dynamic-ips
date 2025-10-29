@@ -541,7 +541,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
             if (minReducedCost_ > routeObj->reducedCost_ )
                 minReducedCost_ = routeObj->reducedCost_;
             if (!routeObj->routeRequests_.empty()) {
-                routeObj->score_ = routeObj->reducedCost_ / static_cast<float>(routeObj->routeRequests_.size());
+                routeObj->normal_RC_ = routeObj->reducedCost_ / static_cast<float>(routeObj->routeRequests_.size());
                 routeObj->lambda_ = routeObj->objCoef_ / (routeObj->objCoef_ - routeObj->reducedCost_ + 0.0001f);
   //              routeObj->waitScore_ = 0;
                 /*for (int i = 0; i < routeObj->routeRequests_.size(); ++i) {
@@ -550,7 +550,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
                 }*/
             }
             else {
-                routeObj->score_ = 0;
+                routeObj->normal_RC_ = 0;
                 routeObj->lambda_ = 0;
             }
             routeObj->IncScore_ = routeObj->reducedCost_ * routeObj->IncScoreRatio_;
@@ -582,7 +582,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
             if (pInst->parameters_->sortColumn_ == NORMAL_RC)
                 std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
                                 availableRoutes_[vehicleObj->vehicleID_].end(),
-                                [](const PRoute &lhs, const PRoute &rhs) { return lhs->score_ < rhs->score_; });
+                                [](const PRoute &lhs, const PRoute &rhs) { return lhs->normal_RC_ < rhs->normal_RC_; });
 
             else if (pInst->parameters_->sortColumn_ == LAMBDA_S)
                 std::stable_sort(availableRoutes_[vehicleObj->vehicleID_].begin(),
@@ -756,7 +756,7 @@ void MasterAlgorithm::setObjValue() {
     totalTripDelay_ = 0.0;
     for (auto & routeObj : routeSolution_) {
         objValue_ += routeObj->objCoef_;
-        totalWaitTime_ += routeObj->totalDelay_;
+        totalWaitTime_ += routeObj->totalWait_;
         totalTripDelay_ += routeObj->totalTripDelay_;
     }
     for (auto & zRequest : zSolution_) {

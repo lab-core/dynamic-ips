@@ -188,7 +188,7 @@ std::string Instance::solutionToString() {
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
     for (const auto &vehicleObj : vehicles_) {
-        totalRouteWaiting += vehicleObj->solutionRoute_->totalDelay_;
+        totalRouteWaiting += vehicleObj->solutionRoute_->totalWait_;
         totalObj += vehicleObj->solutionRoute_->objCoef_;
         numServed += static_cast<int>(vehicleObj->solutionRoute_->routeRequests_.size());
         idleTime += vehicleObj->idleTime_;
@@ -292,8 +292,6 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(vehicleObj->sinkNode_);
-
-        vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
     // add unscheduled requests
@@ -401,8 +399,6 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(vehicleObj->sinkNode_);
-
-        vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
 
@@ -508,8 +504,6 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     for (auto & vehicleObj : mainInst->vehicles_){
         instGraph_->addNewNode(vehicleObj->departNode_);
         instGraph_->addNewNode(vehicleObj->sinkNode_);
-
-        vehicleObj->score_ = INFINITY;
     }
     nbNewRequests_ = 0;
 
@@ -579,7 +573,6 @@ void Instance::setInitialTimes() const {
             if (vehicleObj->onboards_.empty()) {
                 if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
                     if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->epochLength_)) {
-                        vehicleObj->idle_ = true;
                         vehicleObj->idleTime_ += (static_cast<float>(parameters_->epochLength_));
                         vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
                     }
@@ -592,7 +585,6 @@ void Instance::setInitialTimes() const {
             if (vehicleObj->onboards_.empty()){
                 if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
                     if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->committedTime_)) {
-                        vehicleObj->idle_ = true;
                         vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
                         vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
                     }
@@ -645,10 +637,6 @@ void Instance::sortVehicles(SortVehicle sortBase) {
         case BEST_REDUCE_COST :
             std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
                 return lhs->bestReducedCost_ < rhs->bestReducedCost_;});
-            break;
-        case SCORE :
-            std::stable_sort(vehicles_.begin(), vehicles_.end(),[](const PVehicle &lhs, const PVehicle &rhs){
-                return lhs->score_ < rhs->score_;});
             break;
     }
 }
@@ -862,7 +850,7 @@ std::string Instance::saveVehicleResults() const {
         repStr << vehicleObj->solutionRoute_->routeNodes_.back()->departTime_ << ",";
         repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
         repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
-        repStr << vehicleObj->solutionRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->solutionRoute_->totalWait_ << ",";
         repStr << vehicleObj->solutionRoute_->totalTripDelay_ << ",";
         repStr << vehicleObj->idleTime_ << ",";
         repStr << vehicleObj->serviceTime_ << ",";
@@ -915,7 +903,7 @@ std::string Instance::saveRoutesTimes(int epoch) const {
         repStr << epoch << ",";
         repStr << vehicleObj->vehicleID_ << ",";
         repStr << vehicleObj->currentRoute_->getRouteId() << ",";
-        repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->totalWait_ << ",";
         repStr << vehicleObj->currentRoute_->routeRequests_.size() << ",";
         repStr << vehicleObj->currentRoute_->createTime_ << ",";
         repStr << vehicleObj->currentRoute_->totalLength_ << "\n";
@@ -1111,7 +1099,7 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         repStr << vehicleObj->InitialDual_ << ",";
         repStr << vehicleObj->dual_ << ",";
         repStr << model << ",";
-        repStr << vehicleObj->currentRoute_->totalDelay_ << ",";
+        repStr << vehicleObj->currentRoute_->totalWait_ << ",";
         repStr << vehicleObj->currentRoute_->totalTripDelay_ << ",";
         repStr << vehicleObj->currentRoute_->objCoef_ << ",";
         repStr << vehicleObj->currentRoute_->routeSize_ << ",";

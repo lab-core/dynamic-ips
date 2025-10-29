@@ -25,8 +25,8 @@ LagrangianSolver::LagrangianSolver(const PInstance &pInst, float objValue,
         for (auto & routeObj : availableRoutes[vehicleObj->vehicleID_]) {
             routeList_.push_back(routeObj);
             nbRoutes_++;
-            if (routeObj->totalDelay_ > LambdaMax_)
-                LambdaMax_ = routeObj->totalDelay_;
+            if (routeObj->totalWait_ > LambdaMax_)
+                LambdaMax_ = routeObj->totalWait_;
         }
     }
     primal_value_ = 0.0;
@@ -67,7 +67,7 @@ LagrangianSolver::LagrangianSolver(const PInstance &pInst, float objValue,
 void LagrangianSolver::updateReducedCostsLagrange() {
 
     for (auto & routeObj : routeList_){
-        routeObj->reducedCost_ = routeObj->totalDelay_ - vehMu_[routeObj->vehicleID_];
+        routeObj->reducedCost_ = routeObj->totalWait_ - vehMu_[routeObj->vehicleID_];
         for (auto & nodeObj: routeObj->routeNodes_) {
             if (nodeObj->type_ == PICKUP){
                 routeObj->reducedCost_ -= reqLambda_[nodeObj->related_Request_->taskIndex_];

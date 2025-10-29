@@ -327,7 +327,7 @@ namespace Tools{
             else pLogStream_ = NULL;
         }
 
-        // switch from un-formatted to formatted inputs and reversely
+        // switch from un-formatted to formatted inputs and vice versa
         //
         void switchToFormatted(int width) {
             width_ = width;

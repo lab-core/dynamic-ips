@@ -37,49 +37,46 @@ void StopLabel::setValues(PNode currentNode, float reachTime, float departTime, 
 
 GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize) :
         Vehicle_(&vehicle) {
-    idle_ = true;
     if (greedyLabelPool.empty())
-        PInitialStop_ = std::make_shared<StopLabel>((*Vehicle_)->departNode_,
+        initialStop_ = std::make_shared<StopLabel>((*Vehicle_)->departNode_,
                                                     (*Vehicle_)->departNode_->reachTime_,
                                                     vehicle->departTime_,
                                                     vehicle->numPassengers_);
     else {
-        PInitialStop_ = greedyLabelPool.back();
+        initialStop_ = greedyLabelPool.back();
         greedyLabelPool.pop_back();
-        PInitialStop_->setValues((*Vehicle_)->departNode_, (*Vehicle_)->departNode_->reachTime_,
+        initialStop_->setValues((*Vehicle_)->departNode_, (*Vehicle_)->departNode_->reachTime_,
                                  vehicle->departTime_, vehicle->numPassengers_);
     }
-    selected_ = false;
-    PCurrentStop_ = PInitialStop_;
-    PLastStop_ = PInitialStop_;
-    totalDelay_ = 0.0;
+    initialDepartStop_ = initialStop_;
+    lastStop_ = initialStop_;
+    totalWait_ = 0.0;
     totalTripDelay_ = 0.0;
     idleTime_ = 0;
     departureTime_ = vehicle->departTime_;
     // just onboards are added and the previous solution is not considered
     if (greedyReOptimize) {
         for (auto &nodeID: (*Vehicle_)->onboards_) {
-            idle_ = false;
             PNode onboardNode = pInst->instGraph_->nodes_[nodeID];
-            float dropTime = labelToNodeReachTime(PLastStop_, onboardNode);
+            float dropTime = labelToNodeReachTime(lastStop_, onboardNode);
             PStopLabel newDropLabel;
             if (greedyLabelPool.empty()) {
                 newDropLabel = std::make_shared<StopLabel>(onboardNode, dropTime,
                                                            dropTime + onboardNode->serviceTime_,
-                                                           PLastStop_->nbPassengers_ + onboardNode->nbPassengers_);
+                                                           lastStop_->nbPassengers_ + onboardNode->nbPassengers_);
             } else {
                 newDropLabel = greedyLabelPool.back();
                 greedyLabelPool.pop_back();
                 newDropLabel->setValues(onboardNode, dropTime,
-                                        dropTime + onboardNode->serviceTime_, PLastStop_->nbPassengers_ +
+                                        dropTime + onboardNode->serviceTime_, lastStop_->nbPassengers_ +
                                                                               onboardNode->nbPassengers_);
             }
-            newDropLabel->parent_ = PLastStop_;
-            PLastStop_->child_ = newDropLabel;
+            newDropLabel->parent_ = lastStop_;
+            lastStop_->child_ = newDropLabel;
             newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
                                             onboardNode->pairNode_->departTime_;
 
-            PLastStop_ = newDropLabel;
+            lastStop_ = newDropLabel;
             float tripDelay = dropTime - onboardNode->pairNode_->departTime_ - onboardNode->related_Request_->minTravelTime_;
             totalTripDelay_ += onboardNode->related_Request_->Req_W3_ * tripDelay;
         }
@@ -87,7 +84,6 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
     // build the previous solution
     else {
         for (int i = 1; i < (*Vehicle_)->currentRoute_->routeNodes_.size(); i++) {
-            idle_ = false;
             PStopLabel newLabel;
             if (greedyLabelPool.empty()) {
                 newLabel = std::make_shared<StopLabel>((*Vehicle_)->currentRoute_->routeNodes_[i],
@@ -102,13 +98,13 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                     (*Vehicle_)->currentRoute_->plannedDepartTime_[i],
                     (*Vehicle_)->currentRoute_->plannedPassengers_[i]);
             }
-            newLabel->parent_ = PLastStop_;
-            PLastStop_->child_ = newLabel;
-            PLastStop_ = newLabel;
+            newLabel->parent_ = lastStop_;
+            lastStop_->child_ = newLabel;
+            lastStop_ = newLabel;
 
             if (newLabel->currentNode_->type_ == DROPOFF) {
                 if (newLabel->currentNode_->related_Request_->requestStatus_ == NO_ACTION) {
-                    PStopLabel currentLabel = PLastStop_;
+                    PStopLabel currentLabel = lastStop_;
                     while (currentLabel->parent_ != nullptr) {
                         if (currentLabel->parent_->currentNode_->type_ == PICKUP &&
                             currentLabel->parent_->currentNode_->related_Request_->getRequestId() ==
@@ -136,30 +132,28 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                 }
             }
             else if (newLabel->currentNode_->type_ == PICKUP)
-                totalDelay_ += newLabel->currentNode_->related_Request_->Req_W3_ * (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
+                totalWait_ += newLabel->currentNode_->related_Request_->Req_W3_ * (newLabel->reachTime_ - newLabel->currentNode_->initialReadyTime_);
             else if (newLabel->currentNode_->type_ == SINK)
-                PCurrentStop_ = newLabel;
+                initialDepartStop_ = newLabel;
         }
     }
 }
 
 GreedyRoute::GreedyRoute(const GreedyRoute &label) {
-    selected_ = label.selected_;
     Vehicle_ = label.Vehicle_;
     departureTime_ = label.departureTime_;
     idleTime_ = label.idleTime_;
-    PLastStop_ = label.PLastStop_;
-    PInitialStop_ = label.PInitialStop_;
-    PCurrentStop_ = label.PCurrentStop_;
-    totalDelay_ = label.totalDelay_;
-    idle_ = label.idle_;
+    lastStop_ = label.lastStop_;
+    initialStop_ = label.initialStop_;
+    initialDepartStop_ = label.initialDepartStop_;
+    totalWait_ = label.totalWait_;
     totalTripDelay_ = label.totalTripDelay_;
 }
 
 GreedyRoute::~GreedyRoute() = default;
 
 void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) const {
-    PStopLabel currentLabel = PInitialStop_;
+    PStopLabel currentLabel = initialStop_;
     while (currentLabel->child_ != nullptr) {
         greedyLabelPool.push_back(currentLabel);
         currentLabel = currentLabel->child_;
@@ -171,14 +165,14 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
                                   std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position,
                                   float wait_W1, float ride_W2) {
 
-    position->updatePosition(PLastStop_, PLastStop_, LARGE_CONSTANT, LARGE_CONSTANT, wait_W1, ride_W2);
+    position->updatePosition(lastStop_, lastStop_, LARGE_CONSTANT, LARGE_CONSTANT, wait_W1, ride_W2);
     // Quick capacity check
-    if (PLastStop_->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_) {
+    if (lastStop_->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_) {
         throw myTools::myException("Instance error: capacity exceeded, consider splitting trip.", __FILE__, __LINE__);
     }
 
     // define the initial position to add the request just after all
-    PStopLabel prePick = PCurrentStop_;
+    PStopLabel prePick = initialDepartStop_;
     while (prePick != nullptr) {
         // Skip if already infeasible by capacity
         if (prePick->nbPassengers_ + pickNode->nbPassengers_ > (*Vehicle_)->capacity_) {
@@ -186,14 +180,14 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
             continue;
         }
 
-        if (prePick == PLastStop_) {
+        if (prePick == lastStop_) {
             // it stays at tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
             float waitIncrease = pickNode->related_Request_->Req_W3_ * (pickTime - pickNode->initialReadyTime_);
             // trip delay is not increased due to direct drop
             float objIncrease = wait_W1 *  waitIncrease + ride_W2 * 0.0;
             if (objIncrease < position->deltaObjective_) {
-                position->updatePosition(prePick, PLastStop_, waitIncrease, 0.0, wait_W1, ride_W2);
+                position->updatePosition(prePick, lastStop_, waitIncrease, 0.0, wait_W1, ride_W2);
             }
         }
         else {
@@ -217,7 +211,7 @@ PStopLabel GreedyRoute::findCapacityLimit(const PStopLabel &startLabel) const {
 
 void GreedyRoute::tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dropNode, float maxDuration,
     std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1, float ride_W2) {
-    float baseDelay = totalDelay_;
+    float baseDelay = totalWait_;
     float baseTripDelay = totalTripDelay_;
     PStopLabel emptyLabel;
 
@@ -240,7 +234,7 @@ void GreedyRoute::tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dr
         dropLabel->travelResource_ = maxDuration - (dropLabel->reachTime_ - pickLabel->leaveTime_);
 
         if (!isAnyViolation(pickLabel)) {
-            float waitIncrease = totalDelay_ - baseDelay;
+            float waitIncrease = totalWait_ - baseDelay;
             float tripDelayIncrease = totalTripDelay_ - baseTripDelay;
             float objIncrease = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
 
@@ -289,7 +283,7 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
     if (preLabel->child_ == nullptr){
         newLabel->parent_ = preLabel;
         preLabel->child_= newLabel;
-        PLastStop_ = newLabel;
+        lastStop_ = newLabel;
     }
     else {
 
@@ -305,7 +299,7 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
         if (reachTime - newNode->related_Request_->earlyPick_ < 0 )
             throw myTools::myException("Negative waiting time encountered in insertNode.", __FILE__, __LINE__);
 
-        totalDelay_ += newNode->related_Request_->Req_W3_ * (reachTime - newNode->initialReadyTime_);
+        totalWait_ += newNode->related_Request_->Req_W3_ * (reachTime - newNode->initialReadyTime_);
     }
     // Update totalTripDelay for DROPOFF nodes
     else if (newNode->type_ == DROPOFF) {
@@ -325,7 +319,7 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
 void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel) {
     greedyLabelPool.push_back(label);
     if (label->currentNode_->type_ == PICKUP) {
-        totalDelay_ -= label->currentNode_->related_Request_->Req_W3_ * (label->reachTime_ - label->currentNode_->initialReadyTime_);
+        totalWait_ -= label->currentNode_->related_Request_->Req_W3_ * (label->reachTime_ - label->currentNode_->initialReadyTime_);
     }
     else if (label->currentNode_->type_ == DROPOFF) {
         float rideTime;
@@ -339,7 +333,7 @@ void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedy
     }
     if (label->child_ == nullptr){
         label->parent_->child_ = nullptr;
-        PLastStop_ = label->parent_;
+        lastStop_ = label->parent_;
         label.reset();
     }
     else {
@@ -405,8 +399,8 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel) {
             float oldDelay = childLabel->reachTime_ - childNode->initialReadyTime_;
             float newDelay = childReachTime - childNode->initialReadyTime_;
 
-            totalDelay_ += childNode->related_Request_->Req_W3_ * (newDelay - oldDelay);
-            if (totalDelay_ < -0.001f ) {
+            totalWait_ += childNode->related_Request_->Req_W3_ * (newDelay - oldDelay);
+            if (totalWait_ < -0.001f ) {
                 throw myTools::myException("Negative total delay after updating route.", __FILE__, __LINE__);
             }
         }
@@ -445,8 +439,8 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel) {
 // this function converts a greedyLabel list to a route
 PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     PRoute newRoute = std::make_shared<Route>((*Vehicle_)->vehicleID_);
-    newRoute->addSource(PInitialStop_->currentNode_, PInitialStop_->leaveTime_, (*Vehicle_)->numPassengers_);
-    PStopLabel currentLabel = PInitialStop_->child_;
+    newRoute->addSource(initialStop_->currentNode_, initialStop_->leaveTime_, (*Vehicle_)->numPassengers_);
+    PStopLabel currentLabel = initialStop_->child_;
     while (currentLabel != nullptr) {
         newRoute->addNode(currentLabel->currentNode_);
         if (newRoute->plannedReachTime_.back() != currentLabel->reachTime_) {
@@ -483,7 +477,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
         currentLabel = currentLabel->child_;
     }
 
-    if (newRoute->totalDelay_ != totalDelay_){
+    if (newRoute->totalWait_ != totalWait_){
         std::cout << "Total delay of the greedy solution is not the same as the route delay!";
         std::cout << "Vehicle ID: " << newRoute->vehicleID_ << std::endl;
         // myTools::throwException("Route-Validation");
@@ -491,68 +485,11 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     return newRoute;
 }
 
-std::string GreedyRoute::toString() const {
-    std::stringstream repStr;
-
-    repStr << "#" << std::left << std::endl;
-    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TRIP_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departureTime_ << std::endl;
-    repStr << "#" << std::endl;
-
-    // print table header
-    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
-    repStr << std::left << std::setw(6) << "#      ";
-    repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
-    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
-    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
-    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
-    repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
-    repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
-
-    // print the source stop pint
-    repStr << "#" << std::setw(4) << 1 << "  ";
-    repStr << std::left << std::setw(27) << "(SOURCE ) departure";
-    repStr << std::left << std::setw(11) << PInitialStop_->currentNode_->nodeID_;
-    repStr << std::right << std::setw(11) << PInitialStop_->reachTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << PInitialStop_->leaveTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << PInitialStop_->travelResource_ << " (s)  ";
-    repStr << std::setw(7) << PInitialStop_->nbPassengers_ << std::endl;
-
-    // print the internal nodes of the route
-    PStopLabel curr = PInitialStop_;
-    int counter = 1;
-    while (curr->child_ != nullptr) {
-        repStr << "#" << std::setw(4) << counter + 1 << "  ";
-        if (curr->child_->currentNode_->type_ == SINK)
-            repStr << std::left << std::setw(27) << "(SINK   ) return";
-        else {
-            repStr << "(" << eu::toString(curr->child_->currentNode_->type_) << ") Request_ID ";
-            repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
-        }
-        repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
-        repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
-        if (curr->child_->reachTime_ != curr->child_->currentNode_->reachTime_ && curr->child_->currentNode_->reachTime_ != 0)
-            std::cout << "error";
-        repStr << std::right << std::setw(11) << curr->child_->leaveTime_ << " (s)  ";
-        repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
-        repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
-        curr = curr->child_;
-        counter++;
-    }
-
-    repStr << "=================================================================================================================" << std::endl;
-    return repStr.str();
-}
-
 
 void GreedyRoute::updateTailDepart() {
-    if (PLastStop_->currentNode_->type_ != SOURCE)
-        PLastStop_->leaveTime_ = PLastStop_->reachTime_ + PLastStop_->currentNode_->serviceTime_;
-    departureTime_ = PLastStop_->leaveTime_;
+    if (lastStop_->currentNode_->type_ != SOURCE)
+        lastStop_->leaveTime_ = lastStop_->reachTime_ + lastStop_->currentNode_->serviceTime_;
+    departureTime_ = lastStop_->leaveTime_;
 }
 
 bool GreedyRoute::isAnyViolation(const PStopLabel &startLabel) const {
@@ -592,9 +529,65 @@ void insertPosition::updatePosition(const PStopLabel &prePickup, const PStopLabe
                                     float tripDelayIncrease, float wait_W1, float ride_W2) {
     prePickup_ = prePickup;
     preDrop_ = preDrop;
-    deltaDelay_ = waitIncrease;
+    deltaWait_ = waitIncrease;
     deltaTripDelay_ = tripDelayIncrease;
 
     deltaObjective_ = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
 }
 
+std::string GreedyRoute::toString() const {
+    std::stringstream repStr;
+
+    repStr << "#" << std::left << std::endl;
+    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TRIP_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departureTime_ << std::endl;
+    repStr << "#" << std::endl;
+
+    // print table header
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << std::left << std::setw(6) << "#      ";
+    repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
+    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
+    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
+    repStr << "#PASSENGERS" <<std::endl;
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
+
+    // print the source stop pint
+    repStr << "#" << std::setw(4) << 1 << "  ";
+    repStr << std::left << std::setw(27) << "(SOURCE ) departure";
+    repStr << std::left << std::setw(11) << initialStop_->currentNode_->nodeID_;
+    repStr << std::right << std::setw(11) << initialStop_->reachTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << initialStop_->leaveTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << initialStop_->travelResource_ << " (s)  ";
+    repStr << std::setw(7) << initialStop_->nbPassengers_ << std::endl;
+
+    // print the internal nodes of the route
+    PStopLabel curr = initialStop_;
+    int counter = 1;
+    while (curr->child_ != nullptr) {
+        repStr << "#" << std::setw(4) << counter + 1 << "  ";
+        if (curr->child_->currentNode_->type_ == SINK)
+            repStr << std::left << std::setw(27) << "(SINK   ) return";
+        else {
+            repStr << "(" << eu::toString(curr->child_->currentNode_->type_) << ") Request_ID ";
+            repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
+        }
+        repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
+        repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
+        if (curr->child_->reachTime_ != curr->child_->currentNode_->reachTime_ && curr->child_->currentNode_->reachTime_ != 0)
+            std::cout << "error";
+        repStr << std::right << std::setw(11) << curr->child_->leaveTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
+        repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
+        curr = curr->child_;
+        counter++;
+    }
+
+    repStr << "=================================================================================================================" << std::endl;
+    return repStr.str();
+}

@@ -184,9 +184,7 @@ enum SortVehicle : int {
     DUAL = 0,
     DEPART_TIME = 1,
     ROUTE_SIZE = 2,
-    BEST_REDUCE_COST = 3,
-    SCORE = 4
-};
+    BEST_REDUCE_COST = 3};
 
 enum LabelStatus : int {
     ACTIVE = 0,
@@ -294,8 +292,8 @@ namespace enum_strings {
         "DEFINED", "PLANNED", "DONE", "COMMITTED"
     };
 
-    constexpr std::array<const char*, 5> sortVehicleNames = {
-        "DUAL", "DEPART_TIME", "ROUTE_SIZE", "BEST_REDUCE_COST", "SCORE"
+    constexpr std::array<const char*, 4> sortVehicleNames = {
+        "DUAL", "DEPART_TIME", "ROUTE_SIZE", "BEST_REDUCE_COST"
     };
 
     constexpr std::array<const char*, 5> labelStatusNames = {

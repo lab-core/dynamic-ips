@@ -16,38 +16,37 @@
 
 class Route {
 private:
-    const unsigned int routeID_;                // variable name or route ID
+    const unsigned int routeID_;                // Unique ID for each route instance
 
 
 public:
-    static unsigned int routeCount_;            // Counter the number of routes generated
+    static unsigned int routeCount_;            // Global counter for total routes created
     const char* name_;
     int vehicleID_;                             // the vehicle for which the route has created
-    float totalDelay_;                          // sum of waiting times of the requests served by the route
-    float totalTripDelay_;
-    float objCoef_;
+    float totalWait_;                           // sum of waiting times of the requests served by the route
+    float totalTripDelay_;                      // sum of trip delays of the requests served by the route
+    float objCoef_;                             // objective coefficient of the route in the MP based on the weights 
     vector<PNode> routeNodes_;                  // the ordered list of the nodes that are visited within the route
     std::vector<PRequest> routeRequests_;       // list of requests served by the route
-    std::vector<float> plannedDelay_;
+    std::vector<float> plannedDelay_;           // delay that vehicle is planned to have at each pickup node   
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
-    std::vector<float> plannedDepartTime_;      // time that vehicle is planned to reach each node
+    std::vector<float> plannedDepartTime_;      // time that vehicle is planned to depart each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
-    std::vector<float> rideTime_;      // time that vehicle is planned to reach each node
-    float reducedCost_;
-    int incompatibilityDegree_;
-    unsigned int routeSize_;                    //number of stops in the route including start and stop
-    float createTime_;                         // time that route is created through solving subproblems
-    float totalLength_;
-    boost::dynamic_bitset<> column_;
-    bool isCompatible_;                         // return false if the corresponding column is compatible
+    unsigned int routeSize_;                    // number of stops in the route including start and stop
+    float createTime_;                          // time that route is created through solving subproblems
+    float totalLength_;                         // total length of the route    
+    int incompatibilityDegree_;                 // the incompatibility degree of the route used in ISUD algorithm
+    boost::dynamic_bitset<> column_;            // bitset representing the requests included in the route used in MP/CP models
+    bool isCompatible_;                         // return true if the corresponding column is compatible w.r.t. the current basis
     bool mpAdded_;                              // True if the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // True if the route has already been added to the CP model
-    float score_;                              // equals to the reduced cost/number of pickups(or tasks)
-    float lambda_;
-    float waitScore_;
-    float IncScoreRatio_;
-    float IncScore_;
-    int nbCommitted_;
+    float reducedCost_;                         // reduced cost of the route 
+    float normal_RC_;                           // normalized reduced cost used as the sorting criteria
+    float lambda_;                              // lambda score value used as the sorting criteria
+    float waitScore_;                           // wait score value used as the sorting criteria    
+    float IncScoreRatio_;                       // incompatible score ratio used as the sorting criteria
+    float IncScore_;                            // incompatible score used as the sorting criteria
+    int nbCommitted_;                           // number of committed requests in the route
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
@@ -60,36 +59,46 @@ public:
     void addSource(const PNode &node, float departTime, int departPassengers);
     void addNode(const PNode &node);
 
+    // function to reconstruct the generated routes in the pool from the last epoch based on the current state
     bool reConstructRoute(PVehicle & vehicle);
     bool reConstruct(PVehicle &vehicle);
+
     // function to add node to the solution route
     void addNode(const PNode &node, float reachTime, float departTime);
     void addSink(const PNode &node);
 
-    // this function is used to remove completed nodes from the routes
+    // This function is used to remove completed nodes from the routes
     void removeNode(int nodeIndex);
-
-    // Display function
-    std::string toString() const;
-    std::string routeMetricsToString(int epoch, int RMPCounter) const;
 
     // this function is for testing the validation of the route
     void testRoute(const PVehicle & vehicle);
 
     // This function is to reset the status of the nodes in the route
     void resetRoute() const;
+
+    // This function is to calculate the marginal costs of adding nodes to the route
     void calcMarginalCosts(PVehicle & vehicle);
 
+    // This function is to compare two routes
     bool equal(const Route& routeObj) const {
         return this->column_ == routeObj.column_
             && this->routeSize_ == routeObj.routeSize_
-            && this->totalDelay_ == routeObj.totalDelay_
+            && this->totalWait_ == routeObj.totalWait_
             && this->totalTripDelay_ == routeObj.totalTripDelay_;
     }
+
+    // This function is to create the column bitset for the route (for MP/CP models)
     void createColumn(int nbRequests);
+
+    // This function is to calculate total trip delay of the route
     void calculateTripDelay(float wait_W1, float ride_W2);
+
+    // Display function
+    std::string toString() const;
+    std::string routeMetricsToString(int epoch, int RMPCounter) const;
 };
 
+// Compares two routes to check if they represent identical vehicle plans.
 inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
     std::cout << "comparing";
     return (
@@ -99,6 +108,8 @@ inline bool operator == (const PRoute &lhs, const PRoute &rhs) {
     );
 }
 
+// Creates a unique string key for caching or route lookup based on
+// vehicle ID and the task indices of the requests in the route.
 static std::string makeKey(const Route& r, int vehicleID) {
     std::vector<int> ids;
     for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);

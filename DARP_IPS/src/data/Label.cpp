@@ -18,7 +18,7 @@ Label::Label(const Vehicle *vehicle, PNode &source, int labelSize) : labelID_(la
     reducedCost_ = 0;
     labelScore_ = 0;
     lambdaScore_ = 0;
-    totalDelay_ = 0;
+    totalWait_ = 0;
     totalTripDelay_ = 0;
     status_ = ACTIVE;
     openNode_.clear();
@@ -52,7 +52,7 @@ Label::Label(const Label &label) :labelID_(labelCount_++) {
     reducedCost_ = label.reducedCost_;
     labelScore_ = label.labelScore_;
     lambdaScore_ = label.lambdaScore_;
-    totalDelay_ = label.totalDelay_;
+    totalWait_ = label.totalWait_;
     totalTripDelay_ = label.totalTripDelay_;
     openNode_ = label.openNode_;
     openRequests_ = label.openRequests_;
@@ -82,7 +82,7 @@ void Label::copyLabel(const Vehicle *vehicle, PNode &source, int labelSize) {
     reducedCost_ = 0;
     labelScore_ = 0;
     lambdaScore_ = 0;
-    totalDelay_ = 0;
+    totalWait_ = 0;
     totalTripDelay_ = 0;
     openNode_.clear();
     openRequests_.reset();
@@ -113,7 +113,7 @@ void Label::copyLabel(const Label &label) {
     reducedCost_ = label.reducedCost_;
     labelScore_ = label.labelScore_;
     lambdaScore_ = label.lambdaScore_;
-    totalDelay_ = label.totalDelay_;
+    totalWait_ = label.totalWait_;
     totalTripDelay_ = label.totalTripDelay_;
     openNode_ = label.openNode_;
     openRequests_.reset();
@@ -138,10 +138,6 @@ Label::~Label() {
 
 unsigned int Label::getLabelId() const {
     return labelID_;
-}
-
-bool Label::operator () (const Label &rhs) const {
-    return reducedCost_ < rhs.reducedCost_;
 }
 
 bool Label::checkSubsetOpen(const PLabel &otherLabel) const {
@@ -204,11 +200,11 @@ void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float 
             nbPickUp_++;
         }*/
         nbPickUp_ ++;
-        totalDelay_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
+        totalWait_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
         reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ *(reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
-        lambdaScore_ = totalDelay_ / (totalDelay_ - reducedCost_);
+        lambdaScore_ = totalWait_ / (totalWait_ - reducedCost_);
     }
     passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
@@ -303,6 +299,19 @@ bool Label::isTravelTimeFeasible(const Node *outNode, int &nbEliminated) const {
     return true;
 }
 
+bool Label::haveLessTravelResource(const PLabel &otherLabel) const {
+    // Compare each element
+    for (auto &nodeObj: otherLabel->openNode_) {
+        for (size_t i = 0; i < travelResources_.size(); ++i) {
+            if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] > otherLabel->travelResources_[(nodeObj)->related_Request_->taskIndexLabel_]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOption) const {
     /*if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);*/
@@ -349,13 +358,13 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
         pInst->vehicles_[newRoute->vehicleID_]->emptyRoute_ = newRoute;
     newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
     if (!newRoute->routeRequests_.empty()) {
-        newRoute->score_ = reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
-        newRoute->waitScore_ = newRoute->totalDelay_ / static_cast<float>(newRoute->routeRequests_.size());
+        newRoute->normal_RC_ = reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
+        newRoute->waitScore_ = newRoute->totalWait_ / static_cast<float>(newRoute->routeRequests_.size());
         newRoute->lambda_ = newRoute->objCoef_ /(newRoute->objCoef_ - reducedCost_ + 0.0001f);
 
     }
     else {
-        newRoute->score_ = 0;
+        newRoute->normal_RC_ = 0;
         newRoute->lambda_ = 0;
         newRoute->waitScore_ = 0;
     }
@@ -365,7 +374,7 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
         std::cout << "Total trip delay of the label partial path is not the same as the route delay" << std::endl;
         throw myTools::myException("Label convert problem!!!", __FILE__,__LINE__);
     }
-    if (totalDelay_ != newRoute->totalDelay_) {
+    if (totalWait_ != newRoute->totalWait_) {
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
         std::cout << "label: " << std::endl;
         std::cout << toString();
@@ -376,17 +385,18 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
     return newRoute;
 }
 
+
 std::string Label::toString() const {
     std::stringstream repStr;
 
     repStr << "#" << std::left << std::endl;
-//    repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
-//    repStr << "# \t" <<"_____________________" << std::endl;
+    //    repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
+    //    repStr << "# \t" <<"_____________________" << std::endl;
     repStr << "#\t" << std::setw(24) << "- LABEL_NUMBER" << " : " << labelID_ << std::endl;
-//    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << pathNode_.back()->nodeID_ << std::endl;
+    //    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << pathNode_.back()->nodeID_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNode_.size() << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- STATUS" << " : " << status_ << std::endl;
     if (!openNode_.empty()) {
@@ -403,16 +413,4 @@ std::string Label::toString() const {
     repStr << std::endl;
     repStr << "# ________________________________________________________________________" << std::endl;
     return repStr.str();
-}
-
-bool Label::haveLessTravelResource(const PLabel &otherLabel) const {
-    // Compare each element
-    for (auto &nodeObj: otherLabel->openNode_) {
-        for (size_t i = 0; i < travelResources_.size(); ++i) {
-            if (travelResources_[(nodeObj)->related_Request_->taskIndexLabel_] > otherLabel->travelResources_[(nodeObj)->related_Request_->taskIndexLabel_]) {
-                return false;
-            }
-        }
-    }
-    return true;
 }

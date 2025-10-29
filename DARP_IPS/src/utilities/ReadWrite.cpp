@@ -538,7 +538,6 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int subAlgorithm = defaultParams.value("subproblemAlgorithm", -1);
     bool constPortion = defaultParams.value("constPortion", 0) != 0;
     bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
-    bool usePick = defaultParams.value("usePick", 0) != 0;
     int bigM = defaultParams.value("BigM", -1);
     int solveTimeLimit = defaultParams.value("solveTimeLimit", -1);
     int populateTimeLimit = defaultParams.value("populateTimeLimit", -1);
@@ -625,7 +624,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         static_cast<LabelingStrategy>(strategy),
         static_cast<SubproblemAlgorithm>(subAlgorithm),
         constPortion, vehiclePortion, dynamicPricing, partialPricing,
-        routeRecycle, usePick, nbPick,
+        routeRecycle, nbPick,
         static_cast<SortPaths>(sortPath),
         static_cast<SortColumns>(sortColumn),
         bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,

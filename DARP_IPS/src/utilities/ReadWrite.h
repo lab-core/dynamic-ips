@@ -36,11 +36,11 @@ public:
     // Read the duration data file
     static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat);
 
-    // Read the parameters datafile
+    // Read the parameters data file
     static void readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName);
     static void readZones(const std::string& strZoneFile, const PInstance &pInstance);
 
-    // function that opens all input files and update main instance data
+    // function that opens all input files and updates main instance data
     static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch,
         const std::string& paramFile, int initialState);
 

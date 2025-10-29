@@ -16,22 +16,18 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, c
     dual_=0;
     InitialDual_ = 0;
     bestReducedCost_ = INFINITY;
-    score_ = INFINITY;
-
     idleTime_ = 0;
     driveEmptyTime_ = 0;
     driveFullTime_ = 0;
     serviceTime_ = 0;
     returnEmptyTime_ = 0;
-
     startTime_ = 0;
     vehicleIndex_ = vehicleId;
-    idle_ = true;
     numPickup_ = 1;
     stateChanged_ = false;
     removeDrop_ = false;
     removePickup_ = false;
-    preSolvePick_ = 2;
+    preSolvePickLimit_ = 2;
 }
 
 Vehicle::~Vehicle() = default;
@@ -117,21 +113,10 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
     stateChanged_ = false;
     removePickup_ = false;
     removeDrop_ = false;
-    /*if (mainInst->parameters_->vehicleReturn_ && currentRoute_->plannedReachTime_[0]+ currentRoute_->routeNodes_.back()->serviceTime_ < elapsedTime - committedTime
-    && currentRoute_->routeSize_ == 1){
-        if (currentRoute_->routeNodes_.back()->locationID_ != sinkNode_->locationID_){
-            idleTime_ += (elapsedTime + committedTime - departTime_);
-            currentRoute_->plannedDepartTime_[0] = elapsedTime + committedTime;
-            solutionRoute_->routeNodes_.back()->departTime_ = currentRoute_->plannedDepartTime_[0];
-            solutionRoute_->plannedDepartTime_.back() = currentRoute_->plannedDepartTime_[0];
-            currentRoute_->addSink(sinkNode_);
-            mainInst->nbReturn_++;
-        }
-    }*/
+
     if (currentRoute_->routeSize_ > 1) {
-         if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePick_ != 1) {
-            idle_ = false;
-            // this condition is useful for the cases that the vehicle does not have any stop in the current epoch
+         if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePickLimit_ != 1) {
+            // this condition is useful for cases that the vehicle does not have any stops in the current epoch
             if (departTime_ < elapsedTime + committedTime) {
                 onboards_.clear();
                 int breakIndex = 0;
@@ -266,13 +251,20 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
     }
 }
 
+void Vehicle::updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2) {
+    float departure = std::max(elapsedTime + 5, departNode_->reachTime_+ departNode_->serviceTime_);
+    if (departure < departTime_) {
+        idleTime_ -= (departTime_ - departure);
+        updateDepartTime(departure, wait_W1, ride_W2);
+    }
+}
+
 void Vehicle::updateDepartTime(float departTime, float wait_W1, float ride_W2) {
     currentRoute_->plannedDepartTime_[0] = departTime;
     solutionRoute_->routeNodes_.back()->departTime_ = departTime;
     solutionRoute_->plannedDepartTime_.back() = departTime;
     departTime_ = departTime;
-    idle_ = false;
-    currentRoute_->totalDelay_ = 0;
+    currentRoute_->totalWait_ = 0;
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(departNode_, departTime_, numPassengers_);
     for (int i = 1; i < currentRoute_->routeNodes_.size(); ++i) {
@@ -281,28 +273,16 @@ void Vehicle::updateDepartTime(float departTime, float wait_W1, float ride_W2) {
     newRoute->calculateTripDelay(wait_W1, ride_W2);
     currentRoute_->plannedDepartTime_ = newRoute->plannedDepartTime_;
     currentRoute_->plannedReachTime_ = newRoute->plannedReachTime_;
-    currentRoute_->totalDelay_ = newRoute->totalDelay_;
+    currentRoute_->totalWait_ = newRoute->totalWait_;
     currentRoute_->totalTripDelay_ = newRoute->totalTripDelay_;
 }
 
-void Vehicle::updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2) {
-    float departure = std::max(elapsedTime + 5, departNode_->reachTime_+ departNode_->serviceTime_);
-    if (departure < departTime_) {
-        idleTime_ -= (departTime_ - departure);
-        updateDepartTime(departure, wait_W1, ride_W2);
-    }
-    idle_ = false;
-}
-
-
-// Handle idle state for vehicles with no stops
 void Vehicle::handleIdleState(float epochEndTime) {
     idleTime_ += (epochEndTime - departTime_);
     departTime_ = epochEndTime;
     currentRoute_->plannedDepartTime_[0] = departTime_;
     solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
     solutionRoute_->plannedDepartTime_.back() = departTime_;
-    idle_ = true;
 }
 
 
@@ -339,13 +319,3 @@ void Vehicle::adjustDuals() {
     }
     dual_ = 0.0;
 }
-
-/*void Vehicle::checkCoveredRequests(std::vector<PRoute> &availableRoutes, int nbRequests) {
-    coveredRequests.reset();
-    coveredRequests.resize(nbRequests);
-    for (auto & routeObj: availableRoutes) {
-        for (auto & requestObj: routeObj->routeRequests_) {
-            coveredRequests.set(requestObj->taskIndex_);
-        }
-    }
-}*/

@@ -14,28 +14,27 @@
 class SolverBase {
 public:
     // label setting strategies
-    bool isTruncated_{};
-    int MaxLabel_{};
-    int MaxCommittedLabel_{};
-    bool isDominanceReleased_{};
-    bool pruneNodes_{};
-    bool pruneArcs_{};
-    bool discardSuboptimalPath_{};
-    bool isDropPickPossible_{};
-    LabelingStrategy LabelingStrategy_{};
-    LabelingReOptimizeStrategy labelingReOptimizeStrategy_;
-    bool usePick_{};
-    int nbPick_{};
-    SortPaths sortPath_;
-    int newRequestLimit_{};
-    float Wait_W1_;
-    float Ride_W2_;
-    bool Req_W3_;
+    bool isTruncated_{};                                    // truncated or complete labeling
+    int MaxLabel_{};                                        // maximum number of labels per node for truncated labeling
+    int MaxCommittedLabel_{};                               // maximum number of committed labels per node for truncated labeling
+    bool isDominanceReleased_{};                            // whether in domination one rule is released or not
+    bool pruneNodes_{};                                     // whether to prune nodes (1st pruning policy) is used in labeling
+    bool pruneArcs_{};                                      // whether to prune arcs (2nd pruning policy) is used in labeling
+    bool discardSuboptimalPath_{};                          // whether to discard suboptimal paths (3rd pruning policy) in labeling
+    bool isDropPickPossible_{};                             // whether pick-up is allowed when a drop-off is already visited
+    LabelingStrategy LabelingStrategy_{};                   // labeling strategy: PUSHING, PULLING, RE_PULLING
+    LabelingReOptimizeStrategy labelingReOptimizeStrategy_; // labeling re-optimization strategy: RE_INSERT, BY_ROUTE, BY_GRAPH
+    int nbPick_{};                                          // number of pick-ups limits in routes, used in labeling
+    SortPaths sortPath_;                                    // path sorting criteria used in truncated labeling
+    int newRequestLimit_{};                                 // limit on the number of new requests accepted to decide whether to re-optimize
+    float Wait_W1_;                                         // weight for wait time in the objective function
+    float Ride_W2_;                                         // weight for trip delay in the objective function       
+    bool Req_W3_;                                           // whether to consider request count in the objective function  
 
-    // Constructor
+    // Constructor and Destructor
     SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
-               LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool usePick,
+               LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
                int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2, bool req_W3);
 
     virtual ~SolverBase() = default;
@@ -50,55 +49,63 @@ public:
 struct Parameters : public SolverBase {
 public:
     // model Parameters
-    float alphaParam_{};
-    float betaParam_{};
-    float deltaPram_{};
-    float epochLength_{};
-    int penaltyL_{};
-    float committedTime_{};
-    int nbThreads_{};
-    InitialDual initialDual_;
-    DualMethod dualMethod_{};
-    bool smoothDual_;
-    MainAlgorithm mainAlgorithm_;
-    SolutionMode solutionMode_;     // STATIC, DYNAMIC, ANYTIME
-    int numIter_;                  // solve the Master problem one time at each iteration of the CG
-    bool greedyReOptimize_;         // restart greedy (re-assigning) considering the current state of the system
-    int saveScratch_;              // save the results in scratch place of the server
-    bool vehicleReturn_;            // determine if the idle vehicles return ti initial location or not
-    float timeWindow_;
-    float WaitForReturn_;             // The time that a vehicle remains idle before returning to crowded areas
-    int numVehicleSwitch_;          // the number of times we are allowed to change the vehicle assigned to a customer
-    float informTimeLimit_;
-    float pickupDeviationWindow_;
-    ReturnType returnPolicy_;
-    float maxWait_;
-    ModelSOLVER modelSolver_;
-    Approach approach_;
+    float alphaParam_{};                    // parameter for defining the max ride time limit (alpha * direct travel time)
+    float betaParam_{};                     // parameter for defining the max ride time limit (beta + direct travel time)
+    float deltaPram_{};                     // parameter for defining penalty for unassigned requests 
+    float epochLength_{};                   // length of each epoch in dynamic solution                                      
+    int penaltyL_{};                        // parameter for defining penalty for unassigned requests  
+    float committedTime_{};                 // length of time period that stops are freezed in anytime solution
+    float informTimeLimit_;                 // time limit to inform the customers before their requested pickup time
+    float pickupDeviationWindow_;           // allowable deviation window for committed pickup time
+
+    Approach approach_;                     // solution approach: ISUD, CG, Greedy
+    MainAlgorithm mainAlgorithm_;           // main algorithm: GREEDY, MIP_CPLEX, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG
+    SolutionMode solutionMode_;             // solution mode: STATIC, DYNAMIC, ANYTIME
+    
+    // CG Parameters
+    InitialDual initialDual_;               // the strategy used for initializing dual variables
+    DualMethod dualMethod_{};               // the method used for extracting dual variables at the end of each epoch
+    bool smoothDual_;                       // whether to use smoothing dual or not
+    WarmStart initialStart_;                // warm start strategy: GREEDY_START, PRE_SOLUTION, EMPTY_ROUTES
+    int numIter_;                           // number of iterations for column generation at each epoch
+    int nbColumn_;                          // number of columns per vehicle to add to RMP at each iteration
+    SortColumns sortColumn_;                // column sorting criteria used in adding columns to RMP
+    
+    // Vehicle Return Parameters
+    bool vehicleReturn_;                   // whether the rebalancing of the vehicles is done by returning to crowded areas
+    float WaitForReturn_;                  // The time that a vehicle remains idle before returning to crowded areas
+    ReturnType returnPolicy_;              // return policy for vehicles: TO_SOURCE, ZONE, ASSIGN
+    float maxWait_;                        // maximum wait time to define crowded zones for vehicle rebalancing
+    
 
     // ISUD parameters
-    WarmStart initialStart_;
-    int MIP_maxIncDegree_;      // max incompatibility degree for Zoom
-    int CP_IncDegree_;          // max incompatibility degree for CP
-    bool reducedCP_;       // min incompatibility degree that CP starts from in multi-stage
-    float minImp_;
-    bool useZoom_;
-    int nbColumn_;
+    int MIP_maxIncDegree_;                 // max incompatibility degree for Zoom
+    int CP_IncDegree_;                     // max incompatibility degree for CP
+    bool reducedCP_;                       // whether to use reduced CP model or not
+    float minImp_;                         // minimum improvement threshold for ISUD
+    bool useZoom_;                         // whether to use Zoom or not
 
-    // Additional label setting strategies not in base class
-    SubproblemAlgorithm subAlgorithm_;
-    bool constPortion_;
-    bool vehiclePortion_{};
-    bool dynamicPricing_{};
-    bool partialPricing_{};
-    bool routeRecycle_{};
-    SortColumns sortColumn_;
+    // Parameters related to the subproblem
+    SubproblemAlgorithm subAlgorithm_;     // subproblem algorithm: CPLEX_SUB, LABEL_SETTING
+    bool vehiclePortion_{};                // whether to solve subproblems for a portion of vehicles or all vehicles
+    bool dynamicPricing_{};                // whether to use dynamic pickup limits in labeling
+    bool partialPricing_{};                // whether to use partial pickup limits in labeling
+    bool routeRecycle_{};                  // whether to recycle routes from prior epoch
+    
 
-    //CPLEX Parameters
-    int bigM_{};
-    int solveTimeLimit_{};
-    int populateTimeLimit_{};
-    float MIPGap_{};
+    //Solver Parameters
+    int nbThreads_{};                      // number of threads used in parallel computations
+    int saveScratch_;                      // save the results in scratch place of the server
+    ModelSOLVER modelSolver_;              // the solver used for MIP and CP: CPLEX, GUROBI
+    int bigM_{};                           // big M value used in MIP formulations
+    int solveTimeLimit_{};                 // time limit for solving MIP models
+    int populateTimeLimit_{};              // time limit for populating MIP models
+    float MIPGap_{};                       // optimality gap for MIP models
+
+    // other Parameters
+    bool greedyReOptimize_;                 // restart greedy (re-assigning) considering the current state of the system 
+    float timeWindow_;                      // time window for rejecting requests
+    int numVehicleSwitch_;                  // the number of times we are allowed to change the vehicle assigned to a customer
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
@@ -110,7 +117,7 @@ public:
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
-               bool usePick, int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
+               int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
                LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1, float ride_W2,
@@ -134,9 +141,11 @@ struct solverOption : public SolverBase {
                  bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit,float wait_W1,
                  float ride_W2, bool req_W3);
 
+    // Construct from Parameters
     explicit solverOption(const PParameters &MainParams);
-
     virtual ~solverOption();
+
+    // Functions to enable/disable labeling accelerations (heuristics)
     void disableHeuristics();
     void enableHeuristics(const PParameters &MainParams);
 

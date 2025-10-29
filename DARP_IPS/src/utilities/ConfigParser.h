@@ -12,17 +12,18 @@
 //-----------------------------------------------------------------------------
 
 struct ProgramConfig {
-    std::string vehicleFolder_;
-    std::string vehicleFileName_;
-    std::string instFolder_;
-    std::string instanceName_;  // optional - if empty, read from file
-    int numVehicles_;
-    int mainAlgo_;
-    int solMode_;
-    std::string paramFile_;
-    std::string scenario_;
-    int saveScratch_;
-    int initialState_;
+    std::string vehicleFolder_;     // folder containing vehicle files
+    std::string vehicleFileName_;   // vehicle file name
+    std::string instFolder_;        // folder containing instance files
+    std::string instanceName_;      // instance file name (optional - if empty, read from file)
+    int numVehicles_;               // number of vehicles
+    int mainAlgo_;                  // main algorithm
+    int solMode_;                   // solution mode: STATIC, DYNAMIC, ANYTIME.
+    std::string paramFile_;         // parameter file name
+    std::string scenario_;          // scenario name
+    int saveScratch_;               // flag to save scratch (0 or 1)
+    int initialState_;              // initial state (have onboard/fresh start/etc.)
+
 
     // Default constructor with default values
     ProgramConfig();

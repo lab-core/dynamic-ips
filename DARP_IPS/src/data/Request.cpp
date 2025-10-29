@@ -70,6 +70,13 @@ void Request::setPenalty(float elapsedTime, const PParameters &parameters, float
     penalty_ = static_cast<float>(parameters->deltaPram_
                                   * pow(2, (elapsedTime - (initialEarlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
 }
+
+void Request::setMaxMinDual() {
+    if (maxDual_ < dual_)
+        maxDual_ = dual_;
+    if (minDual_ > dual_)
+        minDual_ = dual_;
+}
 // Display function
 std::string Request::toString() const {
     std::stringstream repStr;
@@ -80,9 +87,3 @@ std::string Request::toString() const {
     return repStr.str();
 }
 
-void Request::setMaxMinDual() {
-    if (maxDual_ < dual_)
-        maxDual_ = dual_;
-    if (minDual_ > dual_)
-        minDual_ = dual_;
-}

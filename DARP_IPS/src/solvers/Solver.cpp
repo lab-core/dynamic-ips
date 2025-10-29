@@ -274,7 +274,7 @@ void Solver::solveCG_Epoch(PInstance &EpochInst, PInstance & mainInst, InputPath
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
-            if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
+            if (vehicleObj->preSolvePickLimit_ >= 2 && vehicleObj->currentRoute_->routeSize_ == 1){
                 vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ +
                     elapsedTime_+ simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_,
                     EpochInst->parameters_->Ride_W2_);
@@ -400,7 +400,7 @@ void Solver::solveICG_Epoch(PInstance &EpochInst, PInstance &mainInst, InputPath
 
     if (EpochInst->parameters_->solutionMode_ == ANYTIME){
         for (auto &vehicleObj: EpochInst->vehicles_){
-            if (vehicleObj->preSolvePick_ >= 2 && vehicleObj->idle_){
+            if (vehicleObj->preSolvePickLimit_ >= 2 && vehicleObj->currentRoute_->routeSize_ == 1){
                 vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+
                 simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
             }
@@ -461,7 +461,7 @@ bool Solver::solve_SP_Label(PInstance &EpochInst, PInstance &mainInst, int &iter
                     nbOnePick_++;
                 }
                 subProSolve.back()->maxPickup_ = vehicleObj->numPickup_;
-                vehicleObj->preSolvePick_ = subProSolve.back()->maxPickup_;
+                vehicleObj->preSolvePickLimit_ = subProSolve.back()->maxPickup_;
             }
             // Handle dynamic pricing
             else if (EpochInst->parameters_->dynamicPricing_) {
@@ -1553,7 +1553,7 @@ void Solver::CreateOneStopRoutes(const PVehicle &vehicle, vector<PRoute> &availa
         newRoute->addNode(pInst->instGraph_->dropNodes_[requestObj->getRequestId()]);
         newRoute->calculateTripDelay(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
         newRoute->reducedCost_ = newRoute->objCoef_ - requestObj->dual_ - vehicle->dual_;
-        newRoute->score_ = newRoute->reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
+        newRoute->normal_RC_ = newRoute->reducedCost_ / static_cast<float>(newRoute->routeRequests_.size());
         newRoute->lambda_ = newRoute->objCoef_/(requestObj->dual_ + vehicle->dual_ + 0.001f);
         newRoute->totalLength_ = newRoute->plannedDepartTime_.back() - vehicle->departTime_;
         if (newRoute->reducedCost_ < 0)

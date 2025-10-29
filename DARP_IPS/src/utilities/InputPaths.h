@@ -28,24 +28,25 @@ protected:
     std::string prefix_;                        // indicate the solution mode and algorithm used to solve
 
     // input data files
-    std::string input_TripData_;
-    std::string input_InstanceData_;
-    std::string input_durationData_;
-    std::string input_paramFile_;
-    std::string input_vehicleFileGeneral_;
-    std::string input_vehicleFile_;
-    std::string input_onboardsFileGeneral_;
-    std::string input_onboardsFile_;
-    std::string input_waitRequests_;
-    std::string input_zones_;
+    std::string input_TripData_;                // input trip data file
+    std::string input_InstanceData_;            // input instance data file
+    std::string input_durationData_;            // input duration data file
+    std::string input_paramFile_;               // input parameter file
+    std::string input_vehicleFileGeneral_;      // input general vehicle data file
+    std::string input_vehicleFile_;             // input specific vehicle data file (small size tests)
+    std::string input_onboardsFileGeneral_;     // input general onboards data file
+    std::string input_onboardsFile_;            // input specific onboards data file (small size tests)
+    std::string input_waitRequests_;            // input wait requests data file
+    std::string input_zones_;                   // input zones data file
+
 
     // out put save state files
 
-    std::string output_onboards_;
-    std::string output_waitRequests_;
-    std::string output_trip_;
-    std::string output_vehicles_;
-    std::string output_instance_;
+    std::string output_onboards_;               // save the list/info of onboards in a csv
+    std::string output_waitRequests_;           // save the list/info of wait requests in a csv
+    std::string output_trip_;                   // save the list/info of incoming trips in a csv
+    std::string output_vehicles_;               // save the list/state of vehicles in a csv
+    std::string output_instance_;               // save the instance data in a txt file
 
     // output data addresses
     std::string output_epochRunTime_;           // save the summary of each epoch runtime (master, sub problems,..)
@@ -55,11 +56,10 @@ protected:
     std::string output_finalRequests_;          // save the status of final requests in a csv
     std::string output_finalVehicles_;          // save the status of final requests in a csv
     std::string output_paramFile_;              // save the parameters
-    std::string output_paramCSV_;              // save the parameters csv
-
+    std::string output_paramCSV_;               // save the parameters csv
     std::string output_incDegree_RDCost_;       // save the reduced cost at each epoch
     std::string output_subproSize_;             // save the information of solving subproblems, nb generated, dominated,...
-    std::string output_solverLog_;               // save cplex log file
+    std::string output_solverLog_;              // save Cplex log file
     std::string output_reqDuals_;               // save requests duals after each iteration of solving MP
     std::string output_vehDuals_;               // save vehicles duals after each iteration of solving MP
     std::string output_solutionChange_;         // save the changes in incompatibility degree at each epoch
@@ -102,9 +102,7 @@ public:
     const std::string &getOutputSolverLog() const;
     const std::string &getOutputReqDuals() const;
     const std::string &getOutputVehDuals() const;
-
     const std::string &getOutputSummary() const;
-
     const std::string &getOutputSolutionChange() const;
 
     // this function defines the path to input data files

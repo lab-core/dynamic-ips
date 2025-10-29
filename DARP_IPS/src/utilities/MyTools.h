@@ -33,7 +33,7 @@ using std::vector;
 using std::chrono::high_resolution_clock;
 extern std::vector<std::vector<float>> durationMatrix_;
 //-----------------------------------------------------------------------------
-//  Useful tools and data types
+//  Useful helper functions
 //-----------------------------------------------------------------------------
 
 // Function template to concatenate two vectors of the same type
@@ -52,10 +52,11 @@ std::vector<T> concatenateVectors(const std::vector<T>& vec1, const std::vector<
 }
 
 
-
-
 namespace myTools {
+    //-----------------------------------------------------------------------------
+    //  MY EXCEPTION CLASS
     // class for defining exception errors
+    //-----------------------------------------------------------------------------
     class myException : public std::exception {
     public:
         // Constructor with just the line number
@@ -111,10 +112,12 @@ namespace myTools {
             }
         }
 
+        // Throw an exception with the input message
         static void throwException(const std::string &strMsg) {
             throwException(strMsg.c_str());
         }
 
+        // Throw an error with the input message
         static void throwError(const std::string &strMsg) {
             try {
                 throw strMsg;
@@ -125,6 +128,7 @@ namespace myTools {
             }
         }
 
+        // Throw an error with the input message
         static void throwError(const char *exceptionMsg) {
             throwError(std::string(exceptionMsg));
         }
@@ -145,7 +149,7 @@ namespace myTools {
     };
 
 
-    // functions to create node IDs
+    // helper functions to create node IDs
     std::string createNodeID(unsigned int requestID, NodeType type);
     std::string createSourceID(int vehicleID, NodeType type);
 
@@ -153,20 +157,20 @@ namespace myTools {
     bool isLess_equal(const std::valarray<int> &rhs, const std::valarray<int> &lhs);
 
 
-
     //-----------------------------------------------------------------------------
     //  TIMER CLASS
+    //  a simple timer class to measure CPU time
     //-----------------------------------------------------------------------------
     class Timer {
     private:
-        high_resolution_clock::time_point cpuInit_;
-        std::chrono::duration<double> cpuSinceStart_;
-        std::chrono::duration<double> cpuSinceInit_;
+        high_resolution_clock::time_point cpuInit_;       //time point when the timer is initialized
+        std::chrono::duration<double> cpuSinceStart_;     //time duration since the timer was started
+        std::chrono::duration<double> cpuSinceInit_;      //time duration since the timer was initialized
 
-        int coStop_;	        //number of times the timer was stopped
-        bool isInit_;
-        bool isStarted_;
-        bool isStopped_;
+        int coStop_;	                                  //number of times the timer was stopped
+        bool isInit_;                                     //flag to indicate if the timer is initialized or not
+        bool isStarted_;                                  //flag to indicate if the timer is started or not 
+        bool isStopped_;                                  //flag to indicate if the timer is stopped or not
 
         // Constructor and Destructor
     public:
@@ -174,10 +178,10 @@ namespace myTools {
         virtual ~Timer();
 
 
-        void init();        // function fo initialize the timer
-        bool isInit() const;      // function to check initialization status
-        void start();       // function to start the timer
-        void stop();        // function to stop the timer
+        void init();                                     // function fo initialize the timer
+        bool isInit() const;                             // function to check initialization status
+        void start();                                    // function to start the timer
+        void stop();                                     // function to stop the timer
         void addTime(double sec);
 
         // get the time spent since the initialization of the timer and since the last
@@ -193,14 +197,16 @@ namespace myTools {
     template<class T>
     class SharedVector{
     private:
-        std::vector<std::vector<T>> shared_vector;
-        mutable std::mutex mutex_;
+        std::vector<std::vector<T>> shared_vector;      // Internal vector to hold data
+        mutable std::mutex mutex_;                      // Mutex for thread-safe access
     public:
+        // Push data into the shared vector
         void push_data(std::vector<T> data) {
             std::lock_guard<std::mutex> lock(mutex_);
             shared_vector.push_back(std::move(data));
         }
 
+        // Pop data from the shared vector
         std::vector<T> pop_data() {
             std::lock_guard<std::mutex> lock(mutex_);
             std::vector<T> data = shared_vector.back();
@@ -208,21 +214,30 @@ namespace myTools {
             return data;
         }
 
+        // Define size of internal vector
         void defineSize(int size) {
             shared_vector.resize(size);
         }
 
+        //  Get size of internal vector
         int getSize(){
             return shared_vector[0].size();
         }
 
+        // Clear the internal vector
         void clear() {
             shared_vector.clear();  // Clears the internal vector
         }
     };
 
+    //-----------------------------------------------------------------------------
+    //  COUT REDIRECTOR CLASS
     // Define a RAII guard to manage std::cout redirection
+    //-----------------------------------------------------------------------------
     class CoutRedirector {
+        private:
+        std::ofstream logFile_;                 // Log file stream  
+        std::streambuf *originalBuffer_;        // Original buffer of std::cout
     public:
         CoutRedirector(const std::string &logFilePath, const std::string& model)
             : logFile_(logFilePath, std::ofstream::app),
@@ -233,9 +248,7 @@ namespace myTools {
         ~CoutRedirector() {
             std::cout.rdbuf(originalBuffer_);
         }
-    private:
-        std::ofstream logFile_;
-        std::streambuf *originalBuffer_;
+
     };
 
 
