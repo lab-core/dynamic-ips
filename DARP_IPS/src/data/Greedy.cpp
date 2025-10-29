@@ -152,6 +152,63 @@ GreedyRoute::GreedyRoute(const GreedyRoute &label) {
 
 GreedyRoute::~GreedyRoute() = default;
 
+std::string GreedyRoute::toString() const {
+    std::stringstream repStr;
+
+    repStr << "#" << std::left << std::endl;
+    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TRIP_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departureTime_ << std::endl;
+    repStr << "#" << std::endl;
+
+    // print table header
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << std::left << std::setw(6) << "#      ";
+    repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
+    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
+    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
+    repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
+    repStr << "#PASSENGERS" <<std::endl;
+    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
+
+    // print the source stop pint
+    repStr << "#" << std::setw(4) << 1 << "  ";
+    repStr << std::left << std::setw(27) << "(SOURCE ) departure";
+    repStr << std::left << std::setw(11) << initialStop_->currentNode_->nodeID_;
+    repStr << std::right << std::setw(11) << initialStop_->reachTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << initialStop_->leaveTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << initialStop_->travelResource_ << " (s)  ";
+    repStr << std::setw(7) << initialStop_->nbPassengers_ << std::endl;
+
+    // print the internal nodes of the route
+    PStopLabel curr = initialStop_;
+    int counter = 1;
+    while (curr->child_ != nullptr) {
+        repStr << "#" << std::setw(4) << counter + 1 << "  ";
+        if (curr->child_->currentNode_->type_ == SINK)
+            repStr << std::left << std::setw(27) << "(SINK   ) return";
+        else {
+            repStr << "(" << eu::toString(curr->child_->currentNode_->type_) << ") Request_ID ";
+            repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
+        }
+        repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
+        repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
+        if (curr->child_->reachTime_ != curr->child_->currentNode_->reachTime_ && curr->child_->currentNode_->reachTime_ != 0)
+            std::cout << "error";
+        repStr << std::right << std::setw(11) << curr->child_->leaveTime_ << " (s)  ";
+        repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
+        repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
+        curr = curr->child_;
+        counter++;
+    }
+
+    repStr << "=================================================================================================================" << std::endl;
+    return repStr.str();
+}
+
 void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) const {
     PStopLabel currentLabel = initialStop_;
     while (currentLabel->child_ != nullptr) {
@@ -533,61 +590,4 @@ void insertPosition::updatePosition(const PStopLabel &prePickup, const PStopLabe
     deltaTripDelay_ = tripDelayIncrease;
 
     deltaObjective_ = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
-}
-
-std::string GreedyRoute::toString() const {
-    std::stringstream repStr;
-
-    repStr << "#" << std::left << std::endl;
-    repStr << "#\t" << std::setw(24) << "- VEHICLE_ID" << " : " << (*Vehicle_)->vehicleID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TRIP_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- IDLE_TIME (seconds)" << " : " << idleTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departureTime_ << std::endl;
-    repStr << "#" << std::endl;
-
-    // print table header
-    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
-    repStr << std::left << std::setw(6) << "#      ";
-    repStr << std::left << std::setw(27) << "ACTION_DESCRIPTION";
-    repStr << std::left << std::setw(11) << "NODE_ID" << std::right;
-    repStr << std::right << std::setw(11) << " REACH_TIME"<< " (s)  ";
-    repStr << std::right << std::setw(11) << " DEPART_TIME"<< " (s)  ";
-    repStr << std::right << std::setw(11) << " TRAVEL_RESOURCE"<< " (s)  ";
-    repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# ---------------------------------------------------------------------------------------------------------------" << std::endl;
-
-    // print the source stop pint
-    repStr << "#" << std::setw(4) << 1 << "  ";
-    repStr << std::left << std::setw(27) << "(SOURCE ) departure";
-    repStr << std::left << std::setw(11) << initialStop_->currentNode_->nodeID_;
-    repStr << std::right << std::setw(11) << initialStop_->reachTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << initialStop_->leaveTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << initialStop_->travelResource_ << " (s)  ";
-    repStr << std::setw(7) << initialStop_->nbPassengers_ << std::endl;
-
-    // print the internal nodes of the route
-    PStopLabel curr = initialStop_;
-    int counter = 1;
-    while (curr->child_ != nullptr) {
-        repStr << "#" << std::setw(4) << counter + 1 << "  ";
-        if (curr->child_->currentNode_->type_ == SINK)
-            repStr << std::left << std::setw(27) << "(SINK   ) return";
-        else {
-            repStr << "(" << eu::toString(curr->child_->currentNode_->type_) << ") Request_ID ";
-            repStr << std::left << std::setw(6) << curr->child_->currentNode_->related_Request_->getRequestId();
-        }
-        repStr << std::left << std::setw(11) << curr->child_->currentNode_->nodeID_;
-        repStr << std::right << std::setw(11) << curr->child_->reachTime_ << " (s)  ";
-        if (curr->child_->reachTime_ != curr->child_->currentNode_->reachTime_ && curr->child_->currentNode_->reachTime_ != 0)
-            std::cout << "error";
-        repStr << std::right << std::setw(11) << curr->child_->leaveTime_ << " (s)  ";
-        repStr << std::right << std::setw(11) << curr->child_->travelResource_ << " (s)  ";
-        repStr << std::setw(7) << curr->child_->nbPassengers_ << std::endl;
-        curr = curr->child_;
-        counter++;
-    }
-
-    repStr << "=================================================================================================================" << std::endl;
-    return repStr.str();
 }

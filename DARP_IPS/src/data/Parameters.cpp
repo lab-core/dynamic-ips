@@ -211,19 +211,6 @@ void solverOption::disableHeuristics() {
  //   isDropPickPossible_ = true;
 }
 
-void solverOption::enableHeuristics(const PParameters &MainParams) {
-    isTruncated_ = true;
-    isDropPickPossible_ = false;
-}
-
-solverOption::solverOption(const PParameters &MainParams) :
-        SolverBase(MainParams->isTruncated_, MainParams->MaxLabel_, MainParams->MaxCommittedLabel_,
-                   MainParams->isDominanceReleased_, MainParams->pruneNodes_, MainParams->pruneArcs_,
-                   MainParams->discardSuboptimalPath_, MainParams->isDropPickPossible_,
-                   MainParams->LabelingStrategy_, MainParams->labelingReOptimizeStrategy_,
-                   MainParams->nbPick_, MainParams->sortPath_, MainParams->newRequestLimit_,
-                   MainParams->Wait_W1_, MainParams->Ride_W2_, MainParams->Req_W3_) {}
-
 // Display function
 std::string solverOption::toString() const {
     std::stringstream repStr;
@@ -247,6 +234,20 @@ std::string solverOption::toString() const {
     return repStr.str();
 
 }
+
+void solverOption::enableHeuristics(const PParameters &MainParams) {
+    isTruncated_ = true;
+    isDropPickPossible_ = false;
+}
+
+solverOption::solverOption(const PParameters &MainParams) :
+        SolverBase(MainParams->isTruncated_, MainParams->MaxLabel_, MainParams->MaxCommittedLabel_,
+                   MainParams->isDominanceReleased_, MainParams->pruneNodes_, MainParams->pruneArcs_,
+                   MainParams->discardSuboptimalPath_, MainParams->isDropPickPossible_,
+                   MainParams->LabelingStrategy_, MainParams->labelingReOptimizeStrategy_,
+                   MainParams->nbPick_, MainParams->sortPath_, MainParams->newRequestLimit_,
+                   MainParams->Wait_W1_, MainParams->Ride_W2_, MainParams->Req_W3_) {}
+
 
 std::string boolToString(bool value) {
     return value ? "True" : "False";

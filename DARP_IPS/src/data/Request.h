@@ -74,6 +74,9 @@ public:
 
     virtual ~Request();
 
+    // Display function
+    std::string toString() const;
+
     // Getters and Setters
     unsigned int getRequestId() const;
     void setMinTravelTime(float minTravelTime);
@@ -84,9 +87,6 @@ public:
 
     // This function updates min and max dual values along epochs
     void setMaxMinDual();
-
-    // Display function
-    std::string toString() const;
     
 };
 

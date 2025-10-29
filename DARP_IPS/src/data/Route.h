@@ -55,6 +55,10 @@ public:
     // Getters and Setters
     unsigned int getRouteId() const;
 
+    // Display function
+    std::string toString() const;
+    std::string routeMetricsToString(int epoch, int RMPCounter) const;
+
     // these functions are used to add nodes to the routes
     void addSource(const PNode &node, float departTime, int departPassengers);
     void addNode(const PNode &node);
@@ -92,10 +96,6 @@ public:
 
     // This function is to calculate total trip delay of the route
     void calculateTripDelay(float wait_W1, float ride_W2);
-
-    // Display function
-    std::string toString() const;
-    std::string routeMetricsToString(int epoch, int RMPCounter) const;
 };
 
 // Compares two routes to check if they represent identical vehicle plans.

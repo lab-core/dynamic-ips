@@ -140,6 +140,35 @@ unsigned int Label::getLabelId() const {
     return labelID_;
 }
 
+std::string Label::toString() const {
+    std::stringstream repStr;
+
+    repStr << "#" << std::left << std::endl;
+    //    repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
+    //    repStr << "# \t" <<"_____________________" << std::endl;
+    repStr << "#\t" << std::setw(24) << "- LABEL_NUMBER" << " : " << labelID_ << std::endl;
+    //    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << pathNode_.back()->nodeID_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNode_.size() << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- STATUS" << " : " << status_ << std::endl;
+    if (!openNode_.empty()) {
+        repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : ";
+        for (auto &nodeObj: openNode_) {
+            repStr << (nodeObj)->related_Request_->getRequestId() << "  ";
+        }
+        repStr << std::endl;
+    }
+    repStr << "#\t" << std::setw(24) << "- PATH_NODES" << " : ";
+    for (auto &nodeObj: pathNode_) {
+        repStr << (nodeObj)->nodeID_ << "  ";
+    }
+    repStr << std::endl;
+    repStr << "# ________________________________________________________________________" << std::endl;
+    return repStr.str();
+}
+
 bool Label::checkSubsetOpen(const PLabel &otherLabel) const {
     for (auto & node : otherLabel->openNode_) {
         if (!this->openRequests_.test(node->related_Request_->taskIndexLabel_))
@@ -386,31 +415,3 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
 }
 
 
-std::string Label::toString() const {
-    std::stringstream repStr;
-
-    repStr << "#" << std::left << std::endl;
-    //    repStr << "#\t" << std::setw(24) << "- LABEL INFO" << " : " << std::endl;
-    //    repStr << "# \t" <<"_____________________" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- LABEL_NUMBER" << " : " << labelID_ << std::endl;
-    //    repStr << "#\t" << std::setw(24) << "- CURRENT_NODE" << " : " << pathNode_.back()->nodeID_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNode_.size() << std::endl;
-    repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- STATUS" << " : " << status_ << std::endl;
-    if (!openNode_.empty()) {
-        repStr << "#\t" << std::setw(24) << "- OPEN_REQUESTS" << " : ";
-        for (auto &nodeObj: openNode_) {
-            repStr << (nodeObj)->related_Request_->getRequestId() << "  ";
-        }
-        repStr << std::endl;
-    }
-    repStr << "#\t" << std::setw(24) << "- PATH_NODES" << " : ";
-    for (auto &nodeObj: pathNode_) {
-        repStr << (nodeObj)->nodeID_ << "  ";
-    }
-    repStr << std::endl;
-    repStr << "# ________________________________________________________________________" << std::endl;
-    return repStr.str();
-}

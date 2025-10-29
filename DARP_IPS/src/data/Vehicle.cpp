@@ -32,6 +32,21 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, c
 
 Vehicle::~Vehicle() = default;
 
+// Display function
+std::string Vehicle::toString() const {
+    std::stringstream repStr;
+    repStr << std::left;
+    repStr << "# VEHICLE ( " << vehicleID_ << " )" << std::endl;
+    repStr << "#\t" << std::setw(24) << "- VEHICLE_CAPACITY" << " : " << capacity_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- START_TIME (seconds)" << " : " << startTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- END_TIME (seconds)" << " : " << endTime_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_ONBOARDS" << " : " << numPassengers_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DEPART_NODE_ID" << " : " << departNode_->nodeID_ << std::endl;
+    repStr << "#" << std::endl;
+    return repStr.str();
+}
+
 // Setters
 void Vehicle::setDepartTime(float departTime) {
     departTime_ = departTime;
@@ -82,23 +97,6 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
             currentRoute_->routeNodes_[i]->pairNode_->reachTime_ + currentRoute_->routeNodes_[i]->pairNode_->serviceTime_ +
                 currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_;
     }
-}
-
-
-
-// Display function
-std::string Vehicle::toString() const {
-    std::stringstream repStr;
-    repStr << std::left;
-    repStr << "# VEHICLE ( " << vehicleID_ << " )" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- VEHICLE_CAPACITY" << " : " << capacity_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- START_TIME (seconds)" << " : " << startTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DEPART_TIME (seconds)" << " : " << departTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- END_TIME (seconds)" << " : " << endTime_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_ONBOARDS" << " : " << numPassengers_ << std::endl;
-    repStr << "#\t" << std::setw(24) << "- DEPART_NODE_ID" << " : " << departNode_->nodeID_ << std::endl;
-    repStr << "#" << std::endl;
-    return repStr.str();
 }
 
 // function to update vehicle depart time at each time and

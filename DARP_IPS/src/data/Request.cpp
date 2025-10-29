@@ -52,6 +52,16 @@ Request::~Request() {
     delete[] name_;
 }
 
+// Display function
+std::string Request::toString() const {
+    std::stringstream repStr;
+    repStr << std::left;
+    repStr << "# REQUEST ( " << requestID_ << " )" << std::endl;
+    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_PASSENGERS" << " : " << nbPassengers_ << std::endl;
+    repStr << "#" << std::endl;
+    return repStr.str();
+}
+
 // Getters and Setters
 unsigned int Request::getRequestId() const {return requestID_;}
 void Request::setMinTravelTime(float minTravelTime) {
@@ -77,13 +87,5 @@ void Request::setMaxMinDual() {
     if (minDual_ > dual_)
         minDual_ = dual_;
 }
-// Display function
-std::string Request::toString() const {
-    std::stringstream repStr;
-    repStr << std::left;
-    repStr << "# REQUEST ( " << requestID_ << " )" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_PASSENGERS" << " : " << nbPassengers_ << std::endl;
-    repStr << "#" << std::endl;
-    return repStr.str();
-}
+
 

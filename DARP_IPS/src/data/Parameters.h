@@ -145,12 +145,13 @@ struct solverOption : public SolverBase {
     explicit solverOption(const PParameters &MainParams);
     virtual ~solverOption();
 
+    // Display function
+    std::string toString() const override;
+
     // Functions to enable/disable labeling accelerations (heuristics)
     void disableHeuristics();
     void enableHeuristics(const PParameters &MainParams);
 
-    // Display function
-    std::string toString() const override;
 };
 
 std::string boolToString(bool value);

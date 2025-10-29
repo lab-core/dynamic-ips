@@ -56,6 +56,9 @@ public:
     // Getters and Setters
     unsigned int getLabelId() const;
 
+    // Display function
+    std::string toString() const;
+
     // this function defines the resource extension functions
     void extend(Node *outNode, bool isDropPickPossible, float wait_W1, float ride_W2);
 
@@ -83,9 +86,6 @@ public:
 
     // this function converts the label to a route once the labeling process is completed
     PRoute labelToRoute(const PVehicle &vehicle, const PInstance & pInst) const;
-
-    // Display function
-    std::string toString() const;
 
 };
 

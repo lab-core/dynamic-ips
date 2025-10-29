@@ -51,14 +51,14 @@ public:
     Vehicle(int vehicleId, int capacity, float departTime, float endTime, const PNode &departNode, const PNode & sinkNode);
     virtual ~Vehicle();
 
+    // Display function
+    std::string toString() const;
+
     // Setters
     void setDepartTime(float departTime);
     void setEmptyRoute(const PInstance &pInst);
     void setSolutionRoute();
     void setCurrentRoute(const PRoute &currentRoute);
-
-    // Display function
-    std::string toString() const;
 
     // function to update vehicle departure time at each time and
     // update the situation of nodes and ride requests

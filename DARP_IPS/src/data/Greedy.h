@@ -51,6 +51,9 @@ public:
     GreedyRoute(const GreedyRoute &label);
     virtual ~GreedyRoute();
 
+    // Display function
+    [[nodiscard]] std::string toString() const;
+
     // this function resets the greedy route to recycle labels
     void resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) const;
 
@@ -91,8 +94,6 @@ public:
     // function to check the feasibility of the insertion based on the vehicle capacity and trip duration constraints
     [[nodiscard]] bool isAnyViolation(const PStopLabel &startLabel) const;
 
-    // Display function
-    [[nodiscard]] std::string toString() const;
 };
 
 //---------------------------------------------------------------------------------------------

@@ -280,6 +280,18 @@ std::string Instance::solutionToString() {
     return repStr.str();
 }
 
+void Instance::adjustParameters(const PConfig &config) {
+    parameters_->saveScratch_ = config->saveScratch_;
+    parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
+    parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
+    if (parameters_->mainAlgorithm_ == MP_ISUD)
+        parameters_->approach_ = ISUD;
+    else if (parameters_->mainAlgorithm_ == GREEDY)
+        parameters_->approach_ = Greedy;
+    else
+        parameters_->approach_ = CG;
+}
+
 // this function updates the set of available requests, removed completed requests and updates onboards
 void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRequest> &penaltyRequests, float elapsedTime,
                                 int lastRecRequests) {
@@ -457,43 +469,6 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
     updateRequestOrder();
 }
 
-void Instance::addNewRequests(const PInstance &mainInst, float elapsedTime, int lastRecRequests) {
-    int orderCounter = requests_.back()->taskIndex_ + 1;
-    // add new requests
-    for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (parameters_->solutionMode_ == ANYTIME) {
-            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
-                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                    nbNewRequests_++;
-                    addRequest(mainInst->requests_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
-                    requests_.back()->taskIndex_ = orderCounter;
-                    orderCounter++;
-                }
-
-            }
-            else
-                break;
-        }
-        else {
-            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
-                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                    nbNewRequests_++;
-                    addRequest(mainInst->requests_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
-                    requests_.back()->taskIndex_ = orderCounter;
-                    orderCounter++;
-                }
-            }
-            else
-                break;
-        }
-    }
-    nbTasks_ = static_cast<signed>(requests_.size());
-}
-
 void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     nbReturn_ = mainInst->nbReturn_;
     nbStateChanged_ = mainInst->nbStateChanged_;
@@ -548,6 +523,44 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
     updateRequestOrder();
 }
 
+void Instance::addNewRequests(const PInstance &mainInst, float elapsedTime, int lastRecRequests) {
+    int orderCounter = requests_.back()->taskIndex_ + 1;
+    // add new requests
+    for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
+        if (parameters_->solutionMode_ == ANYTIME) {
+            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                    requests_.back()->taskIndex_ = orderCounter;
+                    orderCounter++;
+                }
+
+            }
+            else
+                break;
+        }
+        else {
+            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
+                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
+                    nbNewRequests_++;
+                    addRequest(mainInst->requests_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
+                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
+                    requests_.back()->taskIndex_ = orderCounter;
+                    orderCounter++;
+                }
+            }
+            else
+                break;
+        }
+    }
+    nbTasks_ = static_cast<signed>(requests_.size());
+}
+
+
 // function to add requests from previous epochs to the current partial instance
 void Instance::addRequest(const PRequest &request) {
     nbRequests_++;
@@ -600,17 +613,6 @@ void Instance::setInitialTimes() const {
     }
 }
 
-void Instance::adjustParameters(const PConfig &config) {
-    parameters_->saveScratch_ = config->saveScratch_;
-    parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
-    parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
-    if (parameters_->mainAlgorithm_ == MP_ISUD)
-        parameters_->approach_ = ISUD;
-    else if (parameters_->mainAlgorithm_ == GREEDY)
-        parameters_->approach_ = Greedy;
-    else
-        parameters_->approach_ = CG;
-}
 
 // function to sort vehicles based on ID
 void Instance::resetVehicleOrder() {
@@ -713,7 +715,112 @@ void Instance::updateRequestInc() {
     }
 }
 
-// print solutions in csv files
+void Instance::updateTaskIndexLabeling() const {
+    int orderCounter = 0;
+    /*std::stable_sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
+        return lhs->dual_ > rhs->dual_;});*/
+
+    for (auto & requestObj : requests_){
+        requestObj->taskIndexLabel_ = orderCounter;
+        orderCounter++;
+    }
+    int firstIndex = orderCounter;
+    for (auto & vehicleObj : vehicles_){
+        orderCounter = firstIndex;
+        if (vehicleObj->currentRoute_->routeSize_ > 1) {
+            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
+                if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+                    vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->taskIndexLabel_ = orderCounter;
+                    orderCounter++;
+                }
+            }
+        }
+    }
+}
+
+
+
+void Instance::resetDuals() {
+    for (auto & requestObj : requests_) {
+        requestObj->dual_ = requestObj->penalty_;
+    }
+    for (auto & vehicleObj : vehicles_) {
+        vehicleObj->dual_ = 0;
+    }
+}
+
+void Instance::calcVehicleMetric() {
+    nbIdle_ = 0.0;
+    passPerVehicle_ = 0.0;
+    requestPerVehicle_ = 0.0;
+    nodePerVehicle_ = 0.0;
+    for (auto & vehicleObj : vehicles_) {
+        requestPerVehicle_ += vehicleObj->currentRoute_->routeRequests_.size();
+        nodePerVehicle_ += vehicleObj->currentRoute_->routeSize_ - 1;
+        passPerVehicle_ += vehicleObj->numPassengers_;
+        if (vehicleObj->currentRoute_->routeSize_ == 1)
+            nbIdle_++;
+    }
+    float nbActiveVehicles = vehicles_.size() - nbIdle_;
+    nodePerVehicle_ = nodePerVehicle_ / nbActiveVehicles;
+    requestPerVehicle_ = requestPerVehicle_ / nbActiveVehicles;
+    passPerVehicle_ = passPerVehicle_ / nbActiveVehicles;
+}
+
+void Instance::countCommittedRequests() {
+    nbCommitted_ = 0;
+    for (auto & requestObj : requests_) {
+        if (requestObj->committedPickTime_ < LARGE_CONSTANT)
+            ++nbCommitted_;
+    }
+}
+
+void Instance::resetAssignedVehicles() const {
+    for (auto & requestObj : requests_)
+        requestObj->solVehicleID_ = LARGE_CONSTANT;
+}
+
+void Instance::setAssignedEpochVehicles(float assignTime) const {
+    for (auto &vehicleObj : vehicles_) {
+        for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
+            if (requestObj->epochVehicleID_ == LARGE_CONSTANT) {
+                requestObj->nbSwitch_ = 1;
+                requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
+                requestObj->assignTime_ = assignTime;
+            }
+            else {
+                if (requestObj->epochVehicleID_ != vehicleObj->vehicleID_) {
+                    requestObj->nbSwitch_ ++;
+                    requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
+                }
+            }
+        }
+    }
+}
+
+void Instance::setNodeIndices() const {
+    for (int i = 0; i < instGraph_->pickNodes_.size(); ++i) {
+        PNode nodeObj = instGraph_->pickNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->pickNodes_.size()));
+    }
+    for (int i = 0; i < instGraph_->dropNodes_.size(); ++i) {
+        PNode nodeObj = instGraph_->dropNodes_[i];
+        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->dropNodes_.size()));
+    }
+
+    for (auto & vehicleObj : vehicles_){
+        vehicleObj->departNode_->nodeIndex_ = getIndex(vehicleObj->departNode_, 0, static_cast<int>(vehicleObj->onboards_.size()));
+        vehicleObj->sinkNode_->nodeIndex_ = getIndex(vehicleObj->sinkNode_, 0, static_cast<int>(vehicleObj->onboards_.size()));
+        for (int i = 0; i < vehicleObj->onboards_.size(); ++i) {
+            PNode nodeObj = instGraph_->nodes_[ vehicleObj->onboards_[i]];
+            nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->dropNodes_.size()));
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Functions to save results and outputs in csv and txt files
+//-----------------------------------------------------------------------------
 std::string Instance::saveSolutionRoutes() const {
     std::stringstream repStr;
     repStr << "VehicleID,NodeID,RequestTime,ReachTime,NodeType, LocationID, DepartTime, nbPassengers, vehicleLoad, PlanedReach, PlanedDepart, TravelTime" << std::endl;
@@ -772,6 +879,33 @@ std::string Instance::saveRequestsResults() const {
     }
     return repStr.str();
 }
+
+
+std::string Instance::saveVehicleResults() const {
+    std::stringstream repStr;
+    repStr << "VehicleID,startID,capacity,startTime,endTime,LastVisitTime,#Stops,#RequestsServed,WaitTime,"
+              "TripDelay,idleTime,serviceTime,driveFullTime,driveEmptyTime,returnEmptyTime" << std::endl;
+
+    for (auto & vehicleObj : vehicles_) {
+        repStr << vehicleObj->vehicleID_ << ",";
+        repStr << vehicleObj->sinkNode_->locationID_ << ",";
+        repStr << vehicleObj->capacity_ << ",";
+        repStr << simulationStartTime_ << ",";
+        repStr << vehicleObj->endTime_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeNodes_.back()->departTime_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
+        repStr << vehicleObj->solutionRoute_->totalWait_ << ",";
+        repStr << vehicleObj->solutionRoute_->totalTripDelay_ << ",";
+        repStr << vehicleObj->idleTime_ << ",";
+        repStr << vehicleObj->serviceTime_ << ",";
+        repStr << vehicleObj->driveFullTime_ << ",";
+        repStr << vehicleObj->driveEmptyTime_ << ",";
+        repStr << vehicleObj->returnEmptyTime_ << "\n";
+    }
+    return repStr.str();
+}
+
 
 void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config) {
 
@@ -836,56 +970,15 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
 }
 
 
-std::string Instance::saveVehicleResults() const {
-    std::stringstream repStr;
-    repStr << "VehicleID,startID,capacity,startTime,endTime,LastVisitTime,#Stops,#RequestsServed,WaitTime,"
-              "TripDelay,idleTime,serviceTime,driveFullTime,driveEmptyTime,returnEmptyTime" << std::endl;
-
-    for (auto & vehicleObj : vehicles_) {
-        repStr << vehicleObj->vehicleID_ << ",";
-        repStr << vehicleObj->sinkNode_->locationID_ << ",";
-        repStr << vehicleObj->capacity_ << ",";
-        repStr << simulationStartTime_ << ",";
-        repStr << vehicleObj->endTime_ << ",";
-        repStr << vehicleObj->solutionRoute_->routeNodes_.back()->departTime_ << ",";
-        repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
-        repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
-        repStr << vehicleObj->solutionRoute_->totalWait_ << ",";
-        repStr << vehicleObj->solutionRoute_->totalTripDelay_ << ",";
-        repStr << vehicleObj->idleTime_ << ",";
-        repStr << vehicleObj->serviceTime_ << ",";
-        repStr << vehicleObj->driveFullTime_ << ",";
-        repStr << vehicleObj->driveEmptyTime_ << ",";
-        repStr << vehicleObj->returnEmptyTime_ << "\n";
-    }
-    return repStr.str();
-}
-
-
-std::string Instance::saveEpochRoutes(int epoch) const {
-    std::stringstream repStr;
-    for (auto & vehicleObj : vehicles_) {
-        for (auto & nodeObj : vehicleObj->solutionRoute_->routeNodes_) {
-            repStr << epoch << ",";
-            repStr << vehicleObj->vehicleID_ << ",";
-            repStr << nodeObj->nodeID_ << ",";
-            repStr << nodeObj->initialReadyTime_ << ",";
-            repStr << nodeObj->reachTime_ << ",";
-            repStr << nodeObj->type_ << ",";
-            repStr << nodeObj->locationID_ << "\n";
-        }
-    }
-    return repStr.str();
-}
-
-std::string Instance::saveISUDRoutes(int epoch, int isudIter) const {
+std::string Instance::saveMPRoutes(int epoch, int mpIter) const {
     std::stringstream repStr;
     for (auto & vehicleObj : vehicles_) {
         for (auto & nodeObj : vehicleObj->currentRoute_->routeNodes_) {
             repStr << epoch << ",";
-            repStr << isudIter << ",";
+            repStr << mpIter << ",";
             repStr << vehicleObj->vehicleID_ << ",";
             repStr << nodeObj->nodeID_ << ",";
+            repStr << nodeObj->initialReadyTime_ << ",";
             repStr << nodeObj->readyTime_ << ",";
             repStr << nodeObj->reachTime_ << ",";
             repStr << nodeObj->type_ << ",";
@@ -896,6 +989,7 @@ std::string Instance::saveISUDRoutes(int epoch, int isudIter) const {
     }
     return repStr.str();
 }
+
 
 std::string Instance::saveRoutesTimes(int epoch) const {
     std::stringstream repStr;
@@ -1048,30 +1142,6 @@ void Instance::saveStatus(const InputPaths &inputPaths, float simulationStart, f
     myFile.close();
 }
 
-void Instance::updateTaskIndexLabeling() const {
-    int orderCounter = 0;
-    /*std::stable_sort(requests_.begin(),requests_.end(),[](const PRequest &lhs, const PRequest &rhs){
-        return lhs->dual_ > rhs->dual_;});*/
-
-    for (auto & requestObj : requests_){
-        requestObj->taskIndexLabel_ = orderCounter;
-        orderCounter++;
-    }
-    int firstIndex = orderCounter;
-    for (auto & vehicleObj : vehicles_){
-        orderCounter = firstIndex;
-        if (vehicleObj->currentRoute_->routeSize_ > 1) {
-            for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
-                    vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->taskIndexLabel_ = orderCounter;
-                    orderCounter++;
-                }
-            }
-        }
-    }
-}
-
-
 std::string Instance::saveReqDuals(int epoch, int isudIter, const string& model) const {
     std::stringstream repStr;
     for (auto & requestObj : requests_) {
@@ -1109,85 +1179,6 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         vehicleObj->InitialDual_ = vehicleObj->dual_;
     }
     return repStr.str();
-}
-
-
-void Instance::resetAssignedVehicles() const {
-    for (auto & requestObj : requests_)
-        requestObj->solVehicleID_ = LARGE_CONSTANT;
-}
-
-void Instance::setAssignedEpochVehicles(float assignTime) const {
-    for (auto &vehicleObj : vehicles_) {
-        for (auto & requestObj : vehicleObj->currentRoute_->routeRequests_) {
-            if (requestObj->epochVehicleID_ == LARGE_CONSTANT) {
-                requestObj->nbSwitch_ = 1;
-                requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
-                requestObj->assignTime_ = assignTime;
-            }
-            else {
-                if (requestObj->epochVehicleID_ != vehicleObj->vehicleID_) {
-                    requestObj->nbSwitch_ ++;
-                    requestObj->epochVehicleID_  = vehicleObj->vehicleID_;
-                }
-            }
-        }
-    }
-}
-
-void Instance::setNodeIndices() const {
-    for (int i = 0; i < instGraph_->pickNodes_.size(); ++i) {
-        PNode nodeObj = instGraph_->pickNodes_[i];
-        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->pickNodes_.size()));
-    }
-    for (int i = 0; i < instGraph_->dropNodes_.size(); ++i) {
-        PNode nodeObj = instGraph_->dropNodes_[i];
-        nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->dropNodes_.size()));
-    }
-
-    for (auto & vehicleObj : vehicles_){
-        vehicleObj->departNode_->nodeIndex_ = getIndex(vehicleObj->departNode_, 0, static_cast<int>(vehicleObj->onboards_.size()));
-        vehicleObj->sinkNode_->nodeIndex_ = getIndex(vehicleObj->sinkNode_, 0, static_cast<int>(vehicleObj->onboards_.size()));
-        for (int i = 0; i < vehicleObj->onboards_.size(); ++i) {
-            PNode nodeObj = instGraph_->nodes_[ vehicleObj->onboards_[i]];
-            nodeObj->nodeIndex_ = getIndex(nodeObj, i, static_cast<int>(instGraph_->dropNodes_.size()));
-        }
-    }
-}
-
-void Instance::resetDuals() {
-    for (auto & requestObj : requests_) {
-        requestObj->dual_ = requestObj->penalty_;
-    }
-    for (auto & vehicleObj : vehicles_) {
-        vehicleObj->dual_ = 0;
-    }
-}
-
-void Instance::calcVehicleMetric() {
-    nbIdle_ = 0.0;
-    passPerVehicle_ = 0.0;
-    requestPerVehicle_ = 0.0;
-    nodePerVehicle_ = 0.0;
-    for (auto & vehicleObj : vehicles_) {
-        requestPerVehicle_ += vehicleObj->currentRoute_->routeRequests_.size();
-        nodePerVehicle_ += vehicleObj->currentRoute_->routeSize_ - 1;
-        passPerVehicle_ += vehicleObj->numPassengers_;
-        if (vehicleObj->currentRoute_->routeSize_ == 1)
-            nbIdle_++;
-    }
-    float nbActiveVehicles = vehicles_.size() - nbIdle_;
-    nodePerVehicle_ = nodePerVehicle_ / nbActiveVehicles;
-    requestPerVehicle_ = requestPerVehicle_ / nbActiveVehicles;
-    passPerVehicle_ = passPerVehicle_ / nbActiveVehicles;
-}
-
-void Instance::countCommittedRequests() {
-    nbCommitted_ = 0;
-    for (auto & requestObj : requests_) {
-        if (requestObj->committedPickTime_ < LARGE_CONSTANT)
-            ++nbCommitted_;
-    }
 }
 
 // Function to get index based on node type and identifier

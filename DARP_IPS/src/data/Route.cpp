@@ -41,6 +41,83 @@ Route::~Route(){
 // Getters and Setters
 unsigned int Route::getRouteId() const {return routeID_;}
 
+
+// Display function
+std::string Route::toString() const {
+    std::stringstream repStr;
+
+    repStr << std::left;
+    repStr << "#\t" << std::setw(25) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
+    repStr << "#\t" << std::setw(25) << "- TRIP_DELAY (seconds)" << totalTripDelay_ << std::endl;
+
+    repStr << "#" << std::endl;
+
+    // print table header
+    repStr << "# ------------------------------------------------------------------------------------------------------------------" << std::endl;
+    repStr << std::left << std::setw(6) << "#      ";
+    repStr << std::left << std::setw(22) << "ACTION_DESCRIPTION";
+    repStr << std::left << std::setw(9) << " NODE_ID" << std::right;
+    repStr << std::right << std::setw(9) << " REACH_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(9) << " DEPART_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(9) << " TRAVEL_TIME"<< "(s)  ";
+    repStr << std::right << std::setw(10) << " EARLy_PICK"<< "(s)  ";
+    repStr << "#PASSENGERS" <<std::endl;
+    repStr << "# ------------------------------------------------------------------------------------------------------------------" << std::endl;
+
+    // print the source stop pint
+    repStr << "#" << std::setw(4) << 1 << "  ";
+    repStr << std::left << std::setw(23) << "(SOURCE ) departure";
+    repStr << std::left << std::setw(9) << routeNodes_[0]->nodeID_;
+    repStr << std::right << std::setw(9) << routeNodes_[0]->reachTime_ << " (s)  ";
+    repStr << std::right << std::setw(9) << routeNodes_[0]->departTime_ << " (s)  ";
+    repStr << std::right << std::setw(11) << "0" << " (s)  ";
+    repStr << std::right << std::setw(11) << "0" << " (s)  ";
+    repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
+
+    // print the internal nodes of the route
+    for (int i = 1; i < routeSize_; ++i) {
+        repStr << "#" << std::setw(4) << i + 1 << "  ";
+        if (routeNodes_[i]->initialType_ == SINK)
+            repStr << std::left << std::setw(23) << "(SINK   ) return   ";
+        else {
+            repStr << "(" << eu::toString(routeNodes_[i]->initialType_) << ") REQ ";
+            repStr << std::left << std::setw(9) << routeNodes_[i]->related_Request_->getRequestId();
+        }
+        repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;
+        repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
+        repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";
+        if (routeNodes_[i]->initialType_ != SINK && routeNodes_[i]->nodeStatus_ == DONE) {
+            if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i]) ||
+                (routeNodes_[i]->reachTime_ != plannedReachTime_[i])) {
+                std::cout << "Connectivity constraint violated at node : ";
+                std::cout << routeNodes_[i]->nodeID_ << std::endl;
+                //           myTools::throwException("Route-Validation");
+            }
+        }
+        repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
+        if (routeNodes_[i]->initialType_ == PICKUP)
+            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->initialEarlyPick_ << " (s)  ";
+        else
+            repStr << std::right << std::setw(11) << "-----" << " (s)  ";
+        repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
+    }
+
+    repStr << "====================================================================================================================" << std::endl;
+    return repStr.str();
+}
+
+std::string Route::routeMetricsToString(int epoch, int RMPCounter) const {
+    std::stringstream repStr;
+    repStr << routeID_ << "," << epoch << "," << RMPCounter << "," << vehicleID_ << ","
+           << totalWait_ << "," << incompatibilityDegree_ << "," << reducedCost_ << ","
+           << lambda_ << "," << normal_RC_ << "," << IncScoreRatio_ << "," << waitScore_ << ","
+           << nbCommitted_ << "," << createTime_ << "," << routeRequests_.size() <<"\n";
+    return repStr.str();
+}
+
 // these functions are used to add nodes to the routes
 void Route::addSource(const PNode &node, float departTime, int departPassengers) {
     routeSize_ ++;
@@ -325,81 +402,4 @@ void Route::calculateTripDelay(float wait_W1, float ride_W2) {
         }
     }
     objCoef_ = wait_W1 * totalWait_ + ride_W2 * totalTripDelay_;
-}
-
-
-// Display function
-std::string Route::toString() const {
-    std::stringstream repStr;
-
-    repStr << std::left;
-    repStr << "#\t" << std::setw(25) << "- ROUTE_NUMBER" << " : " << routeID_ << std::endl;
-    repStr << "#\t" << std::setw(25) << "- VEHICLE_ID" << " : " << vehicleID_ << std::endl;
-    repStr << "#\t" << std::setw(25) << "- NUMBER_OF_STOPS" << " : " << routeSize_ << std::endl;
-    repStr << "#\t" << std::setw(25) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
-    repStr << "#\t" << std::setw(25) << "- TRIP_DELAY (seconds)" << totalTripDelay_ << std::endl;
-
-    repStr << "#" << std::endl;
-
-    // print table header
-    repStr << "# ------------------------------------------------------------------------------------------------------------------" << std::endl;
-    repStr << std::left << std::setw(6) << "#      ";
-    repStr << std::left << std::setw(22) << "ACTION_DESCRIPTION";
-    repStr << std::left << std::setw(9) << " NODE_ID" << std::right;
-    repStr << std::right << std::setw(9) << " REACH_TIME"<< "(s)  ";
-    repStr << std::right << std::setw(9) << " DEPART_TIME"<< "(s)  ";
-    repStr << std::right << std::setw(9) << " TRAVEL_TIME"<< "(s)  ";
-    repStr << std::right << std::setw(10) << " EARLy_PICK"<< "(s)  ";
-    repStr << "#PASSENGERS" <<std::endl;
-    repStr << "# ------------------------------------------------------------------------------------------------------------------" << std::endl;
-
-    // print the source stop pint
-    repStr << "#" << std::setw(4) << 1 << "  ";
-    repStr << std::left << std::setw(23) << "(SOURCE ) departure";
-    repStr << std::left << std::setw(9) << routeNodes_[0]->nodeID_;
-    repStr << std::right << std::setw(9) << routeNodes_[0]->reachTime_ << " (s)  ";
-    repStr << std::right << std::setw(9) << routeNodes_[0]->departTime_ << " (s)  ";
-    repStr << std::right << std::setw(11) << "0" << " (s)  ";
-    repStr << std::right << std::setw(11) << "0" << " (s)  ";
-    repStr << std::setw(7) << plannedPassengers_[0] << std::endl;
-
-    // print the internal nodes of the route
-    for (int i = 1; i < routeSize_; ++i) {
-        repStr << "#" << std::setw(4) << i + 1 << "  ";
-        if (routeNodes_[i]->initialType_ == SINK)
-            repStr << std::left << std::setw(23) << "(SINK   ) return   ";
-        else {
-            repStr << "(" << eu::toString(routeNodes_[i]->initialType_) << ") REQ ";
-            repStr << std::left << std::setw(9) << routeNodes_[i]->related_Request_->getRequestId();
-        }
-        repStr << std::left << std::setw(9) << routeNodes_[i]->nodeID_;
-        repStr << std::right << std::setw(9) << plannedReachTime_[i] << " (s)  ";
-        repStr << std::right << std::setw(9) << plannedDepartTime_[i] << " (s)  ";
-        if (routeNodes_[i]->initialType_ != SINK && routeNodes_[i]->nodeStatus_ == DONE) {
-            if ((routeNodes_[i]->departTime_ != plannedDepartTime_[i]) ||
-                (routeNodes_[i]->reachTime_ != plannedReachTime_[i])) {
-                std::cout << "Connectivity constraint violated at node : ";
-                std::cout << routeNodes_[i]->nodeID_ << std::endl;
-                //           myTools::throwException("Route-Validation");
-            }
-        }
-        repStr << std::right << std::setw(11) << durationMatrix_[routeNodes_[i-1]->locationID_][routeNodes_[i]->locationID_] << " (s)  ";
-        if (routeNodes_[i]->initialType_ == PICKUP)
-            repStr << std::right << std::setw(11) << routeNodes_[i]->related_Request_->initialEarlyPick_ << " (s)  ";
-        else
-            repStr << std::right << std::setw(11) << "-----" << " (s)  ";
-        repStr << std::setw(7) << plannedPassengers_[i] << std::endl;
-    }
-
-    repStr << "====================================================================================================================" << std::endl;
-    return repStr.str();
-}
-
-std::string Route::routeMetricsToString(int epoch, int RMPCounter) const {
-    std::stringstream repStr;
-    repStr << routeID_ << "," << epoch << "," << RMPCounter << "," << vehicleID_ << ","
-           << totalWait_ << "," << incompatibilityDegree_ << "," << reducedCost_ << ","
-           << lambda_ << "," << normal_RC_ << "," << IncScoreRatio_ << "," << waitScore_ << ","
-           << nbCommitted_ << "," << createTime_ << "," << routeRequests_.size() <<"\n";
-    return repStr.str();
 }
