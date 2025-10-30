@@ -35,12 +35,12 @@ public:
     float totalWait_;                               // total wait time of the partial path
     float totalTripDelay_;                          // total trip delay of the partial path 
     LabelStatus status_;                            // status of the label: active, dominated, inactive, outbound, terminated  
-    int nbPickUp_;                                  // the number of time the vehicle visit pick up points
+    int nbPickUp_;                                  // the number of times the vehicle visits pick up points
     boost::dynamic_bitset<> extendCheck_;           // check the elementary condition of the path
     int numExtendCheck_;                            // used in pulling strategy to determine treated labels
     bool isDropped_;                                // used in pushing for not extending a label to pick after a drop
     bool isDropExtend_;                             // used in pulling to check if a label is extended to onboards before
-    float createTime_;                              // the time that label is created
+    float createTime_;                              // the time that the label is created
     float reducedCost_;                             // reduced cost of the partial path
     float labelScore_;                              // normalized reduced cost used as the sorting criteria (reducedCost_/nbPickUp_)
     float lambdaScore_;                             // lambda score value used as the sorting criteria
@@ -62,14 +62,14 @@ public:
     // this function defines the resource extension functions
     void extend(Node *outNode, bool isDropPickPossible, float wait_W1, float ride_W2);
 
-    // this function checks the feasibility of the label before extension
+    //This function checks the feasibility of the label before extension
     bool isExtendFeasible(const Node *outNode, int maxPickUp, bool discardSuboptimalPath, int capacity, int &nbPrunedPath,
                           int &nbEliminated, int &nbPrunedArcs);
 
     // helper function in feasibility check, checks whether extending to outNode violates travel time resources
     bool isTravelTimeFeasible(const Node *outNode, int &nbEliminated) const;
     
-    // helper function in dominance check, checks whether the current label has less travel time resources than otherLabel
+    // helper function in dominance check, checks whether the current label has fewer travel time resources than otherLabel
     bool haveLessTravelResource(const PLabel &otherLabel) const;
 
     // this function checks if the current label is dominated by otherLabel
@@ -81,10 +81,10 @@ public:
     // helper functions in dominance check, checks subset conditions for completed requests
     bool checkSubsetComplete(const PLabel &otherLabel) const;
 
-    // this function examines the label to be sure that it leads to a route with negative reduced cost
+    // this function examines the label to be sure that it leads to a route with a negative reduced cost
     bool isEliminated() const;
 
-    // this function converts the label to a route once the labeling process is completed
+    //This function converts the label to a route once the labelling process is completed
     PRoute labelToRoute(const PVehicle &vehicle, const PInstance & pInst) const;
 
 };

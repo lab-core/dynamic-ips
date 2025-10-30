@@ -19,7 +19,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     reducedCost_ = 0.0;
     routeSize_ = 0;
     incompatibilityDegree_ = 0;
-    char* name2 = new char[255];
+    char *name2 = new char[255];
     strncpy(name2, std::to_string(routeID_).c_str(), 255);
     name_ = name2;
     isCompatible_ = false;
@@ -33,7 +33,10 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     isCompatible_ = true;
     nbCommitted_ = 0;
     objCoef_ = 0.0;
+    IncScoreRatio_ = 0;
+    IncScore_ = 0;
 }
+
 Route::~Route(){
     delete[] name_;
 }
@@ -161,7 +164,7 @@ void Route::addNode(const PNode &node) {
     }
 }
 
-bool Route::reConstructRoute(PVehicle & vehicle){
+bool Route::reConstructRoute(const PVehicle & vehicle){
     totalWait_ = 0;
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
@@ -186,7 +189,7 @@ bool Route::reConstructRoute(PVehicle & vehicle){
     return true;
 }
 
-bool Route::reConstruct(PVehicle & vehicle){
+bool Route::reConstruct(const PVehicle & vehicle){
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
 
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
@@ -359,7 +362,7 @@ void Route::resetRoute() const {
     }
 }
 
-void Route::calcMarginalCosts(PVehicle & vehicle) {
+void Route::calcMarginalCosts(const PVehicle & vehicle) {
     if (routeRequests_.size() == 1)
         routeRequests_[0]->marginalCost_ = totalWait_;
     else if (routeRequests_.size() > 1) {

@@ -24,7 +24,7 @@ public:
     const char* name_;
     int PickUpID_;                              // pick up location ID
     int DropOffID_;                             // Drop off location ID
-    int pickZoneID_;                            // zone ID of the pick up location
+    int pickZoneID_;                            // zone ID of the pickup location
     int dropZoneID_;                            // zone ID of the drop off location
     int nbPassengers_;                          // number of passengers to pick up or drop off
     float requestTime_;                         // time that request is received by the system (release time)
@@ -34,7 +34,7 @@ public:
     float maxTravelTime_;                       // maximum allowed travel time between pickup and drop off location
     
     RequestStatus requestStatus_;               // status of the request: unassigned, assigned, committed, served, not served
-    float penalty_;                             // penalty of not serving at the current period
+    float penalty_;                             // penalty of not serving in the current period
 
     /* Other attributes used in the optimization process */
 
@@ -49,21 +49,21 @@ public:
     float minDual_;                             // minimum dual value among all epochs
     float maxDual_;                             // maximum dual value among all epochs
     int taskIndex_;                             // request index (row) in the Master model
-    int taskIndexLabel_;                        // request index in sub problems graph
-    float marginalCost_;                        // marginal cost of inserting this request in a vehicle route in greedy method
+    int taskIndexLabel_;                        // request index in sub-problems graph
+    float marginalCost_;                        // marginal cost of inserting this request in a vehicle route in the greedy method
 
-    boost::dynamic_bitset<> coveredVehicles_;   // used to track the the vehicles that covered this request by generated routes in prior epoch
-    boost::dynamic_bitset<> insertedVehicles_;  // used to track the the vehicles that has the potential to serve this request
+    boost::dynamic_bitset<> coveredVehicles_;   // used to track the vehicles that covered this request by generated routes in prior epoch
+    boost::dynamic_bitset<> insertedVehicles_;  // used to track the vehicles that have the potential to serve this request
     
 
     /* attributes to track the request assignment and commitment process */
-    float assignTime_;                          // the time that request is first assigned to a plan which may change
-    float plannedDelay_;                        // the planned delay for the request based on current assigned route
-    float commitTime_;                          // the time that request is commited to be served
+    float assignTime_;                          // the time that the request is first assigned to a plan, which may change
+    float plannedDelay_;                        // the planned delay for the request based on the current assigned route
+    float commitTime_;                          // the time that the request is committed to be served
     float committedPickTime_;                   // the committed pickup time that is announced to the customer
     float pickTime_;                            // actual pickup time of the request
     float dropTime_;                            // actual drop-off time of the request
-    int nbSwitch_;                              // number of times that a request's assign switches between vehicles before commitment
+    int nbSwitch_;                              // number of times that a request's assigned switches between vehicles before commitment
     int allocVehicleID_;                        // the vehicle that serves the request
     int solVehicleID_;                          // the vehicle that serves the request in the current solution
     int epochVehicleID_;                        // the vehicle currently assigned to the request (used in counting displacement)

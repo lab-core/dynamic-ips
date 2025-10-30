@@ -158,9 +158,9 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                     setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
 
                     if (i == currentRoute_->routeSize_ - 1 ||
-                        ((currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime) &&
-                         (currentRoute_->routeNodes_[i]->locationID_ !=
-                          currentRoute_->routeNodes_[i + 1]->locationID_))) {
+                        (currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime &&
+                         currentRoute_->routeNodes_[i]->locationID_ !=
+                         currentRoute_->routeNodes_[i + 1]->locationID_)) {
                         //at the departure point, the vehicle is ready to leave the stop location (delta has passed)
                         departTime_ = currentRoute_->plannedDepartTime_[i];
                         // if we have reached the end of the route, the next condition is checked

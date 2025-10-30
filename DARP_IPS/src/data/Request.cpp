@@ -15,8 +15,8 @@ unsigned int Request::requestCount_ = 0;
 Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime,
                  int pickZoneID, int dropZoneID) :
         requestID_(requestCount_++), PickUpID_(pickUpID), DropOffID_(dropOffID),
-        requestTime_(requestTime), earlyPick_(earlyPick), serviceTime_(deltaTime), nbPassengers_(nbPassengers),
-        pickZoneID_(pickZoneID), dropZoneID_(dropZoneID){
+        pickZoneID_(pickZoneID), dropZoneID_(dropZoneID), nbPassengers_(nbPassengers), requestTime_(requestTime),
+        earlyPick_(earlyPick), serviceTime_(deltaTime){
     initialEarlyPick_ = earlyPick;
     allocVehicleID_ = LARGE_CONSTANT;
     solVehicleID_ = LARGE_CONSTANT;

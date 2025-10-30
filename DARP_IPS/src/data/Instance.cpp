@@ -8,7 +8,7 @@
 vector2D<float> durationMatrix_;
 //-----------------------------------------------------------------------------
 //  Instance class
-//  contains the instance data including vehicle info and requests
+//  contains the instance data, including vehicle info and requests
 //-----------------------------------------------------------------------------
 // Constructor and Destructor
 Instance::Instance(std::string name, float simulationStart, int nbVehicles, int nbOnboards, int nbReceived,
@@ -30,10 +30,11 @@ Instance::Instance(std::string name, float simulationStart, int nbVehicles, int 
     nbReturn_ = 0;
     nbStateChanged_ = 0;
     nbInitialOnboards_ = nbOnboards;
+    nbCommitted_ = 0;
 }
 
 
-Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
+Instance::Instance(const Instance &mainInst) : name_(mainInst.name_) {
     nbVehicles_ = mainInst.nbVehicles_;
     vehicles_ = mainInst.vehicles_;
     parameters_ = mainInst.parameters_;
@@ -53,6 +54,11 @@ Instance::Instance(const Instance &mainInst) : name_(mainInst.name_){
     nbStateChanged_ = 0;
     nbRejected_ = 0;
     lastCommittedRequests_ = mainInst.lastCommittedRequests_;
+    passPerVehicle_ = 0;
+    requestPerVehicle_ = 0;
+    nodePerVehicle_ = 0;
+    nbCommitted_ = 0;
+    nbInitialOnboards_ = 0;
 }
 
 
@@ -100,35 +106,15 @@ std::string Instance::toString() const {
 }
 
 std::string Instance::solutionToString() {
-    int numServed = 0;                  // total requests in routes
-
-    float totalRequestsWaiting = 0;             // total route waiting times
-    float totalWeightedWaiting = 0;             // total route waiting times
-    float totalRouteWaiting = 0;
-    float totalObj = 0;
-    float totalTripDelay = 0;           // total trip delay considering initial onboards
-    float totalWeightedTripDelay = 0;
-    int totalNumServed = 0;             // total requests served considering initial onboards
-    int totalCustomers = 0;
-    float penalty = 0;                 // total penalty of unserved
-    int NumRejected = 0;
-
-    float idleTime = 0;                 // total vehicles idle times
-    float serviceTime = 0;              // total vehicles service time
-    float driveFullTime = 0;            // total vehicles drive with passengers
-    float driveEmptyTime = 0;           // total vehicles drives empty to reach passengers
-    float returnEmptyTime = 0;          // total vehicles drives empty to return
-
-    int nbIdle = 0;
-    unsigned int totalStops = 0;
-    int totalStopLoad = 0;
+    SolutionMetrics metrics;
 
     std::stringstream repStr;
 
-    instRepStr_ << name_ << "," << "R" << nbRequests_ - nbInitialOnboards_ << "," << eu::toString(parameters_->mainAlgorithm_) << ",";
-    instRepStr_ << eu::toString(parameters_->solutionMode_) << ",";
-    instRepStr_ << nbVehicles_ << "," << nbRequests_ - nbInitialOnboards_ << "," << nbInitialOnboards_ << ",";
-
+    instRepStr_ << name_ << "," << "R" << nbRequests_ - nbInitialOnboards_ << ","
+                << eu::toString(parameters_->mainAlgorithm_) << ","
+                << eu::toString(parameters_->solutionMode_) << ","
+                << nbVehicles_ << "," << nbRequests_ - nbInitialOnboards_ << ","
+                << nbInitialOnboards_ << ",";
 
     // print table header
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
@@ -141,146 +127,47 @@ std::string Instance::solutionToString() {
     repStr << "#PASSENGERS" <<std::endl;
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
 
-    int startIndex = nbInitialOnboards_;
-    // print the internal nodes of the route
-    for (int i = startIndex; i < nbRequests_; ++i) {
-        repStr << std::fixed;
-        repStr << std::setprecision(2);
-        repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
-        repStr << std::right << std::setw(9) << requests_[i]->initialEarlyPick_ << " (s)  ";
-        if (requests_[i]->requestStatus_ == COMPLETED) {
-            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ << " (s)  ";
-            repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
-            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_ << " (s)  ";
-
-//            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->serviceTime_;
-            float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
-            if (durationMatrix_[instGraph_->pickNodes_[i]->locationID_][instGraph_->dropNodes_[i]->locationID_] == 0)
-                travelTime = 0;
-            repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
-            if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
-                std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
-                //               myTools::throwException("Trip delay Validation");
-            }
-            if (travelTime - requests_[i]->minTravelTime_ < -0.1){
-                std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
-//                myTools::throwException("Trip delay Validation");
-            }
-            totalRequestsWaiting += requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_;
-            totalWeightedWaiting += requests_[i]->nbPassengers_ * (requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_);
-            totalTripDelay += travelTime - requests_[i]->minTravelTime_;
-            totalWeightedTripDelay += requests_[i]->nbPassengers_ * (travelTime - requests_[i]->minTravelTime_);
-            totalNumServed ++;
-            totalCustomers += requests_[i]->nbPassengers_;
-        }
-        else {
-            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
-            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
-            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
-            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
-            NumRejected++;
-            penalty += requests_[i]->Req_W3_ * requests_[i]->penalty_;
-        }
-
-        repStr << std::setw(7) << requests_[i]->nbPassengers_ << std::endl;
-    }
-
+    processRequestsAndCollectMetrics(repStr, metrics);
     repStr << "# --------------------------------------------------------------------------------------------------------" << std::endl;
+    processVehiclesAndCollectMetrics(metrics);
 
-    for (const auto &vehicleObj : vehicles_) {
-        totalRouteWaiting += vehicleObj->solutionRoute_->totalWait_;
-        totalObj += vehicleObj->solutionRoute_->objCoef_;
-        numServed += static_cast<int>(vehicleObj->solutionRoute_->routeRequests_.size());
-        idleTime += vehicleObj->idleTime_;
-        serviceTime += vehicleObj->serviceTime_;
-        driveFullTime += vehicleObj->driveFullTime_;
-        driveEmptyTime += vehicleObj->driveEmptyTime_;
-        returnEmptyTime += vehicleObj->returnEmptyTime_;
+    // Print summary statistics using the metrics object
+    metrics.printTotalMetrics(repStr, SENTENCE_SIZE, nbVehicles_, nbRequests_, nbInitialOnboards_);
+    metrics.printTotalMetricsInMinutes(repStr, SENTENCE_SIZE, SECONDS_PER_MINUTE);
+    metrics.printAverageMetrics(repStr, SENTENCE_SIZE, nbVehicles_);
 
-        if (vehicleObj->solutionRoute_->routeSize_ == 1)
-            nbIdle++;
-        totalStopLoad += std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
-                                         vehicleObj->solutionRoute_->plannedPassengers_.end(),
-                                         decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
-        totalStops += vehicleObj->solutionRoute_->routeSize_;
-    }
-    repStr << std::left << std::fixed << std::setprecision(2);
     repStr << "#" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# FINAL OBJECTIVE VALUE" << " = " << penalty + totalObj << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL ROUTE WAIT TIME" << " = " << totalRouteWaiting << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUEST  WAIT TIME" << " = " << totalRequestsWaiting << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED WAIT TIME" << " = " << totalWeightedWaiting << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED TRIP DELAY" << " = " << totalWeightedTripDelay << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL IDLE TIME" << " = " << idleTime << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL SERVICE TIME" << " = " << serviceTime << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE EMPTY TIME" << " = " << driveEmptyTime << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL RETURN EMPTY TIME" << " = " << returnEmptyTime << " (s)" << std::endl;
-    repStr << "#" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL ROUTE WAIT TIME" << " = " << totalRouteWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUEST WAIT TIME" << " = " << totalRequestsWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED WAIT TIME" << " = " << totalWeightedWaiting/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL TRIP DELAY" << " = " << totalTripDelay/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL WEIGHTED TRIP DELAY" << " = " << totalWeightedTripDelay/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL IDLE TIME" << " = " << idleTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL SERVICE TIME" << " = " << serviceTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE FULL TIME" << " = " << driveFullTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL DRIVE EMPTY TIME" << " = " << driveEmptyTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL RETURN EMPTY TIME" << " = " << returnEmptyTime/SECONDS_PER_MINUTE << " (min)" << std::endl;
-    repStr << "#" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL UN_SERVED REQUESTS" << " = " << nbRequests_ - totalNumServed - nbInitialOnboards_ << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUESTS SERVED" << " = " << numServed << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL REQUESTS REJECTED" << " = " << NumRejected << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL NUMBER OF REQUESTS" << " = " << nbRequests_ - nbInitialOnboards_ << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL NUMBER OF REQUESTS/ONBOARDS" << " = " << nbRequests_ << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL NUMBER OF SERVED PASSENGERS" << " = " << totalCustomers << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TOTAL NUMBER OF EMPTY VEHICLES" << " = " << nbIdle << std::endl;
-    repStr << "#" << std::endl;
-    repStr << "# ----------------------   AVERAGE VALUES   ----------------------" << std::endl;
+    instRepStr_ << metrics.totalCustomers << ",";
 
-    if (numServed != 0) {
-        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER REQUEST" << " = " << totalRequestsWaiting/static_cast<float>(numServed) << " (s)" << std::endl;
-        repStr << std::setw(SENTENCE_SIZE) << "# WAIT TIME PER PASSENGER" << " = " << totalWeightedWaiting/static_cast<float>(totalCustomers) << " (s)" << std::endl;
-        repStr << std::setw(SENTENCE_SIZE) << "# TRIP DELAY PER REQUEST" << " = " << totalTripDelay/static_cast<float>(numServed) << " (s)" << std::endl;
-        repStr << std::setw(SENTENCE_SIZE) << "# TRIP DELAY PER PASSENGER" << " = " << totalWeightedTripDelay/static_cast<float>(totalCustomers) << " (s)" << std::endl;
-    }
-    repStr << std::setw(SENTENCE_SIZE) << "# PASSENGERS IN VEHICLE" << " = " << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# IDLE TIME PER VEHICLE" << " = " << idleTime/static_cast<float>(nbVehicles_) << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# SERVICE TIME PER VEHICLE" << " = " << serviceTime/static_cast<float>(nbVehicles_) << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# DRIVE FULL TIME PER VEHICLE" << " = " << driveFullTime/static_cast<float>(nbVehicles_) << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# DRIVE EMPTY TIME PER VEHICLE" << " = " << driveEmptyTime/static_cast<float>(nbVehicles_) << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# RETURN EMPTY TIME PER VEHICLE" << " = " << returnEmptyTime/static_cast<float>(nbVehicles_) << std::endl;
-    
-    repStr << "#" << std::endl;
-    instRepStr_ << totalCustomers << ",";
-
-    if (totalCustomers < 1000)
+    if (metrics.totalCustomers < 1000)
         instRepStr_ << "10000 <" << ",";
 
-    else if (totalCustomers > 135000)
+    else if (metrics.totalCustomers > 135000)
         instRepStr_ << "135000 <" << ",";
-    else if (totalCustomers >= 120000 && totalCustomers <= 135000)
+    else if (metrics.totalCustomers >= 120000 && metrics.totalCustomers <= 135000)
         instRepStr_ << "125000 - 135000" << ",";
-    else if (totalCustomers >= 70000 && totalCustomers < 120000)
+    else if (metrics.totalCustomers >= 70000 && metrics.totalCustomers < 120000)
         instRepStr_ << "< 125000" << ",";
-    else if (totalCustomers >= 50000 && totalCustomers < 70000)
+    else if (metrics.totalCustomers >= 50000 && metrics.totalCustomers < 70000)
         instRepStr_ << "< 50000 <" << ",";
-    else if (totalCustomers >= 40000 && totalCustomers <= 50000)
+    else if (metrics.totalCustomers >= 40000 && metrics.totalCustomers <= 50000)
         instRepStr_ << "40000 - 50000" << ",";
-    else if (totalCustomers < 40000)
+    else if (metrics.totalCustomers < 40000)
         instRepStr_ << "40000 <" << ",";
 
-    instRepStr_ << totalNumServed <<"," << NumRejected <<"," << totalRequestsWaiting/static_cast<float>(numServed) << ",";
-    instRepStr_ << totalWeightedWaiting/static_cast<float>(totalCustomers) << ",";
-    instRepStr_ << totalTripDelay/static_cast<float>(numServed) << "," << totalWeightedTripDelay/static_cast<float>(totalCustomers) << ",";
-    instRepStr_ << idleTime/static_cast<float>(nbVehicles_) << ",";
-    instRepStr_ << nbIdle << ",";
-    instRepStr_ << static_cast<float>(totalStopLoad)/static_cast<float>(totalStops) << ",";
+    instRepStr_ << metrics.totalNumServed << ","
+                << metrics.numRejected << ","
+                << metrics.totalRequestsWaiting / static_cast<float>(metrics.numServed) << ","
+                << metrics.totalWeightedWaiting / static_cast<float>(metrics.totalCustomers) << ","
+                << metrics.totalTripDelay / static_cast<float>(metrics.numServed) << ","
+                << metrics.totalWeightedTripDelay / static_cast<float>(metrics.totalCustomers) << ","
+                << metrics.idleTime / static_cast<float>(nbVehicles_) << ","
+                << metrics.nbIdle << ","
+                << static_cast<float>(metrics.totalStopLoad) / static_cast<float>(metrics.totalStops) << ",";
     return repStr.str();
 }
 
-void Instance::adjustParameters(const PConfig &config) {
+void Instance::adjustParameters(const PConfig &config) const {
     parameters_->saveScratch_ = config->saveScratch_;
     parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
     parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
@@ -660,7 +547,7 @@ void Instance::sortZones() {
 }
 
 // function to update penalties in any time approach
-void Instance::updatePenalties(float elapsedTime) {
+void Instance::updatePenalties(float elapsedTime) const {
     for (auto & requestObj : requests_) {
         requestObj->setPenalty(elapsedTime, parameters_, simulationStartTime_);
         if (requestObj->committedPickTime_ == LARGE_CONSTANT)
@@ -738,9 +625,7 @@ void Instance::updateTaskIndexLabeling() const {
     }
 }
 
-
-
-void Instance::resetDuals() {
+void Instance::resetDuals() const {
     for (auto & requestObj : requests_) {
         requestObj->dual_ = requestObj->penalty_;
     }
@@ -907,11 +792,9 @@ std::string Instance::saveVehicleResults() const {
 }
 
 
-void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config) {
+void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config) const {
 
     std::cout << "Writing output files..." << std::endl;
-    bool allSuccessful = true;
-
     try {
 
         // Write solution routes CSV
@@ -959,14 +842,7 @@ void Instance::writeFinalOutputs(const InputPaths& inputPaths, const PConfig& co
 
     } catch (const std::exception& e) {
         std::cerr << "Exception during output writing: " << e.what() << std::endl;
-        allSuccessful = false;
     }
-
-    /*if (allSuccessful) {
-        std::cout << "All instance files written successfully!" << std::endl;
-    } else {
-        std::cerr << "Some output operations failed" << std::endl;
-    }*/
 }
 
 
@@ -1179,6 +1055,72 @@ std::string Instance::saveVehDuals(int epoch, int isudIter, const string& model)
         vehicleObj->InitialDual_ = vehicleObj->dual_;
     }
     return repStr.str();
+}
+
+void Instance::processRequestsAndCollectMetrics(std::stringstream &repStr, SolutionMetrics &metrics) const {
+int startIndex = nbInitialOnboards_;
+    // print the internal nodes of the route
+    for (int i = startIndex; i < nbRequests_; ++i) {
+        repStr << std::fixed;
+        repStr << std::setprecision(2);
+        repStr << "#" << std::right << std::setw(9) << requests_[i]->getRequestId() << "       ";
+        repStr << std::right << std::setw(9) << requests_[i]->initialEarlyPick_ << " (s)  ";
+        if (requests_[i]->requestStatus_ == COMPLETED) {
+            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->dropTime_ << " (s)  ";
+            repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_ << " (s)  ";
+
+//            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->serviceTime_;
+            float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
+            if (durationMatrix_[instGraph_->pickNodes_[i]->locationID_][instGraph_->dropNodes_[i]->locationID_] == 0)
+                travelTime = 0;
+            repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";
+            if (travelTime > requests_[i]->maxTravelTime_ + 0.1){
+                std::cout << "Trip delay constraint is violated by request: " << requests_[i]->getRequestId() << std::endl;
+                //               myTools::throwException("Trip delay Validation");
+            }
+            if (travelTime - requests_[i]->minTravelTime_ < -0.1){
+                std::cout << "Trip delay is negative for request: " << requests_[i]->getRequestId() << std::endl;
+//                myTools::throwException("Trip delay Validation");
+            }
+            metrics.totalRequestsWaiting += requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_;
+            metrics.totalWeightedWaiting += requests_[i]->nbPassengers_ * (requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_);
+            metrics.totalTripDelay += travelTime - requests_[i]->minTravelTime_;
+            metrics.totalWeightedTripDelay += requests_[i]->nbPassengers_ * (travelTime - requests_[i]->minTravelTime_);
+            metrics.totalNumServed ++;
+            metrics.totalCustomers += requests_[i]->nbPassengers_;
+        }
+        else {
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            repStr << std::right << std::setw(9) << "-------" << " (s)  ";
+            metrics.numRejected++;
+            metrics.penalty += requests_[i]->Req_W3_ * requests_[i]->penalty_;
+        }
+
+        repStr << std::setw(7) << requests_[i]->nbPassengers_ << std::endl;
+    }
+}
+
+void Instance::processVehiclesAndCollectMetrics(SolutionMetrics &metrics) const {
+    for (const auto &vehicleObj : vehicles_) {
+        metrics.totalRouteWaiting += vehicleObj->solutionRoute_->totalWait_;
+        metrics.totalObj += vehicleObj->solutionRoute_->objCoef_;
+        metrics.numServed += static_cast<int>(vehicleObj->solutionRoute_->routeRequests_.size());
+        metrics.idleTime += vehicleObj->idleTime_;
+        metrics.serviceTime += vehicleObj->serviceTime_;
+        metrics.driveFullTime += vehicleObj->driveFullTime_;
+        metrics.driveEmptyTime += vehicleObj->driveEmptyTime_;
+        metrics.returnEmptyTime += vehicleObj->returnEmptyTime_;
+
+        if (vehicleObj->solutionRoute_->routeSize_ == 1)
+            metrics.nbIdle++;
+        metrics.totalStopLoad += std::accumulate(vehicleObj->solutionRoute_->plannedPassengers_.begin(),
+                                         vehicleObj->solutionRoute_->plannedPassengers_.end(),
+                                         decltype(vehicleObj->solutionRoute_->plannedPassengers_)::value_type(0));
+        metrics.totalStops += vehicleObj->solutionRoute_->routeSize_;
+    }
 }
 
 // Function to get index based on node type and identifier

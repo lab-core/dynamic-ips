@@ -54,7 +54,7 @@ public:
     float deltaPram_{};                     // parameter for defining penalty for unassigned requests 
     float epochLength_{};                   // length of each epoch in dynamic solution                                      
     int penaltyL_{};                        // parameter for defining penalty for unassigned requests  
-    float committedTime_{};                 // length of time period that stops are freezed in anytime solution
+    float committedTime_{};                 // length of time period that stops are frozen in anytime solution
     float informTimeLimit_;                 // time limit to inform the customers before their requested pickup time
     float pickupDeviationWindow_;           // allowable deviation window for committed pickup time
 
@@ -88,14 +88,14 @@ public:
     // Parameters related to the subproblem
     SubproblemAlgorithm subAlgorithm_;     // subproblem algorithm: CPLEX_SUB, LABEL_SETTING
     bool vehiclePortion_{};                // whether to solve subproblems for a portion of vehicles or all vehicles
-    bool dynamicPricing_{};                // whether to use dynamic pickup limits in labeling
-    bool partialPricing_{};                // whether to use partial pickup limits in labeling
+    bool dynamicPricing_{};                // whether to use dynamic pickup limits in labelling
+    bool partialPricing_{};                // whether to use partial pickup limits in labelling
     bool routeRecycle_{};                  // whether to recycle routes from prior epoch
     
 
     //Solver Parameters
     int nbThreads_{};                      // number of threads used in parallel computations
-    int saveScratch_;                      // save the results in scratch place of the server
+    int saveScratch_;                      // save the results in the scratch place of the server
     ModelSOLVER modelSolver_;              // the solver used for MIP and CP: CPLEX, GUROBI
     int bigM_{};                           // big M value used in MIP formulations
     int solveTimeLimit_{};                 // time limit for solving MIP models
@@ -134,7 +134,7 @@ public:
 //-----------------------------------------------------------------------------
 //  Solver Option Struct
 //-----------------------------------------------------------------------------
-struct solverOption : public SolverBase {
+struct solverOption: public SolverBase {
     // Constructor and Destructor
     solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
                  SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
@@ -148,7 +148,7 @@ struct solverOption : public SolverBase {
     // Display function
     std::string toString() const override;
 
-    // Functions to enable/disable labeling accelerations (heuristics)
+    // Functions to enable/disable labelling accelerations (heuristics)
     void disableHeuristics();
     void enableHeuristics(const PParameters &MainParams);
 

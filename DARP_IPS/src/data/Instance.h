@@ -10,8 +10,9 @@
 #include "data/Vehicle.h"
 #include "data/Request.h"
 #include "data/Graph.h"
-#include "utilities/InputPaths.h"
 #include <numeric>
+#include "utilities/InputPaths.h"
+#include "data/SolutionMetrics.h"
 
 //-----------------------------------------------------------------------------
 //  Instance class
@@ -63,7 +64,7 @@ public:
     std::string solutionToString();
 
     // adjust instance parameters based on the config settings
-    void adjustParameters(const PConfig& config);
+    void adjustParameters(const PConfig& config) const;
 
     // update the set of available requests, removed completed requests and update the set of on-boards
     void buildPartialData(const PInstance &mainInst, const std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
@@ -90,7 +91,7 @@ public:
     void sortZones();
 
     // function to update penalties in any time approach
-    void updatePenalties(float elapsedTime);
+    void updatePenalties(float elapsedTime) const;
 
     // determine an order for requests to use in MP modeling
     void updateRequestOrder();
@@ -102,7 +103,7 @@ public:
     void updateTaskIndexLabeling() const;
 
     // function to reset dual values of requests (equal to penalties)
-    void resetDuals();
+    void resetDuals() const;
 
     // function to calculate vehicle metrics such as average number of requests, passengers, nodes per vehicle
     void calcVehicleMetric();
@@ -133,7 +134,7 @@ public:
     std::string saveVehicleResults() const;
 
     // write final outputs at the end of the simulation
-    void writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config);
+    void writeFinalOutputs(const InputPaths& inputPaths, const PConfig& config) const;
 
     // save the current route of the vehicles (current solution of MP)
     std::string saveMPRoutes(int epoch, int mpIter) const;
@@ -147,8 +148,14 @@ public:
     // functions to save the dual values of requests and vehicles
     std::string saveReqDuals(int epoch, int isudIter, const string& model) const;
     std::string saveVehDuals(int epoch, int isudIter, const string& model) const;
+
+    // process requests and vehicles to collect solution metrics
+    void processRequestsAndCollectMetrics(std::stringstream& repStr, SolutionMetrics& metrics) const;
+    void processVehiclesAndCollectMetrics(SolutionMetrics& metrics) const;
 };
 
 int getIndex(const PNode& node, int id, int nbPairs);
 std::string getNode(const PInstance& pInst, int vehicleID, int index, int nbPairs);
 #endif //INSTANCE_H
+
+

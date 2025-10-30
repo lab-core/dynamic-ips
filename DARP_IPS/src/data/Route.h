@@ -22,7 +22,7 @@ private:
 public:
     static unsigned int routeCount_;            // Global counter for total routes created
     const char* name_;
-    int vehicleID_;                             // the vehicle for which the route has created
+    int vehicleID_;                             // the vehicle for which the route has been created
     float totalWait_;                           // sum of waiting times of the requests served by the route
     float totalTripDelay_;                      // sum of trip delays of the requests served by the route
     float objCoef_;                             // objective coefficient of the route in the MP based on the weights 
@@ -32,20 +32,20 @@ public:
     std::vector<float> plannedReachTime_;       // time that vehicle is planned to reach each node
     std::vector<float> plannedDepartTime_;      // time that vehicle is planned to depart each node
     std::vector<int> plannedPassengers_;        // number of passengers in the vehicle at each node
-    unsigned int routeSize_;                    // number of stops in the route including start and stop
+    unsigned int routeSize_;                    // number of stops in the route, including start and stop
     float createTime_;                          // time that route is created through solving subproblems
     float totalLength_;                         // total length of the route    
-    int incompatibilityDegree_;                 // the incompatibility degree of the route used in ISUD algorithm
+    int incompatibilityDegree_;                 // the incompatibility degree of the route used in the ISUD algorithm
     boost::dynamic_bitset<> column_;            // bitset representing the requests included in the route used in MP/CP models
     bool isCompatible_;                         // return true if the corresponding column is compatible w.r.t. the current basis
     bool mpAdded_;                              // True if the route has already been added to the RP/MP/CG model
     bool cpAdded_;                              // True if the route has already been added to the CP model
     float reducedCost_;                         // reduced cost of the route 
-    float normal_RC_;                           // normalized reduced cost used as the sorting criteria
-    float lambda_;                              // lambda score value used as the sorting criteria
+    float normal_RC_;                           // normalized reduced cost used as the sorting criterion
+    float lambda_;                              // lambda score value used as the sorting criterion
     float waitScore_;                           // wait score value used as the sorting criteria    
     float IncScoreRatio_;                       // incompatible score ratio used as the sorting criteria
-    float IncScore_;                            // incompatible score used as the sorting criteria
+    float IncScore_;                            // incompatible score used as the sorting criterion
     int nbCommitted_;                           // number of committed requests in the route
 
     // Constructor and Destructor
@@ -64,8 +64,8 @@ public:
     void addNode(const PNode &node);
 
     // function to reconstruct the generated routes in the pool from the last epoch based on the current state
-    bool reConstructRoute(PVehicle & vehicle);
-    bool reConstruct(PVehicle &vehicle);
+    bool reConstructRoute(const PVehicle & vehicle);
+    bool reConstruct(const PVehicle &vehicle);
 
     // function to add node to the solution route
     void addNode(const PNode &node, float reachTime, float departTime);
@@ -81,7 +81,7 @@ public:
     void resetRoute() const;
 
     // This function is to calculate the marginal costs of adding nodes to the route
-    void calcMarginalCosts(PVehicle & vehicle);
+    void calcMarginalCosts(const PVehicle & vehicle);
 
     // This function is to compare two routes
     bool equal(const Route& routeObj) const {

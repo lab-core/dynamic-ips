@@ -64,7 +64,7 @@ public:
     // a helper function that finds the last possible position to insert drop-off based on capacity feasibility
     [[nodiscard]] PStopLabel findCapacityLimit(const PStopLabel &startLabel) const;
 
-    // a helper function tries to find best possible insertion for pick-up and drop-off nodes in the middle of the route
+    // a helper function tries to find the best possible insertion for pick-up and drop-off nodes in the middle of the route
     void tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dropNode, float maxDuration,
                         std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1,
                         float ride_W2);
@@ -88,7 +88,7 @@ public:
     // this function converts a greedyLabel list to a route
     [[nodiscard]] PRoute greedyLabelToRoute(bool update) const;
 
-    // this function updates the depart times for the last label of the path
+    // this function updates the departure times for the last label of the path
     void updateTailDepart();
     
     // function to check the feasibility of the insertion based on the vehicle capacity and trip duration constraints

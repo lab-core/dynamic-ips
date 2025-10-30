@@ -217,7 +217,7 @@ void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) con
     }
 }
 
-// this function find a position to insert pickup point and add drop off point
+// this function finds a position to insert a pickup point and add a drop off point
 void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
                                   std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position,
                                   float wait_W1, float ride_W2) {
@@ -238,10 +238,10 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
         }
 
         if (prePick == lastStop_) {
-            // it stays at tail and then departs to the pickup point
+            // it stays at the tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
             float waitIncrease = pickNode->related_Request_->Req_W3_ * (pickTime - pickNode->initialReadyTime_);
-            // trip delay is not increased due to direct drop
+            // trip delay is not increased due to the direct drop
             float objIncrease = wait_W1 *  waitIncrease + ride_W2 * 0.0;
             if (objIncrease < position->deltaObjective_) {
                 position->updatePosition(prePick, lastStop_, waitIncrease, 0.0, wait_W1, ride_W2);
