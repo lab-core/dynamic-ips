@@ -13,6 +13,7 @@
 
 //-----------------------------------------------------------------------------
 //  Labeling Sub problem class
+//  contains the labeling algorithm to solve the subproblem for each vehicle
 //-----------------------------------------------------------------------------
 
 class LabelingSubProblem : public SubproModeler{
@@ -21,69 +22,91 @@ public:
     std::vector<Node*> activeNodes_;            // list of nodes with active labels
     int nbDominated_;                           // number of labels removed via Domination Rules
     int nbPrunedPath_;                          // number of labels detected as non-promising by soft time window
-    int nbPrunedArcs_;
+    int nbPrunedArcs_;                          // number of labels detected as non-promising by pruned arcs
     int nbEliminated_;                          // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
-    int nbRecycledColumns_;
+    int nbRecycledColumns_;                     // number of labels recycled from routes
     int nbOutputs_;                             // total number of generated routes
     int maxPickup_;                             // number of pickups that are allowed in each path
-    vector<PRoute> availableRoutes_;
+    vector<PRoute> availableRoutes_;            // available routes in the pool to be recycled as labels
 
-    PSolverOption solverOptions_;
-    myTools::Timer *subproTime_;                // timer for labeling algorithm
+    PSolverOption solverOptions_;               // solver options for labeling algorithm
+
     std::string initialNodeID_;                 // it determines departing stop when we have committed nodes
 
     // Constructor and Destructor
     LabelingSubProblem(const PVehicle &vehicle, const PSolverOption &solverOptions);
-
     ~LabelingSubProblem() override;
 
-
-    // this function sorts the list of nodes based on their dual values
-    void sortSuccessors(const std::vector<PNode> &nodeList, bool prunedArcs) const;
-
-    // reset that active lists of the nodes, create the first label at the source, add the onboard nodes
-    void initialization();
-    // main function of the dynamic programming
-    bool labelExtend(const PLabel &parentLabel, Node *outNode, bool Terminate);
-    bool labelExtendPick(const PLabel &parentLabel, Node *outNode);
-    bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
-    bool solveDynamic_pushing(float availableTime);
-    // this function is the same as normal pushing strategy, but it does not do a pick after drops
-    bool solveDynamic_pushingDrop(float availableTime);
-    bool solveDynamic_pushingWave(float availableTime);
-    bool solveDynamic_pushingWaveStep(float availableTime);
-    bool solveDynamic_pulling1(float availableTime);
-    bool solveDynamic_pulling(float availableTime);
-    bool solveDynamic_pullingWave(float availableTime);
-    bool solveDynamic_pullingWaveStep(float availableTime);
-
-    bool ResolveDynamic_pullingWave(float availableTime);
-    bool ResolveDynamic_pullingWaveStep(float availableTime);
-    bool pushToDrops(float availableTime, std::vector<PNode> &pickNodeList);
-    void pushToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
-    void pullToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
-
-    bool solveDynamic_pullingWave1(float availableTime);
-    bool solveDynamic(float availableTime);
-    void removeDominated(Node *node, std::vector<PLabel> & labelPool) const;
-
-    // function to convert the solution to routes and save them in the vehicle object
-    void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
-        int nbRequests);
-    void CollectLabels();
-    void solutionSummery(std::vector<int> &subProResults) const;
     // Display function
     std::string toString() const;
     std::string toStringOut(int epoch) const;
 
+    // main function of solving SP using dynamic programming
+    bool solveSP(float availableTime, const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
+        int nbRequests);
+    
+    bool solveDynamic(float availableTime);
+
+    // dynamic programming labelling algorithms with pushing strategies
+    bool solveDynamic_pushing(float availableTime);
+    bool solveDynamic_pushingWaveStep(float availableTime);
+
+    // dynamic programming labelling algorithms with pulling strategies
+    bool solveDynamic_pulling(float availableTime);
+    bool solveDynamic_pullingWaveStep(float availableTime);
+    bool ResolveDynamic_pullingWaveStep(float availableTime);
+
+    /******************** helper functions for labelling algorithm ******************/
+
+    // reset the active lists of the nodes, create the first label at the source, add the onboard nodes
+    void initialization();
+
+    // this function sorts the list of nodes based on their dual values
+    void sortSuccessors(const std::vector<PNode> &nodeList, bool prunedArcs) const;
+    
+    // function to extend a label to a new node
+    bool labelExtend(const PLabel &parentLabel, Node *outNode, bool Terminate);
+
+    // function to check if a new label should be added to the active list of a node
+    bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);
+
+    // function to remove dominated labels from the active list of a node
+    void removeDominated(Node *node, std::vector<PLabel> & labelPool) const;
+
+    // function to push a label to all drop-off onboard nodes
+    bool pushToDrops(float availableTime, std::vector<PNode> &pickNodeList);
+
+    // function to push a label to all outgoing pickup nodes
+    void pushToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
+
+    // function to pull a label to all outgoing pickup nodes
+    void pullToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
+
+    // function to extend a label to all drop-off onboard nodes
+    void extendToDropOnboards(const PLabel &selectedLabel);
+
+    // function to truncate the label list of a node based on the maximum allowed labels
     void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> &labelPool);
 
+    // function to truncate the label list of a node based on the maximum allowed labels and committed labels
     void truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const;
-    void extendToDropOnboards(const PLabel &selectedLabel);
+
+    // construct labels from the initial label
     void constructLabels(const PLabel &initialLabel);
 
+    // construct base labels from the initial label (used doing re-optimization RE_INSERT)
     void constructBaseLabels(const PLabel &initialLabel);
+
+    // function to convert the solution to routes and save them in the vehicle object
+    void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
+        int nbRequests);
+
+    // collect the generated labels for recycling when the subproblem is stopped early
+    void CollectLabels();
+
+    // function to save the solution summary of the labelling algorithm in subProResults
+    void solutionSummery(std::vector<int> &subProResults) const;
 };
 
 
