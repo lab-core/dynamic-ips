@@ -210,97 +210,6 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
         }
     }
 
- //   if (mainInst->parameters_->mainAlgorithm_ != GREEDY || mainInst->parameters_->greedyReOptimize_) {
-        // add unperformed requests
-        for (auto &vehicleObj: mainInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ > 1) {
-                for (int i = 1; i < vehicleObj->currentRoute_->routeSize_; ++i) {
-                    if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                        addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
-                        instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-//                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
-                        instGraph_->addNewNode(
-                                mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
-                    }
-                        // adding onboard nodes to the graph
-                    else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
-                        instGraph_->nodes_.emplace(
-                                std::pair<std::string, PNode>(vehicleObj->currentRoute_->routeNodes_[i]->nodeID_,
-                                                              vehicleObj->currentRoute_->routeNodes_[i]));
-                        instGraph_->onboards_.push_back(vehicleObj->currentRoute_->routeNodes_[i]);
-                        instGraph_->nbNodes_++;
-                    }
-                }
-            }
-        }
-  //  }
-
-    // add new requests
-    for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
-        if (parameters_->solutionMode_ == ANYTIME) {
-            if (mainInst->requests_[i]->requestTime_ <= simulationStartTime_ + elapsedTime) {
-                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                    nbNewRequests_++;
-                    addRequest(mainInst->requests_[i]);
-                    mainInst->requests_[i]->insertedVehicles_.reset();
-                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
-                    mainInst->requests_[i]->coveredVehicles_.reset();
-                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
-                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
-                }
-
-            }
-            else
-                break;
-        }
-        else {
-            if (mainInst->requests_[i]->requestTime_ < simulationStartTime_ + elapsedTime) {
-                if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
-                    nbNewRequests_++;
-                    addRequest(mainInst->requests_[i]);
-                    mainInst->requests_[i]->insertedVehicles_.reset();
-                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
-                    mainInst->requests_[i]->coveredVehicles_.reset();
-                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
-                    instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
-                    instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
-                }
-            }
-            else
-                break;
-        }
-    }
-
-    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
-
-    // calculate vehicle scores
-    /*if (mainInst->parameters_->constPortion_ < 1){
-        for (int i = 0; i < instGraph_->pickNodes_.size() ; i++){
-            for (auto & vehicleObj: mainInst->vehicles_){
-                float earliestPick = vehicleObj->departTime_ + durationMatrix_[vehicleObj->departNode_->locationID_]
-                [mainInst->instGraph_->pickNodes_[i]->locationID_] - (simulationStartTime_ + elapsedTime);
-                if (earliestPick < vehicleObj->score_)
-                    vehicleObj->score_ = earliestPick;
-            }
-        }
-    }*/
-    updateRequestOrder();
-}
-
-void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, int lastRecRequests) {
-    nbReturn_ = mainInst->nbReturn_;
-    nbStateChanged_ = mainInst->nbStateChanged_;
-
-    mainInst->nbReturn_ = 0;
-    mainInst->nbStateChanged_ = 0;
-
-    for (auto & vehicleObj : mainInst->vehicles_){
-        instGraph_->addNewNode(vehicleObj->departNode_);
-        instGraph_->addNewNode(vehicleObj->sinkNode_);
-    }
-    nbNewRequests_ = 0;
-
     // add unperformed requests
     for (auto &vehicleObj: mainInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ > 1) {
@@ -308,8 +217,13 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
                 if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                     addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                     instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
+                    //                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                     instGraph_->addNewNode(
                             mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
+                    if (this->requests_.back()->insertedVehicles_.empty())
+                        this->requests_.back()->insertedVehicles_.resize(nbVehicles_);
+                    if (this->requests_.back()->coveredVehicles_.empty())
+                        this->requests_.back()->coveredVehicles_.resize(nbVehicles_);
                 }
                 // adding onboard nodes to the graph
                 else if (vehicleObj->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)  {
@@ -323,6 +237,8 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
         }
     }
 
+
+
     // add new requests
     for (int i = lastRecRequests; i < mainInst->nbRequests_; ++i) {
         if (parameters_->solutionMode_ == ANYTIME) {
@@ -330,6 +246,10 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
                 if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);
+                    mainInst->requests_[i]->insertedVehicles_.reset();
+                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
+                    mainInst->requests_[i]->coveredVehicles_.reset();
+                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
                 }
@@ -343,6 +263,10 @@ void Instance::buildPartialData(const PInstance &mainInst, float elapsedTime, in
                 if (mainInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                     nbNewRequests_++;
                     addRequest(mainInst->requests_[i]);
+                    mainInst->requests_[i]->insertedVehicles_.reset();
+                    mainInst->requests_[i]->insertedVehicles_.resize(nbVehicles_);
+                    mainInst->requests_[i]->coveredVehicles_.reset();
+                    mainInst->requests_[i]->coveredVehicles_.resize(nbVehicles_);
                     instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[i]);
                     instGraph_->addNewNode(mainInst->instGraph_->dropNodes_[i]);
                 }
@@ -459,43 +383,30 @@ void Instance::addRequest(const PRequest &request) {
 }
 
 
-void Instance::setInitialTimes() const {
+void Instance::setInitialTimes(float commitTime) const {
 
     for (auto & requestObj: requests_) {
-
         requestObj->setMinTravelTime(durationMatrix_[requestObj->PickUpID_][requestObj->DropOffID_]);
         requestObj->setMaxTravelTime(parameters_->alphaParam_, parameters_->betaParam_);
     }
 
     // if the vehicles start from the source, depart time is after the first epoch
-    if (parameters_->solutionMode_ == DYNAMIC){
+    if (parameters_->solutionMode_ == STATIC){
         for (auto & vehicleObj : vehicles_){
-            if (vehicleObj->onboards_.empty()) {
-                if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
-                    if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->epochLength_)) {
-                        vehicleObj->idleTime_ += (static_cast<float>(parameters_->epochLength_));
-                        vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->epochLength_));
-                    }
-                }
-            }
-        }
-    }
-    else if (parameters_->solutionMode_ == ANYTIME){
-        for (auto & vehicleObj : vehicles_){
-            if (vehicleObj->onboards_.empty()){
-                if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
-                    if (vehicleObj->departTime_ < simulationStartTime_ + static_cast<float>(parameters_->committedTime_)) {
-                        vehicleObj->idleTime_ += (static_cast<float>(parameters_->committedTime_));
-                        vehicleObj->setDepartTime(simulationStartTime_ + static_cast<float>(parameters_->committedTime_));
-                    }
-                }
-            }
+            if (vehicleObj->onboards_.empty() && vehicleObj->departTime_ < simulationStartTime_)
+                vehicleObj->setDepartTime(simulationStartTime_);
         }
     }
     else {
         for (auto & vehicleObj : vehicles_){
-            if (vehicleObj->onboards_.empty() && vehicleObj->departTime_ < simulationStartTime_)
-                vehicleObj->setDepartTime(simulationStartTime_);
+            if (vehicleObj->onboards_.empty()){
+                if (vehicleObj->currentRoute_ == nullptr || vehicleObj->currentRoute_->routeSize_ <= 1) {
+                    if (vehicleObj->departTime_ < simulationStartTime_ + commitTime) {
+                        vehicleObj->idleTime_ += commitTime;
+                        vehicleObj->setDepartTime(simulationStartTime_ + commitTime);
+                    }
+                }
+            }
         }
     }
 }
@@ -881,7 +792,12 @@ std::string Instance::saveRoutesTimes(int epoch) const {
     return repStr.str();
 }
 
-void Instance::saveStatus(const InputPaths &inputPaths, float simulationStart, float instDuration) const {
+void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration, std::string prefix) const {
+    inputPaths.makeInstanceOutput(prefix);
+    if (parameters_->mainAlgorithm_ == GREEDY){
+        for (auto & requestObj: requests_)
+            requestObj->dual_ = requestObj->penalty_;
+    }
     std::ofstream myFile;
     int setwSize = 15;
     int nbOnboards = 0;

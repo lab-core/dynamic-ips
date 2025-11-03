@@ -68,7 +68,6 @@ public:
 
     // update the set of available requests, removed completed requests and update the set of on-boards
     void buildPartialData(const PInstance &mainInst, const std::vector<PRequest> &penaltyRequests, float elapsedTime, int lastRecRequests);
-    void buildPartialData(const PInstance &mainInst, float elapsedTime, int lastRecRequests);
     void buildStaticData(const PInstance &mainInst, int lastRecRequests);
 
     // function to add new requests to the current partial instance (used at the end of each epoch to set duals)
@@ -79,7 +78,7 @@ public:
 
     // setting min travel times of requests based on the distance matrix
     // initialize the departure time of the vehicle (2 * epochLength)
-    void setInitialTimes() const;
+    void setInitialTimes(float commitTime) const;
 
     // function to sort vehicles based on ID
     void resetVehicleOrder();
@@ -143,7 +142,7 @@ public:
     std::string saveRoutesTimes(int epoch) const;
 
     // save the status of the instance (requests and vehicles) at the current time
-    void saveStatus(const InputPaths &inputPaths, float simulationStart, float instDuration) const;
+    void saveStatus(InputPaths &inputPaths, float simulationStart, float instDuration, std::string prefix) const;
 
     // functions to save the dual values of requests and vehicles
     std::string saveReqDuals(int epoch, int isudIter, const string& model) const;
