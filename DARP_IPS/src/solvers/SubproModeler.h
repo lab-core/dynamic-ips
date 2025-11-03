@@ -20,14 +20,15 @@ public:
     PGraph subGraph_;                       // the graph of the feasible solution for the vehicle
     std::vector<PRequest> subRequests_;     // List of requests
     int nbNegativeColumns_;                 // number negative reduced cost routes found
-    int nbTotalRequest_;                    // equals to the number of requests in the corresponding graph
-    bool reOptimize_;
-    int nbOnePickGenerated_;
-    int nbTwoPickGenerated_;
-    int nbOutCover_;
-    int nbPriorCover_;
-    int possibleInsert_;
-    int labelSize_;
+    int nbTotalRequest_;                    // equals the number of requests in the corresponding graph
+    bool reOptimize_;                       // whether we re-optimization the subproblem or not
+    int nbOnePickGenerated_;                // number of one-pickup routes generated
+    int nbTwoPickGenerated_;                // number of two-pickup routes generated
+    int nbOutCover_;                        // number of requests covered in the current epoch more than prior epochs
+    int nbPriorCover_;                      // number of requests covered in prior epochs
+    int possibleInsert_;                    // number of possible requests insertions in the subproblem        
+    int labelSize_;                         // size of labels in labeling algorithm (for bit sets)
+    myTools::Timer *subproTime_;            // timer for labeling algorithm
 
     // Constructor and Destructor
     explicit SubproModeler(const PVehicle &vehicle);
@@ -35,10 +36,15 @@ public:
 
     // calculation of penalties and initialization of the subgraph
     void initSubGraph(const PInstance &pInst);
+
+    // set node indices in the subgraph
     void setNodeIndices() const;
+
+    // function to check if inserting a pickup node is possible
     bool checkInsertionPossibility(PNode &pick);
 };
 
+// function to compute detour delay of inserting a pickup node between two nodes
 inline float computeDetourDelay(PNode &before, PNode &pick, PNode &after)
 {
     // delay = (before→pick + service(pick) + pick→after) - (before→after)
@@ -49,6 +55,8 @@ inline float computeDetourDelay(PNode &before, PNode &pick, PNode &after)
 
     return detour;
 }
+
+// function to check if inserting a pickup node is profitable
 inline bool isPickupProfitable(PNode &before, PNode &pick, float beforeDepartTime)
 {
     float reachTime = beforeDepartTime + durationMatrix_[before->locationID_][pick->locationID_];

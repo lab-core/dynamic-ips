@@ -14,9 +14,12 @@ SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     nbOutCover_ = 0;
     possibleInsert_ = 0;
     nbPriorCover_ = 0;
+    subproTime_ = new myTools::Timer(); subproTime_->init();
 }
 
-SubproModeler::~SubproModeler() = default;
+SubproModeler::~SubproModeler(){
+    delete subproTime_;
+}
 
 // initialization of the subgraph
 void SubproModeler::initSubGraph(const PInstance &pInst) {
