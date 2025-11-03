@@ -4,10 +4,13 @@ set(SOURCE_FILES
         LabelingSubProblem.cpp
         SubproModeler.cpp
         GreedyModeler.cpp
-        Solver.cpp
         CG_Algorithm.cpp
         ISUD_Algorithm.cpp
-        LagrangianSolver.cpp)
+        LagrangianSolver.cpp
+        BaseSolver.cpp
+        BatchSolver.cpp
+        AnytimeSolver.cpp
+        OfflineSolver.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})
