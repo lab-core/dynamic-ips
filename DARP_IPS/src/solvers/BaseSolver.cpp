@@ -776,11 +776,9 @@ std::string BaseSolver::toString(const PInstance &mainInst) const {
     repStr << MP_solver_->toStringTimersTotal();
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count() << " (s)" << std::endl;
     repStr << MP_solver_->toStringTimersAvg(epoch_);
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON ASSIGNMENT" << " = " << GreedyModel_->greedyAssignTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
     mainInst->instRepStr_ << epoch_-1 << "," ;
     if (mainInst->parameters_->approach_ == Greedy)
         createFinalOutputString(mainInst);

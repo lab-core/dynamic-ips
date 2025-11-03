@@ -22,7 +22,7 @@ public:
     void staticSolver(PInstance & mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
 
     // Override the pure virtual function from BaseSolver
-    void doSimulation(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime);
+    void doSimulation(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) override;
 };
 
 #endif //CP_GUROBI_CPP_OFFLINESOLVER_H
