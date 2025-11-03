@@ -3,10 +3,12 @@
 //
 
 #include "data/Instance.h"
+#include "solvers/AnytimeSolver.h"
+#include "solvers/BatchSolver.h"
+#include "solvers/OfflineSolver.h"
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
 #include "utilities/ReadWrite.h"
-#include "solvers/Solver.h"
 #include "utilities/ConfigParser.h"
 
 using namespace std::chrono;
@@ -30,7 +32,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "my_datasets/";
+    std::string dataDir = "datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names
@@ -113,23 +115,24 @@ int main(int argc, char** argv) {
                     config->scenario_, config->initialState_);
 
                 // Create solver and run appropriate algorithm
-                std::unique_ptr<Solver> instanceSolver = std::make_unique<Solver>(mainInst, inputPaths);
-                if (mainInst->parameters_->solutionMode_ == STATIC)
-                    instanceSolver->staticSolver(mainInst, inputPaths, middleSave, saveTime);
-                else
-                    instanceSolver->DA_Solver(mainInst, inputPaths, middleSave, saveTime);
+                std::unique_ptr<BaseSolver> instanceSolver;
+                switch (mainInst->parameters_->solutionMode_) {
+                    case DYNAMIC: {
+                        instanceSolver = std::make_unique<BatchSolver>(mainInst, inputPaths);
+                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                        break;
+                    }
 
-                // Test the solution route
-                for (auto& vehicleObj : mainInst->vehicles_)
-                    vehicleObj->solutionRoute_->testRoute(vehicleObj);
+                    case ANYTIME: {
+                        instanceSolver = std::make_unique<AnytimeSolver>(mainInst, inputPaths);
+                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                        break;
+                    }
 
-                if (!middleSave) {
-                    if (mainInst->parameters_->timeWindow_ > 0) {
-                        for (auto& requestObj : mainInst->requests_) {
-                            if (requestObj->requestStatus_ != COMPLETED) {
-                                requestObj->requestStatus_ = REJECTED;
-                            }
-                        }
+                    case STATIC: {
+                        instanceSolver = std::make_unique<OfflineSolver>(mainInst, inputPaths);
+                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                        break;
                     }
                 }
                 // print final outputs

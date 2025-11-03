@@ -7,7 +7,8 @@ set(SOURCE_FILES
         Route.cpp
         Label.cpp
         Greedy.cpp
-        Parameters.cpp)
+        Parameters.cpp
+        SolutionMetrics.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${LIB_NAME} ${LIBS})
