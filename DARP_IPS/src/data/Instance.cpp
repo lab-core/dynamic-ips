@@ -80,6 +80,7 @@ void Instance::resetInstance() {
     instGraph_->onboards_.clear();
     instGraph_->sinkNodes_.clear();
     instGraph_->newPickNodes_.clear();
+    lastCommittedRequests_.clear();
 }
 
 /*Instance::~Instance() {

@@ -45,6 +45,7 @@ public:
     void initializeModel(PInstance &pInst);
     void buildModel(PInstance &pInst);
     void solveModel(PInstance &pInst, std::vector<PRoute> &availableRoutess);
+    void solveSP(PInstance &pInst, std::vector<PRoute> &availableRoutess);
 
     // Display function
     std::string toString() const;
@@ -54,6 +55,7 @@ public:
     bool hasSolution() const { return solutionFound_; }
     void solveForColumnGeneration(PInstance &pInst, std::vector<PRoute> &availableRoutes);
     void setInitialIncumbent();
+    std::string toStringOut(int epoch) const;
 
 
     void addSimpleMIPStart();

@@ -4,7 +4,6 @@
 
 #ifndef CP_GUROBI_H
 #define CP_GUROBI_H
-#include <gurobi_c++.h>
 #include <string>
 #include <vector>
 

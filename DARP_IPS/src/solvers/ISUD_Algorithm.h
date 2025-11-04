@@ -27,6 +27,7 @@ public:
 
     void initializationCPLEX(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
     void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
+    void epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) override;
 
     int solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
     int solveRP_Gurobi(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
@@ -36,7 +37,10 @@ public:
     void solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
-    void solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) override;
+    void resetModels() override;
+    bool shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) override;
+    void getIPSolution(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) override;
 };
 
 

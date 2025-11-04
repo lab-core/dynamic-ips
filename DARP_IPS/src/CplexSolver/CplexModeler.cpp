@@ -25,18 +25,6 @@ CplexModeler::~CplexModeler() {
     env_.end();
 }
 
-// this function reset the model based the current set of routes and changed the set of constraints (size)
-/*void CplexModeler::updateRequestOrder(PInstance &pInst) {
-    nbTasks_.clear();
-    requestToOrder_.clear();
-
-    int orderCounter = 0;
-    for (auto & requestObj : pInst->requests_){
-        requestToOrder_[requestObj->getRequestId()] = orderCounter;
-        nbTasks_.push_back(requestObj->getRequestId());
-        orderCounter++;
-    }
-}*/
 
 // this function clears all objects from the model at the start of each epoch
 void CplexModeler::clearModel() {
@@ -44,7 +32,6 @@ void CplexModeler::clearModel() {
     std::cout << "The Model is destroyed" << std::endl;
     Model_ = IloModel(env_);
     objFunction_ = IloMinimize(env_);
-    Model_.add(objFunction_);
 }
 
 // Display function
@@ -203,7 +190,7 @@ void CplexModeler::dump_cplex()
     Cplex_.writeParam("cplex_.prm");
 }
 
-// this function initialized the model
+// This function initialized the model
 void CplexModeler::initializeModel(const PInstance &pInst, int rhs, int nbVehicles) {
 // update order of requests
     nbRequestTask_ = pInst->nbTasks_;

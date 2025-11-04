@@ -19,8 +19,10 @@ public:
     // Constructor and Destructor
     explicit CG_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver);
 
+    void epochInitialization();
     void initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
     void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
+    void epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) override;
 
     // Solve Linear relaxation of Restricted MP in CG
     void solveRMP_IP(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime);
@@ -34,6 +36,10 @@ public:
     void solveMP_CG_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_Gurobi_tune(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) override;
+    void getIPSolution(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) override;
+    bool shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) override;
 
+    void resetModels() override;
 };
 #endif //CG_ALGORITHM_H

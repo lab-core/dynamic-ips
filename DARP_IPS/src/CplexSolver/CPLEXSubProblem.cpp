@@ -380,6 +380,38 @@ void CPLEXSubProblem::solveModel(PInstance &pInst, std::vector<PRoute> &availabl
     }
 }
 
+void CPLEXSubProblem::solveSP(PInstance &pInst, std::vector<PRoute> &availableRoutess) {
+    subproTime_->start();
+    // Initialize the CPLEX model
+    initializeModel(pInst);
+
+    // Build the optimization model
+    buildModel(pInst);
+
+    // Solve the subproblem
+    std::vector<PRoute> newRoutes;
+    solveModel(pInst, newRoutes);
+
+    // Store generated routes
+    for (auto &route : newRoutes) {
+        if (route->reducedCost_ < -1e-6) { // Negative reduced cost threshold
+            availableRoutess.push_back(route);
+            nbNegativeColumns_++;
+        }
+        nbGenerated_++;
+    }
+
+    // Update vehicle's best reduced cost
+    if (!newRoutes.empty()) {
+        float bestCost = newRoutes[0]->reducedCost_;
+        for (auto &route : newRoutes) {
+            bestCost = std::min(bestCost, route->reducedCost_);
+        }
+        Vehicle_->bestReducedCost_ = bestCost;
+    }
+    subproTime_->stop();
+}
+
 
 //************************************************************************
 // Display function
@@ -633,6 +665,30 @@ void CPLEXSubProblem::setInitialIncumbent() {
     } catch (IloException& e) {
         std::cout << "Could not set initial incumbent: " << e << std::endl;
     }
+}
+
+std::string CPLEXSubProblem::toStringOut(int epoch) const {
+    std::stringstream repStr;
+    repStr << epoch << ",";
+    repStr << (Vehicle_)->vehicleID_ << ",";
+    repStr << subRequests_.size() << ",";
+    repStr << subGraph_->nbNodes_-2 << ",";
+    repStr << Vehicle_->numPassengers_ << ",";
+    repStr << Vehicle_->onboards_.size() << ",";
+    repStr << Vehicle_->currentRoute_->routeRequests_.size() << ",";
+    repStr << possibleInsert_ << ",";
+    repStr << nbGenerated_ << ",";
+    repStr << nbNegativeColumns_ << ",";
+    repStr << Vehicle_->bestReducedCost_ << ",";
+    repStr << subproTime_->dSinceStart().count() << ",";
+    repStr << Vehicle_->stateChanged_ << ",";
+    repStr << Vehicle_->removePickup_ << ",";
+    repStr << Vehicle_->removeDrop_ << ",";
+    repStr << nbTwoPickGenerated_ << ",";
+    repStr << nbOnePickGenerated_ << ",";
+    repStr << nbOutCover_ << ",";
+    repStr << nbPriorCover_ << "\n";
+    return repStr.str();
 }
 
 void CPLEXSubProblem::addSimpleMIPStart() {

@@ -4,7 +4,6 @@
 
 #include "MasterAlgorithm.h"
 
-#include "Solver.h"
 #include "GurobiSolver/MP_Gurobi.h"
 #include "CplexSolver/MIPMasterProblem.h"
 #include "CplexSolver/DualAuxSolver.h"
@@ -14,6 +13,8 @@
 #include <unordered_set>
 #include "GurobiSolver/CPModeler.h"
 #include <cstdlib>
+
+#include "BaseSolver.h"
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -51,10 +52,6 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
 
     nbRoutes_ = 0;
     nbColumnsAdded_ = 0;
-    nbColumnsLess_50_ = 0;
-    nbColumnsLess_100_ = 0;
-    nbColumnsLess_200_ = 0;
-    nbCoveredTasks_ = 0;
     GreedyObjValue_ = 0;
 
     minReducedCost_ = INFINITY;
@@ -240,9 +237,6 @@ void MasterAlgorithm::initialization(PInstance &pInst, const InputPaths &inputPa
     masterTime_->start();
     MPEpochSolveTime_ = 0;
     nbColumnsAdded_ = 0;
-    nbColumnsLess_50_ = 0;
-    nbColumnsLess_100_ = 0;
-    nbColumnsLess_200_ = 0;
     RMPCounter_ = 0;
     SPIter_ = 0;
     epochTime_ = 0;
@@ -768,7 +762,7 @@ void MasterAlgorithm::setAvailableTime() {
     availableTime_ = timeLimit_ - masterTime_->dSinceStart().count();
 }
 
-void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime, int iteration) {
+bool MasterAlgorithm::hasTimeRemaining(const PInstance &pInst, float elapsedTime, int iteration) {
     if (iteration > 1) {
         switch (pInst->parameters_->solutionMode_) {
             case ANYTIME:
@@ -787,7 +781,9 @@ void MasterAlgorithm::setAvailableTime(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
-    availableTime_ = LARGE_CONSTANT;
+    if (availableTime_ <= 0)
+        return false;
+    return true;
 }
 
 void MasterAlgorithm::updateEpochTimers(PRuntimeMetrics &runtimeMetrics) {
@@ -829,7 +825,7 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
            << objValue_ << ","
            << lpObjValue_ << ","
            << totalWaitTime_ << ","
-           << totalTripDelay_ << "'"
+           << totalTripDelay_ << ","
             // add the dual stats here:
            << summaryDuals_.maxDual << ","
            << summaryDuals_.minDual << ","
@@ -984,368 +980,6 @@ void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPath
         CPGurobiPro_.reset();
         CPTime_->stop();
     }
-}
-
-void MasterAlgorithm::buildBasis(const PInstance &pInst) {
-    // 1. Triplet buffer
-    std::vector<Triplet> nz;
-    std::size_t nnz_estimate = pInst->nbVehicles_ + 3 * pInst->nbRequests_;
-    nz.reserve(nnz_estimate);
-
-    int currentCol = 0;
-    std::sort(routeSolution_.begin(), routeSolution_.end(),
-                  [](const PRoute& a, const PRoute& b) {
-                      return a->vehicleID_ < b->vehicleID_;});
-
-    // BLOCK 1: Current solution routes (y_r variables)
-    // These go in columns 0 to |routeSolution_|-1
-    for (const auto& routeObj : routeSolution_) {
-        // Vehicle constraint: exactly one route per vehicle
-        nz.emplace_back(routeObj->vehicleID_, currentCol, 1.0);
-
-        // Request constraints: route covers these requests
-        for (const auto& requestObj : routeObj->routeRequests_) {
-            nz.emplace_back(pInst->nbVehicles_ + requestObj->taskIndex_, currentCol, 1.0);
-        }
-        currentCol++;
-    }
-
-    // BLOCK 2: Unserved request variables (z_i variables)
-    // These go in columns |routeSolution_| to |routeSolution_|+|zSolution_|-1
-    for (size_t i = 0; i < zSolution_.size(); i++) {
-        // Only request constraint: z_i = 1 means request i is unserved
-        nz.emplace_back(pInst->nbVehicles_ + zSolution_[i]->taskIndex_, currentCol, 1.0);
-        currentCol++;
-    }
-
-    // BLOCK 3: Additional routes to complete basis
-    int columnsNeeded = pInst->nbVehicles_ + pInst->nbRequests_ - currentCol;
-
-    if (columnsNeeded > 0) {
-        pickRoutesRoundRobin(columnsNeeded, pInst);
-
-        std::cout << "Adding " << addedRouteToBase_.size() << " additional routes to complete basis" << std::endl;
-
-        for (const auto& route : addedRouteToBase_) {
-            // Vehicle constraint: route uses this vehicle
-            nz.emplace_back(route->vehicleID_, currentCol, 1.0);
-
-            // Request constraints: route serves these requests
-            for (const auto& requestObj : route->routeRequests_) {
-                nz.emplace_back(pInst->nbVehicles_ + requestObj->taskIndex_, currentCol, 1.0);
-            }
-            currentCol++;
-        }
-
-    }
-
-    // Build the square basis matrix
-    int nRows = pInst->nbVehicles_ + pInst->nbRequests_;
-    Basis_ = SpMat(nRows, nRows);  // Now it's square!
-    Basis_.setFromTriplets(nz.begin(), nz.end());
-    Basis_.makeCompressed();
-
-    std::cout << "Basis constructed: " << nRows << "x" << nRows
-              << " with " << Basis_.nonZeros() << " non-zeros" << std::endl;
-}
-
-void MasterAlgorithm::pickRoutesRoundRobin1(int columnsNeeded) {
-    addedRouteToBase_.clear();
-    std::vector<size_t> idx(availableRoutes_.size(), 0); // index of next candidate route per vehicle
-
-    bool progressed = true;
-    while (columnsNeeded > 0 && progressed) {
-        progressed = false;
-        for (size_t v = 0; v < availableRoutes_.size() && columnsNeeded > 0; ++v) {
-            // Keep trying routes for vehicle v until we find one with incompatibilityDegree_ > 0
-            while (idx[v] < availableRoutes_[v].size()) {
-                auto& route = availableRoutes_[v][idx[v]++];
-                if (route->incompatibilityDegree_ > 0) {
-                    addedRouteToBase_.push_back(route);
-                    --columnsNeeded;
-                    progressed = true;
-                    break; // done with vehicle v, go to next vehicle
-                }
-                // else: try next route for the same vehicle
-            }
-        }
-    }
-}
-
-void MasterAlgorithm::pickRoutesRoundRobin(int columnsNeeded, const PInstance &pInst) {
-    addedRouteToBase_.clear();
-    // Collect all incompatible routes by vehicle
-    std::vector<std::vector<PRoute>> incompatibleByVehicle(availableRoutes_.size());
-
-    for (size_t v = 0; v < availableRoutes_.size(); ++v) {
-        if (!pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
-            for (auto& route : availableRoutes_[v]) {
-                // incompatibilityDegree_ > 0 means route is NOT in current solution
-                // and serves some requests (otherwise incompatibility would be 0)
-                if (route->incompatibilityDegree_ > 0 && !route->routeRequests_.empty()) {
-                    incompatibleByVehicle[v].push_back(route);
-                }
-            }
-
-
-            // Sort by incompatibility degree (descending) for each vehicle
-            std::sort(incompatibleByVehicle[v].begin(), incompatibleByVehicle[v].end(),
-                      [](const PRoute& a, const PRoute& b) {
-                          return a->incompatibilityDegree_ > b->incompatibilityDegree_;
-                      });
-        }
-    }
-
-    // Round-robin selection from sorted lists
-    std::vector<size_t> vehicleIdx(availableRoutes_.size(), 0);
-    bool progress = true;
-
-    while (columnsNeeded > 0 && progress) {
-        progress = false;
-
-        for (size_t v = 0; v < incompatibleByVehicle.size() && columnsNeeded > 0; ++v) {
-            if (vehicleIdx[v] < incompatibleByVehicle[v].size()) {
-                addedRouteToBase_.push_back(incompatibleByVehicle[v][vehicleIdx[v]]);
-                vehicleIdx[v]++;
-                columnsNeeded--;
-                progress = true;
-
-                std::cout << "Picked route from vehicle " << v
-                          << " with incompatibility " << addedRouteToBase_.back()->incompatibilityDegree_
-                          << " serving " << addedRouteToBase_.back()->routeRequests_.size() << " requests" << std::endl;
-            }
-        }
-    }
-
-    if (columnsNeeded > 0) {
-        std::cerr << "Warning: Could only find " << addedRouteToBase_.size()
-                  << " incompatible routes, still need " << columnsNeeded << " more columns" << std::endl;
-    }
-}
-void MasterAlgorithm::computeBasisInverse() {
-    const int n = static_cast<int>(Basis_.rows());
-
-    // Factorisation -----------------------------------------------------
-    Eigen::SparseLU<SpMat> solver;
-    solver.analyzePattern(Basis_);     // symbolic phase
-    solver.factorize(Basis_);          // numeric phase
-    if (solver.info() != Eigen::Success)
-        throw std::runtime_error("LU factorisation failed");
-
-    // Identity matrix as right‑hand side -------------------------------
-    SpMat I(n, n);
-    std::vector<Triplet> eye;
-    eye.reserve(n);
-    for (int i = 0; i < n; ++i) eye.emplace_back(i, i, 1.0);
-    I.setFromTriplets(eye.begin(), eye.end(), [](double, double){ return 1.0; });
-
-    // Solve B * X = I  =>  X = B^{-1} -----------------------------------
-    BasisInv_ = solver.solve(I);
-    if (solver.info() != Eigen::Success)
-        throw std::runtime_error("Solve for inverse failed");
-
-    BasisInv_.makeCompressed();            // optional
-}
-
-void MasterAlgorithm::computePsudoInverse(const PInstance &pInst) {
-    int nCols = pInst->nbVehicles_ + static_cast<int>(zSolution_.size());
-    Eigen::VectorXd cB(nCols);
-    for (int v = 0; v < pInst->nbVehicles_; ++v)
-        cB[v] = routeSolution_[v]->objCoef_;
-    for (int i = 0; i < (int)zSolution_.size(); ++i)
-        cB[pInst->nbVehicles_ + i] = zSolution_[i]->penalty_;
-
-    // --- π = B * (BᵀB)⁻¹ c_B, all sparse ------------------------------------
-    SpMat BtB = Basis_.transpose() * Basis_;              // stays sparse
-    Eigen::SimplicialLDLT<SpMat> chol;
-    chol.compute(BtB);                                    // symbolic+numeric fact.
-    Eigen::VectorXd y = chol.solve(cB);                   // y = (BᵀB)⁻¹ c_B
-    Eigen::VectorXd pi = Basis_ * y;                      // π = B y   (sparse*dense)
-
-    // 8. Print π (duals)
-    std::cout << "Duals π (one per row in Basis_):\n";
-    for (int i = 0; i < pi.size(); ++i)
-        std::cout << "  π[" << i << "] = " << pi[i] << '\n';
-}
-
-// Updated cost vector construction
-void MasterAlgorithm::buildCostVector(const PInstance &pInst) {
-    int nRows = pInst->nbVehicles_ + pInst->nbRequests_;
-    costVector_.resize(nRows);
-    costVector_.setZero();
-
-    int currentCol = 0;
-
-    // Costs for current solution routes
-    for (const auto& route : routeSolution_) {
-        costVector_(currentCol) = route->objCoef_;
-        currentCol++;
-    }
-
-    // Penalty costs for unserved requests
-    for (const auto& unservedReq : zSolution_) {
-        costVector_(currentCol) = unservedReq->penalty_;
-        currentCol++;
-    }
-
-    // Costs for additional routes in basis
-    for (const auto& route : addedRouteToBase_) {
-        costVector_(currentCol) = route->objCoef_;
-        currentCol++;
-    }
-}
-
-// Validation function to check basis structure
-bool MasterAlgorithm::validateBasisStructure(const PInstance &pInst) {
-    int nRows = pInst->nbVehicles_ + pInst->nbRequests_;
-
-    // Check if matrix is square
-    if (Basis_.rows() != nRows || Basis_.cols() != nRows) {
-        std::cerr << "Error: Basis is not square! " << Basis_.rows() << "x" << Basis_.cols() << std::endl;
-        return false;
-    }
-
-    // Check request constraints (last |P| rows)
-    std::vector<int> requestCoverage(pInst->nbRequests_, 0);
-    for (int k = 0; k < Basis_.outerSize(); ++k) {
-        for (SpMat::InnerIterator it(Basis_, k); it; ++it) {
-            int row = it.row();
-            if (row >= pInst->nbVehicles_) {
-                int reqIdx = row - pInst->nbVehicles_;
-                if (std::abs(it.value() - 1.0) < 1e-10) {
-                    requestCoverage[reqIdx]++;
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < pInst->nbRequests_; ++i) {
-        if (requestCoverage[i] != 1) {
-            std::cerr << "Warning: Request " << i << " has coverage " << requestCoverage[i] << std::endl;
-        }
-    }
-
-    return true;
-}
-
-
-void MasterAlgorithm::buildBasis2(const PInstance &pInst) {
-    std::vector<Triplet> nz;
-    nz.reserve(5 * (pInst->nbVehicles_ + pInst->nbRequests_));
-
-    int currentCol = 0;
-    std::vector<boost::dynamic_bitset<>> usedPatternsPerVehicle[pInst->nbVehicles_]; // Track patterns per vehicle
-    std::sort(routeSolution_.begin(), routeSolution_.end(),
-                  [](const PRoute& a, const PRoute& b) {
-                      return a->vehicleID_ < b->vehicleID_;});
-    // BLOCK 1: Current solution routes
-    for (const auto& routeObj : routeSolution_) {
-        // Vehicle constraint
-        nz.emplace_back(routeObj->vehicleID_, currentCol, 1.0);
-
-        // Request constraints
-        for (const auto& requestObj : routeObj->routeRequests_) {
-            nz.emplace_back(pInst->nbVehicles_ + requestObj->taskIndex_, currentCol, 1.0);
-        }
-
-        usedPatternsPerVehicle[routeObj->vehicleID_].push_back(routeObj->column_);
-        currentCol++;
-    }
-
-    // BLOCK 2: Unserved request variables (z_i)
-    for (const auto& zReq : zSolution_) {
-        nz.emplace_back(pInst->nbVehicles_ + zReq->taskIndex_, currentCol, 1.0);
-        currentCol++;
-    }
-
-    // BLOCK 3: Add incompatible routes until basis is complete
-    int totalSize = pInst->nbVehicles_ + pInst->nbRequests_;
-
-    addedRouteToBase_.clear();
-    std::vector<size_t> idx(availableRoutes_.size(), 0); // index of next candidate route per vehicle
-
-    bool progressed = true;
-    int columnsNeeded =  (pInst->nbVehicles_ + pInst->nbRequests_ - currentCol);
-    while (columnsNeeded > 0 && progressed) {
-        progressed = false;
-        for (size_t v = 0; v < availableRoutes_.size() && columnsNeeded > 0; ++v) {
-            // Keep trying routes for vehicle v until we find one with incompatibilityDegree_ > 0
-            while (idx[v] < availableRoutes_[v].size()) {
-                auto& route = availableRoutes_[v][idx[v]++];
-                if (route->incompatibilityDegree_ > 0 &&
-                    !route->routeRequests_.empty() &&
-                    !isDuplicatePatternForVehicle(route->column_, usedPatternsPerVehicle[v])) {
-                    addedRouteToBase_.push_back(route);
-                    --columnsNeeded;
-                    progressed = true;
-                    // Add vehicle constraint
-                    nz.emplace_back(route->vehicleID_, currentCol, 1.0);
-
-                    // Add request constraints
-                    for (const auto& req : route->routeRequests_) {
-                        nz.emplace_back(pInst->nbVehicles_ + req->taskIndex_, currentCol, 1.0);
-                    }
-
-                    usedPatternsPerVehicle[v].push_back(route->column_);
-                    currentCol++;
-                    break; // done with vehicle v, go to next vehicle
-                }
-                // else: try next route for the same vehicle
-            }
-        }
-    }
-
-    // Build matrix
-    Basis_ = SpMat(totalSize, totalSize);
-    Basis_.setFromTriplets(nz.begin(), nz.end());
-    Basis_.makeCompressed();
-
-
-    std::cout << "Basis built: " << totalSize << "x" << totalSize << std::endl;
-    exportBasisToCSV("basis_matrix.csv");
-}
-
-bool MasterAlgorithm::isDuplicatePatternForVehicle(const boost::dynamic_bitset<>& pattern,
-                                                   const std::vector<boost::dynamic_bitset<>>& usedPatterns) {
-    for (const auto& used : usedPatterns) {
-        if (pattern == used) return true;
-    }
-    return false;
-}
-
-void MasterAlgorithm::exportBasisToCSV(const std::string& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << filename << " for writing" << std::endl;
-        return;
-    }
-
-    std::cout << "Exporting basis matrix to " << filename << "..." << std::endl;
-
-    // Write header (optional - column indices)
-    for (int col = 0; col < Basis_.cols(); ++col) {
-        file << "Col_" << col;
-        if (col < Basis_.cols() - 1) file << ",";
-    }
-    file << "\n";
-
-    // Write matrix row by row
-    for (int row = 0; row < Basis_.rows(); ++row) {
-        for (int col = 0; col < Basis_.cols(); ++col) {
-            // Get value at (row, col)
-            double value = Basis_.coeff(row, col);
-            file << value;
-            if (col < Basis_.cols() - 1) file << ",";
-        }
-        file << "\n";
-    }
-
-    file.close();
-    std::cout << "Matrix exported successfully!" << std::endl;
-    std::cout << "Matrix properties:" << std::endl;
-    std::cout << "- Size: " << Basis_.rows() << "x" << Basis_.cols() << std::endl;
-    std::cout << "- Non-zeros: " << Basis_.nonZeros() << std::endl;
-    std::cout << "- Density: " << (100.0 * Basis_.nonZeros()) / (Basis_.rows() * Basis_.cols()) << "%" << std::endl;
 }
 
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {

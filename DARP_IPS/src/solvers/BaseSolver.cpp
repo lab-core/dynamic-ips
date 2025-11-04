@@ -506,7 +506,7 @@ void BaseSolver::buildEpochInstance(PInstance &mainInst, PInstance &EpochInst, f
         nbReceivedRequest += EpochInst->nbRequests_;
     else
         nbReceivedRequest += EpochInst->nbNewRequests_;
-
+    EpochInst->lastCommittedRequests_ = mainInst->lastCommittedRequests_;
     std::cout << "# TOTAL NUMBER OF RECEIVED REQUESTS: " << EpochInst->nbRequests_ << std::endl;
     std::cout << "# TOTAL NUMBER OF NEW REQUESTS: " << EpochInst->nbNewRequests_ << std::endl;
 }
@@ -584,7 +584,7 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     // Initialize variables
     int iter = 0;
-    bool repeat = true;
+    bool repeat = false;
     bool subProBreak = false;
 
     EpochInst->updateTaskIndexLabeling();

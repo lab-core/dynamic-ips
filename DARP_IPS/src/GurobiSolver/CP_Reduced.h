@@ -5,12 +5,10 @@
 #ifndef CP_REDUCED_H
 #define CP_REDUCED_H
 
-#include <gurobi_c++.h>
 #include <string>
 #include <vector>
 
 #include "GurobiModeler.h"
-#include "CplexSolver/CplexModeler.h"
 #include "data/Instance.h"
 #include "data/Request.h"
 #include "data/Route.h"

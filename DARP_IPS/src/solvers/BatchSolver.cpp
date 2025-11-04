@@ -127,7 +127,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
 
 void BatchSolver::doSimulation(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
     std::cout << "====================================================================="<< std::endl;
-    std::cout << "                 Rolling Horizon with Batch of"<< mainInst->parameters_->epochLength_ << "(s)"<< std::endl;
+    std::cout << "                 Rolling Horizon with Batch of "<< mainInst->parameters_->epochLength_ << "(s)"<< std::endl;
     std::cout << "====================================================================="<< std::endl;
     BatchHorizon(mainInst, inputPaths, middleSave, saveTime);
 }

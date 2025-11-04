@@ -21,8 +21,11 @@ CG_Algorithm::CG_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver
     MIPIter_ = 0;
 }
 
+void CG_Algorithm::epochInitialization() {
+}
+
 void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch,
-    const PGreedyModeler &GreedyModel) {
+                                       const PGreedyModeler &GreedyModel) {
 
     initialization(pInst, inputPaths, GreedyModel);
     masterTime_->start();
@@ -136,6 +139,20 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
+}
+
+void CG_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch,
+    const PGreedyModeler &GreedyModel) {
+    if (pInst->parameters_->modelSolver_ == CPLEX)
+        initializationCPLEX(pInst, inputPaths, epoch, GreedyModel);
+    else
+        initializationGurobi(pInst, inputPaths, epoch, GreedyModel);
+    RMPCounter_++;
+    nbRoutes_ = 0;
+    lpObjValue_ = objValue_;
+
+    if (availableRoutes_.empty())
+        availableRoutes_.resize(pInst->nbVehicles_);
 }
 
 void CG_Algorithm::solveRMP_IP(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) {
@@ -294,8 +311,8 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
             iterTime_ = masterTime_->dSinceStart().count();
             objValue_ = MPGurobiPro_->objValue_;
 
-            /**pLogMPResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
-                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);*/
+            *pLogMPResultsStream_ << save_MPResults(epoch, "LMP", static_cast<int>(MPGurobiPro_->compRoutes_.size()),
+                                                    masterTime_->dSinceStart().count(), subProTime, 0.0);
 
             RMPCounter_++;
 
@@ -550,4 +567,52 @@ void CG_Algorithm::solveMP_CG(PInstance &pInst, int epoch, InputPaths &inputPath
         solveMP_CG_Gurobi(pInst, epoch, inputPaths, subProTime);
     else if (pInst->parameters_->modelSolver_ == CPLEX)
         solveMP_CG_CPLEX(pInst, epoch, inputPaths, subProTime);
+}
+
+void CG_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    timeLimit_ = availableTime_;
+    epochTime_ += subProTime;
+    if (pInst->parameters_->mainAlgorithm_ == RT_CG)
+        solveRMP_LP(pInst, epoch, inputPaths, subProTime);
+    else if (pInst->parameters_->mainAlgorithm_ == A_CG)
+        solveMP_CG(pInst, epoch, inputPaths, subProTime);
+}
+
+void CG_Algorithm::getIPSolution(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) {
+    setObjValue();
+
+    if (pInst->parameters_->mainAlgorithm_ == RT_CG) {
+        timeLimit_ = std::max(availableTime_, 10.0f);
+
+        solveRMP_IP(pInst, epoch, inputPaths, subProTime);
+    }
+}
+
+bool CG_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) {
+    if (pInst->parameters_->numIter_ == iter){
+        return true;
+    }
+
+    if (pInst->parameters_->mainAlgorithm_ == A_CG){
+        if (previousObj == objValue_) {
+            CGSuccess_++;
+            std::cout << "No changes in Objective" << std::endl;
+            return true;
+        }
+    }
+    else if (pInst->parameters_->mainAlgorithm_ == RT_CG){
+        if (previousLpObj == lpObjValue_) {
+            std::cout << "No changes in LP Objective" << std::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+void CG_Algorithm::resetModels() {
+    MasterPro_.reset();
+    MPGurobiPro_.reset();
+
+    if (DualAuxSolver_ != nullptr)
+        DualAuxSolver_.reset();
 }

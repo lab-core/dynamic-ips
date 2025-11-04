@@ -12,8 +12,6 @@
 //  Build and solve the Complementary problem of the ISUD
 //---------------------------------------------------------------------------------------------
 
-//enum SolutionStatus { NOT_SOLVED = 0, NEGATIVE_VALUE = 1, POSITIVE_VALUE = 2, FRACTIONAL = 3 , INFEASIBLE = 4};
-
 class ComplementPro : public CplexModeler{
 public:
     // Variables

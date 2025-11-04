@@ -95,6 +95,19 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
     masterTime_->stop();
 }
 
+void ISUD_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) {
+    if (pInst->parameters_->modelSolver_ == CPLEX)
+        initializationCPLEX(pInst, inputPaths, GreedyModel);
+    else
+        initializationGurobi(pInst, inputPaths, GreedyModel);
+    RMPCounter_++;
+    nbRoutes_ = 0;
+    lpObjValue_ = objValue_;
+
+    if (availableRoutes_.empty())
+        availableRoutes_.resize(pInst->nbVehicles_);
+}
+
 int ISUD_Algorithm::solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths) {
     // improve by solving the Reduced problem
     ReducedPro_->routesToAdd_.clear();
@@ -591,9 +604,35 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
     }
 }
 
-void ISUD_Algorithm::solveISUD(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+void ISUD_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    timeLimit_ = availableTime_;
+    epochTime_ += subProTime;
     if (pInst->parameters_->modelSolver_ == GUROBI)
         solveISUD_Gurobi2(pInst, epoch, inputPaths, subProTime);
     else if (pInst->parameters_->modelSolver_ == CPLEX)
         solveISUD_CPLEX(pInst, epoch, inputPaths, subProTime);
+}
+
+void ISUD_Algorithm::resetModels() {
+    CompPro_.reset();
+    ReducedPro_.reset();
+    CPGurobiPro_.reset();
+    RPGurobiPro_.reset();
+}
+
+bool ISUD_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) {
+    if (pInst->parameters_->numIter_ == iter){
+        return true;
+    }
+
+    if (previousObj == objValue_) {
+        CGSuccess_++;
+        std::cout << "No changes in Objective" << std::endl;
+        return true;
+    }
+    return false;
+}
+
+void ISUD_Algorithm::getIPSolution(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) {
+    setObjValue();
 }
