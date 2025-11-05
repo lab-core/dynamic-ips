@@ -542,7 +542,7 @@
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "Req_W3": 0,
-      "vehicleReturn": 1,
+      "vehicleReturn": 0,
       "WaitForReturn": 120,
       "MaxWait": 120,
       "returnType": 2,
