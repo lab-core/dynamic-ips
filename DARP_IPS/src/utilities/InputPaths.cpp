@@ -169,11 +169,11 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
         throw myTools::myException("Output directory can not be created!!!", __LINE__);
     }
 
-//    output_onboards_ = outputDir + "ONBOARDS_vehicles_" + instNum + "_4.txt";
-    output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
+    output_onboards_ = outputDir + "ONBOARDS_vehicles_" + instNum + "_4.txt";
+//    output_onboards_ = outputDir + "ONBOARDS_" + instanceNameOut_ + ".txt";
     output_waitRequests_ = outputDir + "WaitRequests_" + instanceNameOut_ + ".txt";
-    output_vehicles_ = outputDir + "VEHICLES_" + instanceNameOut_ + ".txt";
-//   output_vehicles_ = outputDir + "vehicles_" + instNum + "_4.txt";
+//    output_vehicles_ = outputDir + "VEHICLES_" + instanceNameOut_ + ".txt";
+    output_vehicles_ = outputDir + "vehicles_" + instNum + "_4.txt";
     output_instance_ = outputDir + "INSTANCE_" + instanceNameOut_ + ".txt";
     output_trip_ = outputDir + "TRIP_" + instanceNameOut_ + ".txt";
 }

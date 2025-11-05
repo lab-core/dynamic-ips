@@ -10,7 +10,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
     epoch_ = 0;
     rebalanceTime_ = 0;
     rebalancingTime_->start();
-    int instance_count = 1;
+    int instance_count = mainInst->nbVehicles_;
 
     mainInst->setInitialTimes(mainInst->parameters_->epochLength_);
     for (auto &vehicleObj : mainInst->vehicles_) {
@@ -61,14 +61,15 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,
                 mainInst->parameters_->epochLength_, std::to_string(instance_count));
 
-            saveTime += 120;
-            if (instance_count >= 30)
+ //           saveTime += 120;
+//            if (instance_count >= 30)
                 break;
-            instance_count ++;
+ //           instance_count ++;
         }
 
         if (EpochInst->nbNewRequests_ == 0) {
-            MP_solver_->availableRoutes_.clear();
+            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+                MP_solver_->availableRoutes_.clear();
             simulationTime_->stop();
             epoch_++;
             goto nextEpoch;

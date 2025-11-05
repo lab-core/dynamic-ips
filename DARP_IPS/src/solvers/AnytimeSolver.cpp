@@ -82,7 +82,8 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
         }
 
         if (EpochInst->nbNewRequests_ == 0) {
-            MP_solver_->availableRoutes_.clear();
+            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+                MP_solver_->availableRoutes_.clear();
             simulationTime_->stop();
             simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ -
                     mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
