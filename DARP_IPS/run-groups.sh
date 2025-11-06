@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=36G
 #SBATCH --time=2:10:00
 #SBATCH --array=1-9
 #SBATCH --error=slurm-%A_%a.err
@@ -99,11 +99,11 @@ G6_instances=("20150917_07-960m")
 # G8: 1000-vehicle group
 # ================================================================
 G8_vehicle_folder="vehicles_byDemand"
-G8_paramfile="AnyParameters"
+G8_paramfile="BatchParameters"
 G8_vehicle_counts=(1000)
 G8_algorithms=(2)
 G8_modes=(1)
-G8_scenarios=("newObj")
+G8_scenarios=("commit")
 G8_inst_folder="Instances_2h-12"
 G8_instances=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
 
@@ -111,11 +111,11 @@ G8_instances=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230
 # G9: 1100-vehicle group
 # ================================================================
 G9_vehicle_folder="vehicles_byDemand"
-G9_paramfile="AnyParameters"
+G9_paramfile="BatchParameters"
 G9_vehicle_counts=(1100)
 G9_algorithms=(2)
 G9_modes=(1)
-G9_scenarios=("newObj")
+G9_scenarios=("commit")
 G9_inst_folder="Instances_2h-12"
 G9_instances=("20160316_12-120m" "20160512_12-120m")
 
@@ -123,11 +123,11 @@ G9_instances=("20160316_12-120m" "20160512_12-120m")
 # G10: 1400-vehicle group
 # ================================================================
 G10_vehicle_folder="vehicles_byDemand"
-G10_paramfile="AnyParameters"
+G10_paramfile="BatchParameters"
 G10_vehicle_counts=(1400)
 G10_algorithms=(2)
 G10_modes=(1)
-G10_scenarios=("newObj")
+G10_scenarios=("commit")
 G10_inst_folder="Instances_2h-12"
 G10_instances=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 
