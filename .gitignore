@@ -18,3 +18,4 @@ DARP_IPS/.vscode/launch.json
 DARP_IPS/.vscode/settings.json
 DARP_IPS/.vscode/tasks.json
 DARP_IPS/src/solvers/.idea/workspace.xml
+DARP_IPS/my_datasets/Instances_30s/*
