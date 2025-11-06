@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=36G
-#SBATCH --time=5:10:00
-#SBATCH --array=1-54
+#SBATCH --time=2:10:00
+#SBATCH --array=1-48
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -41,13 +41,27 @@ G2_instances=("20150917_11-120m")
 
 # G3
 G3_vehicle_folder="vehicles_uniform"
-G3_paramfile="AnyParameters"
-G3_vehicle_counts=(2000 1500)
-G3_algorithms=(6)
-G3_modes=(2)
-G3_scenarios=("SP_20" "Partial" "SP_150")
+G3_paramfile="BatchParameters"
+G3_vehicle_counts=(2000)
+G3_algorithms=(2)
+G3_modes=(1)
+G3_scenarios=("commit")
 G3_inst_folder="Instances_2h-7"
 G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
+              "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
+              "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
+              "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
+              "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
+              "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
+
+G7_vehicle_folder="vehicles_uniform"
+G7_paramfile="AnyParameters"
+G7_vehicle_counts=(2000)
+G7_algorithms=(2)
+G7_modes=(1)
+G7_scenarios=("newObj")
+G7_inst_folder="Instances_2h-7"
+G7_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
               "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
               "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
               "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
@@ -87,7 +101,7 @@ G6_instances=("20150917_07-960m")
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G3 G2)
 
 # -------------------------
 # Build job list
