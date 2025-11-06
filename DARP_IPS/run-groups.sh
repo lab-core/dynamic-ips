@@ -68,7 +68,7 @@ G9_paramfile="AnyParameters"
 G9_vehicle_counts=(2000)
 G9_algorithms=(2)
 G9_modes=(1)
-G9_scenarios=("commit")
+G9_scenarios=("newObj")
 G9_inst_folder="Instances_2h-7"
 G9_instances=("20160222_07-120m" "20160225_07-120m")
 
