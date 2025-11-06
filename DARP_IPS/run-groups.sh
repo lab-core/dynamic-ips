@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=20G
+#SBATCH --mem=36G
 #SBATCH --time=2:10:00
-#SBATCH --array=1-24
+#SBATCH --array=1-5
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -54,6 +54,24 @@ G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828
               "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
               "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
 
+G8_vehicle_folder="vehicles_uniform"
+G8_paramfile="BatchParameters"
+G8_vehicle_counts=(2000)
+G8_algorithms=(2)
+G8_modes=(1)
+G8_scenarios=("commit")
+G8_inst_folder="Instances_2h-7"
+G8_instances=("20150715_07-120m" "20160222_07-120m""20160225_07-120m" "20160401_07-120m" "20160628_07-120m")
+
+G9_vehicle_folder="vehicles_uniform"
+G9_paramfile="AnyParameters"
+G9_vehicle_counts=(2000)
+G9_algorithms=(2)
+G9_modes=(1)
+G9_scenarios=("commit")
+G9_inst_folder="Instances_2h-7"
+G9_instances=("20160222_07-120m" "20160225_07-120m")
+
 G7_vehicle_folder="vehicles_uniform"
 G7_paramfile="AnyParameters"
 G7_vehicle_counts=(2000)
@@ -101,7 +119,7 @@ G6_instances=("20150917_07-960m")
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G7)
+ALL_GROUPS=(G8 G9)
 
 # -------------------------
 # Build job list
