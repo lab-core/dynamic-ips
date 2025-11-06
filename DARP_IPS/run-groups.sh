@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=20G
+#SBATCH --mem=24G
 #SBATCH --time=2:10:00
-#SBATCH --array=1-2
+#SBATCH --array=1-9
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -22,8 +22,6 @@ G1_vehicle_counts=(1600 1700 1800)
 G1_algorithms=(6)
 G1_modes=(1)
 G1_scenarios=("Dual_1" "Dual_9" "Dual_1_R" "Dual_9_R" "Dual_1_P" "Dual_9_P")
-#G1_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-#G1_scenarios=("Rebalance_no")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20160329_11-120m")
 
@@ -34,8 +32,6 @@ G2_vehicle_counts=(1600 1700 1800)
 G2_algorithms=(6)
 G2_modes=(1)
 G2_scenarios=("Dual_1" "Dual_9" "Dual_1_R" "Dual_9_R" "Dual_1_P" "Dual_9_P")
-#G2_scenarios=("Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-#G2_scenarios=("Rebalance_no")
 G2_inst_folder="Instances_2h-11"
 G2_instances=("20150917_11-120m")
 
@@ -54,23 +50,6 @@ G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828
               "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
               "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
 
-G8_vehicle_folder="vehicles_uniform"
-G8_paramfile="BatchParameters"
-G8_vehicle_counts=(2000)
-G8_algorithms=(2)
-G8_modes=(1)
-G8_scenarios=("commit")
-G8_inst_folder="Instances_2h-7"
-G8_instances=("20150715_07-120m" "20160222_07-120m""20160225_07-120m" "20160401_07-120m" "20160628_07-120m")
-
-G9_vehicle_folder="vehicles_uniform"
-G9_paramfile="AnyParameters"
-G9_vehicle_counts=(2000)
-G9_algorithms=(2)
-G9_modes=(1)
-G9_scenarios=("newObj")
-G9_inst_folder="Instances_2h-7"
-G9_instances=("20160222_07-120m" "20160225_07-120m")
 
 G7_vehicle_folder="vehicles_uniform"
 G7_paramfile="AnyParameters"
@@ -116,10 +95,45 @@ G6_scenarios=("SP_20")
 G6_inst_folder="Instances_16h-7"
 G6_instances=("20150917_07-960m")
 
+# ================================================================
+# G8: 1000-vehicle group
+# ================================================================
+G8_vehicle_folder="vehicles_byDemand"
+G8_paramfile="AnyParameters"
+G8_vehicle_counts=(1000)
+G8_algorithms=(2)
+G8_modes=(1)
+G8_scenarios=("newObj")
+G8_inst_folder="Instances_2h-12"
+G8_instances=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
+
+# ================================================================
+# G9: 1100-vehicle group
+# ================================================================
+G9_vehicle_folder="vehicles_byDemand"
+G9_paramfile="AnyParameters"
+G9_vehicle_counts=(1100)
+G9_algorithms=(2)
+G9_modes=(1)
+G9_scenarios=("newObj")
+G9_inst_folder="Instances_2h-12"
+G9_instances=("20160316_12-120m" "20160512_12-120m")
+
+# ================================================================
+# G10: 1400-vehicle group
+# ================================================================
+G10_vehicle_folder="vehicles_byDemand"
+G10_paramfile="AnyParameters"
+G10_vehicle_counts=(1400)
+G10_algorithms=(2)
+G10_modes=(1)
+G10_scenarios=("newObj")
+G10_inst_folder="Instances_2h-12"
+G10_instances=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G9)
+ALL_GROUPS=(G8 G9 G10)
 
 # -------------------------
 # Build job list
