@@ -97,7 +97,7 @@ std::string Instance::toString() const {
     repStr << "# " << std::endl;
     repStr << "# INSTANCE_NAME       \t= " << name_ << std::endl;
     repStr << "# NUMBER_OF_VEHICLES  \t= " << nbVehicles_ <<std::endl;
-    repStr << "# NUMBER_OF_REQUESTS  \t= " << nbRequests_ <<std::endl;
+    repStr << "# NUMBER_OF_REQUESTS  \t= " << nbRequests_ - nbInitialOnboards_ <<std::endl;
     repStr << "# " << std::endl;
 
     repStr << "------------------------ PARAMETERS AND OPTIONS -------------------------" << std::endl;

@@ -10,7 +10,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
     epoch_ = 0;
     rebalanceTime_ = 0;
     rebalancingTime_->start();
-    int instance_count = mainInst->nbVehicles_;
+    int instance_count = 1;
 
     mainInst->setInitialTimes(mainInst->parameters_->epochLength_);
     for (auto &vehicleObj : mainInst->vehicles_) {
@@ -27,7 +27,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
-        elapsedTime_ = epoch_ * mainInst->parameters_->epochLength_;
+        elapsedTime_ = static_cast<float>(epoch_) * mainInst->parameters_->epochLength_;
 
         /******************************* Log Info ****************************/
         logEpochInfo(epoch_, elapsedTime_, simulationTime_->dSinceInit().count(), runtimeMetrics_->epochRuntime_,
@@ -43,7 +43,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
         if (mainInst->parameters_->routeRecycle_) {
-            if (MP_solver_->availableRoutes_.size() > 0) {
+            if (!MP_solver_->availableRoutes_.empty()) {
                 for (auto &vehicleObj: mainInst->vehicles_) {
                     if (vehicleObj->stateChanged_)
                         MP_solver_->availableRoutes_[vehicleObj->vehicleID_].clear();
@@ -61,10 +61,10 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,
                 mainInst->parameters_->epochLength_, std::to_string(instance_count));
 
- //           saveTime += 120;
-//            if (instance_count >= 30)
+            saveTime += 90;
+            if (instance_count >= 30)
                 break;
- //           instance_count ++;
+            instance_count ++;
         }
 
         if (EpochInst->nbNewRequests_ == 0) {
@@ -100,11 +100,6 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         else
             *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
 
-        if (mainInst->parameters_->initialDual_ == GREEDY_D || mainInst->parameters_->initialDual_ == INIT_CP) {
-            // set duals with greedy
-            EpochInst->nbNewRequests_ = 0;
-            EpochInst->addNewRequests(mainInst, elapsedTime_, nbReceivedRequest);
-        }
         epoch_++;
         simulationTime_->stop();
     }

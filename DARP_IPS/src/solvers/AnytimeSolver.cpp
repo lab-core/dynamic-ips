@@ -117,11 +117,6 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
         else
             *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
 
-        if (mainInst->parameters_->initialDual_ == GREEDY_D || mainInst->parameters_->initialDual_ == INIT_CP) {
-            // set duals with greedy
-            EpochInst->nbNewRequests_ = 0;
-            EpochInst->addNewRequests(mainInst, elapsedTime_, nbReceivedRequest);
-        }
         epoch_++;
         simulationTime_->stop();
     }

@@ -584,7 +584,7 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     // Initialize variables
     int iter = 0;
-    bool repeat = false;
+    bool repeat = true;
     bool subProBreak = false;
 
     EpochInst->updateTaskIndexLabeling();
