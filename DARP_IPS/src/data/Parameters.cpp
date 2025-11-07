@@ -208,7 +208,7 @@ solverOption::~solverOption() = default;
 
 void solverOption::disableHeuristics() {
     isTruncated_ = false;
- //   isDropPickPossible_ = true;
+    isDropPickPossible_ = true;
 }
 
 // Display function

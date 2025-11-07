@@ -2,7 +2,7 @@
   "defaultParameters": {
     "alphaParam": 1.5,
     "betaParam": 240,
-    "deltaPram": 420,
+    "deltaPram": 600,
     "epochLength": 30,
     "penaltyL": 30,
     "committedTime": 30,
@@ -587,7 +587,7 @@
       "DualMethod" : 0,
       "SmoothDual" : 0,
       "warmStart": 1,
-      "NumIter": 40,
+      "NumIter": 100,
       "NumColumn": 50,
       "isTruncated": 1,
       "MaxLabel": 15,

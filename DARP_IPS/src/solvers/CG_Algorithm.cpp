@@ -600,12 +600,12 @@ bool CG_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, fl
             return true;
         }
     }
-    else if (pInst->parameters_->mainAlgorithm_ == RT_CG){
+    /*else if (pInst->parameters_->mainAlgorithm_ == RT_CG){
         if (previousLpObj == lpObjValue_) {
             std::cout << "No changes in LP Objective" << std::endl;
             return true;
         }
-    }
+    }*/
     return false;
 }
 
