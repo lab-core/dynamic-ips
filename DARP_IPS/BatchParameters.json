@@ -598,7 +598,7 @@
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "Partial_Pricing": 0,
-      "nbPick": 4,
+      "nbPick": 40,
       "sortPath": 0,
       "sortColumn": 1,
       "Route_Recycle": 0,
