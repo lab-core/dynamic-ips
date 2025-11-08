@@ -781,7 +781,6 @@ bool MasterAlgorithm::hasTimeRemaining(const PInstance &pInst, float elapsedTime
     }
     else
         availableTime_ = LARGE_CONSTANT;
-    availableTime_ = LARGE_CONSTANT;
     if (availableTime_ <= 0)
         return false;
     return true;

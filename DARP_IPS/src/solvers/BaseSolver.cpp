@@ -584,7 +584,7 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
     // Initialize variables
     int iter = 0;
-    bool repeat = false;
+    bool repeat = true;
     bool subProBreak = false;
 
     EpochInst->updateTaskIndexLabeling();
@@ -663,8 +663,8 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     MP_solver_->resetModels();
     handleVehicleReturn(EpochInst);
 
-    subProOptions_->enableHeuristics(mainInst->parameters_);
-    EpochInst->parameters_->dynamicPricing_ = true;
+//    subProOptions_->enableHeuristics(mainInst->parameters_);
+//    EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = MP_solver_->objValue_;
     MP_solver_->setLastDuals(EpochInst);
     MP_solver_->checkCoveredVehicles(EpochInst);
