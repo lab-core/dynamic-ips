@@ -386,11 +386,6 @@ void Instance::addRequest(const PRequest &request) {
 
 void Instance::setInitialTimes(float commitTime) const {
 
-    for (auto & requestObj: requests_) {
-        requestObj->setMinTravelTime(durationMatrix_[requestObj->PickUpID_][requestObj->DropOffID_]);
-        requestObj->setMaxTravelTime(parameters_->alphaParam_, parameters_->betaParam_);
-    }
-
     // if the vehicles start from the source, depart time is after the first epoch
     if (parameters_->solutionMode_ == STATIC){
         for (auto & vehicleObj : vehicles_){
@@ -911,7 +906,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
     myFile << "REQUESTS_INFO" << std::endl;
 
     for (auto & requestObj: requests_) {
-        if (requestObj->requestTime_ >= simulationStart && requestObj->requestTime_ <= simulationStart + instDuration) {
+        if (requestObj->requestTime_ >= simulationStart && requestObj->requestTime_ < simulationStart + instDuration) {
             myFile << std::left << std::setw(7) << requestObj->nbPassengers_;
             myFile << std::setw(10) << requestObj->PickUpID_;
             myFile << std::setw(10) << requestObj->DropOffID_;

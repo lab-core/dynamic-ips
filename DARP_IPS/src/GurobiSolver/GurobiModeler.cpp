@@ -92,7 +92,7 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
         // Set basic parameters
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
- //       model_->set(GRB_DoubleParam_MIPGap, pInst->parameters_->MIPGap_);
+        model_->set(GRB_DoubleParam_MIPGap, pInst->parameters_->MIPGap_);
 
         // Update model
         model_->update();

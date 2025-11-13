@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
-#SBATCH --time=2:10:00
-#SBATCH --array=1-18
+#SBATCH --mem=24G
+#SBATCH --time=3:10:00
+#SBATCH --array=1-720
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -25,115 +25,35 @@ G1_scenarios=("Dual_1" "Dual_9" "Dual_1_R" "Dual_9_R" "Dual_1_P" "Dual_9_P")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20160329_11-120m")
 
-# G2
-G2_vehicle_folder="vehicles_byDemand_w11"
-G2_paramfile="AnyParameters"
-G2_vehicle_counts=(1600 1700 1800)
-G2_algorithms=(6)
+# ================================================================
+# G2: Automatic group
+# ================================================================
+G2_vehicle_folder="vehicles_byDemand"
+G2_paramfile="BatchParameters"
+G2_vehicle_counts=(1400)
+G2_algorithms=(2)
 G2_modes=(1)
-G2_scenarios=("Dual_1" "Dual_9" "Dual_1_R" "Dual_9_R" "Dual_1_P" "Dual_9_P")
-G2_inst_folder="Instances_2h-11"
-G2_instances=("20150917_11-120m")
+G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
+G2_inst_folder="Instances_30s_11"
 
-# G3
-G3_vehicle_folder="vehicles_uniform"
-G3_paramfile="BatchParameters"
-G3_vehicle_counts=(2000)
-G3_algorithms=(2)
-G3_modes=(1)
-G3_scenarios=("commit")
-G3_inst_folder="Instances_2h-7"
-G3_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
-              "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
-              "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
-              "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
-              "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
-              "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
-
-
-G7_vehicle_folder="vehicles_uniform"
-G7_paramfile="AnyParameters"
-G7_vehicle_counts=(2000)
-G7_algorithms=(2)
-G7_modes=(1)
-G7_scenarios=("newObj")
-G7_inst_folder="Instances_2h-7"
-G7_instances=("20150706_07-120m" "20150715_07-120m" "20150804_07-120m" "20150828_07-120m"
-              "20150917_07-120m" "20150926_07-120m" "20151008_07-120m" "20151025_07-120m"
-              "20151110_07-120m" "20151130_07-120m" "20151211_07-120m" "20151230_07-120m"
-              "20160109_07-120m" "20160129_07-120m" "20160222_07-120m""20160225_07-120m"
-              "20160316_07-120m" "20160329_07-120m" "20160401_07-120m" "20160427_07-120m"
-              "20160512_07-120m" "20160521_07-120m" "20160613_07-120m" "20160628_07-120m")
-
-# G4
-G4_vehicle_folder="vehicles_byDemand_w11"
-G4_paramfile="AnyParameters"
-G4_vehicle_counts=(1000 1100 1200)
-G4_algorithms=(6)
-G4_modes=(2)
-G4_scenarios=("Dual_1_0" "Dual_9")
-G4_inst_folder="Instances_4h-11"
-G4_instances=("20160628_11-240m")
-
-# G5
-G5_vehicle_folder="vehicles_byDemand_w11"
-G5_paramfile="AnyParameters"
-G5_vehicle_counts=(1300 1400 1500)
-G5_algorithms=(6)
-G5_modes=(2)
-G5_scenarios=("Dual_1_0" "Dual_9")
-G5_inst_folder="Instances_4h-11"
-G5_instances=("20150926_11-240m" "20160521_11-240m")
-
-# G6
-G6_vehicle_folder="vehicles_byDemand_w7"
-G6_paramfile="AnyParameters"
-G6_vehicle_counts=(1900)
-G6_algorithms=(6)
-G6_modes=(2)
-G6_scenarios=("SP_20")
-G6_inst_folder="Instances_16h-7"
-G6_instances=("20150917_07-960m")
-
-# ================================================================
-# G8: 1000-vehicle group
-# ================================================================
-G8_vehicle_folder="vehicles_byDemand"
-G8_paramfile="BatchParameters"
-G8_vehicle_counts=(1000)
-G8_algorithms=(2)
-G8_modes=(1)
-G8_scenarios=("newObj")
-G8_inst_folder="Instances_2h-12"
-G8_instances=("20150828_12-120m" "20151130_12-120m" "20160222_12-120m" "20151230_12-120m")
-
-# ================================================================
-# G9: 1100-vehicle group
-# ================================================================
-G9_vehicle_folder="vehicles_byDemand"
-G9_paramfile="BatchParameters"
-G9_vehicle_counts=(1100)
-G9_algorithms=(2)
-G9_modes=(1)
-G9_scenarios=("newObj")
-G9_inst_folder="Instances_2h-12"
-G9_instances=("20160316_12-120m" "20160512_12-120m")
-
-# ================================================================
-# G10: 1400-vehicle group
-# ================================================================
-G10_vehicle_folder="vehicles_byDemand"
-G10_paramfile="BatchParameters"
-G10_vehicle_counts=(1400)
-G10_algorithms=(2)
-G10_modes=(1)
-G10_scenarios=("newObj")
-G10_inst_folder="Instances_2h-12"
-G10_instances=("20160521_12-120m" "20151025_12-120m" "20150926_12-120m")
+# Dynamically discover instances for G2
+G2_main_dir="datasets/${G2_inst_folder}"
+if [[ -d "$G2_main_dir" ]]; then
+  mapfile -t G2_instances < <(find "$G2_main_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
+  if [[ ${#G2_instances[@]} -eq 0 ]]; then
+    echo "[WARNING] No instances found in $G2_main_dir. G2 will have no jobs."
+    G2_instances=()
+  else
+    echo "[INFO] Found ${#G2_instances[@]} instances in $G2_main_dir: ${G2_instances[*]}"
+  fi
+else
+  echo "[WARNING] Directory $G2_main_dir does not exist. G2 will have no jobs."
+  G2_instances=()
+fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G8 G9 G10)
+ALL_GROUPS=(G2)
 
 # -------------------------
 # Build job list

@@ -56,11 +56,11 @@ int main(int argc, char** argv) {
 
     int max_i = 1, max_j = 1;
 
-    if (config->scenario_ == "truncate") {
+    if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
         max_i = 7;
         max_j = 3;
     }
-    else if (config->scenario_ == "pruning")
+    else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1")
         max_i = 3;
     else if (config->scenario_ == "dropPick")
         max_i = 2;
@@ -87,11 +87,11 @@ int main(int argc, char** argv) {
                 mainInst->adjustParameters(config);
 
                 // Configure parameters based on parameter file
-                if (config->scenario_ == "truncate") {
+                if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
                     mainInst->parameters_->MaxLabel_ = (i + 1) * 5;
                     mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 }
-                else if (config->scenario_ == "pruning") {
+                else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1") {
                     mainInst->parameters_->pruneNodes_ = true;
                     if (i >= 1) mainInst->parameters_->pruneArcs_ = true;
                     if (i >= 2) mainInst->parameters_->discardSuboptimalPath_ = true;

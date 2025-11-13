@@ -270,6 +270,9 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->requests_.back()->allocVehicleID_ = vehicleID;
                 pInstance->requests_.back()->solVehicleID_ = vehicleID;
 
+                pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
+                pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
+
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -286,6 +289,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->instGraph_->pickNodes_.back()->reachTime_ = pickTime;
                 pInstance->instGraph_->pickNodes_.back()->departTime_ = pickup_depart;
                 routeNodes[vehicleID][position] = pInstance->instGraph_->dropNodes_.back();
+
             }
         }
     }
@@ -340,6 +344,8 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                     pInstance->requests_.back()->Req_W3_= static_cast<float>(pInstance->requests_.back()->nbPassengers_);
                 else
                     pInstance->requests_.back()->Req_W3_ = 1.0;
+                pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
+                pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -409,6 +415,8 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                     pInstance->requests_.back()->Req_W3_= static_cast<float>(pInstance->requests_.back()->nbPassengers_);
                 else
                     pInstance->requests_.back()->Req_W3_ = 1.0;
+                pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
+                pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
                 pInstance->nameToRequest_.insert(
                         std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
                                                          pInstance->requests_.back()));

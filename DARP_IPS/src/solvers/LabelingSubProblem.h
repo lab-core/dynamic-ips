@@ -12,8 +12,8 @@
 
 
 //-----------------------------------------------------------------------------
-//  Labeling Sub problem class
-//  contains the labeling algorithm to solve the subproblem for each vehicle
+//  Labelling Sub problem class
+//  contains the labelling algorithm to solve the subproblem for each vehicle
 //-----------------------------------------------------------------------------
 
 class LabelingSubProblem : public SubproModeler{

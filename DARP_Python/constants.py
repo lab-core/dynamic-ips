@@ -14,7 +14,7 @@ plot_config = {
 
 # ---- MAP PARAMETERS ----
 PLACE = "Manhattan, New York, USA"
-MIN_STOP_SPACING_M = 120        # keep stops at least this far apart
+MIN_STOP_SPACING_M = 150        # keep stops at least this far apart
 HIGHWAY_BUFFER_M = 10           # how far from those roads to exclude
 NETWORK_TYPE = "drive"          # use "drive" for pickup stops on roads
 

@@ -11,6 +11,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
     rebalanceTime_ = 0;
     rebalancingTime_->start();
     int instance_count = 1;
+ //   int instance_count = mainInst->nbVehicles_;
 
     mainInst->setInitialTimes(mainInst->parameters_->epochLength_);
     for (auto &vehicleObj : mainInst->vehicles_) {
@@ -22,8 +23,12 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
 
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
-
-    while (nbReceivedRequest < mainInst->nbRequests_){
+    std::vector<PRequest> zSolution;
+    if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+        zSolution = MP_solver_->zSolution_;
+    else
+        zSolution = GreedyModel_->zSolution_;
+    while (nbReceivedRequest < mainInst->nbRequests_ || !zSolution.empty()){
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
@@ -67,7 +72,7 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             instance_count ++;
         }
 
-        if (EpochInst->nbNewRequests_ == 0) {
+        if (EpochInst->nbRequests_ == 0) {
             if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
                 MP_solver_->availableRoutes_.clear();
             simulationTime_->stop();
