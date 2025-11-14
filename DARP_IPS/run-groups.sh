@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
 #SBATCH --time=0:10:00
-#SBATCH --array=1-720
+#SBATCH --array=1-240
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -34,7 +34,7 @@ G2_vehicle_counts=(1400)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("dropPick_0" "dropPick_1" "dynamic_00" "dynamic_01" "dynamic_10" "dynamic_11")
+G2_scenarios=("dropPick_0" "dropPick_1")
 G2_inst_folder="Instances_30s_11"
 
 # Dynamically discover instances for G2
