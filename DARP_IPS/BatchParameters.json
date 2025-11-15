@@ -30,7 +30,7 @@
   "scenarios": {
     "nbPick1": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
@@ -64,7 +64,7 @@
     },
     "nbPick2": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
@@ -98,7 +98,7 @@
     },
     "nbPick3": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
@@ -132,7 +132,7 @@
     },
     "nbPick4": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
