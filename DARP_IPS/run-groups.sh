@@ -39,7 +39,7 @@ G4_paramfile="BatchParameters"
 G4_vehicle_counts=(1400)
 G4_algorithms=(2)
 G4_modes=(1)
-G4_scenarios=("Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0" "no_commit_0")
+G4_scenarios=("Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1" "no_commit_1")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
 
@@ -72,7 +72,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G3 G4)
+ALL_GROUPS=(G4)
 
 # -------------------------
 # Build job list
