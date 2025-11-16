@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=46G
+#SBATCH --mem=36G
 #SBATCH --time=2:30:00
-#SBATCH --array=1-16
+#SBATCH --array=1-10
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -21,7 +21,7 @@ G1_paramfile="BatchParameters"
 G1_vehicle_counts=(1300)
 G1_algorithms=(2)
 G1_modes=(1)
-G1_scenarios=("Ab_drop_0" "Ab_truncate_0" "commit_1")
+G1_scenarios=("commit_0")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 
@@ -30,7 +30,7 @@ G3_paramfile="BatchParameters"
 G3_vehicle_counts=(900)
 G3_algorithms=(2)
 G3_modes=(1)
-G3_scenarios=("Ab_truncate_0" "commit_1")
+G3_scenarios=("commit_0")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 
@@ -39,7 +39,7 @@ G4_paramfile="BatchParameters"
 G4_vehicle_counts=(1400)
 G4_algorithms=(2)
 G4_modes=(1)
-G4_scenarios=("Ab_drop_0" "Ab_truncate_0" "no_commit_0" "commit_0" "commit_1")
+G4_scenarios=("no_commit_1" "commit_0" "commit_1")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
 
