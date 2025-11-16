@@ -506,7 +506,7 @@
     },
     "dynamic_10": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
@@ -540,7 +540,7 @@
     },
     "dynamic_11": {
       "Wait_W1": 1,
-      "Ride_W2": 0,
+      "Ride_W2": 0.5,
       "Req_W3": 0,
       "vehicleReturn": 0,
       "WaitForReturn": 120,
