@@ -317,3 +317,28 @@ void Vehicle::adjustDuals() {
     }
     dual_ = 0.0;
 }
+
+std::string Vehicle::toStringOut(int epoch) const {
+    std::stringstream repStr;
+    float avgPassPerStop = 0.0;
+    if (currentRoute_->routeSize_ > 1) {
+        for (int i = 1; i < currentRoute_->plannedPassengers_.size(); ++i) {
+            avgPassPerStop += currentRoute_->plannedPassengers_[i];
+        }
+        avgPassPerStop /= currentRoute_->plannedPassengers_.size() -1;
+    }
+
+    repStr << epoch << "," << vehicleID_ << ","
+           << currentRoute_->getRouteId() << ","
+           << numPassengers_ << ","
+           << onboards_.size() << ","
+           << currentRoute_->nbCommitted_ << ","
+           << currentRoute_->routeRequests_.size() << ","
+           << currentRoute_->routeSize_ << ","
+           << currentRoute_->totalLength_ << ","
+           << avgPassPerStop << ","
+           << currentRoute_->totalWait_ << ","
+           << currentRoute_->totalTripDelay_ << ","
+           << currentRoute_->objCoef_ << "\n";
+    return repStr.str();
+}

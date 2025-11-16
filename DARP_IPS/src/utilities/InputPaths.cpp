@@ -59,6 +59,7 @@ const std::string &InputPaths::getOutputReqDuals() const { return output_reqDual
 const std::string &InputPaths::getOutputVehDuals() const { return output_vehDuals_; }
 const std::string &InputPaths::getOutputSolutionChange() const {return output_solutionChange_;}
 const std::string &InputPaths::getOutputSummary() const {return output_summary_;}
+const std::string &InputPaths::getOutputVehicleEpoch() const {return output_vehicleEpoch_;}
 
 
 void InputPaths::initializeInputs(const std::string &instFolder, const std::string &instanceName) {
@@ -147,6 +148,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     output_solverLog_ = outputDir_ + "LogSolver_" + prefix_ + ".txt";
     output_solutionChange_ = outputDir_ + "solutionChange_" + prefix_ + ".csv";
     output_summary_ = outputDir_ + "summary_" + prefix_ + ".csv";
+    output_vehicleEpoch_ = outputDir_ + "VehicleEpoch_" + prefix_ + ".csv";
 
     // create output files for epoch results
     std::ofstream myFile;

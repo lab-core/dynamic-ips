@@ -52,6 +52,10 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
                                      "#nbPrunedPath,nbNegative,nbRoutes,BestRCost,runtime,stateChanged,removePick,"
                                      "removeDrop,#TwoPickRoute,#OnePickRoute,#newCovered,#PriorCover" << std::endl;
 
+    pLogEpochVehicleStream_= new Tools::LogOutput(inputPaths.getOutputVehicleEpoch());
+    *pLogEpochVehicleStream_ << "Epoch,VehicleID,RouteID,nbOnboards,nbOnboards_nodes,nbCommitted,nbRequests,nbNodes,"
+                                "length,avgPassPerStop,totalWait,totalTripDelay,objCoef" << std::endl;
+
     if (mainInst->parameters_->approach_ != Greedy) {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
         *pLogRunTimesStream_ << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
@@ -81,10 +85,12 @@ BaseSolver::~BaseSolver() {
     delete rebalancingProcessTime_;
     pLogRunTimesStream_->close();
     pLogEpochSubRuntimeStream_->close();
+    pLogEpochVehicleStream_->close();
     //    pLogEpochSubRouteStream_->close();
     //    pLogSolutionChange_->close();
     delete pLogRunTimesStream_;
     delete pLogEpochSubRuntimeStream_;
+    delete pLogEpochVehicleStream_;
     //    delete pLogEpochSubRouteStream_;
     //    delete pLogSolutionChange_;
 }
@@ -668,6 +674,8 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     objValue_ = MP_solver_->objValue_;
     MP_solver_->setLastDuals(EpochInst);
     MP_solver_->checkCoveredVehicles(EpochInst);
+    for (auto & vehicleObj : EpochInst->vehicles_)
+        (*pLogEpochVehicleStream_) << vehicleObj->toStringOut(epoch_);
 
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
@@ -879,9 +887,9 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
         nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
         nbNegativeFound += subProblem->nbNegativeColumns_;
         runtimeMetrics_->updateSubproblemMetrics(subProblem);
-        if (epoch_ >= 720 && epoch_ < 1440 && (epoch_ - 720) % 18 == 0) {
-            (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
-        }
+ //       if (epoch_ >= 720 && epoch_ < 1440 && (epoch_ - 720) % 18 == 0) {
+ //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
+ //       }
     }
 
     // Clean up

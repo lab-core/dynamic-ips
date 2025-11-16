@@ -80,6 +80,8 @@ public:
 
     // function to adjust duals and make sure their summation equals c_r
     void adjustDuals();
+
+    std::string toStringOut(int epoch) const;
 };
 
 

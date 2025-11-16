@@ -64,6 +64,7 @@ protected:
     std::string output_vehDuals_;               // save vehicles duals after each iteration of solving MP
     std::string output_solutionChange_;         // save the changes in incompatibility degree at each epoch
     std::string output_summary_;                // save the summary of the final solution
+    std::string output_vehicleEpoch_;           // save the specification of selected routes at each epoch
 
 public:
 
@@ -104,6 +105,7 @@ public:
     const std::string &getOutputVehDuals() const;
     const std::string &getOutputSummary() const;
     const std::string &getOutputSolutionChange() const;
+    const std::string &getOutputVehicleEpoch() const;
 
     // this function defines the path to input data files
     void initializeInputs(const std::string& instFolder, const std::string& instanceName);

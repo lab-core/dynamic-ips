@@ -49,6 +49,7 @@ public:
     // Logging
     Tools::LogOutput* pLogRunTimesStream_;               // log for run times
     Tools::LogOutput* pLogEpochSubRuntimeStream_;        // log for subproblem run times at each epoch
+    Tools::LogOutput* pLogEpochVehicleStream_;           // log for subproblem run times at each epoch
 
     // Subproblem tracking
     int nbOnePick_;                                       // number of SPs solved with single pick-up limit    
@@ -87,7 +88,7 @@ public:
     void returnVehiclesZone(const PInstance & EpochInst) const;
 
     // function to reconstruct available routes from th elast epoch
-    void reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes);
+    static void reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes);
 
     // function to build the epoch instance from the main instance
     void buildEpochInstance(PInstance &mainInst, PInstance &EpochInst, float elapsedTime, int &nbReceivedRequest);
