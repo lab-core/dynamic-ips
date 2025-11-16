@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=36G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-16
+#SBATCH --array=1-4
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -23,7 +23,7 @@ G1_algorithms=(2)
 G1_modes=(1)
 G1_scenarios=("Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0" "no_commit_0")
 G1_inst_folder="Instances_2h-11"
-G1_instances=("20150926_11-120m" "20151025_11-120m_11")
+G1_instances=("20151025_11-120m")
 
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_paramfile="BatchParameters"
@@ -72,7 +72,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G3 G4)
+ALL_GROUPS=(G1)
 
 # -------------------------
 # Build job list
