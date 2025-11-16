@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=36G
 #SBATCH --time=2:30:00
 #SBATCH --array=1-48
 #SBATCH --error=slurm-%A_%a.err
@@ -18,7 +18,7 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="BatchParameters"
-G1_vehicle_counts=(1500 1400)
+G1_vehicle_counts=(1300 1200)
 G1_algorithms=(2)
 G1_modes=(1)
 G1_scenarios=("multiObj_5" "multiObj_1" "multiObj_0")
@@ -27,7 +27,7 @@ G1_instances=("20150926_11-120m" "20151025_11-120m")
 
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_paramfile="BatchParameters"
-G3_vehicle_counts=(1100 1000)
+G3_vehicle_counts=(900 800)
 G3_algorithms=(2)
 G3_modes=(1)
 G3_scenarios=("multiObj_5" "multiObj_1" "multiObj_0")
@@ -36,7 +36,7 @@ G3_instances=("20151230_11-120m")
 
 G4_vehicle_folder="vehicles_byDemand_w11"
 G4_paramfile="BatchParameters"
-G4_vehicle_counts=(1600 1500)
+G4_vehicle_counts=(1400 1300)
 G4_algorithms=(2)
 G4_modes=(1)
 G4_scenarios=("multiObj_5" "multiObj_1" "multiObj_0")
