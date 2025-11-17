@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-4
+#SBATCH --array=1-12
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
