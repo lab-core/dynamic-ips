@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=10G
+#SBATCH --mem=24G
 #SBATCH --time=2:10:00
 #SBATCH --array=1-48
 #SBATCH --error=slurm-%A_%a.err
@@ -48,7 +48,7 @@ G4_instances=("20160109_11-120m")
 # ================================================================
 G2_vehicle_folder="vehicles_uniform"
 G2_paramfile="BatchParameters"
-G2_vehicle_counts=(2000)
+G2_vehicle_counts=(1000)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
