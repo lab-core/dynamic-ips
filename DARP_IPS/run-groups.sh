@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=46G
-#SBATCH --time=2:10:00
-#SBATCH --array=1-2
+#SBATCH --mem=64G
+#SBATCH --time=2:20:00
+#SBATCH --array=1-4
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -43,6 +43,15 @@ G4_scenarios=("Ab_truncate_1")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
 
+G5_vehicle_folder="vehicles_uniform"
+G5_paramfile="BatchParameters"
+G5_vehicle_counts=(2000)
+G5_algorithms=(2)
+G5_modes=(1)
+G5_scenarios=("multiObj_0" "Cust_W3")
+G5_inst_folder="Instances_2h-7"
+G5_instances=("20160401_07-120m" "20160329_07-120m")
+
 # ================================================================
 # G2: Automatic group
 # ================================================================
@@ -52,7 +61,7 @@ G2_vehicle_counts=(1000)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("multiObj_5" "Cust_W3")
+G2_scenarios=("multiObj_0" "Cust_W3")
 G2_inst_folder="Instances_2h-7"
 
 # Dynamically discover instances for G2
@@ -72,7 +81,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G3 G4)
+ALL_GROUPS=(G5)
 
 # -------------------------
 # Build job list
@@ -100,7 +109,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 1")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 0")
           done
         done
       done
