@@ -6,11 +6,15 @@ from Simulation.utilities import read_csv_with_encoding
 from Visualization.data_preprocessing import preprocess_nested_data
 from Visualization.plot_config import PlotConfig
 from Visualization.visualize_bar_plots import create_double_relative_barplot, create_double_grouped_barplot
-from Visualization.visualize_box_plots import create_comparison_boxplots, create_single_boxplot, create_multi_subplot_boxplots
+from Visualization.visualize_box_plots import create_comparison_boxplots, create_single_boxplot, \
+    create_multi_subplot_boxplots
 from Visualization.visualize_profile_plots import create_multi_subplot_profile_lineplots
-from Visualization.visualize_scatter_plots import plot_pruning_scatter_double, create_multi_subplot_lineplots, create_grouped_lineplot
+from Visualization.visualize_scatter_plots import plot_pruning_scatter_double, create_multi_subplot_lineplots, \
+    create_grouped_lineplot
 
 outlier = True
+
+
 # ---------------------------------------------------------------------------
 # Box plots
 # ---------------------------------------------------------------------------
@@ -37,12 +41,13 @@ def create_pruning_time_boxplot_double(data_path: str, config: PlotConfig):
         ylim=[1150, 750],  # Will apply to both subplots
         legend_bbox=(0.55, 0.99),  # bbox_anchor_legend1
         legend_bbox2=(0.42, 0.865),  # bbox_anchor_legend2
-        legend_ncol = 2,
+        legend_ncol=2,
         color_reverse=True,
         show_outliers=True,
         fig_size=config.fig_size,
-        tight_layout_rect = (0, 0, 1, 0.8)
+        tight_layout_rect=(0, 0, 1, 0.8)
     )
+
 
 def create_dropPick_time_boxplot_double(data_path: str, config: PlotConfig):
     """Create double boxplot for drop-pick options comparison."""
@@ -72,10 +77,12 @@ def create_dropPick_time_boxplot_double(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
+
 def create_dynamic_time_boxplot_double(data_path: str, config: PlotConfig):
     """Create double boxplot for dynamic pricing comparison with drop-pick filter."""
 
     isDropPickPossible = True
+
     def filter_drop_pick(df):
         return df[df['isDropPickPossible'] == isDropPickPossible]
 
@@ -104,6 +111,7 @@ def create_dynamic_time_boxplot_double(data_path: str, config: PlotConfig):
         additional_filter=filter_drop_pick,
         tight_layout_rect=(0, 0, 1, 0.85)
     )
+
 
 def create_dynamic_avgtime_boxplot_double(data_path: str, config: PlotConfig):
     """Create double boxplot for dynamic average time comparison."""
@@ -142,6 +150,7 @@ def create_dynamic_avgtime_boxplot_double(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
+
 def create_truncate_time_boxplot(data_path: str, config: PlotConfig):
     """Single subplot showing runtime for different sorting strategies."""
 
@@ -169,6 +178,7 @@ def create_truncate_time_boxplot(data_path: str, config: PlotConfig):
         additional_filter=preprocess_truncate,
         show_outliers=True
     )
+
 
 def create_commit_response_boxplot_double(data_path: str, config: PlotConfig):
     # Read main data
@@ -202,7 +212,7 @@ def create_commit_response_boxplot_double(data_path: str, config: PlotConfig):
         category_column='Algorithm_Name',
         value_column='CommitWaitTime',
         categories=['B-CG', 'B-CG-C'],
- #       category_labels=['B-CG', 'B-CG-C'],
+        #       category_labels=['B-CG', 'B-CG-C'],
         legend_title='Algorithms',
         ylabel='Response Times (min)',
         output_filename=f'commit_responseTime_boxplot_{outlier}.png',
@@ -221,6 +231,7 @@ def create_commit_response_boxplot_double(data_path: str, config: PlotConfig):
         os.remove(temp_path)
 
     return figure_path
+
 
 def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig):
     # Read main data
@@ -254,7 +265,7 @@ def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig):
         category_column='Algorithm_Name',
         value_column='WaitTime',
         categories=['B-CG', 'B-CG-C'],
- #       category_labels=['B-CG', 'B-CG-C'],
+        #       category_labels=['B-CG', 'B-CG-C'],
         legend_title='Algorithms',
         ylabel='Waiting Times (min)',
         output_filename=f'commit_waitTime_boxplot_{outlier}.png',
@@ -273,6 +284,7 @@ def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig):
         os.remove(temp_path)
 
     return figure_path
+
 
 def create_ablation_wait_boxplot_double(data_path: str, config: PlotConfig):
     # Read main data
@@ -329,6 +341,7 @@ def create_ablation_wait_boxplot_double(data_path: str, config: PlotConfig):
         os.remove(temp_path)
 
     return figure_path
+
 
 def create_ablation_time_boxplot_double(data_path: str, config: PlotConfig):
     # Read main data
@@ -387,6 +400,7 @@ def create_ablation_time_boxplot_double(data_path: str, config: PlotConfig):
 
     return figure_path
 
+
 def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
@@ -401,7 +415,7 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
         instance_column='Instance',
         algorithm_column='Algorithm',
         filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,   # seconds -> minutes
+        transform_func=lambda x: x / 60,  # seconds -> minutes
         aggregate_func=None,
         additional_columns=['object_category', 'Instance_category']
     )
@@ -412,7 +426,7 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
-        {   # LEFT: Waiting Times
+        {  # LEFT: Waiting Times
             'item_column': 'Instance_category',
             'category_column': 'object_category',
             'value_column': 'WaitTime',
@@ -423,9 +437,9 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
             'rotation': 20,
             'width': 0.4,
             'show_outliers': outlier,
-            'show_legend': False,   # we will use a shared legend
+            'show_legend': False,  # we will use a shared legend
         },
-        {   # RIGHT: Trip delay
+        {  # RIGHT: Trip delay
             'item_column': 'Instance_category',
             'category_column': 'object_category',
             'value_column': 'TripDelay',
@@ -436,7 +450,7 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
             'rotation': 20,
             'width': 0.4,
             'show_outliers': outlier,
-            'show_legend': False,   # shared legend only
+            'show_legend': False,  # shared legend only
         }
     ]
 
@@ -514,6 +528,7 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
 
     return figure_path
 
+
 def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
@@ -535,7 +550,6 @@ def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig) -
     # Save to temporary file
     temp_path = os.path.join(os.path.dirname(data_path), 'vehicle_temp_data.csv')
     processed_df.to_csv(temp_path, index=False)
-
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -641,6 +655,7 @@ def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig) -
 
     return figure_path
 
+
 def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
@@ -661,7 +676,6 @@ def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig) -> s
     # Save to temporary file
     temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
     processed_df.to_csv(temp_path, index=False)
-
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -768,6 +782,7 @@ def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig) -> s
 
     return figure_path
 
+
 def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
@@ -799,7 +814,7 @@ def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str
             'item_column': 'Instance_category',
             'category_column': 'Req_W3',
             'value_column': '#LGenerated',
-            'categories': ["0","1"],
+            'categories': ["0", "1"],
             'category_labels': category_labels,
             'ylabel': '# Generated labels',
             'xlabel': 'Generated labels per Epoch',
@@ -812,7 +827,7 @@ def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str
             'item_column': 'Instance_category',
             'category_column': 'Req_W3',
             'value_column': 'EpochRuntime',
-            'categories': ["0","1"],
+            'categories': ["0", "1"],
             'category_labels': category_labels,
             'ylabel': 'Epoch Runtime (s)',
             'xlabel': 'Runtime per Epoch',
@@ -898,11 +913,11 @@ def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str
 
     return figure_path
 
+
 # ---------------------------------------------------------------------------
 # Bar plots
 # ---------------------------------------------------------------------------
 def create_dropPick_wait_barplot_double(data_path: str, config: PlotConfig):
-
     # --- Create the double relative bar figure ---
     return create_double_relative_barplot(
         data_path=data_path,
@@ -926,8 +941,8 @@ def create_dropPick_wait_barplot_double(data_path: str, config: PlotConfig):
         grid=False,
     )
 
-def create_nbPick_wait_barplot_double(data_path: str, config: PlotConfig):
 
+def create_nbPick_wait_barplot_double(data_path: str, config: PlotConfig):
     return create_double_grouped_barplot(
         data_path=data_path,
         config=config,
@@ -952,8 +967,8 @@ def create_nbPick_wait_barplot_double(data_path: str, config: PlotConfig):
         agg_func='mean'
     )
 
-def create_nbPick_obj_barplot_double(data_path: str, config: PlotConfig):
 
+def create_nbPick_obj_barplot_double(data_path: str, config: PlotConfig):
     return create_double_grouped_barplot(
         data_path=data_path,
         config=config,
@@ -973,8 +988,8 @@ def create_nbPick_obj_barplot_double(data_path: str, config: PlotConfig):
         alpha=0.7
     )
 
-def create_nbPick_time_barplot_double(data_path: str, config: PlotConfig):
 
+def create_nbPick_time_barplot_double(data_path: str, config: PlotConfig):
     return create_double_grouped_barplot(
         data_path=data_path,
         config=config,
@@ -998,6 +1013,7 @@ def create_nbPick_time_barplot_double(data_path: str, config: PlotConfig):
         alpha=0.7
     )
 
+
 # ---------------------------------------------------------------------------
 # line / scatter plots
 # ---------------------------------------------------------------------------
@@ -1005,22 +1021,22 @@ def create_pruning_scatter_plot_double(data_path: str, config: PlotConfig):
     plot_pruning_scatter_double(
         data_path=data_path,
         config=config,
-        category_column = "isSuccessorsLimited",
-        group_column = "Instance",
-        metrics = ("#LGenerated", "#LDominated"),
-        categories = ("noPruning", "pruneNodes", "pruneArcs", "discardSuboptimalPath"),
+        category_column="isSuccessorsLimited",
+        group_column="Instance",
+        metrics=("#LGenerated", "#LDominated"),
+        categories=("noPruning", "pruneNodes", "pruneArcs", "discardSuboptimalPath"),
         category_labels=['No pruning', 'Prune nodes', 'Prune arcs', 'Prune Suboptimal Path'],
         output_filename='pruning_labels_comparison.png',
         ylabel='# Labels(Generated/LDominated)',
-        ride_w2_values = (0.0, 0.5),
-        log_scale = True,
+        ride_w2_values=(0.0, 0.5),
+        log_scale=True,
         rotation=15,
         color_reverse=True,
         ylim=(2e6, 2e9)
     )
 
-def create_multiObj_wait_scatter(data_path: str, config: PlotConfig) -> str:
 
+def create_multiObj_wait_scatter(data_path: str, config: PlotConfig) -> str:
     # Marker shapes: circle, square, diamond
     marker_styles = ["o", "s", "D"]
 
@@ -1036,15 +1052,15 @@ def create_multiObj_wait_scatter(data_path: str, config: PlotConfig) -> str:
                 "ylabel": "Average waiting time (s)" if i == 0 else "",
                 "xlabel": c.vehicle_groups_labels[i],
                 "filter": lambda df, cat=inst_cat: df[df["Instance_category"] == cat],
-                "show_legend": False,          # shared legend instead
+                "show_legend": False,  # shared legend instead
                 "show_grid": False,
                 "rotation": 20,
                 "line_width": 2,
                 "marker_size": 5.2,
                 "marker_styles": marker_styles,
                 "ylim": (100, 480),
-                "show_ylabel": i == 0,         # only left subplot has y-label
-                "show_y_ticks": i == 0,        # hide y ticks on others
+                "show_ylabel": i == 0,  # only left subplot has y-label
+                "show_y_ticks": i == 0,  # hide y ticks on others
             }
         )
 
@@ -1078,8 +1094,8 @@ def create_multiObj_wait_scatter(data_path: str, config: PlotConfig) -> str:
 
     return figure_path
 
-def create_multiObj_wait_grouped(data_path: str, config: PlotConfig) -> str:
 
+def create_multiObj_wait_grouped(data_path: str, config: PlotConfig) -> str:
     return create_grouped_lineplot(
         data_path=data_path,
         config=config,
@@ -1094,9 +1110,10 @@ def create_multiObj_wait_grouped(data_path: str, config: PlotConfig) -> str:
         group_labels=c.vehicle_groups_labels,
         ylim=(100, 520),
         legend_title="Objective setting",
-        color_reverse=False,        # or True, as you prefer
-        fig_size = (6.5, 4),
+        color_reverse=False,  # or True, as you prefer
+        fig_size=(6.5, 4),
     )
+
 
 def create_multiObj_tripdelay_grouped(data_path: str, config: PlotConfig) -> str:
     return create_grouped_lineplot(
@@ -1117,6 +1134,7 @@ def create_multiObj_tripdelay_grouped(data_path: str, config: PlotConfig) -> str
         fig_size=(6.5, 4),
     )
 
+
 def create_multiObj_passenger_grouped(data_path: str, config: PlotConfig) -> str:
     return create_grouped_lineplot(
         data_path=data_path,
@@ -1130,11 +1148,12 @@ def create_multiObj_passenger_grouped(data_path: str, config: PlotConfig) -> str
         ylabel="Average # passengers in vehicles",
         category_labels=c.OBJECTIVES_labels,
         group_labels=c.vehicle_groups_labels,
-        ylim=(0.8,2.9),
+        ylim=(0.8, 2.9),
         legend_title="Objective setting",
         color_reverse=False,  # or True, as you prefer
         fig_size=(6.5, 4),
     )
+
 
 def create_multiObj_idle_grouped(data_path: str, config: PlotConfig) -> str:
     return create_grouped_lineplot(
@@ -1149,15 +1168,15 @@ def create_multiObj_idle_grouped(data_path: str, config: PlotConfig) -> str:
         ylabel="Average idle time/vehicle (s)",
         category_labels=c.OBJECTIVES_labels,
         group_labels=c.vehicle_groups_labels,
-        ylim=(0.8,1650),
+        ylim=(0.8, 1650),
         legend_title="Objective setting",
         color_reverse=False,  # or True, as you prefer
         fig_size=(6.5, 4),
         legend_loc="upper right",
     )
 
-def create_custW3_wait_grouped(data_path: str, config: PlotConfig) -> str:
 
+def create_custW3_wait_grouped(data_path: str, config: PlotConfig) -> str:
     category_labels = [
         "Ignore Customer Weight",
         "Consider Customer Weight",
@@ -1168,7 +1187,7 @@ def create_custW3_wait_grouped(data_path: str, config: PlotConfig) -> str:
         config=config,
         value_column="wait/req",
         category_column="Req_W3",
-        categories=[0,1],
+        categories=[0, 1],
         group_column="Instance_category",
         groups=c.vehicle_groups,
         output_filename="custW3_wait_grouped.png",
@@ -1176,13 +1195,13 @@ def create_custW3_wait_grouped(data_path: str, config: PlotConfig) -> str:
         category_labels=category_labels,
         group_labels=c.vehicle_groups_labels,
         legend_title="Customer Weight",
-        color_reverse=False,        # or True, as you prefer
-        fig_size = (6.5, 4),
+        color_reverse=False,  # or True, as you prefer
+        fig_size=(6.5, 4),
         ylim=(102, 279),
     )
 
-def create_custW3_waitcust_grouped(data_path: str, config: PlotConfig) -> str:
 
+def create_custW3_waitcust_grouped(data_path: str, config: PlotConfig) -> str:
     category_labels = [
         "Ignore Customer Weight",
         "Consider Customer Weight",
@@ -1193,7 +1212,7 @@ def create_custW3_waitcust_grouped(data_path: str, config: PlotConfig) -> str:
         config=config,
         value_column="wait/cust",
         category_column="Req_W3",
-        categories=[0,1],
+        categories=[0, 1],
         group_column="Instance_category",
         groups=c.vehicle_groups,
         output_filename="custW3_waitcust_grouped.png",
@@ -1201,10 +1220,11 @@ def create_custW3_waitcust_grouped(data_path: str, config: PlotConfig) -> str:
         category_labels=category_labels,
         group_labels=c.vehicle_groups_labels,
         legend_title="Customer Weight",
-        color_reverse=False,        # or True, as you prefer
-        fig_size = (6.5, 4),
+        color_reverse=False,  # or True, as you prefer
+        fig_size=(6.5, 4),
         ylim=(102, 279),
     )
+
 
 # ---------------------------------------------------------------------------
 # profile plots
@@ -1221,14 +1241,14 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
         df=main_df,
         data_path=data_path,
         data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle','Epoch'],
+        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', 'Epoch'],
         instance_column='Instance',
         algorithm_column='Algorithm',
         aggregate_func=None,
         additional_columns=['object_category', 'Instance_category']
     )
 
-    processed_df['ElapsedTime'] = (processed_df['Epoch']*30) / 60
+    processed_df['ElapsedTime'] = (processed_df['Epoch'] * 30) / 60
     test_name = processed_df['Instance'].unique()
 
     # Loop through tests
@@ -1249,7 +1269,7 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
                 "group_labels": c.OBJECTIVES_labels,
                 "ylabel": "Epoch time (s)",
                 "xlabel": "Elapsed Time (min)",
-                "show_xlabel": False,               # Top plot → hide x-label with shared x
+                "show_xlabel": False,  # Top plot → hide x-label with shared x
                 "show_ylabel": True,
                 "xlim": (0, 120),
                 "x_major_step": 15,
@@ -1259,8 +1279,8 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
                     "loc": "upper left",
                     "ncol": 1
                 },
-                "palette" : palette,
-  #              "target_lines": 30,
+                "palette": palette,
+                #              "target_lines": 30,
             },
             {
                 "x_column": 'ElapsedTime',
@@ -1270,7 +1290,7 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
                 "group_labels": c.OBJECTIVES_labels,
                 "ylabel": "# Requests",
                 "xlabel": "Elapsed Time (min)",
-                "show_xlabel": True,               # Bottom plot → x-label visible
+                "show_xlabel": True,  # Bottom plot → x-label visible
                 "show_ylabel": True,
                 "xlim": (0, 120),
                 "x_major_step": 15,
@@ -1294,8 +1314,8 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
             config=config,
             subplot_configs=subplot_cfgs,
             output_path=output_path,
-            fig_size=config.fig_size,   # or config.fig_size_half
-            sharex=True,                # share x-axis between subplots
+            fig_size=config.fig_size,  # or config.fig_size_half
+            sharex=True,  # share x-axis between subplots
             sharey=False,
             x_label_on_bottom_only=True,
             figure_title=None,
@@ -1309,6 +1329,7 @@ def create_multiObj_time_request_profile(data_path: str, config: PlotConfig) -> 
             tight_layout_rect=[0, 0, 1, 0.88],
         )
 
+
 def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> None:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
@@ -1320,14 +1341,14 @@ def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> Non
         df=main_df,
         data_path=data_path,
         data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle','Epoch'],
+        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', 'Epoch'],
         instance_column='Instance',
         algorithm_column='Algorithm',
         aggregate_func=None,
         additional_columns=['object_category', 'Instance_category']
     )
 
-    processed_df['ElapsedTime'] = (processed_df['Epoch']*30) / 60
+    processed_df['ElapsedTime'] = (processed_df['Epoch'] * 30) / 60
     test_name = processed_df['Instance'].unique()
 
     # Loop through tests
@@ -1345,7 +1366,7 @@ def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> Non
                 "group_labels": c.OBJECTIVES_labels,
                 "ylabel": "# Passengers",
                 "xlabel": "Elapsed Time (min)",
-                "show_xlabel": False,               # Top plot → hide x-label with shared x
+                "show_xlabel": False,  # Top plot → hide x-label with shared x
                 "show_ylabel": True,
                 "xlim": (0, 120),
                 "x_major_step": 15,
@@ -1355,8 +1376,8 @@ def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> Non
                     "loc": "upper left",
                     "ncol": 1
                 },
-                "palette" : palette,
-  #              "target_lines": 30,
+                "palette": palette,
+                #              "target_lines": 30,
             },
             {
                 "x_column": 'ElapsedTime',
@@ -1366,7 +1387,7 @@ def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> Non
                 "group_labels": c.OBJECTIVES_labels,
                 "ylabel": "# Requests",
                 "xlabel": "Elapsed Time (min)",
-                "show_xlabel": True,               # Bottom plot → x-label visible
+                "show_xlabel": True,  # Bottom plot → x-label visible
                 "show_ylabel": True,
                 "xlim": (0, 120),
                 "x_major_step": 15,
@@ -1390,8 +1411,8 @@ def create_multiObj_passenger_profile(data_path: str, config: PlotConfig) -> Non
             config=config,
             subplot_configs=subplot_cfgs,
             output_path=output_path,
-            fig_size=config.fig_size,   # or config.fig_size_half
-            sharex=True,                # share x-axis between subplots
+            fig_size=config.fig_size,  # or config.fig_size_half
+            sharex=True,  # share x-axis between subplots
             sharey=False,
             x_label_on_bottom_only=True,
             figure_title=None,
