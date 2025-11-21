@@ -61,7 +61,7 @@ G2_vehicle_counts=(1300)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("multiObj_1" "Cust_W3")
+G2_scenarios=("multiObj_5")
 G2_inst_folder="Instances_2h-7"
 
 # Dynamically discover instances for G2
