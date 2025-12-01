@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
-#SBATCH --time=2:20:00
-#SBATCH --array=1-32
+#SBATCH --mem=10G
+#SBATCH --time=0:10:00
+#SBATCH --array=1-360
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -88,7 +88,7 @@ G2_vehicle_counts=(1400)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("truncate_1")
+G2_scenarios=("multiObj_0s" "multiObj_1s" "multiObj_5s")
 G2_inst_folder="Instances_30s_11"
 
 # Dynamically discover instances for G2
@@ -108,7 +108,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G3 G4)
+ALL_GROUPS=(G2)
 
 # -------------------------
 # Build job list
