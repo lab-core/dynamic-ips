@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=40G
+#SBATCH --mem=24G
 #SBATCH --time=2:20:00
 #SBATCH --array=1-32
 #SBATCH --error=slurm-%A_%a.err
@@ -108,7 +108,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G11 G31 G41)
+ALL_GROUPS=(G1 G3 G4)
 
 # -------------------------
 # Build job list
