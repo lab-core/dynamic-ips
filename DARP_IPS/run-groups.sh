@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=20G
+#SBATCH --mem=40G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-120
+#SBATCH --array=1-32
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -21,7 +21,7 @@ G1_paramfile="BatchParameters"
 G1_vehicle_counts=(1200)
 G1_algorithms=(2)
 G1_modes=(1)
-G1_scenarios=("Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1" "no_commit_1")
+G1_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 
@@ -30,7 +30,7 @@ G3_paramfile="BatchParameters"
 G3_vehicle_counts=(800)
 G3_algorithms=(2)
 G3_modes=(1)
-G3_scenarios=("Ab_truncate_1")
+G3_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 
@@ -39,9 +39,36 @@ G4_paramfile="BatchParameters"
 G4_vehicle_counts=(1300)
 G4_algorithms=(2)
 G4_modes=(1)
-G4_scenarios=("Ab_truncate_1")
+G4_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
+
+G11_vehicle_folder="vehicles_byDemand_w11"
+G11_paramfile="BatchParameters"
+G11_vehicle_counts=(1300)
+G11_algorithms=(2)
+G11_modes=(1)
+G11_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "commit_0" "no_commit_0" "Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
+G11_inst_folder="Instances_2h-11"
+G11_instances=("20150926_11-120m" "20151025_11-120m")
+
+G31_vehicle_folder="vehicles_byDemand_w11"
+G31_paramfile="BatchParameters"
+G31_vehicle_counts=(900)
+G31_algorithms=(2)
+G31_modes=(1)
+G31_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "commit_0" "no_commit_0" "Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
+G31_inst_folder="Instances_2h-11"
+G31_instances=("20151230_11-120m")
+
+G41_vehicle_folder="vehicles_byDemand_w11"
+G41_paramfile="BatchParameters"
+G41_vehicle_counts=(1400)
+G41_algorithms=(2)
+G41_modes=(1)
+G41_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "commit_0" "no_commit_0" "Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
+G41_inst_folder="Instances_2h-11"
+G41_instances=("20160109_11-120m")
 
 G5_vehicle_folder="vehicles_uniform"
 G5_paramfile="BatchParameters"
@@ -81,7 +108,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G2)
+ALL_GROUPS=(G11 G31 G41)
 
 # -------------------------
 # Build job list
@@ -109,7 +136,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 2")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 1")
           done
         done
       done
