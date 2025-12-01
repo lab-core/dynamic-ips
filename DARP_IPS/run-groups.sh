@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=56G
+#SBATCH --mem=80G
 #SBATCH --time=2:10:00
-#SBATCH --array=1-15
+#SBATCH --array=1-5
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -48,7 +48,7 @@ G11_paramfile="BatchParameters"
 G11_vehicle_counts=(1300)
 G11_algorithms=(2)
 G11_modes=(1)
-G11_scenarios=("dynamic_3_0" "Ab_drop_0" "Ab_truncate_0")
+G11_scenarios=("Ab_truncate_0")
 G11_inst_folder="Instances_2h-11"
 G11_instances=("20150926_11-120m" "20151025_11-120m")
 
@@ -66,7 +66,7 @@ G41_paramfile="BatchParameters"
 G41_vehicle_counts=(1400)
 G41_algorithms=(2)
 G41_modes=(1)
-G41_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "no_commit_0" "Ab_drop_0" "Ab_truncate_0")
+G41_scenarios=("dynamic_3_0" "Ab_drop_0" "Ab_truncate_0")
 G41_inst_folder="Instances_2h-11"
 G41_instances=("20160109_11-120m")
 
@@ -108,7 +108,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G41 G11 G3)
+ALL_GROUPS=(G41 G11)
 
 # -------------------------
 # Build job list
