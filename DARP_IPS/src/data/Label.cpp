@@ -233,8 +233,9 @@ void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float 
         reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ *(reachedTime_ - outNode->initialReadyTime_);
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
-        lambdaScore_ = totalWait_ / (totalWait_ - reducedCost_);
     }
+    float obj = wait_W1 * totalWait_ + ride_W2 * totalTripDelay_;
+    lambdaScore_ = obj / (obj - reducedCost_);
     passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }

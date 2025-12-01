@@ -121,16 +121,17 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
                     stateChanged_ = true;
                     mainInst->nbStateChanged_++;
-                    currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
-                    currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-                    currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-                    solutionRoute_->addNode(currentRoute_->routeNodes_[i]);
-                    if (currentRoute_->routeNodes_[i]->initialType_ == SINK) {
+                    PNode routeNode = currentRoute_->routeNodes_[i];
+                    routeNode->nodeStatus_ = DONE;
+                    routeNode->reachTime_ = currentRoute_->plannedReachTime_[i];
+                    routeNode->departTime_ = currentRoute_->plannedDepartTime_[i];
+                    solutionRoute_->addNode(routeNode);
+                    if (routeNode->initialType_ == SINK) {
                         returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
                         mainInst->nbReturn_++;
                     }
                     else {
-                        serviceTime_ += currentRoute_->routeNodes_[i]->serviceTime_;
+                        serviceTime_ += routeNode->serviceTime_;
                         if (currentRoute_->plannedPassengers_[i-1] > 0)
                             driveFullTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
                         else
@@ -139,27 +140,27 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 
 
                     // set request status
-                    if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
+                    if (routeNode->type_ == PICKUP) {
                         removePickup_ = true;
  //                       stateChanged_ = true;
-                        // currentRoute_->routeNodes_[i]->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
+                        // routeNode->related_Request_->plannedDelay_ = currentRoute_->plannedDelay_[i];
                         if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
-                            removedRequests.set(currentRoute_->routeNodes_[i]->related_Request_->taskIndex_, true);
-                        if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
-                            currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
-                            currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
-                            if (currentRoute_->plannedReachTime_[i] - currentRoute_->routeNodes_[i]->related_Request_->initialEarlyPick_ > mainInst->parameters_->maxWait_)
-                                mainInst->lastCommittedRequests_.push_back(currentRoute_->routeNodes_[i]->related_Request_);
+                            removedRequests.set(routeNode->related_Request_->taskIndex_, true);
+                        if (routeNode->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
+                            routeNode->related_Request_->commitTime_ = elapsedTime;
+                            routeNode->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
+                            if (currentRoute_->plannedReachTime_[i] - routeNode->related_Request_->initialEarlyPick_ > mainInst->parameters_->maxWait_)
+                                mainInst->lastCommittedRequests_.push_back(routeNode->related_Request_);
                         }
                     }
                     else
                         removeDrop_ = true;
 
-                    setRequestStatus(currentRoute_->routeNodes_[i], currentRoute_->plannedReachTime_[i]);
+                    setRequestStatus(routeNode, currentRoute_->plannedReachTime_[i]);
 
                     if (i == currentRoute_->routeSize_ - 1 ||
                         (currentRoute_->plannedDepartTime_[i] >= elapsedTime + committedTime &&
-                         currentRoute_->routeNodes_[i]->locationID_ !=
+                         routeNode->locationID_ !=
                          currentRoute_->routeNodes_[i + 1]->locationID_)) {
                         //at the departure point, the vehicle is ready to leave the stop location (delta has passed)
                         departTime_ = currentRoute_->plannedDepartTime_[i];
@@ -168,22 +169,20 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                             handleIdleState(elapsedTime + committedTime);
                         }
                         numPassengers_ = currentRoute_->plannedPassengers_[i];
-                        departNode_ = currentRoute_->routeNodes_[i];
-                        currentRoute_->routeNodes_[i]->type_ = SOURCE;
+                        departNode_ = routeNode;
+                        routeNode->type_ = SOURCE;
                         breakIndex = i;
                         break;
                     }
                 }
                 for (int i = breakIndex + 1; i < currentRoute_->routeSize_; ++i) {
-                    if (currentRoute_->routeNodes_[i]->type_ != SOURCE &&
-                        currentRoute_->routeNodes_[i]->type_ != SINK) {
-                        if (currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-                            currentRoute_->routeNodes_[i]->nodeStatus_ = PLANNED;
-                            onboards_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
-                            currentRoute_->routeNodes_[i]->related_Request_->latestDrop_ =
-                                currentRoute_->routeNodes_[i]->pairNode_->reachTime_ +
-                                    currentRoute_->routeNodes_[i]->pairNode_->serviceTime_ +
-                                    currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_;
+                    PNode routeNode = currentRoute_->routeNodes_[i];
+                    if (routeNode->type_ != SOURCE && routeNode->type_ != SINK) {
+                        if (routeNode->related_Request_->requestStatus_ == ON_BOARD) {
+                            routeNode->nodeStatus_ = PLANNED;
+                            onboards_.push_back(routeNode->nodeID_);
+                            routeNode->related_Request_->latestDrop_ = routeNode->pairNode_->reachTime_ +
+                                    routeNode->pairNode_->serviceTime_ + routeNode->related_Request_->maxTravelTime_;
                         }
                     }
                 }
@@ -198,13 +197,14 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
         handleIdleState(elapsedTime + committedTime);
     }
     for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-        if (currentRoute_->routeNodes_[i]->type_ == PICKUP && currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
-            if (elapsedTime - currentRoute_->routeNodes_[i]->related_Request_->earlyPick_ >= mainInst->parameters_->informTimeLimit_) {
-                currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->earlyPick_ = currentRoute_->plannedReachTime_[i] -
+        PNode routeNode = currentRoute_->routeNodes_[i];
+        if (routeNode->type_ == PICKUP && routeNode->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
+            if (elapsedTime - routeNode->related_Request_->earlyPick_ >= mainInst->parameters_->informTimeLimit_) {
+                routeNode->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
+                routeNode->related_Request_->earlyPick_ = currentRoute_->plannedReachTime_[i] -
                     mainInst->parameters_->pickupDeviationWindow_;
-                currentRoute_->routeNodes_[i]->readyTime_ = currentRoute_->routeNodes_[i]->related_Request_->earlyPick_;
-                currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                routeNode->readyTime_ = routeNode->related_Request_->earlyPick_;
+                routeNode->related_Request_->commitTime_ = elapsedTime;
             }
         }
     }
@@ -216,34 +216,35 @@ void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
         solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
-            currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
-            currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-            currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
-            solutionRoute_->addNode(currentRoute_->routeNodes_[i]);
+            PNode routeNode = currentRoute_->routeNodes_[i];
+            routeNode->nodeStatus_ = DONE;
+            routeNode->reachTime_ = currentRoute_->plannedReachTime_[i];
+            routeNode->departTime_ = currentRoute_->plannedDepartTime_[i];
+            solutionRoute_->addNode(routeNode);
 
-            if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
+            if (routeNode->initialType_ == SINK)
                 returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
             else {
-                serviceTime_ += currentRoute_->routeNodes_[i]->serviceTime_;
+                serviceTime_ += routeNode->serviceTime_;
                 if (currentRoute_->plannedPassengers_[i-1] > 0)
                     driveFullTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
                 else
                     driveEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
             }
 
-            if (currentRoute_->routeNodes_[i]->type_ == PICKUP) {
-                if (currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
-                    currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
-                    currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
+            if (routeNode->type_ == PICKUP) {
+                if (routeNode->related_Request_->committedPickTime_ == LARGE_CONSTANT) {
+                    routeNode->related_Request_->commitTime_ = elapsedTime;
+                    routeNode->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
                 }
-                currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->allocVehicleID_ = vehicleID_;
-                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
+                routeNode->related_Request_->committedPickTime_ = currentRoute_->plannedReachTime_[i];
+                routeNode->related_Request_->pickTime_ = currentRoute_->plannedReachTime_[i];
+                routeNode->related_Request_->allocVehicleID_ = vehicleID_;
+                routeNode->related_Request_->requestStatus_ = COMPLETED;
             }
-            else if (currentRoute_->routeNodes_[i]->type_ == DROPOFF) {
-                currentRoute_->routeNodes_[i]->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
-                currentRoute_->routeNodes_[i]->related_Request_->requestStatus_ = COMPLETED;
+            else if (routeNode->type_ == DROPOFF) {
+                routeNode->related_Request_->dropTime_ = currentRoute_->plannedReachTime_[i];
+                routeNode->related_Request_->requestStatus_ = COMPLETED;
             }
         }
     }
