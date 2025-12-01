@@ -91,12 +91,6 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
   //      currentRoute->routeRequests_[i]->coveredVehicles_.set(vehicleID_,true);
         // currentRoute->routeRequests_[i]->plannedDelay_ = currentRoute->plannedDelay_[i];
     }
-    for (int i = 1; i < currentRoute->routeNodes_.size(); ++i) {
-        if (currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED)
-            currentRoute_->routeNodes_[i]->related_Request_->latestDrop_ =
-            currentRoute_->routeNodes_[i]->pairNode_->reachTime_ + currentRoute_->routeNodes_[i]->pairNode_->serviceTime_ +
-                currentRoute_->routeNodes_[i]->related_Request_->maxTravelTime_;
-    }
 }
 
 // function to update vehicle depart time at each time and

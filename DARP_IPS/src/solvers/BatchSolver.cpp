@@ -19,6 +19,14 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         vehicleObj->setSolutionRoute();
         if (vehicleObj->currentRoute_ == nullptr)
             vehicleObj->setCurrentRoute(vehicleObj->emptyRoute_);
+        for (auto & routeNode : vehicleObj->currentRoute_->routeNodes_) {
+            if (routeNode->type_ == DROPOFF && routeNode->nodeStatus_ == PLANNED) {
+                routeNode->related_Request_->committedPickTime_ = routeNode->related_Request_->pickTime_;
+
+                routeNode->related_Request_->latestDrop_ = routeNode->pairNode_->reachTime_ +
+                    routeNode->pairNode_->serviceTime_ + routeNode->related_Request_->maxTravelTime_;
+            }
+        }
     }
 
     int nbReceivedRequest = mainInst->nbOnboards_;

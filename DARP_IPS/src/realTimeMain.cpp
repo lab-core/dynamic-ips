@@ -58,13 +58,11 @@ int main(int argc, char** argv) {
 
     if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
         max_i = 7;
-        max_j = 3;
+        max_j = 1;
     }
     else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1")
         max_i = 3;
-    else if (config->scenario_ == "dropPick")
-        max_i = 2;
-    else if (config->scenario_ == "nbPickup")
+    else if (config->scenario_ == "dropPick" || config->scenario_ == "nbPickup")
         max_i = 2;
 
     for (auto & instanceName : instNames){
@@ -89,7 +87,7 @@ int main(int argc, char** argv) {
                 // Configure parameters based on parameter file
                 if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
                     mainInst->parameters_->MaxLabel_ = (i + 1) * 5;
-                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(2);
                 }
                 else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1") {
                     mainInst->parameters_->pruneNodes_ = true;

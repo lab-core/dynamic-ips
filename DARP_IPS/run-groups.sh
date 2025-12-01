@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=48G
+#SBATCH --mem=20G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-24
+#SBATCH --array=1-120
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -55,14 +55,14 @@ G5_instances=("20160401_07-120m" "20160329_07-120m")
 # ================================================================
 # G2: Automatic group
 # ================================================================
-G2_vehicle_folder="vehicles_uniform"
+G2_vehicle_folder="vehicles_byDemand"
 G2_paramfile="BatchParameters"
-G2_vehicle_counts=(1300)
+G2_vehicle_counts=(1400)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("multiObj_5")
-G2_inst_folder="Instances_2h-7"
+G2_scenarios=("truncate_1")
+G2_inst_folder="Instances_30s_11"
 
 # Dynamically discover instances for G2
 G2_main_dir="datasets/${G2_inst_folder}"
@@ -109,7 +109,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 0")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 2")
           done
         done
       done
