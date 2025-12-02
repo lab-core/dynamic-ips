@@ -91,6 +91,7 @@ G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
 G2_scenarios=("multiObj_0s" "multiObj_1s" "multiObj_5s")
 G2_inst_folder="Instances_30s_11"
+#G2_inst_folder="Instances_2h-7"
 
 # Dynamically discover instances for G2
 G2_main_dir="datasets/${G2_inst_folder}"
@@ -137,7 +138,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 1")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 2")
           done
         done
       done
