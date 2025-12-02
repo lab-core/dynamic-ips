@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=30G
+#SBATCH --mem=60G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-24
+#SBATCH --array=1-16
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -49,7 +49,7 @@ G11_paramfile="BatchParameters"
 G11_vehicle_counts=(1200)
 G11_algorithms=(2)
 G11_modes=(1)
-G11_scenarios=("Ab_truncate_0")
+G11_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G11_inst_folder="Instances_2h-11"
 G11_instances=("20150926_11-120m" "20151025_11-120m")
 
@@ -58,7 +58,7 @@ G31_paramfile="BatchParameters"
 G31_vehicle_counts=(800)
 G31_algorithms=(2)
 G31_modes=(1)
-G31_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "commit_0" "no_commit_0" "Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
+G31_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G31_inst_folder="Instances_2h-11"
 G31_instances=("20151230_11-120m")
 
@@ -67,7 +67,7 @@ G41_paramfile="BatchParameters"
 G41_vehicle_counts=(1300)
 G41_algorithms=(2)
 G41_modes=(1)
-G41_scenarios=("Ab_drop_0" "Ab_truncate_0")
+G41_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G41_inst_folder="Instances_2h-11"
 G41_instances=("20160109_11-120m")
 
@@ -111,7 +111,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G3 G4)
+ALL_GROUPS=(G11 G31 G41)
 
 # -------------------------
 # Build job list
