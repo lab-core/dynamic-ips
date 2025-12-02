@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
-#SBATCH --time=2:10:00
-#SBATCH --array=1-5
+#SBATCH --mem=16G
+#SBATCH --time=0:5:00
+#SBATCH --array=1-360
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -18,28 +18,29 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="BatchParameters"
-G1_vehicle_counts=(1200)
+G1_vehicle_counts=(1200 1300 1400 1500)
 G1_algorithms=(2)
 G1_modes=(1)
-G1_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
+#G1_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
+G1_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_paramfile="BatchParameters"
-G3_vehicle_counts=(800)
+G3_vehicle_counts=(800 900 1000 1100)
 G3_algorithms=(2)
 G3_modes=(1)
-G3_scenarios=("Ab_truncate_1")
+G3_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 
 G4_vehicle_folder="vehicles_byDemand_w11"
 G4_paramfile="BatchParameters"
-G4_vehicle_counts=(1300)
+G4_vehicle_counts=(1300 1400 1500 1600)
 G4_algorithms=(2)
 G4_modes=(1)
-G4_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
+G4_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
 
@@ -66,7 +67,7 @@ G41_paramfile="BatchParameters"
 G41_vehicle_counts=(1400)
 G41_algorithms=(2)
 G41_modes=(1)
-G41_scenarios=("dynamic_3_0" "Ab_drop_0" "Ab_truncate_0")
+G41_scenarios=("Ab_drop_0" "Ab_truncate_0")
 G41_inst_folder="Instances_2h-11"
 G41_instances=("20160109_11-120m")
 
@@ -108,7 +109,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G41 G11)
+ALL_GROUPS=(G2)
 
 # -------------------------
 # Build job list
