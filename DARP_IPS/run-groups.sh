@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
-#SBATCH --time=0:5:00
-#SBATCH --array=1-360
+#SBATCH --time=2:20:00
+#SBATCH --array=1-24
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -18,35 +18,35 @@ exe="bin/realtime_DARP"
 # G1
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_paramfile="BatchParameters"
-G1_vehicle_counts=(1200 1300 1400 1500)
+G1_vehicle_counts=(1300 1400 1500)
 G1_algorithms=(2)
 G1_modes=(1)
 #G1_scenarios=("dynamic_2_1" "dynamic_3_1" "dynamic_4_1" "commit_1" "no_commit_1" "Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
-G1_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
+G1_scenarios=("multiObj_1" "multiObj_5")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_paramfile="BatchParameters"
-G3_vehicle_counts=(800 900 1000 1100)
+G3_vehicle_counts=(900 1000 1100)
 G3_algorithms=(2)
 G3_modes=(1)
-G3_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
+G3_scenarios=("multiObj_1" "multiObj_5")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 
 G4_vehicle_folder="vehicles_byDemand_w11"
 G4_paramfile="BatchParameters"
-G4_vehicle_counts=(1300 1400 1500 1600)
+G4_vehicle_counts=(1400 1500 1600)
 G4_algorithms=(2)
 G4_modes=(1)
-G4_scenarios=("multiObj_0" "multiObj_1" "multiObj_5" "Cust_W3")
+G4_scenarios=("multiObj_1" "multiObj_5")
 G4_inst_folder="Instances_2h-11"
 G4_instances=("20160109_11-120m")
 
 G11_vehicle_folder="vehicles_byDemand_w11"
 G11_paramfile="BatchParameters"
-G11_vehicle_counts=(1300)
+G11_vehicle_counts=(1200)
 G11_algorithms=(2)
 G11_modes=(1)
 G11_scenarios=("Ab_truncate_0")
@@ -55,7 +55,7 @@ G11_instances=("20150926_11-120m" "20151025_11-120m")
 
 G31_vehicle_folder="vehicles_byDemand_w11"
 G31_paramfile="BatchParameters"
-G31_vehicle_counts=(900)
+G31_vehicle_counts=(800)
 G31_algorithms=(2)
 G31_modes=(1)
 G31_scenarios=("dynamic_2_0" "dynamic_3_0" "dynamic_4_0" "commit_0" "no_commit_0" "Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
@@ -64,7 +64,7 @@ G31_instances=("20151230_11-120m")
 
 G41_vehicle_folder="vehicles_byDemand_w11"
 G41_paramfile="BatchParameters"
-G41_vehicle_counts=(1400)
+G41_vehicle_counts=(1300)
 G41_algorithms=(2)
 G41_modes=(1)
 G41_scenarios=("Ab_drop_0" "Ab_truncate_0")
@@ -83,15 +83,16 @@ G5_instances=("20160401_07-120m" "20160329_07-120m")
 # ================================================================
 # G2: Automatic group
 # ================================================================
-G2_vehicle_folder="vehicles_byDemand"
+#G2_vehicle_folder="vehicles_byDemand"
+G2_vehicle_folder="vehicles_uniform"
 G2_paramfile="BatchParameters"
-G2_vehicle_counts=(1400)
+G2_vehicle_counts=(2000)
 G2_algorithms=(2)
 G2_modes=(1)
 #G2_scenarios=("initial_0" "initial_1" "pruning_0" "pruning_1" "truncate_0" "truncate_1")
-G2_scenarios=("multiObj_0s" "multiObj_1s" "multiObj_5s")
-G2_inst_folder="Instances_30s_11"
-#G2_inst_folder="Instances_2h-7"
+G2_scenarios=("multiObj_0" "multiObj_1" "multiObj_5")
+#G2_inst_folder="Instances_30s_11"
+G2_inst_folder="Instances_2h-7"
 
 # Dynamically discover instances for G2
 G2_main_dir="datasets/${G2_inst_folder}"
@@ -110,7 +111,7 @@ fi
 
 
 # Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G2)
+ALL_GROUPS=(G1 G3 G4)
 
 # -------------------------
 # Build job list
@@ -138,7 +139,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 2")
+            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state 1")
           done
         done
       done
