@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-16
+#SBATCH --array=1-2
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -75,6 +75,18 @@ G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 G3_initial_state=1
+
+# -------------------------
+# Automatic group helpers
+# -------------------------
+G_test_vehicle_folder="vehicles_byDemand_w11"
+G_test_vehicle_counts=(1300 1400)
+G_test_algorithms=(2)
+G_test_modes=(1)
+G_test_scenarios=("Relative_5")
+G_test_inst_folder="Instances_2h-11"
+G_test_instances=("20150926_11-120m")
+G_test_initial_state=1
 
 # -------------------------
 # Automatic group helpers
@@ -159,7 +171,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2 G3)
+ALL_GROUPS=(G_test)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
