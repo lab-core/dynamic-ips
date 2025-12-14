@@ -12,7 +12,7 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
 # Default: actually execute on the server (set DRY_RUN=1 to only echo)
-: "${DRY_RUN:=1}"
+: "${DRY_RUN:=0}"
 : "${SELECTED_GROUPS:=ALL}"
 
 # ---------
