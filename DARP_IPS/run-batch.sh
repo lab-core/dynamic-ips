@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-12
+#SBATCH --array=1-24
 #SBATCH --error=slurm-%A_%a.err
 
 # Modules and binary
@@ -27,10 +27,10 @@ readonly SCENS_ABLATION=("Ab_drop_1" "Ab_drop_0" "Ab_dynamic_1" "Ab_dynamic_0" "
 readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
-readonly SCENS_W4=("Relative" "Relative_5")
+readonly SCENS_W5=("Relative" "Relative_5")
 
 # Bundle scenarion for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_MULTI_OBJ[@]}" "${SCENS_W3[@]}" )
+readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
