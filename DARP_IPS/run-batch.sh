@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-48
+#SBATCH --array=1-16
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -47,9 +47,10 @@ readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
 readonly SCENS_W5=("Relative" "Relative_5" "Total")
+readonly SCENS_W4=("Jung")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}" )
+readonly SCENS_GROUP_TEST=( "${SCENS_W4[@]}" )
 
 # -------------------------
 # GROUP DEFINITIONS

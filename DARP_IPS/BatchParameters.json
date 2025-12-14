@@ -2,7 +2,7 @@
   "defaultParameters": {
     "alphaParam": 1.5,
     "betaParam": 240,
-    "deltaPram": 420,
+    "deltaPram": 900,
     "epochLength": 30,
     "penaltyL": 30,
     "committedTime": 30,
