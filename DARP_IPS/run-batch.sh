@@ -3,14 +3,33 @@
 #SBATCH --mem=64G
 #SBATCH --time=2:20:00
 #SBATCH --array=1-24
+#SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
-# Modules and binary
-module load gcc eigen boost gurobi
-exe="bin/realtime_DARP"
+set -euo pipefail
 
-# Choose which groups to run (comma/space separated) or "ALL".
+# Always run from the directory where sbatch was called
+cd "${SLURM_SUBMIT_DIR:-$PWD}"
+
+# Default: actually execute on the server (set DRY_RUN=1 to only echo)
+: "${DRY_RUN:=1}"
 : "${SELECTED_GROUPS:=ALL}"
+
+# ---------
+# Modules and binary
+# ---------
+# Make 'module' work in non-interactive shells (safe if not present)
+source /etc/profile.d/modules.sh 2>/dev/null || true
+source /usr/share/Modules/init/bash 2>/dev/null || true
+
+if command -v module >/dev/null 2>&1; then
+  module purge
+  module load gcc eigen boost gurobi
+  module list
+fi
+
+exe="bin/realtime_DARP"
+[[ -x "$exe" ]] || { echo "[ERROR] Executable not found or not executable: $exe" >&2; ls -la bin || true; exit 1; }
 
 # -------------------------
 # Shared defaults (DRY)
@@ -29,16 +48,12 @@ readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
 readonly SCENS_W5=("Relative" "Relative_5")
 
-# Bundle scenarion for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}")
+# Bundle scenario for group tests
+readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}" )
 
 # -------------------------
 # GROUP DEFINITIONS
 # -------------------------
-
-# ================================================================
-# Group tests for 2h-11
-# ================================================================
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_vehicle_counts=(1300 1400 1500)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
@@ -60,60 +75,6 @@ G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 G3_initial_state=1
 
-# ================================================================
-# Arbitrary test definitions
-# ================================================================
-
-G_test_vehicle_folder="vehicles_byDemand_w11"
-G_test_vehicle_counts=(1300)
-G_test_algorithms=(2)
-G_test_modes=(1)
-G_test_scenarios=("Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
-G_test_inst_folder="Instances_2h-11"
-G_test_instances=("20150926_11-120m" "20151025_11-120m")
-G_test_initial_state=1
-
-# ================================================================
-# Automatic group
-# ================================================================
-# Dynamically discover instances for G2
-discover_instances() {
-  local group="$1"
-  local -n inst_folder_ref="${group}_inst_folder"
-  local -n insts_ref="${group}_instances"
-
-  local main_dir="datasets/${inst_folder_ref}"
-  if [[ -d "$main_dir" ]]; then
-    mapfile -t insts_ref < <(find "$main_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
-    if [[ ${#insts_ref[@]} -eq 0 ]]; then
-      echo "[WARNING] No instances found in $main_dir. $group will have no jobs."
-    else
-      echo "[INFO] Found ${#insts_ref[@]} instances in $main_dir for $group."
-    fi
-  else
-    echo "[WARNING] Directory $main_dir does not exist. $group will have no jobs."
-    insts_ref=()
-  fi
-}
-# G30S: Small size instances
-G30S_vehicle_folder="vehicles_byDemand"
-G30S_vehicle_counts=(1400)
-G30S_scenarios=("${SCENS_SMALL_2[@]}")
-G30S_inst_folder="Instances_30s_11"
-G30S_initial_state=2
-discover_instances "G30S"
-
-# G2h_7: 2h instances (Riley)
-G2h_7_vehicle_folder="vehicles_uniform"
-G2h_7_vehicle_counts=(2000)
-G2h_7_scenarios=("${SCENS_COMPARE[@]}")
-G2h_7_inst_folder="Instances_2h-7"
-G2h_7_initial_state=0
-discover_instances "G2h_7"
-
-# Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2 G3)
-
 # -------------------------
 # Build job list
 # -------------------------
@@ -122,24 +83,24 @@ jobs=()
 add_group() {
   local G="$1"
 
-  # required scalars
   eval "vehicle_folder=\${${G}_vehicle_folder}"
   eval "inst_folder=\${${G}_inst_folder}"
   eval "initial_state=\${${G}_initial_state-}"
   [[ -n "${initial_state:-}" ]] || { echo "[ERROR] Missing ${G}_initial_state" >&2; exit 1; }
 
-  # paramfile: group override or default
   eval "paramfile=\${${G}_paramfile-}"
   [[ -n "${paramfile:-}" ]] || paramfile="$BATCH_PARAMFILE"
 
-  # arrays: group override or default
   eval "algos_ref=(\"\${${G}_algorithms[@]-}\")"
-  [[ ${#algos_ref[@]} -gt 0 ]] || algos_ref=("${BATCH_ALGOS[@]}")
+  if [[ ${#algos_ref[@]} -eq 0 || -z "${algos_ref[0]:-}" ]]; then
+    algos_ref=("${BATCH_ALGOS[@]}")
+  fi
 
   eval "modes_ref=(\"\${${G}_modes[@]-}\")"
-  [[ ${#modes_ref[@]} -gt 0 ]] || modes_ref=("${BATCH_MODES[@]}")
+  if [[ ${#modes_ref[@]} -eq 0 || -z "${modes_ref[0]:-}" ]]; then
+    modes_ref=("${BATCH_MODES[@]}")
+  fi
 
-  # other required arrays
   eval "counts_ref=(\"\${${G}_vehicle_counts[@]}\")"
   eval "scens_ref=(\"\${${G}_scenarios[@]}\")"
   eval "insts_ref=(\"\${${G}_instances[@]}\")"
@@ -158,20 +119,21 @@ add_group() {
   done
 }
 
-
 # Which groups to use
+ALL_GROUPS=(G1 G2 G3)
+
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
 else
   IFS=', ' read -r -a selected <<< "$SELECTED_GROUPS"
 fi
 
-# Build commands
 for g in "${selected[@]}"; do
   add_group "$g"
 done
 
 total_jobs=${#jobs[@]}
+echo "[INFO] PWD=$(pwd)"
 echo "[INFO] Built $total_jobs jobs from groups: ${selected[*]}"
 
 # -------------------------
@@ -186,6 +148,11 @@ fi
 cmd="${jobs[$((task_id-1))]}"
 echo "[INFO] $(date) :: JobID=${SLURM_JOB_ID:-NA} Task $task_id/$total_jobs on ${SLURMD_NODENAME:-unknown}"
 echo "[INFO] Running: $cmd"
+
+if (( DRY_RUN == 1 )); then
+  echo "[DRY_RUN] Would run: $cmd"
+  exit 0
+fi
 
 # Execute on the allocation
 srun -- bash -lc "$cmd"
