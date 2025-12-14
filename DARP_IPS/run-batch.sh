@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-24
+#SBATCH --array=1-12
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -47,9 +47,11 @@ readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
 readonly SCENS_W5=("Relative" "Relative_5")
+readonly SCENS_W4=("Total")
+
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}" )
+readonly SCENS_GROUP_TEST=( "${SCENS_W4[@]}" )
 
 # -------------------------
 # GROUP DEFINITIONS
@@ -74,6 +76,48 @@ G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
 G3_initial_state=1
+
+# -------------------------
+# Automatic group helpers
+# -------------------------
+discover_instances() {
+  local group="$1"
+  local -n inst_folder_ref="${group}_inst_folder"
+  local -n insts_ref="${group}_instances"
+
+  local main_dir="datasets/${inst_folder_ref}"
+  info "discover_instances($group): looking in $main_dir"
+  if [[ -d "$main_dir" ]]; then
+    mapfile -t insts_ref < <(find "$main_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
+    if [[ ${#insts_ref[@]} -eq 0 ]]; then
+      warn "No instances found in $main_dir. $group will have no jobs."
+    else
+      info "Found ${#insts_ref[@]} instances for $group: ${insts_ref[*]}"
+    fi
+  else
+    warn "Directory $main_dir does not exist. $group will have no jobs."
+    insts_ref=()
+  fi
+}
+
+# Example auto groups (you had these; not in ALL_GROUPS unless you add them)
+G30S_vehicle_folder="vehicles_byDemand"
+G30S_vehicle_counts=(1400)
+G30S_scenarios=("${SCENS_SMALL_2[@]}")
+G30S_inst_folder="Instances_30s_11"
+G30S_initial_state=2
+discover_instances "G30S"
+
+G2h_7_vehicle_folder="vehicles_uniform"
+G2h_7_vehicle_counts=(2000)
+G2h_7_scenarios=("${SCENS_COMPARE[@]}")
+G2h_7_inst_folder="Instances_2h-7"
+G2h_7_initial_state=0
+discover_instances "G2h_7"
+
+# Register all for SELECTED_GROUPS=ALL
+ALL_GROUPS=(G1 G2 G3)
+dbg "ALL_GROUPS=(${ALL_GROUPS[*]})"
 
 # -------------------------
 # Build job list
@@ -118,9 +162,6 @@ add_group() {
     done
   done
 }
-
-# Which groups to use
-ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
