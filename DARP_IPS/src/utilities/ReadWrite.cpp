@@ -273,6 +273,16 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
                 pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
 
+                if (pInstance->parameters_->Relative_W5_)
+                    pInstance->requests_.back()->Relative_W5_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Relative_W5_ = 1.0;
+
+                if (pInstance->parameters_->Ride_W4_)
+                    pInstance->requests_.back()->Ride_W4_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Ride_W4_ = 0.0;
+
                 pInstance->nameToRequest_[pInstance->requests_.back()->name_] = pInstance->requests_.back();
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -346,6 +356,16 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                     pInstance->requests_.back()->Req_W3_ = 1.0;
                 pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
                 pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
+
+                if (pInstance->parameters_->Relative_W5_)
+                    pInstance->requests_.back()->Relative_W5_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Relative_W5_ = 1.0;
+
+                if (pInstance->parameters_->Ride_W4_)
+                    pInstance->requests_.back()->Ride_W4_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Ride_W4_ = 0.0;
                 pInstance->nameToRequest_.insert(std::pair<std::string , PRequest>(pInstance->requests_.back()->name_, pInstance->requests_.back()));
                 std::string pickID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), PICKUP);
                 std::string dropID = myTools::createNodeID(pInstance->requests_.back()->getRequestId(), DROPOFF);
@@ -417,6 +437,17 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                     pInstance->requests_.back()->Req_W3_ = 1.0;
                 pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
                 pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
+
+                if (pInstance->parameters_->Relative_W5_)
+                    pInstance->requests_.back()->Relative_W5_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Relative_W5_ = 1.0;
+
+                if (pInstance->parameters_->Ride_W4_)
+                    pInstance->requests_.back()->Ride_W4_= pInstance->requests_.back()->minTravelTime_;
+                else
+                    pInstance->requests_.back()->Ride_W4_ = 0.0;
+
                 pInstance->nameToRequest_.insert(
                         std::pair<std::string, PRequest>(pInstance->requests_.back()->name_,
                                                          pInstance->requests_.back()));
@@ -579,6 +610,8 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     float wait_W1 = scenarioParams.value("Wait_W1", -1.0f);
     float ride_W2 = scenarioParams.value("Ride_W2", -1.0f);
     bool req_W3 = scenarioParams.value("Req_W3", 0) != 0;
+    bool ride_W4 = scenarioParams.value("Ride_W4", 0) != 0;
+    bool relative_W5 = scenarioParams.value("Relative_W5", 0) != 0;
     bool vehicleReturn = scenarioParams.value("vehicleReturn", 0) != 0;
     int WaitForReturn = scenarioParams.value("WaitForReturn", -1);
     float maxWait = scenarioParams.value("MaxWait", -1.0f);
@@ -640,7 +673,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
         static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy),
-        smoothDual, wait_W1, ride_W2, req_W3
+        smoothDual, wait_W1, ride_W2, req_W3, ride_W4, relative_W5
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -751,7 +784,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,ModelSolver,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,epochLength,committedTime,informTimeLimit,"
+    parametersStream << "Instance,ModelSolver,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,Ride_W4,Relative_W5,epochLength,committedTime,informTimeLimit,"
                         "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,"
                         "solutionMode,NumIter,GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,"
                         "reducedCP,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"

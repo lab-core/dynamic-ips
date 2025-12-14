@@ -204,7 +204,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float 
         float rideTolerance = outNode->related_Request_->maxTravelTime_ - outNode->related_Request_->minTravelTime_;
         float tripDelay = rideTolerance - travelResources_[outNode->related_Request_->taskIndexLabel_] - outNode->serviceTime_;
         totalTripDelay_ += outNode->related_Request_->Req_W3_ * tripDelay;
-        reducedCost_ += ride_W2 * outNode->related_Request_->Req_W3_ * tripDelay;
+        reducedCost_ += ride_W2 * outNode->related_Request_->Req_W3_ * (tripDelay + outNode->related_Request_->Ride_W4_) / outNode->related_Request_->Relative_W5_;
         travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
         for (int i = 0; i < openNode_.size(); i++){
             if ((openNode_[i])->nodeID_ == outNode->nodeID_){
@@ -230,7 +230,7 @@ void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float 
         }*/
         nbPickUp_ ++;
         totalWait_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
-        reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ *(reachedTime_ - outNode->initialReadyTime_);
+        reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_) / outNode->related_Request_->Relative_W5_;
         travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
         labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
     }

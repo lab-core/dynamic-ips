@@ -42,6 +42,8 @@ public:
     float latestPickup_;                        // latest possible pickup time for the request
     float latestDrop_;                          // latest possible drop off time for the request
     float Req_W3_;                              // weight considering the number of passengers for each request in the objective function
+    float Ride_W4_;                             // value considering the ride time for each request in the objective function
+    float Relative_W5_;                         // weight considering the relative detour for each request in the objective function
 
     float InitialDual_;                         // when in parameters we use penalties as duals, we save previous duals in it
     float dual_;                                // dual value (pi) of the request in the Master problem

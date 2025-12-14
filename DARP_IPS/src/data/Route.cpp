@@ -390,19 +390,24 @@ void Route::createColumn(int nbRequests) {
 
 void Route::calculateTripDelay(float wait_W1, float ride_W2) {
     totalTripDelay_ = 0.0;
-    for (size_t i = 0; i < routeNodes_.size(); ++i) {
+    objCoef_ = 0.0;
+    for (size_t i = 1; i < routeNodes_.size(); ++i) {
+        float tripDelay = 0.0;
+        float waitTime = 0.0;
         if (routeNodes_[i]->type_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-            totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * (plannedReachTime_[i] - (routeNodes_[i]->related_Request_->pickTime_ + routeNodes_[i]->serviceTime_) -
-                routeNodes_[i]->related_Request_->minTravelTime_);
+            tripDelay = plannedReachTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_ -
+                (routeNodes_[i]->related_Request_->pickTime_ + routeNodes_[i]->serviceTime_);
         }
         else if (routeNodes_[i]->type_ == PICKUP) {
+            waitTime = plannedReachTime_[i] - routeNodes_[i]->related_Request_->requestTime_;
             for (size_t j = i + 1; j < routeNodes_.size(); ++j) {
                 if (routeNodes_[i]->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
-                    totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * (plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_);
+                    tripDelay = plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_;
                     break;
                 }
             }
         }
+        totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * tripDelay;
+        objCoef_ += routeNodes_[i]->related_Request_->Req_W3_ * (wait_W1 * waitTime + ride_W2 * (tripDelay + routeNodes_[i]->related_Request_->Ride_W4_))/routeNodes_[i]->related_Request_->Relative_W5_;
     }
-    objCoef_ = wait_W1 * totalWait_ + ride_W2 * totalTripDelay_;
 }
