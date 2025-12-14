@@ -15,7 +15,7 @@ exe="bin/realtime_DARP"
 # -------------------------
 # Shared defaults (DRY)
 # -------------------------
-readonly BATCH_PARAMFILE="BatchParameters."
+readonly BATCH_PARAMFILE="BatchParameters"
 readonly BATCH_ALGOS=(2)
 readonly BATCH_MODES=(1)
 
