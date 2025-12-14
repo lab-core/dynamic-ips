@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=64G
+#SBATCH --mem=24G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-16
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -46,12 +46,10 @@ readonly SCENS_ABLATION=("Ab_drop_1" "Ab_drop_0" "Ab_dynamic_1" "Ab_dynamic_0" "
 readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
-readonly SCENS_W5=("Relative" "Relative_5")
-readonly SCENS_W4=("Jung")
-
+readonly SCENS_W5=("Relative" "Relative_5" "Total")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_W4[@]}" )
+readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}" )
 
 # -------------------------
 # GROUP DEFINITIONS
@@ -115,10 +113,6 @@ G2h_7_inst_folder="Instances_2h-7"
 G2h_7_initial_state=0
 discover_instances "G2h_7"
 
-# Register all for SELECTED_GROUPS=ALL
-ALL_GROUPS=(G1 G2 G3)
-dbg "ALL_GROUPS=(${ALL_GROUPS[*]})"
-
 # -------------------------
 # Build job list
 # -------------------------
@@ -162,6 +156,9 @@ add_group() {
     done
   done
 }
+
+# Which groups to use
+ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
