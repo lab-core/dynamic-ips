@@ -46,32 +46,32 @@ readonly SCENS_ABLATION=("Ab_drop_1" "Ab_drop_0" "Ab_dynamic_1" "Ab_dynamic_0" "
 readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5")
 readonly SCENS_W3=("Cust_W3")
-readonly SCENS_W5=("Relative" "Relative_5" "Total")
-readonly SCENS_W4=("Total")
+readonly SCENS_W5=("Relative" "Relative_5")
+readonly SCENS_W4=("Jung")
 
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_W5[@]}" )
+readonly SCENS_GROUP_TEST=( "${SCENS_W4[@]}" )
 
 # -------------------------
 # GROUP DEFINITIONS
 # -------------------------
 G1_vehicle_folder="vehicles_byDemand_w11"
-G1_vehicle_counts=(1200)
+G1_vehicle_counts=(1200 1300 1400 1500)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
-G2_vehicle_counts=(1300)
+G2_vehicle_counts=(1300 1400 1500 1600)
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_2h-11"
 G2_instances=("20160109_11-120m")
 G2_initial_state=1
 
 G3_vehicle_folder="vehicles_byDemand_w11"
-G3_vehicle_counts=(800)
+G3_vehicle_counts=(800 900 1000 1100)
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
