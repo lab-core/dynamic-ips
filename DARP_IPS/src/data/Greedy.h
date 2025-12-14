@@ -42,6 +42,7 @@ public:
     PStopLabel initialDepartStop_;  // initial feasible stop label to re-optimize the route after that
     float totalWait_;               // total delay of the corresponding vehicle
     float totalTripDelay_;          // total trip delay of the corresponding vehicle
+    float totalObjective_;
     float departureTime_;           // departure time of the corresponding vehicle
     float idleTime_;                // idle time of the corresponding vehicle (used in static solver)
 
@@ -70,20 +71,22 @@ public:
                         float ride_W2);
 
     // This function inserts the newNode after the preLabel in the linked list
-    void insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel);
+    void insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool,
+        PStopLabel &pickLabel, float wait_W1,float ride_W2);
 
     // This function removes the Label from the list and updates the data based on that
-    void removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel);
+    void removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel, float wait_W1,
+        float ride_W2);
 
     // this function inserts a request based on the pick-up position and adds drop-off at the end
     void insertRequest(const PInsertPosition &position, PNode &pickNode, PNode &dropNode, float maxDuration,
-                       std::vector<PStopLabel> &greedyLabelPool);
+                       std::vector<PStopLabel> &greedyLabelPool, float wait_W1, float ride_W2);
 
     // this function calculates the reachTime from a Label to a node
     static float labelToNodeReachTime(const PStopLabel &preLabel, const PNode &Node) ;
 
     // this function starts from a label in the list and updates reachTimes and departTimes up to the tail
-    void updateReachTimes(const PStopLabel &preLabel);
+    void updateReachTimes(const PStopLabel &preLabel, float wait_W1, float ride_W2);
 
     // this function converts a greedyLabel list to a route
     [[nodiscard]] PRoute greedyLabelToRoute(bool update) const;
@@ -115,7 +118,7 @@ struct insertPosition {
 
     // function to update the position data (we re-used the structures)
     void updatePosition (const PStopLabel &prePickup, const PStopLabel &preDrop, float waitIncrease,
-        float tripDelayIncrease, float wait_W1, float ride_W2);
+        float tripDelayIncrease, float objectIncrease, float wait_W1, float ride_W2);
 };
 
 #endif //GREEDY_H

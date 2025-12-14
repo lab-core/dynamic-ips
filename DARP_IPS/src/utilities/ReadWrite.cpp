@@ -273,7 +273,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->requests_.back()->setMinTravelTime(durationMatrix_[pickUpID][dropOffID]);
                 pInstance->requests_.back()->setMaxTravelTime(pInstance->parameters_->alphaParam_, pInstance->parameters_->betaParam_);
 
-                if (pInstance->parameters_->Relative_W5_)
+                if (pInstance->parameters_->Relative_W5_ && pInstance->requests_.back()->minTravelTime_!= 0)
                     pInstance->requests_.back()->Relative_W5_= pInstance->requests_.back()->minTravelTime_;
                 else
                     pInstance->requests_.back()->Relative_W5_ = 1.0;

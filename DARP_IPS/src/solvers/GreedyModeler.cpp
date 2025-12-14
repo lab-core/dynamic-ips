@@ -57,7 +57,8 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
 
                 greedyRouteList_[vehicle_ID]->insertRequest(positionList_[vehicle_ID], PInst->instGraph_->pickNodes_[i],
                                                             PInst->instGraph_->dropNodes_[i],
-                                                            PInst->requests_[i]->maxTravelTime_, greedyLabelPool_);
+                                                            PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
+                                                            PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
                 PInst->selectedVehicles_[vehicle_ID]++;
             }
         }
@@ -130,6 +131,7 @@ float GreedyModeler::GreedyUpperbound(PInstance &PInst) {
 void GreedyModeler::setObjValue(float wait_W1, float ride_W2) {
     objValue_ = 0.0;
     for (auto & GreedyObj : greedyRouteList_)
-        objValue_ += wait_W1 * GreedyObj->totalWait_+ ride_W2 * GreedyObj->totalTripDelay_;
+        objValue_ += GreedyObj->totalObjective_;
+   //     objValue_ += wait_W1 * GreedyObj->totalWait_+ ride_W2 * GreedyObj->totalTripDelay_;
 }
 
