@@ -612,6 +612,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     bool req_W3 = scenarioParams.value("Req_W3", 0) != 0;
     bool ride_W4 = scenarioParams.value("Ride_W4", 0) != 0;
     bool relative_W5 = scenarioParams.value("Relative_W5", 0) != 0;
+    bool normal_W6 = scenarioParams.value("Normal_W6", 0) != 0;
     bool vehicleReturn = scenarioParams.value("vehicleReturn", 0) != 0;
     int WaitForReturn = scenarioParams.value("WaitForReturn", -1);
     float maxWait = scenarioParams.value("MaxWait", -1.0f);
@@ -673,7 +674,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         informTimeLimit, pickupDeviationWindow,
         static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
         static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy),
-        smoothDual, wait_W1, ride_W2, req_W3, ride_W4, relative_W5
+        smoothDual, wait_W1, ride_W2, req_W3, ride_W4, relative_W5, normal_W6
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -784,11 +785,12 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,ModelSolver,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,Ride_W4,Relative_W5,epochLength,committedTime,informTimeLimit,"
-                        "pickupDeviationWindow,maxWait,nbThreads,InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,"
-                        "solutionMode,NumIter,GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,"
-                        "reducedCP,useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,"
-                        "isDropPickPossible,pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,"
+    parametersStream << "Instance,ModelSolver,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,Ride_W4,Relative_W5,normal_W6,"
+                        "epochLength,committedTime,informTimeLimit,pickupDeviationWindow,maxWait,nbThreads,"
+                        "InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
+                        "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,reducedCP,"
+                        "useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,isDropPickPossible,"
+                        "pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,"
                         "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 

@@ -60,7 +60,8 @@ inline float computeDetourDelay(PNode &before, PNode &pick, PNode &after)
 inline bool isPickupProfitable(PNode &before, PNode &pick, float beforeDepartTime)
 {
     float reachTime = beforeDepartTime + durationMatrix_[before->locationID_][pick->locationID_];
-    if (reachTime <= pick->related_Request_->latestPickup_ && (reachTime - pick->related_Request_->initialEarlyPick_ - pick->related_Request_->dual_ < 1))
+ //   if (reachTime <= pick->related_Request_->latestPickup_ && (reachTime - pick->related_Request_->initialEarlyPick_ - pick->related_Request_->dual_ < 1))
+    if (reachTime <= pick->related_Request_->latestPickup_ )
         return true;
     return false;
 }

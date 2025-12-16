@@ -32,13 +32,14 @@ public:
     bool Req_W3_;                                           // whether to consider request count in the objective function
     bool Ride_W4_;                                          // whether to consider ride time in the objective function
     bool Relative_W5_;                                      // whether to consider relative detour in the objective function
+    bool Normal_W6_;
 
     // Constructor and Destructor
     SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
                int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2, bool req_W3,
-               bool ride_W4, bool relative_W5);
+               bool ride_W4, bool relative_W5, bool normal_W6);
 
     virtual ~SolverBase() = default;
 
@@ -124,7 +125,7 @@ public:
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
                LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1, float ride_W2,
-               bool req_W3, bool ride_W4, bool relative_W5);
+               bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
 
     virtual ~Parameters();
 
@@ -142,7 +143,7 @@ struct solverOption: public SolverBase {
     solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
                  SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
                  bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit,float wait_W1,
-                 float ride_W2, bool req_W3, bool ride_W4, bool relative_W);
+                 float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
 
     // Construct from Parameters
     explicit solverOption(const PParameters &MainParams);

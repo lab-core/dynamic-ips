@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-32
+#SBATCH --array=1-144
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -41,8 +41,10 @@ readonly BATCH_MODES=(1)
 readonly SCENS_PICKUP=("nbPick1" "nbPick2" "nbPick3" "nbPick4")
 readonly SCENS_SMALL_1=("initial_0" "initial_1" "pruning_0" "pruning_1")
 readonly SCENS_SMALL_2=("truncate_0" "truncate_1" "dropPick_0" "dropPick_1" "dynamic_0" "dynamic_1")
-readonly SCENS_COMMIT=("no_commit_0" "no_commit_1" "commit_0" "commit_1")
-readonly SCENS_ABLATION=("Ab_drop_1" "Ab_drop_0" "Ab_dynamic_1" "Ab_dynamic_0" "Ab_truncate_1" "Ab_truncate_0")
+readonly SCENS_COMMIT_0=("no_commit_0" "commit_0")
+readonly SCENS_COMMIT_1=("no_commit_1" "commit_1")
+readonly SCENS_ABLATION_0=("Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
+readonly SCENS_ABLATION_1=("Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
 readonly SCENS_MULTI_OBJ=("multiObj_0" "multiObj_1" "multiObj_5")
 readonly SCENS_COMPARE=("multiObj_5" "multiObj_1")
 readonly SCENS_W3=("Cust_W3")
@@ -50,7 +52,7 @@ readonly SCENS_W5=("Relative" "Relative_5" "Total")
 readonly SCENS_W4=("Jung")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=( "${SCENS_COMPARE[@]}" )
+readonly SCENS_GROUP_TEST=("${SCENS_ABLATION_1[@]}" "${SCENS_COMPARE[@]}" "${SCENS_W3[@]}" "${SCENS_W5[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
