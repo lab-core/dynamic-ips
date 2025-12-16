@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=64G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-144
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -52,7 +52,7 @@ readonly SCENS_W5=("Relative" "Relative_5" "Total")
 readonly SCENS_W4=("Jung")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_ABLATION_1[@]}" "${SCENS_COMPARE[@]}" "${SCENS_W3[@]}" "${SCENS_W5[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_ABLATION_0[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
