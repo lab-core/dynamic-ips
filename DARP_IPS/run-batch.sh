@@ -52,7 +52,7 @@ readonly SCENS_W5=("Relative" "Relative_5" "Total")
 readonly SCENS_W4=("Jung")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_MULTI_OBJ[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_W4[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
