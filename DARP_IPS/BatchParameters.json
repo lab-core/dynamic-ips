@@ -955,7 +955,7 @@
     },
     "multiObj_0": {
       "Wait_W1": 1,
-      "Ride_W2": 0.5,
+      "Ride_W2": 0,
       "Req_W3": 0,
       "Ride_W4": 0,
       "Relative_W5": 0,
