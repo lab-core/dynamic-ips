@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=48G
 #SBATCH --time=2:20:00
-#SBATCH --array=1-16
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -46,13 +46,13 @@ readonly SCENS_COMMIT_1=("no_commit_1" "commit_1")
 readonly SCENS_ABLATION_0=("Ab_drop_0" "Ab_dynamic_0" "Ab_truncate_0")
 readonly SCENS_ABLATION_1=("Ab_drop_1" "Ab_dynamic_1" "Ab_truncate_1")
 readonly SCENS_MULTI_OBJ=("multiObj_0")
-readonly SCENS_COMPARE=("multiObj_5" "multiObj_1")
+readonly SCENS_COMPARE=("multiObj_5" "multiObj_0")
 readonly SCENS_W3=("Cust_W3")
 readonly SCENS_W5=("Relative" "Relative_5" "Total")
 readonly SCENS_W4=("Jung")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_W4[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_COMPARE[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
@@ -173,7 +173,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2 G3)
+ALL_GROUPS=(G2h_7)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
