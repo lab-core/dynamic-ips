@@ -123,7 +123,7 @@ discover_instances "G30S"
 
 G2h_7_vehicle_folder="vehicles_uniform"
 G2h_7_vehicle_counts=(2000)
-G2h_7_scenarios=("${SCENS_COMPARE[@]}")
+G2h_7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2h_7_inst_folder="Instances_2h-7"
 G2h_7_initial_state=0
 discover_instances "G2h_7"
