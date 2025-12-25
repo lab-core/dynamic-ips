@@ -529,7 +529,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
             routeObj->reducedCost_ = routeObj->objCoef_ - vehicleObj->dual_;
             for (auto & nodeObj: routeObj->routeNodes_){
                 if (nodeObj->type_ == PICKUP){
-                    routeObj->reducedCost_ -= nodeObj->related_Request_->Req_W3_ * nodeObj->related_Request_->dual_;
+                    routeObj->reducedCost_ -= nodeObj->related_Request_->dual_;
                 }
             }
             if (minReducedCost_ > routeObj->reducedCost_ )
