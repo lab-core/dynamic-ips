@@ -111,7 +111,7 @@ GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, const PRoute &cur
     }
 
     // Add to normalization constraint
-    col.addTerm(1.0, normalConst_);
+    col.addTerm(newRoute->IncScore_, normalConst_);
     return col;
 }
 
@@ -296,7 +296,7 @@ void CPModeler::addRouteIncVarBatch() {
     for (const auto& routeObj : routesToAdd_) {
         obj[k] = routeObj->objCoef_;
         columns[k] = createRouteColumn(routeObj, POSITIVE);
-        columns[k].addTerm(1.0, normalConst_);
+        columns[k].addTerm(routeObj->incompatibilityDegree_, normalConst_);
         IncRoute_.emplace_back(routeObj);
         routeObj->cpAdded_ = true;
         ++k;
@@ -589,10 +589,187 @@ double CPModeler::getVarValue(const GRBVar &var) const {
         throw;
     }
 }
+// Add these methods to CPModeler
+
+void CPModeler::saveModelBeforeSolve(const std::string& prefix) {
+    model_->update();
+    model_->write(prefix + ".lp");
+    model_->write(prefix + ".mps");
+}
+
+void CPModeler::printBasisVariables(const std::string& outputFile) {
+    try {
+        std::ofstream out(outputFile);
+        if (!out.is_open()) {
+            std::cerr << "Failed to open " << outputFile << std::endl;
+            return;
+        }
+
+        out << "=== BASIS VARIABLES (non-zero values) ===" << std::endl;
+        out << std::fixed << std::setprecision(6);
+
+        // Route increment variables
+        out << "\n--- Route Inc Variables ---" << std::endl;
+        for (size_t i = 0; i < routeIncVar_.size(); ++i) {
+            double val = routeIncVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                out << "RouteInc[" << i << "]: " << val
+                    << " (obj=" << routeIncVar_[i].get(GRB_DoubleAttr_Obj)
+                    << ", RC=" << routeIncVar_[i].get(GRB_DoubleAttr_RC) << ")"
+                    << " VehID=" << IncRoute_[i]->vehicleID_
+                    << std::endl;
+            }
+        }
+
+        // Route solution variables
+        out << "\n--- Route Sol Variables ---" << std::endl;
+        for (size_t i = 0; i < routeSolVar_.size(); ++i) {
+            double val = routeSolVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                out << "RouteSol[" << i << "]: " << val
+                    << " (obj=" << routeSolVar_[i].get(GRB_DoubleAttr_Obj)
+                    << ", RC=" << routeSolVar_[i].get(GRB_DoubleAttr_RC) << ")"
+                    << std::endl;
+            }
+        }
+
+        // Z increment variables
+        out << "\n--- Z Inc Variables ---" << std::endl;
+        for (size_t i = 0; i < zIncVar_.size(); ++i) {
+            double val = zIncVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                out << "ZInc[" << zIncVar_[i].get(GRB_StringAttr_VarName) << "]: " << val
+                    << " (obj=" << zIncVar_[i].get(GRB_DoubleAttr_Obj)
+                    << ", RC=" << zIncVar_[i].get(GRB_DoubleAttr_RC) << ")"
+                    << std::endl;
+            }
+        }
+
+        // Z solution variables
+        out << "\n--- Z Sol Variables ---" << std::endl;
+        for (size_t i = 0; i < zSolVar_.size(); ++i) {
+            double val = zSolVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                out << "ZSol[" << zSolVar_[i].get(GRB_StringAttr_VarName) << "]: " << val
+                    << " (obj=" << zSolVar_[i].get(GRB_DoubleAttr_Obj)
+                    << ", RC=" << zSolVar_[i].get(GRB_DoubleAttr_RC) << ")"
+                    << std::endl;
+            }
+        }
+
+        // Dual values
+        out << "\n--- Constraint Duals ---" << std::endl;
+        for (size_t i = 0; i < requestConstr_.size(); ++i) {
+            double pi = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            if (std::abs(pi) > 1e-9) {
+                out << requestConstr_[i].get(GRB_StringAttr_ConstrName)
+                    << ": Pi=" << pi << std::endl;
+            }
+        }
+
+        out << "\nNormal constraint dual: " << normalConst_.get(GRB_DoubleAttr_Pi) << std::endl;
+        out << "Objective value: " << model_->get(GRB_DoubleAttr_ObjVal) << std::endl;
+
+        out.close();
+        std::cout << "Basis variables written to " << outputFile << std::endl;
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in printBasisVariables: " << e.getMessage() << std::endl;
+    }
+}
+
+void CPModeler::saveBasisModel(const std::string& prefix) {
+    try {
+        // Create a new model with only basis variables
+        GRBModel basisModel(env_);
+        basisModel.set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
+
+        // Collect non-zero variables and recreate constraints
+        std::vector<std::pair<GRBVar*, double>> basisVars;
+
+        auto collectNonZero = [&](std::vector<GRBVar>& vars) {
+            for (auto& var : vars) {
+                double val = var.get(GRB_DoubleAttr_X);
+                if (val > 1e-9) {
+                    basisVars.push_back({&var, val});
+                }
+            }
+        };
+
+        collectNonZero(routeIncVar_);
+        collectNonZero(routeSolVar_);
+        collectNonZero(zIncVar_);
+        collectNonZero(zSolVar_);
+
+        // Write solution file (shows only non-zero variables)
+        model_->write(prefix + "_solution.sol");
+
+        // Write the full model for reference
+        model_->write(prefix + "_full.lp");
+
+        std::cout << "Basis model saved with prefix: " << prefix << std::endl;
+        std::cout << "Non-zero variables in basis: " << basisVars.size() << std::endl;
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in saveBasisModel: " << e.getMessage() << std::endl;
+    }
+}
+
+// Verification method to check solution consistency
+bool CPModeler::verifyBasisSolution(const PInstance& pInst) {
+    try {
+        std::cout << "\n=== SOLUTION VERIFICATION ===" << std::endl;
+
+        // Check constraint satisfaction
+        double normalSum = 0.0;
+        std::vector<double> requestCoverage(nbRequestTask_, 0.0);
+
+        // Check route inc variables contribution
+        for (size_t i = 0; i < routeIncVar_.size(); ++i) {
+            double val = routeIncVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                normalSum += val * IncRoute_[i]->incompatibilityDegree_;
+                for (auto& req : IncRoute_[i]->routeRequests_) {
+                    requestCoverage[req->taskIndex_] += val;
+                }
+            }
+        }
+
+        // Check z inc variables contribution
+        for (size_t i = 0; i < zIncVar_.size(); ++i) {
+            double val = zIncVar_[i].get(GRB_DoubleAttr_X);
+            if (val > 1e-9) {
+                normalSum += val;
+                auto req = pInst->nameToRequest_[zIncVar_[i].get(GRB_StringAttr_VarName)];
+                requestCoverage[req->taskIndex_] += val;
+            }
+        }
+
+        std::cout << "Normal constraint sum: " << normalSum << " (should be 1.0)" << std::endl;
+
+        bool valid = std::abs(normalSum - 1.0) < 1e-6;
+
+        // Check for over-coverage
+        for (int i = 0; i < nbRequestTask_; ++i) {
+            if (requestCoverage[i] > 1.0 + 1e-6) {
+                std::cout << "WARNING: Request " << i << " over-covered: " << requestCoverage[i] << std::endl;
+                valid = false;
+            }
+        }
+
+        std::cout << "Solution valid: " << (valid ? "YES" : "NO") << std::endl;
+        return valid;
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in verifyBasisSolution: " << e.getMessage() << std::endl;
+        return false;
+    }
+}
 
 void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                              InputPaths &inputPaths) {
     try {
+        saveModelBeforeSolve("debug_pre_solve");
         // Set up logging
         solveTime_->start();
         model_->optimize();
@@ -690,10 +867,11 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
 void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
     std::vector<PRoute> &routeSolution, InputPaths &inputPaths, bool update) {
     try {
+ //       saveModelBeforeSolve("debug_pre_solve");
         // Set up logging
         solveTime_->start();
         model_->update();
-        dump_gurobi();
+ //       dump_gurobi();
         model_->optimize();
         solveTime_->stop();
 
@@ -733,6 +911,8 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
 
             if (objVal < -0.1) {
                 status_ = NEGATIVE_VALUE;
+
+ //               printBasisVariables("debug_after_solve");
 
                 // Collect incoming and outgoing variables
                 std::vector<PRoute> routeResult;

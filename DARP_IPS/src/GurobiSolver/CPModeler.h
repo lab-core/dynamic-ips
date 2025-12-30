@@ -91,6 +91,14 @@ public:
     double getObjValue() const;
     double getVarValue(const GRBVar& var) const;
 
+    void saveModelBeforeSolve(const std::string &prefix);
+
+    void printBasisVariables(const std::string &outputFile);
+
+    void saveBasisModel(const std::string &prefix);
+
+    bool verifyBasisSolution(const PInstance &pInst);
+
     void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,
                       std::vector<PRoute>& routeSolution, InputPaths& inputPaths);
     void solveCPModel(PInstance& pInst, std::vector<PRequest>& zSolution,

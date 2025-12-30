@@ -49,16 +49,9 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
         bool addRequest = true;
         bool insertRequest = false;
         if (pInst->parameters_->pruneNodes_) {
-            addRequest = isPickupProfitable(Vehicle_->departNode_, pInst->instGraph_->pickNodes_[i],Vehicle_->departTime_);
+            addRequest = isPickupProfitable(Vehicle_->departNode_, pInst->instGraph_->pickNodes_[i],
+                Vehicle_->departTime_, pInst->parameters_->Wait_W1_);
         }
-
-        if (pInst->parameters_->LabelingStrategy_ == RE_PULLING && Vehicle_->currentRoute_->routeRequests_.empty()) {
-            float reachTime = Vehicle_->departTime_ + durationMatrix_[Vehicle_->departNode_->locationID_][pInst->instGraph_->pickNodes_[i]->locationID_];
-            if (reachTime - pInst->instGraph_->pickNodes_[i]->initialReadyTime_ - pInst->requests_[i]->dual_ > 1 ) {
-                addRequest = false;
-            }
-        }
-
         if (addRequest) {
             if (pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_))
                 nbPriorCover_ ++;
@@ -70,18 +63,18 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
                 pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
             }
             else {
-                if (!Vehicle_->stateChanged_ || !Vehicle_->removeDrop_) {
+  //              if (!Vehicle_->stateChanged_ || !Vehicle_->removeDrop_) {
                     if (pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
                         possibleInsert_ ++;
                         insertRequest = true;
                         pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
                     }
-                }
-                else if (checkInsertionPossibility(pInst->instGraph_->pickNodes_[i])) {
+ //               }
+                /*else if (checkInsertionPossibility(pInst->instGraph_->pickNodes_[i], pInst->parameters_->Wait_W1_)) {
                     possibleInsert_ ++;
                     insertRequest = true;
                     pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
-                }
+                }*/
             }
         }
         if (reOptimize_)
@@ -128,7 +121,7 @@ void SubproModeler::setNodeIndices() const {
     }
 }
 
-bool SubproModeler::checkInsertionPossibility(PNode &pick) {
+bool SubproModeler::checkInsertionPossibility(PNode &pick, float Wait_W1) {
     if (subGraph_->onboards_.empty())
         return true;
     for (size_t j = 0; j < Vehicle_->emptyRoute_->routeNodes_.size(); j++) {
@@ -136,7 +129,7 @@ bool SubproModeler::checkInsertionPossibility(PNode &pick) {
         float beforeDepartTime = Vehicle_->emptyRoute_->plannedDepartTime_[j];
         int beforeLoad = Vehicle_->emptyRoute_->plannedPassengers_[j];
         if (beforeLoad + pick->related_Request_->nbPassengers_ <= Vehicle_->capacity_ &&
-            isPickupProfitable(before, pick, beforeDepartTime)) {
+            isPickupProfitable(before, pick, beforeDepartTime, Wait_W1)) {
             if (j < Vehicle_->emptyRoute_->routeNodes_.size()-1) {
                 float detourDelay = computeDetourDelay(before, pick,Vehicle_->emptyRoute_->routeNodes_[j+1]);
                 bool dropFeasible = true;

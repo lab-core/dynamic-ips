@@ -26,11 +26,24 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
 
-    while (nbReceivedRequest < mainInst->nbRequests_){
+    std::vector<PRequest> zSolution;
+    while (nbReceivedRequest < mainInst->nbRequests_ || !zSolution.empty()){
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            zSolution = MP_solver_->zSolution_;
+        else
+            zSolution = GreedyModel_->zSolution_;
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
+        if (nbReceivedRequest < mainInst->nbRequests_) {
+            if (mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ > simulationTime_->dSinceInit().count()) {
+                simulationTime_->stop();
+                simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ -
+                        mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
+                goto nextEpoch;
+            }
+        }
 
         /******************************* Log Info ****************************/
         logEpochInfo(epoch_, elapsedTime_, simulationTime_->dSinceInit().count(), runtimeMetrics_->epochRuntime_,

@@ -41,7 +41,7 @@ public:
     void setNodeIndices() const;
 
     // function to check if inserting a pickup node is possible
-    bool checkInsertionPossibility(PNode &pick);
+    bool checkInsertionPossibility(PNode &pick, float Wait_W1);
 };
 
 // function to compute detour delay of inserting a pickup node between two nodes
@@ -57,12 +57,17 @@ inline float computeDetourDelay(PNode &before, PNode &pick, PNode &after)
 }
 
 // function to check if inserting a pickup node is profitable
-inline bool isPickupProfitable(PNode &before, PNode &pick, float beforeDepartTime)
+inline bool isPickupProfitable(PNode &before, PNode &pick, float beforeDepartTime, float Wait_W1)
 {
     float reachTime = beforeDepartTime + durationMatrix_[before->locationID_][pick->locationID_];
  //   if (reachTime <= pick->related_Request_->latestPickup_ && (reachTime - pick->related_Request_->initialEarlyPick_ - pick->related_Request_->dual_ < 1))
-    if (reachTime <= pick->related_Request_->latestPickup_ )
+    if (reachTime <= pick->related_Request_->latestPickup_) {
         return true;
+        float wait = reachTime - pick->related_Request_->initialEarlyPick_;
+        float potentialRC = pick->related_Request_->Req_W3_ * Wait_W1 * wait / pick->related_Request_->Relative_W5_ - pick->related_Request_->dual_;
+        if (potentialRC < 1 || pick->related_Request_->committedPickTime_ < LARGE_CONSTANT)
+            return true;
+    }
     return false;
 }
 

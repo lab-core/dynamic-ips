@@ -32,7 +32,7 @@ ISUD_Algorithm::ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSo
     CPFails_ = 0;
 }
 
-void ISUD_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &inputPaths,
+void ISUD_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
 
     initialization(pInst, inputPaths, GreedyModel);
@@ -57,17 +57,20 @@ void ISUD_Algorithm::initializationCPLEX(PInstance &pInst, const InputPaths &inp
     MPBuildTime_->start();
     ReducedPro_->buildModel(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
-
+    setInitialDuals(pInst, inputPaths, epoch);
+    for (auto & requestObj : pInst->requests_) {
+        requestObj->setMaxMinDual();
+    }
+    calcDualsStatistics(pInst);
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
 }
 
-void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths,
+void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
 
     initialization(pInst, inputPaths, GreedyModel);
-
     masterTime_->start();
 
     CPEpochSolveTime_ = 0;
@@ -89,7 +92,11 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
     MPBuildTime_->start();
     RPGurobiPro_->buildModelRP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
-
+    setInitialDuals(pInst, inputPaths, epoch);
+    for (auto & requestObj : pInst->requests_) {
+        requestObj->setMaxMinDual();
+    }
+    calcDualsStatistics(pInst);
     setObjValue();
     previousObj_ = objValue_;
     masterTime_->stop();
@@ -97,15 +104,18 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
 
 void ISUD_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) {
     if (pInst->parameters_->modelSolver_ == CPLEX)
-        initializationCPLEX(pInst, inputPaths, GreedyModel);
+        initializationCPLEX(pInst, inputPaths, epoch, GreedyModel);
     else
-        initializationGurobi(pInst, inputPaths, GreedyModel);
+        initializationGurobi(pInst, inputPaths, epoch, GreedyModel);
     RMPCounter_++;
     nbRoutes_ = 0;
     lpObjValue_ = objValue_;
 
     if (availableRoutes_.empty())
         availableRoutes_.resize(pInst->nbVehicles_);
+
+    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
+    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
 }
 
 int ISUD_Algorithm::solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths) {
@@ -570,9 +580,9 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         CPSuccess_++;
                         previousObj_ = objValue_;
                         RMPCounter_++;
-                        isCPImproved = false;
+                        isCPImproved = true;
                         setAvailableTime();
-                        restartAlgorithm = true;
+                        restartAlgorithm = false;
 
                         if (availableTime_ <= 1) {
                             restartAlgorithm = false;

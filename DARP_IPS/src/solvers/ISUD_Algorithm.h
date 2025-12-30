@@ -25,8 +25,8 @@ public:
     // Constructor and Destructor
     explicit ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver);
 
-    void initializationCPLEX(PInstance &pInst, const InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
-    void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, const PGreedyModeler &GreedyModel);
+    void initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
+    void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
     void epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) override;
 
     int solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths);

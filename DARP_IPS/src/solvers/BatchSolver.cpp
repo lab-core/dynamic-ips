@@ -24,11 +24,11 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance EpochInst = std::make_shared<Instance>(*mainInst);
     std::vector<PRequest> zSolution;
-    if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-        zSolution = MP_solver_->zSolution_;
-    else
-        zSolution = GreedyModel_->zSolution_;
     while (nbReceivedRequest < mainInst->nbRequests_ || !zSolution.empty()){
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            zSolution = MP_solver_->zSolution_;
+        else
+            zSolution = GreedyModel_->zSolution_;
         nextEpoch:
         // start simulation timer
         simulationTime_->start();

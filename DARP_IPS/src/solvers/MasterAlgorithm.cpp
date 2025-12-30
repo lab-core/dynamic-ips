@@ -557,18 +557,20 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
 
 void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd){
     updateReducedCosts(pInst);
-    if (selectMode == CP || selectMode == RP) {
+    if (selectMode == CP) {
         updateIncDegrees(pInst, false);
         if (pInst->parameters_->sortColumn_ == COMP_C) {
             updateScore(pInst);
         }
-        for (int v = 0; v < pInst->nbVehicles_; ++v) {
-            if (!pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
-                !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
-                routesToAdd.push_back(pInst->vehicles_[v]->emptyRoute_);
-                pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
+        /*if (selectMode == CP) {
+            for (int v = 0; v < pInst->nbVehicles_; ++v) {
+                if (!pInst->vehicles_[v]->emptyRoute_->cpAdded_ &&
+                    !pInst->vehicles_[v]->currentRoute_->routeRequests_.empty()) {
+                    routesToAdd.push_back(pInst->vehicles_[v]->emptyRoute_);
+                    pInst->vehicles_[v]->emptyRoute_->cpAdded_ = true;
+                    }
             }
-        }
+        }*/
     }
 
     if (minReducedCost_ <= 0 || selectMode == CP) {
@@ -600,12 +602,12 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                 switch(selectMode){
                     case CP:
                          if (routeObj->incompatibilityDegree_ > 1) {
-                        routesToAdd.push_back(routeObj);
-                        //  numAdded++;
-                           }
+                             routesToAdd.push_back(routeObj);
+                             numAdded++;
+                         }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ <= 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
