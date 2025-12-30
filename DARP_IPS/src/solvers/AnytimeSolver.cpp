@@ -94,7 +94,7 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             instance_count ++;
         }
 
-        if (EpochInst->nbNewRequests_ == 0) {
+        /*if (EpochInst->nbNewRequests_ == 0) {
             if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
                 MP_solver_->availableRoutes_.clear();
             simulationTime_->stop();
@@ -102,7 +102,7 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
                     mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
             epoch_++;
             goto nextEpoch;
-        }
+        }*/
 
         switch (EpochInst->parameters_->mainAlgorithm_) {
             case GREEDY:
