@@ -196,6 +196,8 @@ void ISUD_Algorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, int
 //        if (RPIter_ == 2)
  //            break;
 
+        break;
+
         if (nbColumns == 0)
             break;
     }
@@ -580,7 +582,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         CPSuccess_++;
                         previousObj_ = objValue_;
                         RMPCounter_++;
-                        isCPImproved = true;
+                        isCPImproved = false;
                         setAvailableTime();
                         restartAlgorithm = false;
 

@@ -607,7 +607,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                          }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ <= 0) {
+                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
