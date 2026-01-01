@@ -84,6 +84,13 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
         }
         newRoute->createColumn(PInst->nbRequests_);
         PInst->vehicles_[(*greedySol->Vehicle_)->vehicleID_]->setCurrentRoute(newRoute);
+
+        if (newRoute->totalWait_ - greedySol->totalWait_ > 0.2 ||
+            newRoute->totalTripDelay_ - greedySol->totalTripDelay_ > 0.2 ||
+            newRoute->objCoef_ - greedySol->totalObjective_ > 0.2){
+            std::cout << "Total delay of the greedy solution is not the same as the route delay!";
+            // myTools::throwException("Route-Validation");
+        }
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();
     }

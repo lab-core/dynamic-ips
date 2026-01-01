@@ -135,6 +135,8 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                         (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_ -
                             newLabel->currentNode_->related_Request_->minTravelTime_;
                     totalTripDelay_ += newLabel->currentNode_->related_Request_->Req_W3_ * tripDelay;
+                    totalObjective_ += pInst->parameters_->Ride_W2_ * newLabel->currentNode_->related_Request_->Req_W3_ *
+                        (tripDelay + newLabel->currentNode_->related_Request_->Ride_W4_) / newLabel->currentNode_->related_Request_->Relative_W5_;
                 }
             }
             else if (newLabel->currentNode_->type_ == PICKUP) {
@@ -253,7 +255,7 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
             // it stays at the tail and then departs to the pickup point
             float pickTime = labelToNodeReachTime(prePick, pickNode);
             float waitIncrease = pickNode->related_Request_->Req_W3_ * (pickTime - pickNode->initialReadyTime_);
-            float objIncrease = wait_W1 * waitIncrease/pickNode->related_Request_->Relative_W5_;
+            float objIncrease = (wait_W1 * waitIncrease + ride_W2 * pickNode->related_Request_->Req_W3_ * pickNode->related_Request_->Ride_W4_)/pickNode->related_Request_->Relative_W5_ ;
             // trip delay is not increased due to the direct drop
   //          float objIncrease = wait_W1 *  waitIncrease + ride_W2 * 0.0;
             if (objIncrease < position->deltaObjective_) {
@@ -389,6 +391,7 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
         totalTripDelay_ += newNode->related_Request_->Req_W3_ * tripDelay;
         totalObjective_ += ride_W2 * newNode->related_Request_->Req_W3_ * (tripDelay + newNode->related_Request_->Ride_W4_)/newNode->related_Request_->Relative_W5_;
     }
+ //   debugCheckObjective(wait_W1, ride_W2);
 }
 
 void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedyLabelPool, PStopLabel &pickLabel,
@@ -408,7 +411,7 @@ void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedy
         }
         float tripDelay = rideTime - label->currentNode_->related_Request_->minTravelTime_;
         totalTripDelay_ -= label->currentNode_->related_Request_->Req_W3_ * tripDelay;
-        totalObjective_ -= ride_W2 * label->currentNode_->related_Request_->Req_W3_ * (label->currentNode_->related_Request_->Ride_W4_ * tripDelay) / label->currentNode_->related_Request_->Relative_W5_;
+        totalObjective_ -= ride_W2 * label->currentNode_->related_Request_->Req_W3_ * (label->currentNode_->related_Request_->Ride_W4_ + tripDelay) / label->currentNode_->related_Request_->Relative_W5_;
     }
     if (label->child_ == nullptr){
         label->parent_->child_ = nullptr;
@@ -479,10 +482,12 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel, float wait_W1, fl
             float newDelay = childReachTime - childNode->initialReadyTime_;
 
             totalWait_ += childNode->related_Request_->Req_W3_ * (newDelay - oldDelay);
-            totalObjective_ += childNode->related_Request_->Req_W3_ * (newDelay - oldDelay)/ childNode->related_Request_->Relative_W5_;
+            totalObjective_ += wait_W1 * childNode->related_Request_->Req_W3_ * (newDelay - oldDelay)/ childNode->related_Request_->Relative_W5_;
             if (totalWait_ < -0.001f ) {
                 throw myTools::myException("Negative total delay after updating route.", __FILE__, __LINE__);
             }
+            childLabel->pair_->reachTime_ += (childReachTime - childLabel->reachTime_);
+            childLabel->pair_->leaveTime_ += (childReachTime - childLabel->reachTime_);
         }
         else if (childNode->type_ == DROPOFF) {
             // Calculate old trip delay
@@ -507,8 +512,7 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel, float wait_W1, fl
 
             // Update total with delta
             totalTripDelay_ += childNode->related_Request_->Req_W3_ * (newTripDelay - oldTripDelay);
-            totalObjective_ += childNode->related_Request_->Req_W3_ * (newTripDelay - oldTripDelay +
-                childNode->related_Request_->Ride_W4_)/childNode->related_Request_->Relative_W5_;
+            totalObjective_ += ride_W2 * childNode->related_Request_->Req_W3_ * (newTripDelay - oldTripDelay)/childNode->related_Request_->Relative_W5_;
         }
         childLabel->reachTime_ = childReachTime;
         childLabel->leaveTime_ = childReachTime + childNode->serviceTime_;
@@ -560,7 +564,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
     }
 
     if (newRoute->totalWait_ != totalWait_){
-        std::cout << "Total delay of the greedy solution is not the same as the route delay!";
+        std::cout << "Total wait of the greedy solution is not the same as the route delay!";
         std::cout << "Vehicle ID: " << newRoute->vehicleID_ << std::endl;
         // myTools::throwException("Route-Validation");
     }
@@ -614,6 +618,93 @@ void insertPosition::updatePosition(const PStopLabel &prePickup, const PStopLabe
     deltaWait_ = waitIncrease;
     deltaTripDelay_ = tripDelayIncrease;
 
-    deltaObjective_ = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
+ //   deltaObjective_ = wait_W1 * waitIncrease + ride_W2 * tripDelayIncrease;
     deltaObjective_ = objectIncrease;
+}
+
+ObjectiveAudit GreedyRoute::recomputeObjectiveAudit(float wait_W1, float ride_W2) const {
+    ObjectiveAudit audit;
+
+    PStopLabel cur = initialStop_;
+    while (cur != nullptr) {
+        PNode node = cur->currentNode_;
+
+        if (node->type_ == PICKUP) {
+            const double wait = static_cast<double>(cur->reachTime_) -
+                                static_cast<double>(node->initialReadyTime_);
+            const double w = static_cast<double>(node->related_Request_->Req_W3_);
+            const double denom = static_cast<double>(node->related_Request_->Relative_W5_);
+
+            audit.totalWait += w * wait;
+            audit.totalObjective += static_cast<double>(wait_W1) * w * wait / denom;
+            audit.pickups++;
+        }
+        else if (node->type_ == DROPOFF) {
+            // Match logic used in insertNode()/updateReachTimes():
+            // - if the pickup label is in-route and pair_ is set, use pair_->leaveTime_
+            // - otherwise, fall back to the pickup node's departTime_ in the graph (pairNode_)
+            double pickLeave = 0.0;
+            if (cur->pair_ != nullptr) {
+                pickLeave = static_cast<double>(cur->pair_->leaveTime_);
+            } else if (node->pairNode_ != nullptr) {
+                pickLeave = static_cast<double>(node->pairNode_->departTime_);
+            } else {
+                // If this happens, pairing is broken.
+                // Leave pickLeave at 0 so the check fails loudly.
+            }
+
+            const double rideTime = static_cast<double>(cur->reachTime_) - pickLeave;
+            const double tripDelay = rideTime - static_cast<double>(node->related_Request_->minTravelTime_);
+            const double w = static_cast<double>(node->related_Request_->Req_W3_);
+            const double denom = static_cast<double>(node->related_Request_->Relative_W5_);
+            const double Ride_W4 = static_cast<double>(node->related_Request_->Ride_W4_);
+
+            audit.totalTripDelay += w * tripDelay;
+            audit.totalObjective += static_cast<double>(ride_W2) * w * (tripDelay + Ride_W4) / denom;
+            audit.dropoffs++;
+        }
+
+        cur = cur->child_;
+    }
+
+    return audit;
+}
+
+static bool withinTol(double diff, double ref, double absTol, double relTol) {
+    const double scale = std::max(1.0, std::abs(ref));
+    return diff <= absTol + relTol * scale;
+}
+
+void GreedyRoute::debugCheckObjective(float wait_W1, float ride_W2,
+                                     double absTol, double relTol,
+                                     bool verbose) const {
+    const ObjectiveAudit a = recomputeObjectiveAudit(wait_W1, ride_W2);
+
+    const double wStored = static_cast<double>(totalWait_);
+    const double dStored = static_cast<double>(totalTripDelay_);
+    const double oStored = static_cast<double>(totalObjective_);
+
+    const double wDiff = std::abs(a.totalWait - wStored);
+    const double dDiff = std::abs(a.totalTripDelay - dStored);
+    const double oDiff = std::abs(a.totalObjective - oStored);
+
+    const bool okW = withinTol(wDiff, a.totalWait, absTol, relTol);
+    const bool okD = withinTol(dDiff, a.totalTripDelay, absTol, relTol);
+    const bool okO = withinTol(oDiff, a.totalObjective, absTol, relTol);
+
+    if (okW && okD && okO) return;
+
+    if (verbose) {
+        std::cerr << "\n[GreedyRoute::debugCheckObjective] MISMATCH detected\n"
+                  << "  pickups=" << a.pickups << " dropoffs=" << a.dropoffs << "\n"
+                  << std::setprecision(15)
+                  << "  totalWait_:      stored=" << wStored << " recomputed=" << a.totalWait
+                  << " diff=" << wDiff << "\n"
+                  << "  totalTripDelay_: stored=" << dStored << " recomputed=" << a.totalTripDelay
+                  << " diff=" << dDiff << "\n"
+                  << "  totalObjective_: stored=" << oStored << " recomputed=" << a.totalObjective
+                  << " diff=" << oDiff << "\n\n";
+    }
+
+    throw myTools::myException("Greedy objective accumulator mismatch (see stderr).", __FILE__, __LINE__);
 }

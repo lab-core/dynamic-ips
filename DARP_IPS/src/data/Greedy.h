@@ -11,6 +11,20 @@
 //  StopLabel class
 //  for Greedy method I use linked list for and I linked StopLabel to create routes and insertions
 //---------------------------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------------------
+//  Objective audit helpers (debugging)
+//  Recompute totals from the linked-list representation and compare with stored accumulators.
+// ----------------------------------------------------------------------------------------
+struct ObjectiveAudit {
+    double totalWait = 0.0;
+    double totalTripDelay = 0.0;
+    double totalObjective = 0.0;
+    int pickups = 0;
+    int dropoffs = 0;
+};
+
 class StopLabel {
 public:
     PNode currentNode_;             // Pointer to the current node
@@ -97,6 +111,13 @@ public:
     // function to check the feasibility of the insertion based on the vehicle capacity and trip duration constraints
     [[nodiscard]] bool isAnyViolation(const PStopLabel &startLabel) const;
 
+    [[nodiscard]] ObjectiveAudit recomputeObjectiveAudit(float wait_W1, float ride_W2) const;
+
+    // Throws if any mismatch exceeds tolerances. Useful to call after insert/remove during debugging.
+    void debugCheckObjective(float wait_W1, float ride_W2,
+                             double absTol = 1e-3, double relTol = 1e-6,
+                             bool verbose = true) const;
+
 };
 
 //---------------------------------------------------------------------------------------------
@@ -120,5 +141,7 @@ struct insertPosition {
     void updatePosition (const PStopLabel &prePickup, const PStopLabel &preDrop, float waitIncrease,
         float tripDelayIncrease, float objectIncrease, float wait_W1, float ride_W2);
 };
+
+
 
 #endif //GREEDY_H

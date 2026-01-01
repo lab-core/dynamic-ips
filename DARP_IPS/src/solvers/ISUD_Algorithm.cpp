@@ -93,6 +93,20 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
     RPGurobiPro_->buildModelRP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
     setInitialDuals(pInst, inputPaths, epoch);
+    if (pInst->parameters_->initialDual_ == GREEDY_D) {
+        for (auto & requestObj : zSolution_) {
+            if (requestObj->dual_ == 0)
+                requestObj->dual_ = requestObj->penalty_;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
+        for (auto & vehicleObj : pInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
+                RPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+        }
+        RPGurobiPro_->updateModel_batch(pInst);
+        RPGurobiPro_->routesToAdd_.clear();
+    }
     for (auto & requestObj : pInst->requests_) {
         requestObj->setMaxMinDual();
     }
