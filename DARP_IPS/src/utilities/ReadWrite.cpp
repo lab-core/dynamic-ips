@@ -557,31 +557,31 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     auto defaultParams = j["defaultParameters"];
 
     // Default Parameters (stable parameters that rarely change)
-    float alphaParam = defaultParams.value("alphaParam", -1.0f);
-    float betaParam = defaultParams.value("betaParam", -1.0f);
-    float deltaPram = defaultParams.value("deltaPram", -1.0f);
-    float epochLength = defaultParams.value("epochLength", -1.0f);
-    int penaltyL = defaultParams.value("penaltyL", -1);
-    float committedTime = defaultParams.value("committedTime", -1.0f);
-    int nbThreads = defaultParams.value("nbThreads", -1);
-    int mainAlgorithm = defaultParams.value("mainAlgorithm", -1);
-    int solutionMode = defaultParams.value("solutionMode", -1);
+    float alphaParam = defaultParams.value("alphaParam", 1.5);
+    float betaParam = defaultParams.value("betaParam", 240.0f);
+    float deltaPram = defaultParams.value("deltaPram", 420.0f);
+    float epochLength = defaultParams.value("epochLength", 30.0f);
+    int penaltyL = defaultParams.value("penaltyL", 30);
+    float committedTime = defaultParams.value("committedTime", 30.0f);
+    int nbThreads = defaultParams.value("nbThreads", 16);
+    int mainAlgorithm = defaultParams.value("mainAlgorithm", 0);
+    int solutionMode = defaultParams.value("solutionMode", 1);
     bool greedyReOptimize = defaultParams.value("GreedyReOptimize", 0) != 0;
-    float timeWindows = defaultParams.value("timeWindows", -1.0f);
-    int MIP_maxIncDegree = defaultParams.value("MIP_maxIncDegree", -1);
-    int CP_IncDegree = defaultParams.value("CP_IncDegree", -1);
+    float timeWindows = defaultParams.value("timeWindows", 0.0f);
+    int MIP_maxIncDegree = defaultParams.value("MIP_maxIncDegree", 2);
+    int CP_IncDegree = defaultParams.value("CP_IncDegree", 10);
     bool reducedCP = defaultParams.value("reducedCP", 0) != 0;
-    float minImp = defaultParams.value("minImp", -1.0f);
+    float minImp = defaultParams.value("minImp", 0.0025f);
     bool useZoom = defaultParams.value("useZoom", 0) != 0;
     bool isDominanceReleased = defaultParams.value("isDominanceReleased", 0) != 0;
-    int subAlgorithm = defaultParams.value("subproblemAlgorithm", -1);
+    int subAlgorithm = defaultParams.value("subproblemAlgorithm", 1);
     bool constPortion = defaultParams.value("constPortion", 0) != 0;
     bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
-    int bigM = defaultParams.value("BigM", -1);
-    int solveTimeLimit = defaultParams.value("solveTimeLimit", -1);
-    int populateTimeLimit = defaultParams.value("populateTimeLimit", -1);
-    float mipGap = defaultParams.value("MIPGap", -1.0f);
-    int modelSolver = defaultParams.value("ModelSolver", -1);
+    int bigM = defaultParams.value("BigM", 27000);
+    int solveTimeLimit = defaultParams.value("solveTimeLimit", 300);
+    int populateTimeLimit = defaultParams.value("populateTimeLimit", 200);
+    float mipGap = defaultParams.value("MIPGap", 0.001f);
+    int modelSolver = defaultParams.value("ModelSolver", 1);
 
     // ==================== READ SCENARIO PARAMETERS ====================
     json scenarioParams;
@@ -607,40 +607,39 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     }
 
     // Scenario Parameters (read from the selected scenario)
-    float wait_W1 = scenarioParams.value("Wait_W1", -1.0f);
-    float ride_W2 = scenarioParams.value("Ride_W2", -1.0f);
+    float wait_W1 = scenarioParams.value("Wait_W1", 1.0f);
+    float ride_W2 = scenarioParams.value("Ride_W2", 0.0f);
     bool req_W3 = scenarioParams.value("Req_W3", 0) != 0;
     bool ride_W4 = scenarioParams.value("Ride_W4", 0) != 0;
     bool relative_W5 = scenarioParams.value("Relative_W5", 0) != 0;
     bool normal_W6 = scenarioParams.value("Normal_W6", 0) != 0;
     bool vehicleReturn = scenarioParams.value("vehicleReturn", 0) != 0;
-    int WaitForReturn = scenarioParams.value("WaitForReturn", -1);
-    float maxWait = scenarioParams.value("MaxWait", -1.0f);
-    int returnType = scenarioParams.value("returnType", -1);
-    int numVehicleSwitch = scenarioParams.value("numVehicleSwitch", -1);
-    float informTimeLimit = scenarioParams.value("informTimeLimit", -1.0f);
-    float pickupDeviationWindow = scenarioParams.value("pickupDeviationWindow", -1.0f);
-    int initialDual = scenarioParams.value("InitialDual", -1);
-    int dualMethod = scenarioParams.value("DualMethod", -1);
-    int initialStart = scenarioParams.value("warmStart", -1);
-    int numIter = scenarioParams.value("NumIter", -1);
-    int nbColumns = scenarioParams.value("NumColumn", -1);
-    bool isTruncated = scenarioParams.value("isTruncated", 0) != 0;
-    int maxLabel = scenarioParams.value("MaxLabel", -1);
-    int maxCommittedLabel = scenarioParams.value("MaxCommittedLabel", -1);
-    bool pruneNodes = scenarioParams.value("pruneNodes", 0) != 0;
-    bool pruneArcs = scenarioParams.value("pruneArcs", 0) != 0;
-    bool discardSuboptimalPath = scenarioParams.value("discardSuboptimalPath", 0) != 0;
+    int WaitForReturn = scenarioParams.value("WaitForReturn", LARGE_CONSTANT);
+    float maxWait = scenarioParams.value("MaxWait", LARGE_CONSTANT);
+    int returnType = scenarioParams.value("returnType", 2);
+    float informTimeLimit = scenarioParams.value("informTimeLimit", LARGE_CONSTANT);
+    float pickupDeviationWindow = scenarioParams.value("pickupDeviationWindow", LARGE_CONSTANT);
+    int initialDual = scenarioParams.value("InitialDual", 1);
+    int dualMethod = scenarioParams.value("DualMethod", 0);
+    int initialStart = scenarioParams.value("warmStart", 1);
+    int numIter = scenarioParams.value("NumIter", 1);
+    int nbColumns = scenarioParams.value("NumColumn", 50);
+    bool isTruncated = scenarioParams.value("isTruncated", 1) != 0;
+    int maxLabel = scenarioParams.value("MaxLabel", 15);
+    int maxCommittedLabel = scenarioParams.value("MaxCommittedLabel", 0);
+    bool pruneNodes = scenarioParams.value("pruneNodes", 1) != 0;
+    bool pruneArcs = scenarioParams.value("pruneArcs", 1) != 0;
+    bool discardSuboptimalPath = scenarioParams.value("discardSuboptimalPath", 1) != 0;
     bool isPickDropPossible = scenarioParams.value("isDropPickPossible", 0) != 0;
     bool dynamicPricing = scenarioParams.value("Dynamic_Pricing", 0) != 0;
     bool partialPricing = scenarioParams.value("Partial_Pricing", 0) != 0;
-    int nbPick = scenarioParams.value("nbPick", -1);
-    int sortPath = scenarioParams.value("sortPath", -1);
-    int sortColumn = scenarioParams.value("sortColumn", -1);
+    int nbPick = scenarioParams.value("nbPick", 4);
+    int sortPath = scenarioParams.value("sortPath", 0);
+    int sortColumn = scenarioParams.value("sortColumn", 1);
     bool routeRecycle = scenarioParams.value("Route_Recycle", 0) != 0;
-    int newRequestLimit = scenarioParams.value("newRequestLimit", -1);
-    int strategy = scenarioParams.value("LabelingStrategy", -1);
-    int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", -1);
+    int newRequestLimit = scenarioParams.value("newRequestLimit", LARGE_CONSTANT);
+    int strategy = scenarioParams.value("LabelingStrategy", 1);
+    int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", 2);
     bool smoothDual = scenarioParams.value("SmoothDual", 0) != 0;
 
     // ==================== VALIDATION ====================
@@ -657,7 +656,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         static_cast<DualMethod>(dualMethod),
         static_cast<MainAlgorithm>(mainAlgorithm), numIter,
         greedyReOptimize, vehicleReturn, timeWindows,
-        WaitForReturn, numVehicleSwitch,
+        WaitForReturn,
         static_cast<WarmStart>(initialStart),
         MIP_maxIncDegree, CP_IncDegree, reducedCP, minImp,
         useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
