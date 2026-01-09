@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
                 // Configure parameters based on parameter file
                 if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
                     mainInst->parameters_->MaxLabel_ = (i + 1) * 5;
-                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(2);
+                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
                 }
                 else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1") {
                     mainInst->parameters_->pruneNodes_ = true;
