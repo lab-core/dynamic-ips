@@ -3,7 +3,7 @@
     "alphaParam": 1.5,
     "betaParam": 600,
     "deltaPram": 420,
-    "epochLength": 5,
+    "epochLength": 30,
     "nbThreads": 16,
     "reducedCP": 0,
     "ModelSolver": 1
