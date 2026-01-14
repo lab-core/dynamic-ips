@@ -30,6 +30,7 @@ public:
 
     // Common data members from MasterAlgorithm
     vector2D<PRoute> availableRoutes_;
+    std::vector<std::unordered_set<std::string>> duplicatesRoutes_;
     int nbRoutes_;
     int nbColumnsAdded_;
     int nbVehicles_;

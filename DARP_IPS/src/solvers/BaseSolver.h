@@ -74,7 +74,7 @@ public:
     // Template function to solve the subproblems
     template<typename SubProblemType>
     bool solve_SP(PInstance & EpochInst, PInstance & mainInst, int &iter, int &nbNegativeFound,
-        vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes);
+        vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes, std::vector<std::unordered_set<std::string>> &duplicatesRoutes);
 
     // functions related to rebalancing policy based on Alonso mora Assignment
     void returnVehiclesAssign(const PInstance & EpochInst) const;
@@ -100,7 +100,7 @@ public:
     void handleVehicleReturn(PInstance &EpochInst);
 
     // function to update available routes by removing those including certain requests
-    static void updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes);
+    static void updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes, PInstance &EpochInst);
 
     // function to create one-stop routes with enumeration
     static void CreateOneStopRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,

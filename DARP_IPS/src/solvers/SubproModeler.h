@@ -41,7 +41,7 @@ public:
     void setNodeIndices() const;
 
     // function to check if inserting a pickup node is possible
-    bool checkInsertionPossibility(PNode &pick, float Wait_W1);
+    bool checkInsertionPossibility(PNode &pick, float Wait_W1) const;
 };
 
 // function to compute detour delay of inserting a pickup node between two nodes

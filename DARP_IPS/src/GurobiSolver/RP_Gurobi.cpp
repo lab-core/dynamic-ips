@@ -6,6 +6,7 @@
 
 RP_Gurobi::RP_Gurobi(std::string outputLog) : GurobiModeler(outputLog) {
     compRoutes_.clear();
+    routesToAdd_.clear();
     auxObjValue_ = 0;
     objValue_ = 0;
 }
@@ -68,7 +69,7 @@ void RP_Gurobi::updateRPModel(PInstance &pInst) {
 }
 
 
-void RP_Gurobi::updateModel_batch(PInstance& pInst) {
+void RP_Gurobi::updateRPModel_batch(PInstance& pInst) {
     try {
         if (routesToAdd_.empty()) return;
 
@@ -77,10 +78,11 @@ void RP_Gurobi::updateModel_batch(PInstance& pInst) {
         std::vector<double> lb(numRoutes, 0.0);
         std::vector<double> ub(numRoutes, GRB_INFINITY);
         std::vector<double> obj(numRoutes);
-        std::vector<char> vtype(numRoutes, GRB_INTEGER);
+        std::vector<char> vtype(numRoutes, GRB_BINARY);
         std::vector<GRBColumn> columns(numRoutes);
 
         compRoutes_.reserve(compRoutes_.size() + numRoutes);   // avoid reallocations
+        routeVar_.reserve(routeVar_.size() + numRoutes);
 
         size_t k = 0;
         // Fill arrays with range-based loop
@@ -100,7 +102,7 @@ void RP_Gurobi::updateModel_batch(PInstance& pInst) {
             vtype.data(),
             nullptr,
             columns.data(),
-            numRoutes));
+            static_cast<int>(numRoutes)));
 
         // Add variables to container
         routeVar_.insert(routeVar_.end(), newVars.get(), newVars.get() + numRoutes);
@@ -220,6 +222,7 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
             model_->set(GRB_IntParam_Crossover, 0);
             model_->update();
         }
+        model_->write("gurobi_orig.lp");
 
         solveTime_->start();
         int status = solve();
@@ -234,7 +237,10 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
         }
         std::cout << "Linear Objective: " << static_cast<float>(getObjValue()) << std::endl;
         // Getting dual values
-        getDuals(pInst);
+        if (pInst->parameters_->initialDual_ == BARRIER)
+            getBarrierDuals(pInst);
+        else
+            getDuals(pInst);
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
             model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
             model_->set(GRB_IntParam_Crossover, 1);
@@ -350,11 +356,11 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
     try {
         // Convert variables to integer
         for (auto& var : zVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
+            var.set(GRB_CharAttr_VType, GRB_BINARY);
         }
 
         for (auto& var : routeVar_) {
-            var.set(GRB_CharAttr_VType, GRB_INTEGER);
+            var.set(GRB_CharAttr_VType, GRB_BINARY);
         }
         // Count coverage for all requests
         /*auto coverage = countRequestCoverage(pInst);
@@ -424,12 +430,12 @@ void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& z
 
             // Convert z variables to integer
             for (auto& var : zVar_) {
-                var.set(GRB_CharAttr_VType, GRB_INTEGER);
+                var.set(GRB_CharAttr_VType, GRB_BINARY);
             }
 
             // Convert route variables to integer
             for (auto& var : routeVar_) {
-                var.set(GRB_CharAttr_VType, GRB_INTEGER);
+                var.set(GRB_CharAttr_VType, GRB_BINARY);
             }
 
             // Set time limit
@@ -846,7 +852,7 @@ std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
 
                     if (route->column_.size() > i && route->column_[i]) {
                         coverageCount[i]++;
-                        /*if (pInst->requests_[i]->getRequestId() == 1427)
+                        /*if (pInst->requests_[i]->getRequestId() == 1007)
                             std::cout << route->toString() << std::endl;*/
                     }
                 }

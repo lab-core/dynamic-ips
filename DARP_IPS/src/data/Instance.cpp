@@ -465,8 +465,8 @@ void Instance::updatePenalties(float elapsedTime) const {
         }
         if (requestObj->solVehicleID_ == LARGE_CONSTANT) {
     //        requestObj->dual_ = requestObj->penalty_;
-            requestObj->InitialDual_ = requestObj->penalty_;
-            requestObj->lastDual_ = requestObj->penalty_;
+            requestObj->InitialDual_ = requestObj->Req_W3_ * requestObj->penalty_;
+            requestObj->lastDual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
     }
 }

@@ -25,7 +25,12 @@
       "NumIter": 1,
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
-      "nbPick": 2
+      "Dynamic_Pricing": 0,
+      "nbPick": 2,
+      "Route_Recycle": 0,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
     },
     "Rebalance_no": {
       "Wait_W1": 1,

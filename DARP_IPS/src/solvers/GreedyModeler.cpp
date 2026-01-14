@@ -21,6 +21,7 @@ GreedyModeler::~GreedyModeler() {
 }
 
 void GreedyModeler::initialization(PInstance &PInst) {
+    generatedRoute_.clear();
    // if (PInst->parameters_->mainAlgorithm_ == GREEDY) {
         PInst->selectedVehicles_.clear();
         PInst->selectedVehicles_.resize(PInst->nbVehicles_, 0);
@@ -43,13 +44,18 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
             if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                 deltaObjective.clear();
                 for (auto &GRoute: greedyRouteList_) {
-
+                    bool returnRoutes = PInst->parameters_->initialDual_ == GREEDY_D ||
+                        PInst->parameters_->initialDual_ == INITIAL_LP || PInst->parameters_->initialDual_ == INIT_CP;
                     GRoute->findInsertPlace(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
                                             positionList_[(*GRoute->Vehicle_)->vehicleID_], PInst->parameters_->Wait_W1_,
-                                            PInst->parameters_->Ride_W2_);
+                                            PInst->parameters_->Ride_W2_, returnRoutes);
 
                     deltaObjective.push_back(positionList_[(*GRoute->Vehicle_)->vehicleID_]->deltaObjective_);
+                    if (GRoute->bestRoute_ != nullptr) {
+                        GRoute->bestRoute_->calculateTripDelay(PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
+                        generatedRoute_.push_back(GRoute->bestRoute_);
+                    }
                 }
                 unsigned int vehicle_ID =
                         std::min_element(deltaObjective.begin(), deltaObjective.end()) - deltaObjective.begin();
@@ -60,6 +66,7 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
                                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
                                                             PInst->parameters_->Wait_W1_, PInst->parameters_->Ride_W2_);
                 PInst->selectedVehicles_[vehicle_ID]++;
+                greedyRouteList_[vehicle_ID]->updated_ = true;
             }
         }
     }
@@ -106,8 +113,12 @@ void GreedyModeler::solutionToRoute(const PInstance &PInst) {
 float GreedyModeler::createUpperbound(float wait_W1, float ride_W2) {
     float upperbound = 0;
     for (auto & greedySol : greedyRouteList_) {
-        (*greedySol->Vehicle_)->greedyRoute_ = greedySol->greedyLabelToRoute(false);
-        (*greedySol->Vehicle_)->greedyRoute_->calculateTripDelay(wait_W1, ride_W2);
+        if (greedySol->updated_) {
+            (*greedySol->Vehicle_)->greedyRoute_ = greedySol->greedyLabelToRoute(false);
+            (*greedySol->Vehicle_)->greedyRoute_->calculateTripDelay(wait_W1, ride_W2);
+        }
+        else
+            (*greedySol->Vehicle_)->greedyRoute_ = (*greedySol->Vehicle_)->currentRoute_;
         upperbound += (*greedySol->Vehicle_)->greedyRoute_->objCoef_;
         greedySol->resetGreedyRoute(greedyLabelPool_);
         greedySol.reset();

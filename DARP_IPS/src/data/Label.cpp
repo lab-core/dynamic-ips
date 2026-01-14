@@ -256,7 +256,7 @@ bool Label::isExtendFeasible(const Node *outNode, int maxPickUp, bool discardSub
         return false;
     }*/
     // check tha capacity of vehicle
-    if ((load_ + outNode->nbPassengers_) > capacity)
+    if (load_ + outNode->nbPassengers_ > capacity)
         return false;
 
     if (outNode->type_ == PICKUP) {
@@ -345,6 +345,9 @@ bool Label::haveLessTravelResource(const PLabel &otherLabel) const {
 bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOption) const {
     /*if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);*/
+
+    /*if (otherLabel->pathNode_.back()->type_ == SINK && otherLabel->nbPickUp_ == 0)
+        return false;*/
 
     if (this->passedTime_ >= otherLabel->passedTime_) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {

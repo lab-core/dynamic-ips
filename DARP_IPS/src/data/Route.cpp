@@ -41,6 +41,23 @@ Route::~Route(){
     delete[] name_;
 }
 
+void Route::swapState(Route &other) noexcept {
+    using std::swap;
+
+    swap(plannedDepartTime_, other.plannedDepartTime_);
+    swap(plannedReachTime_,  other.plannedReachTime_);
+    swap(plannedDelay_,      other.plannedDelay_);
+    swap(totalWait_,         other.totalWait_);
+    swap(totalTripDelay_,    other.totalTripDelay_);
+    swap(objCoef_,           other.objCoef_);
+    swap(routeRequests_,     other.routeRequests_);
+    swap(routeNodes_,        other.routeNodes_);
+    swap(plannedPassengers_, other.plannedPassengers_);
+    swap(nbCommitted_,       other.nbCommitted_);
+    swap(routeSize_,         other.routeSize_);
+    swap(waitScore_,         other.waitScore_);
+}
+
 // Getters and Setters
 unsigned int Route::getRouteId() const {return routeID_;}
 
@@ -135,17 +152,23 @@ void Route::addSource(const PNode &node, float departTime, int departPassengers)
     }
 }
 void Route::addNode(const PNode &node) {
+    const auto& prevNode = routeNodes_.back();
+    const int prevLoc = prevNode->locationID_;
+    const int nodeLoc = node->locationID_;
+    float depart = plannedDepartTime_.back();
+
     routeSize_ ++;
     plannedPassengers_.push_back(plannedPassengers_.back() + node->nbPassengers_);
-    if (node->initialType_ == PICKUP && plannedDepartTime_.back() < node->related_Request_->requestTime_)
-        plannedDepartTime_.back() = node->related_Request_->requestTime_;
-    if (routeNodes_.back()->departTime_ != 0)
-        routeNodes_.back()->departTime_ = plannedDepartTime_.back();
-    float reachTime;
+    if (node->initialType_ == PICKUP && depart < node->related_Request_->requestTime_)
+        depart = node->related_Request_->requestTime_;
+    plannedDepartTime_.back() = depart;
+    if (prevNode->departTime_ != 0)
+        prevNode->departTime_ = depart;
+    const auto& row = durationMatrix_[prevLoc];
+    float reachTime = depart + row[nodeLoc];
+
     if (node->initialType_ == PICKUP)
-        reachTime = std::max(plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_], node->related_Request_->earlyPick_);
-    else
-        reachTime = plannedDepartTime_.back() + durationMatrix_[routeNodes_.back()->locationID_][node->locationID_];
+        reachTime = std::max(reachTime, node->related_Request_->earlyPick_);
     /*if (node->initialType_ == PICKUP && reachTime < node->related_Request_->earlyPick_) {
         plannedDepartTime_.back() += node->related_Request_->earlyPick_ - reachTime;
         reachTime = node->related_Request_->earlyPick_;
@@ -165,7 +188,6 @@ void Route::addNode(const PNode &node) {
 }
 
 bool Route::reConstructRoute(const PVehicle & vehicle){
-    totalWait_ = 0;
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
     for (int i = 1; i < routeNodes_.size(); ++i) {
@@ -189,41 +211,73 @@ bool Route::reConstructRoute(const PVehicle & vehicle){
     return true;
 }
 
-bool Route::reConstruct(const PVehicle & vehicle){
+bool Route::reConstruct1(const PVehicle & vehicle, float wait_W1, float ride_W2){
     PRoute newRoute = std::make_shared<Route>(vehicleID_);
-
     newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
-    for (int i = 1; i < routeNodes_.size(); ++i) {
-        if (plannedDepartTime_[i] > vehicle->departTime_ ) {
-            if (routeNodes_[i]->nodeStatus_ == DEFINED || (routeNodes_[i]->nodeStatus_ == PLANNED &&
-                routeNodes_[i]->related_Request_->solVehicleID_ == vehicleID_)) {
-                newRoute->addNode(routeNodes_[i]);
-            }
-            if (routeNodes_[i]->type_ == PICKUP) {
-                if (newRoute->plannedReachTime_[i] < routeNodes_[i]->related_Request_->earlyPick_ ||
-                    newRoute->plannedReachTime_[i] > routeNodes_[i]->related_Request_->latestPickup_)
-                    return false;
-                /*if (newRoute->plannedPassengers_.back() > vehicle->capacity_)
-                    return false;*/
-            }
-            else if (routeNodes_[i]->type_ == DROPOFF) {
-                if (newRoute->plannedReachTime_[i] - routeNodes_[i]->pairNode_->departTime_ > routeNodes_[i]->related_Request_->maxTravelTime_)
-                    return false;
-            }
+
+    for (int i = vehicle->removeNodes_.size()+1; i < routeNodes_.size(); ++i) {
+        newRoute->addNode(routeNodes_[i]);
+        if (routeNodes_[i]->type_ == PICKUP) {
+            if (newRoute->plannedReachTime_[i] > routeNodes_[i]->related_Request_->latestPickup_)
+                return false;
+        }
+        else if (routeNodes_[i]->type_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+            if (newRoute->plannedReachTime_[i] - routeNodes_[i]->pairNode_->departTime_ > routeNodes_[i]->related_Request_->maxTravelTime_)
+                return false;
         }
     }
     if (newRoute->routeRequests_.empty())
         return false;
+    newRoute->calculateTripDelay(wait_W1, ride_W2);
     plannedDepartTime_ = newRoute->plannedDepartTime_;
     plannedReachTime_ = newRoute->plannedReachTime_;
     plannedDelay_ = newRoute->plannedDelay_;
     totalWait_ = newRoute->totalWait_;
+    totalTripDelay_ = newRoute->totalTripDelay_;
+    objCoef_ = newRoute->objCoef_;
     routeRequests_ = newRoute->routeRequests_;
     routeNodes_ = newRoute->routeNodes_;
     plannedPassengers_ = newRoute->plannedPassengers_;
     nbCommitted_ = newRoute->nbCommitted_;
     routeSize_ = newRoute->routeSize_;
     waitScore_ = newRoute->totalWait_ / newRoute->routeRequests_.size();
+    return true;
+}
+
+bool Route::reConstruct(const PVehicle& vehicle, float wait_W1, float ride_W2)
+{
+    Route tmp(vehicleID_); // stack temp: no make_shared, no heap alloc
+    tmp.addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
+
+    const std::size_t start = static_cast<std::size_t>(vehicle->removeNodes_.size()) + 1;
+    if (start > routeNodes_.size()) return false;
+
+    for (std::size_t k = start; k < routeNodes_.size(); ++k) {
+        const auto& n = routeNodes_[k];
+        tmp.addNode(n);
+
+        const float reach = tmp.plannedReachTime_.back(); // <-- correct index
+
+        if (n->type_ == PICKUP) {
+            if (reach > n->related_Request_->latestPickup_)
+                return false;
+        } else if (n->type_ == DROPOFF &&
+                   n->related_Request_->requestStatus_ == ON_BOARD) {
+            if (reach - n->pairNode_->departTime_ > n->related_Request_->maxTravelTime_)
+                return false;
+                   }
+    }
+
+    if (tmp.routeRequests_.empty()) return false;
+
+    tmp.calculateTripDelay(wait_W1, ride_W2);
+    tmp.waitScore_ = tmp.totalWait_ / tmp.routeRequests_.size();
+    tmp.mpAdded_ = mpAdded_;
+
+    // Fast commit: move or swap
+    this->swapState(tmp);              // simplest if move assignment is OK
+    // or: this->swap(tmp);              // if you prefer explicit swap
+
     return true;
 }
 
@@ -362,19 +416,30 @@ void Route::resetRoute() const {
     }
 }
 
-void Route::calcMarginalCosts(const PVehicle & vehicle) {
-    if (routeRequests_.size() == 1)
-        routeRequests_[0]->marginalCost_ = totalWait_;
+void Route::calcMarginalCosts(float wait_W1, float ride_W2) {
+    if (routeRequests_.size() == 1) {
+        routeRequests_[0]->marginalCost_ = objCoef_;
+        routeRequests_[0]->dual_ = routeRequests_[0]->marginalCost_ * 1.5;
+    }
     else if (routeRequests_.size() > 1) {
-        for (auto & requestObj : routeRequests_) {
-            PRoute newRoute = std::make_shared<Route>(vehicleID_);
-            newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
-            for (int i = 1; i < routeNodes_.size()-1; ++i) {
-                if (routeNodes_[i]->related_Request_->getRequestId() != requestObj->getRequestId()) {
-                    newRoute->addNode(routeNodes_[i]);
+        for (size_t i = 1; i < routeNodes_.size(); ++i) {
+            if (routeNodes_[i]->type_ != SINK && routeNodes_[i]->type_ != SOURCE) {
+                float tripDelay = 0.0;
+                float waitTime = 0.0;
+                if (routeNodes_[i]->type_ == PICKUP) {
+                    waitTime = plannedReachTime_[i] - routeNodes_[i]->related_Request_->requestTime_;
+                    for (size_t j = i + 1; j < routeNodes_.size(); ++j) {
+                        if (routeNodes_[i]->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
+                            tripDelay = plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_;
+                            break;
+                        }
+                    }
+                    routeNodes_[i]->related_Request_->marginalCost_ = routeNodes_[i]->related_Request_->Req_W3_ *
+                        (wait_W1 * waitTime + ride_W2 * (tripDelay + routeNodes_[i]->related_Request_->Ride_W4_))/
+                            routeNodes_[i]->related_Request_->Relative_W5_;
+                    routeNodes_[i]->related_Request_->dual_ = routeNodes_[i]->related_Request_->marginalCost_ * 1.5;
                 }
             }
-            requestObj->marginalCost_ = totalWait_ - newRoute->totalWait_;
         }
     }
 }
@@ -407,6 +472,7 @@ void Route::calculateTripDelay(float wait_W1, float ride_W2) {
                         break;
                     }
                 }
+                routeNodes_[i]->related_Request_->marginalCost_ = routeNodes_[i]->related_Request_->Req_W3_ * (wait_W1 * waitTime + ride_W2 * (tripDelay + routeNodes_[i]->related_Request_->Ride_W4_))/routeNodes_[i]->related_Request_->Relative_W5_;
             }
             totalTripDelay_ += routeNodes_[i]->related_Request_->Req_W3_ * tripDelay;
             objCoef_ += routeNodes_[i]->related_Request_->Req_W3_ * (wait_W1 * waitTime + ride_W2 * (tripDelay + routeNodes_[i]->related_Request_->Ride_W4_))/routeNodes_[i]->related_Request_->Relative_W5_;

@@ -639,6 +639,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     bool routeRecycle = scenarioParams.value("Route_Recycle", 0) != 0;
     int newRequestLimit = scenarioParams.value("newRequestLimit", LARGE_CONSTANT);
     int strategy = scenarioParams.value("LabelingStrategy", 1);
+    bool reoptimizeSP = scenarioParams.value("reoptimizeSP", 0) != 0;
     int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", 2);
     bool smoothDual = scenarioParams.value("SmoothDual", 0) != 0;
 
@@ -665,7 +666,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         static_cast<LabelingStrategy>(strategy),
         static_cast<SubproblemAlgorithm>(subAlgorithm),
         constPortion, vehiclePortion, dynamicPricing, partialPricing,
-        routeRecycle, nbPick,
+        routeRecycle, reoptimizeSP, nbPick,
         static_cast<SortPaths>(sortPath),
         static_cast<SortColumns>(sortColumn),
         bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,

@@ -29,7 +29,7 @@ public:
 
     // Update model with new routes
     void updateRPModel(PInstance& pInst);
-    void updateModel_batch(PInstance& pInst);
+    void updateRPModel_batch(PInstance& pInst);
 
     // Build the complete model
     void buildModelRP(PInstance& pInst, std::vector<PRoute>& routeSolution, int nbVehicles);

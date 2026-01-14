@@ -51,6 +51,7 @@ public:
     // Constructor and Destructor
     explicit Route(int vehicleId);
     virtual ~Route();
+    void swapState(Route& other) noexcept;
 
     // Getters and Setters
     unsigned int getRouteId() const;
@@ -65,7 +66,8 @@ public:
 
     // function to reconstruct the generated routes in the pool from the last epoch based on the current state
     bool reConstructRoute(const PVehicle & vehicle);
-    bool reConstruct(const PVehicle &vehicle);
+    bool reConstruct1(const PVehicle &vehicle, float wait_W1, float ride_W2);
+    bool reConstruct(const PVehicle &vehicle, float wait_W1, float ride_W2);
 
     // function to add node to the solution route
     void addNode(const PNode &node, float reachTime, float departTime);
@@ -81,7 +83,7 @@ public:
     void resetRoute() const;
 
     // This function is to calculate the marginal costs of adding nodes to the route
-    void calcMarginalCosts(const PVehicle & vehicle);
+    void calcMarginalCosts(float wait_W1, float ride_W2);
 
     // This function is to compare two routes
     bool equal(const Route& routeObj) const {
@@ -115,6 +117,17 @@ static std::string makeKey(const Route& r, int vehicleID) {
     for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);
 
     std::string key = std::to_string(vehicleID) + "|";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i) key += ",";
+        key += std::to_string(ids[i]);
+    }
+    return key;
+}
+static std::string makeKey2(const Route& r) {
+    std::vector<int> ids;
+    for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);
+
+    std::string key = std::to_string(r.objCoef_) + "|";
     for (size_t i = 0; i < ids.size(); ++i) {
         if (i) key += ",";
         key += std::to_string(ids[i]);

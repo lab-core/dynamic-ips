@@ -15,6 +15,7 @@ SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     possibleInsert_ = 0;
     nbPriorCover_ = 0;
     subproTime_ = new myTools::Timer(); subproTime_->init();
+    labelSize_ = 0;
 }
 
 SubproModeler::~SubproModeler(){
@@ -25,15 +26,15 @@ SubproModeler::~SubproModeler(){
 void SubproModeler::initSubGraph(const PInstance &pInst) {
     // adding source and sink
     possibleInsert_ = 0;
-    labelSize_ = pInst->requests_.size() + 2 * Vehicle_->capacity_;
+    labelSize_ = static_cast<int>(pInst->requests_.size()) + 2 * Vehicle_->capacity_;
     nbTotalRequest_ = pInst->nbRequests_;
     subGraph_->addNewNode(std::make_shared<Node>((Vehicle_)->departNode_));
     subGraph_->addNewNode(std::make_shared<Node>(pInst->instGraph_->sinkNodes_[(Vehicle_)->vehicleID_]));
 
     // adding onboard nodes to the graph
     if (Vehicle_->currentRoute_->routeSize_ > 1) {
-        for (int i = 1; i < (Vehicle_)->currentRoute_->routeSize_; ++i) {
-            if ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
+        for (int i = 1; i < Vehicle_->currentRoute_->routeSize_; ++i) {
+            if (Vehicle_->currentRoute_->routeNodes_[i]->nodeStatus_ == PLANNED){
                 subGraph_->onboards_.emplace_back(std::make_shared<Node>((Vehicle_)->currentRoute_->routeNodes_[i]));
                 subGraph_->nodes_[subGraph_->onboards_.back()->nodeID_]  = subGraph_->onboards_.back();
                 subGraph_->onboards_.back()->travelTimeFromSource_ = durationMatrix_[(subGraph_->sourceNodes_[0])->locationID_][subGraph_->onboards_.back()->locationID_];
@@ -57,27 +58,14 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
                 nbPriorCover_ ++;
 
             const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
-            if (isRequestUnassigned || pInst->requests_[i]->committedPickTime_ < LARGE_CONSTANT) {
+            if (isRequestUnassigned || pInst->requests_[i]->committedPickTime_ < LARGE_CONSTANT ||
+                pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
                 possibleInsert_ ++;
                 insertRequest = true;
-                pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
-            }
-            else {
-  //              if (!Vehicle_->stateChanged_ || !Vehicle_->removeDrop_) {
-                    if (pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
-                        possibleInsert_ ++;
-                        insertRequest = true;
-                        pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
-                    }
- //               }
-                /*else if (checkInsertionPossibility(pInst->instGraph_->pickNodes_[i], pInst->parameters_->Wait_W1_)) {
-                    possibleInsert_ ++;
-                    insertRequest = true;
-                    pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,1);
-                }*/
+                pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,true);
             }
         }
-        if (reOptimize_)
+        if (reOptimize_ && pInst->parameters_->labelingReOptimizeStrategy_ != RE_INSERT)
             addRequest = addRequest && insertRequest;
 
         if (addRequest) {
@@ -121,7 +109,7 @@ void SubproModeler::setNodeIndices() const {
     }
 }
 
-bool SubproModeler::checkInsertionPossibility(PNode &pick, float Wait_W1) {
+bool SubproModeler::checkInsertionPossibility(PNode &pick, float Wait_W1) const {
     if (subGraph_->onboards_.empty())
         return true;
     for (size_t j = 0; j < Vehicle_->emptyRoute_->routeNodes_.size(); j++) {

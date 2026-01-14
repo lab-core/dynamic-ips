@@ -9,6 +9,7 @@
 // Constructor
 MP_Gurobi::MP_Gurobi(std::string outputLog) : RP_Gurobi(outputLog) {
     compRoutes_.clear();
+    routesToAdd_.clear();
 }
 
 // Build the master problem model
@@ -64,3 +65,59 @@ void MP_Gurobi::updateModel(PInstance& pInst) {
         throw;
     }
 }
+
+
+// Batch update model with new (continuous) routes
+void MP_Gurobi::updateMPModel_batch(PInstance& pInst) {
+    try {
+        if (routesToAdd_.empty()) return;
+
+        const size_t numRoutes = routesToAdd_.size();
+
+        // Bounds / objective / types / columns for bulk add
+        std::vector<double> lb(numRoutes, 0.0);
+        std::vector<double> ub(numRoutes, GRB_INFINITY);
+        std::vector<double> obj(numRoutes);
+        std::vector<char>   vtype(numRoutes, GRB_CONTINUOUS);
+        std::vector<GRBColumn> columns(numRoutes);
+
+        // Avoid reallocations
+        compRoutes_.reserve(compRoutes_.size() + numRoutes);
+        routeVar_.reserve(routeVar_.size() + numRoutes);
+
+        size_t k = 0;
+        for (const auto& routeObj : routesToAdd_) {
+            // Fill arrays with range-based loop
+            obj[k]     = routeObj->objCoef_;
+            columns[k] = createColumn(routeObj, POSITIVE, pInst);
+            compRoutes_.emplace_back(routeObj);
+            routeObj->mpAdded_ = true;
+            ++k;
+        }
+
+        // Bulk-add the variables
+        std::unique_ptr<GRBVar[]> newVars(model_->addVars(
+            lb.data(),
+            ub.data(),
+            obj.data(),
+            vtype.data(),
+            nullptr,          // no names
+            columns.data(),
+            static_cast<int>(numRoutes)
+        ));
+
+        // Store created vars
+        routeVar_.insert(routeVar_.end(), newVars.get(), newVars.get() + numRoutes);
+
+        // Single update call
+        model_->update();
+
+    } catch (const GRBException& e) {
+        std::cerr << "Error in updateModel_batch: " << e.getMessage() << std::endl;
+        throw;
+    } catch (const std::exception& e) {
+        std::cerr << "Error in updateModel_batch: " << e.what() << std::endl;
+        throw;
+    }
+}
+

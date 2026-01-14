@@ -106,7 +106,7 @@ void MasterAlgorithm::initializeVehicles(const PInstance &pInst){
 void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, int epoch) {
     if (pInst->parameters_->initialDual_ == PENALTIES){
         for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = requestObj->penalty_;
+            requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->dual_ = 0;
@@ -123,7 +123,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
     }
     else if (pInst->parameters_->initialDual_ == ADJUSTED) {
         for (auto &requestObj : zSolution_) {
-            requestObj->dual_ = requestObj->penalty_;
+            requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
         for (auto &vehicleObj: pInst->vehicles_)
             vehicleObj->adjustDuals();
@@ -159,18 +159,22 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
             lagSolver_->run(pInst);
             lagSolver_.reset();
         }
-        else if (pInst->parameters_->initialDual_ == INIT_CP) {
+        /*else if (pInst->parameters_->initialDual_ == INIT_CP) {
   //          solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
             for (auto &requestObj : zSolution_) {
-                if (requestObj->dual_ == 0)
-                    requestObj->dual_ = requestObj->penalty_;
+                requestObj->dual_ = requestObj->penalty_;
             }
-        }
+        }*/
     }
     if (pInst->parameters_->dualMethod_ == AUX_BOX) {
         float box = 0.8;
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = box * requestObj->penalty_;
+        }
+    }
+    if (pInst->parameters_->initialDual_ == INITIAL_LP || pInst->parameters_->initialDual_ == BARRIER) {
+        for (auto &requestObj : zSolution_) {
+            requestObj->dual_ = requestObj->InitialDual_;
         }
     }
 }
@@ -300,14 +304,7 @@ void MasterAlgorithm::assessReqCompatibility(PRoute &route, PInstance &pInst) {
 // (max degree = (coverage = 1) + (number of vehicles - 1))
 
 void MasterAlgorithm::assessReqVehCompatibility(PRoute &route, PInstance &pInst) {
-    route->isCompatible_ = true;
-    route->incompatibilityDegree_ = 0;
-
-    // If this column does not cover the requests of the current route in related vehicle
-    if ((route->column_ & pInst->vehicles_[route->vehicleID_]->currentRoute_->column_)!=pInst->vehicles_[route->vehicleID_]->currentRoute_->column_){
-        route->isCompatible_ = false;
-        route->incompatibilityDegree_++;
-    }
+    assessReqCompatibility(route,pInst);
     boost::dynamic_bitset<> vehicles;
     vehicles.resize(pInst->vehicles_.size());
     for (auto & requestObj : route->routeRequests_){
@@ -557,7 +554,7 @@ void MasterAlgorithm::updateReducedCosts(const PInstance &pInst) {
 
 void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pInst, std::vector<PRoute> &routesToAdd){
     updateReducedCosts(pInst);
-    if (selectMode == CP) {
+    if (selectMode == CP || selectMode == RP) {
         updateIncDegrees(pInst, false);
         if (pInst->parameters_->sortColumn_ == COMP_C) {
             updateScore(pInst);
@@ -601,13 +598,13 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                         if (routeObj->incompatibilityDegree_ > 1) {
+                         if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ >= 1) {
                              routesToAdd.push_back(routeObj);
                              numAdded++;
                          }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 3  && routeObj->reducedCost_ <= 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
@@ -638,6 +635,19 @@ void MasterAlgorithm::updateRoutesToAddOne(SelectionMode selectMode, PInstance &
 
 void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
 
+    /*for (auto & vehicleObj : pInst->vehicles_) {
+        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
+            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
+                continue;
+ //           if (routeObj->mpAdded_) {
+                // first time we see this column pattern → keep it
+                routeObj->createColumn(pInst->nbRequests_);
+                routesToAdd.push_back(routeObj);
+                nbColumnsAdded_++;
+            }
+ //       }
+    }*/
+
     for (auto & vehicleObj : pInst->vehicles_) {
         std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
@@ -657,7 +667,7 @@ void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &r
 }
 
 void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
-    updateIncDegrees(pInst, true);
+    updateIncDegrees(pInst, false);
     nbColumnsAdded_ = 0;
     for (int v = 0; v < pInst->nbVehicles_; ++v) {
         pInst->vehicles_[v]->emptyRoute_->createColumn(pInst->nbRequests_);
@@ -930,7 +940,7 @@ void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &in
         CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
         CPGurobiPro_->updateModel();
         CPBuildTime_->stop();
-        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, false);
+        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, true);
         setCurrentRoutes(pInst);
     }
     CPIter_++;

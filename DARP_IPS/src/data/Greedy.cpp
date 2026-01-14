@@ -37,6 +37,7 @@ void StopLabel::setValues(PNode currentNode, float reachTime, float departTime, 
 
 GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize) :
         Vehicle_(&vehicle) {
+    updated_  =false;
     if (greedyLabelPool.empty())
         initialStop_ = std::make_shared<StopLabel>((*Vehicle_)->departNode_,
                                                     (*Vehicle_)->departNode_->reachTime_,
@@ -151,17 +152,6 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
     }
 }
 
-GreedyRoute::GreedyRoute(const GreedyRoute &label) {
-    Vehicle_ = label.Vehicle_;
-    departureTime_ = label.departureTime_;
-    idleTime_ = label.idleTime_;
-    lastStop_ = label.lastStop_;
-    initialStop_ = label.initialStop_;
-    initialDepartStop_ = label.initialDepartStop_;
-    totalWait_ = label.totalWait_;
-    totalTripDelay_ = label.totalTripDelay_;
-    totalObjective_ = label.totalObjective_;
-}
 
 GreedyRoute::~GreedyRoute() = default;
 
@@ -233,7 +223,8 @@ void GreedyRoute::resetGreedyRoute(std::vector<PStopLabel> &greedyLabelPool) con
 // this function finds a position to insert a pickup point and add a drop off point
 void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration,
                                   std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition & position,
-                                  float wait_W1, float ride_W2) {
+                                  float wait_W1, float ride_W2, bool returnRoutes) {
+    bestRoute_ = nullptr;
 
     position->updatePosition(lastStop_, lastStop_, LARGE_CONSTANT,
         LARGE_CONSTANT, LARGE_CONSTANT, wait_W1, ride_W2);
@@ -260,11 +251,17 @@ void GreedyRoute::findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDur
   //          float objIncrease = wait_W1 *  waitIncrease + ride_W2 * 0.0;
             if (objIncrease < position->deltaObjective_) {
                 position->updatePosition(prePick, lastStop_, waitIncrease,  0.0, objIncrease, wait_W1, ride_W2);
+                if (returnRoutes && waitIncrease <= pickNode->related_Request_->penalty_) {
+                    bestRoute_ = this->greedyLabelToRoute(false);
+                    bestRoute_->addNode(pickNode);
+                    bestRoute_->addNode(dropNode);
+                }
             }
         }
         else {
             // Try insertion at this position
-            tryInsertionAt(prePick, pickNode, dropNode, maxDuration, greedyLabelPool, position, wait_W1, ride_W2);
+            tryInsertionAt(prePick, pickNode, dropNode, maxDuration, greedyLabelPool, position, wait_W1, ride_W2,
+                returnRoutes);
         }
         prePick = prePick->child_;
     }
@@ -282,7 +279,7 @@ PStopLabel GreedyRoute::findCapacityLimit(const PStopLabel &startLabel) const {
 }
 
 void GreedyRoute::tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dropNode, float maxDuration,
-    std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1, float ride_W2) {
+    std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1, float ride_W2, bool returnRoutes) {
     float baseDelay = totalWait_;
     float baseTripDelay = totalTripDelay_;
     float baseObjective = totalObjective_;
@@ -317,12 +314,16 @@ void GreedyRoute::tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dr
                 PStopLabel dropPos = (preDrop == pickLabel) ? prePick : preDrop;
                 position->updatePosition(prePick, dropPos, waitIncrease, tripDelayIncrease,
                     objIncrease, wait_W1, ride_W2);
+                if (returnRoutes)
+                    bestRoute_ = this->greedyLabelToRoute(false);
             }
             else if (objIncrease == position->deltaObjective_) {
                 if (tripDelayIncrease < position->deltaTripDelay_) {
                     PStopLabel dropPos = (preDrop == pickLabel) ? prePick : preDrop;
                     position->updatePosition(prePick, dropPos, waitIncrease, tripDelayIncrease,
                         objIncrease, wait_W1, ride_W2);
+                    if (returnRoutes)
+                        bestRoute_ = this->greedyLabelToRoute(false);
                 }
             }
         }

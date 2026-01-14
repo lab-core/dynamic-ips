@@ -37,6 +37,7 @@ public:
     bool stateChanged_;                     // has the state of the vehicle changed from last epoch (remove stops)
     bool removePickup_;                     // is a pickup stop node removed from the last epoch
     bool removeDrop_;                       // is a drop-off stop node, remove from the last epoch
+    std::vector<std::string> removeNodes_;
     int preSolvePickLimit_;                 // the limit on the number of pickups in the prior solution of SP
 
     // KPIs
@@ -80,6 +81,8 @@ public:
 
     // function to adjust duals and make sure their summation equals c_r
     void adjustDuals();
+    void adjustZeroDuals();
+    void adjustCPZeroDuals(float wait_W1, float ride_W2);
 
     std::string toStringOut(int epoch) const;
 };

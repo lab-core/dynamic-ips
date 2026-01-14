@@ -136,14 +136,12 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
     int iter, vector2D<PRoute> &availableRoutes) {
     // Handle partial pricing
     if (EpochInst->parameters_->partialPricing_) {
-        if (vehicleObj->currentRoute_->routeRequests_.size() >= 2) {
-            vehicleObj->numPickup_ = std::min(3, EpochInst->parameters_->nbPick_);
-            nbThreePick_++;
-        } else if (!vehicleObj->currentRoute_->routeRequests_.empty()) {
-            vehicleObj->numPickup_ = std::min(2, EpochInst->parameters_->nbPick_);
+        if (vehicleObj->onboards_.size() < 2) {
+            vehicleObj->numPickup_ = 2;
             nbTwoPick_++;
-        } else {
-            vehicleObj->numPickup_ = std::min(1, EpochInst->parameters_->nbPick_);
+        }
+        else {
+            vehicleObj->numPickup_ = 1;
             nbOnePick_++;
         }
         subProblem->maxPickup_ = vehicleObj->numPickup_;
@@ -159,20 +157,23 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
     }
 
     // Handle route recycling
-    if (EpochInst->parameters_->LabelingStrategy_ == RE_PULLING &&
-        !vehicleObj->currentRoute_->routeRequests_.empty()) {
-        if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_ROUTE) {
-            subProblem->reOptimize_ = true;
-            nbRecycle_++;
-        }
-        else {
-            subProblem->reOptimize_ = true;
-            nbRecycle_++;
-            if (EpochInst->parameters_->labelingReOptimizeStrategy_ == RE_INSERT) {
-                subProblem->availableRoutes_ = std::move(availableRoutes[vehicleObj->vehicleID_]);
-                subProblem->availableRoutes_.push_back(vehicleObj->currentRoute_);
+    if (EpochInst->parameters_->reoptimizeSP_) {
+        if (EpochInst->parameters_->labelingReOptimizeStrategy_ == RE_INSERT) {
+            if (availableRoutes[vehicleObj->vehicleID_].size() >= 10 && EpochInst->nbNewRequests_ < EpochInst->parameters_->newRequestLimit_
+                && !vehicleObj->currentRoute_->routeRequests_.empty() && EpochInst->nbNewRequests_ > 0) {
+                subProblem->reOptimize_ = true;
+                nbRecycle_++;
+                availableRoutes[vehicleObj->vehicleID_].clear();
             }
+            else
+                subProblem->reOptimize_ = false;
         }
+        else if (!vehicleObj->removeDrop_) {
+            subProblem->reOptimize_ = true;
+            nbRecycle_++;
+        }
+        else
+            subProblem->reOptimize_ = false;
     }
 }
 
@@ -480,7 +481,8 @@ void BaseSolver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<
     for (auto & vehicleObj : mainInst->vehicles_) {
         if (!availableRoutes[vehicleObj->vehicleID_].empty()) {
             for (int i = availableRoutes[vehicleObj->vehicleID_].size() - 1; i >= 0; --i){
-                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj))
+                if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj, mainInst->parameters_->Wait_W1_,
+                    mainInst->parameters_->Ride_W2_))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
                 else
                     availableRoutes[vehicleObj->vehicleID_][i]->calculateTripDelay(mainInst->parameters_->Wait_W1_,
@@ -544,7 +546,35 @@ void BaseSolver::handleVehicleReturn(PInstance &EpochInst) {
     }
 }
 
-void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes) {
+void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests, vector2D<PRoute> &availableRoutes, PInstance &EpochInst) {
+
+    for (auto& vehicleObj : EpochInst->vehicles_) {
+        if (!vehicleObj->stateChanged_) {
+            continue;
+        }
+
+
+        availableRoutes[vehicleObj->vehicleID_].erase(
+            std::remove_if(
+                availableRoutes[vehicleObj->vehicleID_].begin(),
+                availableRoutes[vehicleObj->vehicleID_].end(),
+                [&](const auto& route) {
+                    // remove if route is invalid OR condition is true
+                    if (!route || route->routeNodes_.size() < 2 || route->getRouteId() == vehicleObj->currentRoute_->getRouteId()) {
+                        return true;
+                    }
+
+                    for (size_t i = 0; i < vehicleObj->removeNodes_.size(); i++) {
+                        if (vehicleObj->removeNodes_[i] != route->routeNodes_[i+1]->nodeID_)
+                            return true;
+                        else
+                            continue;
+                    }
+                }),
+            availableRoutes[vehicleObj->vehicleID_].end());
+    }
+
+
     for (auto &vehicleRoutes : availableRoutes) {
         // Remove routes with overlapping requests or empty route requests
         for (auto &route : vehicleRoutes) {
@@ -616,10 +646,10 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
         //***********************************************************************************//
         if (mainInst->parameters_->subAlgorithm_ == LABEL_SETTING)
             subProBreak = solve_SP<PLabelingSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
-                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_);
+                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_,MP_solver_->duplicatesRoutes_);
         else
             subProBreak = solve_SP<PCplexSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
-                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_);
+                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_, MP_solver_->duplicatesRoutes_);
 
         if (subProBreak) {
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
@@ -802,7 +832,8 @@ std::string BaseSolver::toString(const PInstance &mainInst) const {
 
 template<typename SubProblemType>
 bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, int &nbNegativeFound,
-                                vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes) {
+                                vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes,
+                                std::vector<std::unordered_set<std::string>> &duplicatesRoutes) {
     Tools::PThreadsPool pPool = Tools::ThreadsPool::newThreadsPool(EpochInst->parameters_->nbThreads_);
 
     bool subProBreak = false;
@@ -837,7 +868,7 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
                 subProSolve.emplace_back(std::make_shared<CPLEXSubProblem>(vehicleObj));
             }
 
-            availableRoutes[vehicleObj->vehicleID_].clear();
+//            availableRoutes[vehicleObj->vehicleID_].clear();
         }
     }
     // solving subproblems
@@ -858,8 +889,8 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
                 if (!subProblem->subRequests_.empty()) {
                     subProBreak = subProblem->solveSP(availableTime - subProblemTime_->dSinceStart().count(),
                     EpochInst->vehicles_[subProblem->Vehicle_->vehicleID_],
-                                                 availableRoutes[(subProblem->Vehicle_)->vehicleID_],
-                                                 mainInst, EpochInst->nbRequests_);
+                                                 availableRoutes[subProblem->Vehicle_->vehicleID_],
+                                                 mainInst, EpochInst->nbRequests_, duplicatesRoutes[subProblem->Vehicle_->vehicleID_]);
                 }
                 labelsPool_.push_data(std::move(subProblem->labelPool_));
             }

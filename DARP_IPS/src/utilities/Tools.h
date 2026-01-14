@@ -14,6 +14,7 @@
 #include "MyTools.h"
 #include <condition_variable>
 #include <iomanip>
+#include <unordered_set>
 
 namespace Tools{
     // Create a pool of threads that can be used to run functions in parallel.

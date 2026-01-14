@@ -7,6 +7,8 @@
 CPModeler::CPModeler(std::string outputLog): env_(true), outputLog_(outputLog) {
     try {
         // Set environment parameters before creating model
+        env_.set(GRB_IntParam_LogToConsole, 0);
+        env_.set(GRB_IntParam_UpdateMode, 1);
         env_.start();
 
         model_ = new GRBModel(env_);
@@ -19,13 +21,12 @@ CPModeler::CPModeler(std::string outputLog): env_(true), outputLog_(outputLog) {
 
         // Apply tuned parameters
         model_->set(GRB_IntParam_OutputFlag, 0);
-        model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
  //       model_->set(GRB_IntParam_Crossover, 1);
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
         model_->set(GRB_StringParam_LogFile, outputLog);
-        env_.set(GRB_IntParam_UpdateMode, 1);
+
 
 
     } catch (GRBException& e) {
@@ -550,12 +551,27 @@ void CPModeler::getDuals(const PInstance &pInst) {
 
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
+            /*std::cout << "Request: " << std::left << std::setw(5) << pInst->requests_[i]->getRequestId()
+                      << " LP dual=" << std::setw(6) << pInst->requests_[i]->dual_
+                      << " CP dual=" << std::setw(6) << requestConstr_[i].get(GRB_DoubleAttr_Pi)
+                      << "  CBasis=" << std::setw(6) << requestConstr_[i].get(GRB_IntAttr_CBasis) << std::endl;*/
+
+
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            /*if (pInst->requests_[i]->dual_ == 0)
+                std::cout << "Request: " << std::left << std::setw(5) << pInst->requests_[i]->getRequestId()
+                      << " LP dual=" << std::setw(6) << pInst->requests_[i]->dual_
+                      << " CP dual=" << std::setw(6) << requestConstr_[i].get(GRB_DoubleAttr_Pi)
+                      << "  CBasis=" << std::setw(6) << requestConstr_[i].get(GRB_IntAttr_CBasis) << std::endl;*/
         }
 
         // Get vehicle constraint duals
-        for (size_t i = 0; i < pInst->vehicles_.size(); ++i) {
-            pInst->vehicles_[i]->dual_ = 0;
+        for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
+            /*std::cout << "Vehicle: " << std::left << std::setw(5) << i
+                      << " LP dual=" << std::setw(6) << pInst->vehicles_[i]->dual_
+                      << " CP dual=" << std::setw(6) << vehicleConstr_[i].get(GRB_DoubleAttr_Pi)
+                      << "  CBasis=" << std::setw(6) << vehicleConstr_[i].get(GRB_IntAttr_CBasis) << std::endl;*/
+            pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
         }
 
     } catch (GRBException& e) {
@@ -769,9 +785,10 @@ bool CPModeler::verifyBasisSolution(const PInstance& pInst) {
 void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution, std::vector<PRoute> &routeSolution,
                              InputPaths &inputPaths) {
     try {
-        saveModelBeforeSolve("debug_pre_solve");
+ //       saveModelBeforeSolve("debug_pre_solve");
         // Set up logging
         solveTime_->start();
+  //      dump_gurobi();
         model_->optimize();
         solveTime_->stop();
 
@@ -856,7 +873,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                 status_ = POSITIVE_VALUE;
             }
         }
-        model_->update();
+  //      model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in solveCPModel: " << e.getMessage() << std::endl;
@@ -870,7 +887,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
  //       saveModelBeforeSolve("debug_pre_solve");
         // Set up logging
         solveTime_->start();
-        model_->update();
+ //       model_->update();
  //       dump_gurobi();
         model_->optimize();
         solveTime_->stop();
@@ -1016,7 +1033,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                 status_ = POSITIVE_VALUE;
             }
         }
-        model_->update();
+  //      model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in solveCPModel: " << e.getMessage() << std::endl;

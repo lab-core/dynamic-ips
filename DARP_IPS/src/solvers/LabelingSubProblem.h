@@ -44,7 +44,7 @@ public:
 
     // main function of solving SP using dynamic programming
     bool solveSP(float availableTime, const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
-        int nbRequests);
+        int nbRequests, std::unordered_set<std::string> &duplicatesRoutes);
     
     bool solveDynamic(float availableTime);
 
@@ -55,7 +55,6 @@ public:
     // dynamic programming labelling algorithms with pulling strategies
     bool solveDynamic_pulling(float availableTime);
     bool solveDynamic_pullingWaveStep(float availableTime);
-    bool ResolveDynamic_pullingWaveStep(float availableTime);
 
     /******************** helper functions for labelling algorithm ******************/
 
@@ -78,7 +77,8 @@ public:
     bool pushToDrops(float availableTime, std::vector<PNode> &pickNodeList);
 
     // function to push a label to all outgoing pickup nodes
-    void pushToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
+    void pushToPickups(float availableTime, std::vector<PNode> &pickNodeList);
+    void pushToPickups(float availableTime);
 
     // function to pull a label to all outgoing pickup nodes
     void pullToPickups(float availableTime, std::vector<PNode> &pickNodeList, bool doTruncation);
@@ -87,7 +87,7 @@ public:
     void extendToDropOnboards(const PLabel &selectedLabel);
 
     // function to truncate the label list of a node based on the maximum allowed labels
-    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> &labelPool);
+    void truncateLabelList(Node *node, int MaxLabel, std::vector<PLabel> &labelPool) const;
 
     // function to truncate the label list of a node based on the maximum allowed labels and committed labels
     void truncateLabelList(Node *node, int MaxLabel, int MaxCommittedLabel, std::vector<PLabel> & labelPool) const;
@@ -100,7 +100,7 @@ public:
 
     // function to convert the solution to routes and save them in the vehicle object
     void SolutionToRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes, const PInstance & pInst,
-        int nbRequests);
+        int nbRequests, std::unordered_set<std::string> &duplicatesRoutes);
 
     // collect the generated labels for recycling when the subproblem is stopped early
     void CollectLabels();

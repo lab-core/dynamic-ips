@@ -13,7 +13,7 @@
 //  Constants and Configuration
 //-----------------------------------------------------------------------------
 namespace constants {
-    constexpr int LARGE_CONSTANT = 9999999;
+    constexpr int LARGE_CONSTANT = 1e7;
     constexpr int MAX_ZONE = 350;
     constexpr int SENTENCE_SIZE = 50;
     constexpr int SERVICE_TIME = 30;
@@ -21,6 +21,7 @@ namespace constants {
     constexpr int SECONDS_PER_MINUTE = 60;
     constexpr float EPSILON = 0.1f;
     constexpr float LARGE_PENALTY = 2000;
+    constexpr float EPS = 1e-6f;
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +108,6 @@ typedef Eigen::Triplet<double> Triplet;
 enum LabelingStrategy : int {
     PUSHING = 0,
     PULLING = 1,
-    RE_PULLING = 2
 };
 
 enum LabelingReOptimizeStrategy : int {
@@ -256,8 +256,8 @@ enum ModelSOLVER: int {
 //  String Mappings for Enums
 //-----------------------------------------------------------------------------
 namespace enum_strings {
-    constexpr std::array<const char*, 3> labelingStrategyNames = {
-        "PUSHING", "PULLING" , "RE_PULLING"
+    constexpr std::array<const char*, 2> labelingStrategyNames = {
+        "PUSHING", "PULLING"
     };
 
     constexpr std::array<const char*, 3> labelingReOptimizeStrategyNames = {

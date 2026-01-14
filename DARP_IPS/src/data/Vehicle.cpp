@@ -28,6 +28,7 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, c
     removeDrop_ = false;
     removePickup_ = false;
     preSolvePickLimit_ = 2;
+    removeNodes_.clear();
 }
 
 Vehicle::~Vehicle() = default;
@@ -111,9 +112,10 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
     stateChanged_ = false;
     removePickup_ = false;
     removeDrop_ = false;
+    removeNodes_.clear();
 
     if (currentRoute_->routeSize_ > 1) {
-         if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePickLimit_ != 1) {
+   //     if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePickLimit_ != 1) {
             // this condition is useful for cases that the vehicle does not have any stops in the current epoch
             if (departTime_ < elapsedTime + committedTime) {
                 onboards_.clear();
@@ -121,6 +123,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 for (int i = 1; i < currentRoute_->routeSize_; ++i) {
                     stateChanged_ = true;
                     mainInst->nbStateChanged_++;
+                    removeNodes_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
                     currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
                     currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
@@ -190,7 +193,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 currentRoute_->removeNode(breakIndex);
                 currentRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_, mainInst->parameters_->Ride_W2_);
             }
-        }
+ //       }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
             emptyRoute_ = currentRoute_;
     }
@@ -316,6 +319,89 @@ void Vehicle::adjustDuals() {
         }
     }
     dual_ = 0.0;
+}
+
+
+void Vehicle::adjustZeroDuals() {
+
+    if (currentRoute_->routeRequests_.size() <= 1) return;
+
+    // Only do the adjustment if at least one request dual is zero (or ~zero)
+    bool hasZero = false;
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        if (std::fabs(requestObj->dual_) <= EPS) {
+            hasZero = true;
+            break;
+        }
+    }
+    if (!hasZero) return;
+
+    // Sum of request duals (we keep this total and redistribute it)
+    float totalDual = 0.0f;
+    // Sum of marginal costs (used for proportional split)
+    float totalMC = 0.0f;
+
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        totalDual += requestObj->dual_;
+        totalMC += requestObj->marginalCost_;
+    }
+
+    // If all marginal costs are zero (or extremely small), fall back to equal split
+    if (std::fabs(totalMC) <= EPS) {
+        float equalShare = totalDual / static_cast<float>(currentRoute_->routeRequests_.size());
+        for (auto& requestObj : currentRoute_->routeRequests_) {
+            requestObj->dual_ = equalShare;
+        }
+        return;
+    }
+
+    // Redistribute totalDual proportionally to marginal costs
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        requestObj->dual_ = totalDual * (requestObj->marginalCost_ / totalMC);
+    }
+}
+
+void Vehicle::adjustCPZeroDuals(float wait_W1, float ride_W2) {
+    if (currentRoute_->routeRequests_.empty()) return;
+
+    // Only do the adjustment if at least one request dual is zero (or ~zero)
+    bool lessZero = false;
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        if (requestObj->dual_ <= EPS) {
+            lessZero = true;
+            break;
+        }
+    }
+    if (!lessZero) return;
+    this->currentRoute_->calcMarginalCosts(wait_W1, ride_W2);
+
+    // Sum of request duals (we keep this total and redistribute it)
+    float totalDual = 0.0f;
+    // Sum of marginal costs (used for proportional split)
+    float totalMC = 0.0f;
+
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        if (requestObj->dual_ > 0)
+            totalDual += requestObj->dual_;
+        totalMC += requestObj->marginalCost_;
+    }
+    if (this->dual_ > 0)
+        totalDual += this->dual_;
+    this->dual_ = 0;
+    // If all marginal costs are zero (or extremely small), fall back to equal split
+    if (std::fabs(totalMC) <= EPS) {
+        float equalShare = totalDual / static_cast<float>(currentRoute_->routeRequests_.size());
+        for (auto& requestObj : currentRoute_->routeRequests_) {
+            requestObj->dual_ = equalShare;
+        }
+        return;
+    }
+
+    // Redistribute totalDual proportionally to marginal costs
+    for (auto& requestObj : currentRoute_->routeRequests_) {
+        requestObj->dual_ = totalDual * (requestObj->marginalCost_ / totalMC);
+ //       std::cout << "Request: " << requestObj->getRequestId() << " dual changed to: "<< requestObj->dual_ << std::endl;
+    }
 }
 
 std::string Vehicle::toStringOut(int epoch) const {

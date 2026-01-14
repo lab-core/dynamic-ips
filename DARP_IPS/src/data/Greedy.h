@@ -59,11 +59,12 @@ public:
     float totalObjective_;
     float departureTime_;           // departure time of the corresponding vehicle
     float idleTime_;                // idle time of the corresponding vehicle (used in static solver)
+    bool updated_;
+    PRoute bestRoute_;
 
     
     // Constructor and Destructor
     GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<PStopLabel> &greedyLabelPool, bool greedyReOptimize);
-    GreedyRoute(const GreedyRoute &label);
     virtual ~GreedyRoute();
 
     // Display function
@@ -74,7 +75,7 @@ public:
 
     // this function finds a position to insert pickup point and add drop off point at the end
     void findInsertPlace(PNode &pickNode, PNode &dropNode, float maxDuration, std::vector<PStopLabel> &greedyLabelPool,
-                         const PInsertPosition & position, float wait_W1, float ride_W2);
+                         const PInsertPosition & position, float wait_W1, float ride_W2, bool returnRoutes);
 
     // a helper function that finds the last possible position to insert drop-off based on capacity feasibility
     [[nodiscard]] PStopLabel findCapacityLimit(const PStopLabel &startLabel) const;
@@ -82,7 +83,7 @@ public:
     // a helper function tries to find the best possible insertion for pick-up and drop-off nodes in the middle of the route
     void tryInsertionAt(PStopLabel &prePick, PNode &pickNode, PNode &dropNode, float maxDuration,
                         std::vector<PStopLabel> &greedyLabelPool, const PInsertPosition &position, float wait_W1,
-                        float ride_W2);
+                        float ride_W2, bool returnRoutes);
 
     // This function inserts the newNode after the preLabel in the linked list
     void insertNode(const PStopLabel &preLabel, PNode &newNode, std::vector<PStopLabel> &greedyLabelPool,

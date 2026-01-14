@@ -10,6 +10,8 @@
 GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(outputLog) {
     try {
         // Set environment parameters before creating model
+        env_.set(GRB_IntParam_LogToConsole, 0);
+        env_.set(GRB_IntParam_UpdateMode, 1);
         env_.start();
 
         model_ = new GRBModel(env_);
@@ -22,15 +24,11 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
 
         // Apply tuned parameters
         model_->set(GRB_IntParam_OutputFlag, 0);
-        model_->set(GRB_IntParam_LogToConsole, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
         model_->set(GRB_IntParam_Crossover, 1);
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
-        model_->set(GRB_IntParam_UpdateMode, 1);                // Immediate updates
         model_->set(GRB_StringParam_LogFile, outputLog);
-        env_.set(GRB_IntParam_UpdateMode, 1);
-
 
     } catch (GRBException& e) {
         std::cerr << "Error in GurobiModeler constructor: " << e.getMessage() << std::endl;
@@ -79,14 +77,14 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
 
         // Add request constraints (= rhs)
         for (int i = 0; i < nbRequestTask_; ++i) {
-  //          std::string constrName = "request_" + std::to_string(i);
-            requestConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs));
+            requestConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs, "R" + std::to_string(pInst->requests_[i]->getRequestId())));
         }
+
+
 
         // Add vehicle constraints (= rhs)
         for (int i = 0; i < nbVehicles; ++i) {
- //           std::string constrName = "vehicle_" + std::to_string(i);
-            vehicleConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs));
+            vehicleConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs, "V_" + std::to_string(i)));
         }
 
         // Set basic parameters
@@ -129,7 +127,7 @@ void GurobiModeler::addZVarInt(const PRequest& request, VarSign sign) {
         col.addTerm(signMultiplier, requestConstr_[request->taskIndex_]);
 
         double objCoeff = signMultiplier * request->Req_W3_ * request->penalty_;
-        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, request->name_);
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_BINARY, col, request->name_);
         zVar_.push_back(var);
 
     } catch (GRBException& e) {
@@ -164,7 +162,7 @@ void GurobiModeler::addRouteVarInt(const PRoute& newRoute, VarSign sign, const P
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
         double objCoeff = signMultiplier * newRoute->objCoef_;
-        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_INTEGER, col, nullptr);
+        GRBVar var = model_->addVar(0.0, GRB_INFINITY, objCoeff, GRB_BINARY, col, nullptr);
         routeVar_.push_back(var);
 
     } catch (GRBException& e) {
@@ -191,10 +189,10 @@ void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const
 
 void GurobiModeler::convertToInt() {
     for (auto& var : zVar_)
-        var.set(GRB_CharAttr_VType, GRB_INTEGER);
+        var.set(GRB_CharAttr_VType, GRB_BINARY);
 
     for (auto& var : routeVar_)
-        var.set(GRB_CharAttr_VType, GRB_INTEGER);
+        var.set(GRB_CharAttr_VType, GRB_BINARY);
     model_->update();
 }
 
@@ -294,6 +292,8 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
         // Get request constraint duals
         for (size_t i = 0; i < requestConstr_.size(); ++i) {
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            if (std::fabs(pInst->requests_[i]->dual_) <= EPS)
+                std::cout << "Zero Dual for Request: " << pInst->requests_[i]->getRequestId() << std::endl;
             /*double slack = requestConstr_[i].get(GRB_DoubleAttr_Slack);
 
             if (pInst->requests_[i]->dual_ == slack)
@@ -307,6 +307,35 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
             if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
                 pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
  //               pInst->vehicles_[i]->dual_ = 0;
+            }
+            else {
+                pInst->vehicles_[i]->dual_ = 0;
+            }
+        }
+
+    } catch (GRBException& e) {
+        std::cerr << "Error in getDuals: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
+void GurobiModeler::getBarrierDuals(const PInstance& pInst) {
+    try {
+
+        // Get request constraint duals
+        for (size_t i = 0; i < requestConstr_.size(); ++i) {
+
+            /*std::cout << pInst->requests_[i]->getRequestId()
+                  << " old dual=" << pInst->requests_[i]->dual_
+                  << " new dual=" << requestConstr_[i].get(GRB_DoubleAttr_BarPi) << std::endl;*/
+            pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_BarPi);
+
+        }
+
+        // Get vehicle constraint duals
+        for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
+            if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
+                pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_BarPi);
             }
             else {
                 pInst->vehicles_[i]->dual_ = 0;

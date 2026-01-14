@@ -20,7 +20,8 @@ public:
     std::vector<PStopLabel> greedyLabelPool_;               // pool of greedy labels to re-use
     std::vector<PInsertPosition> positionList_;             // list of possible insertion positions   
     float objValue_;                                        // objective value of the greedy solution    
-    std::vector<PRequest> zSolution_;                       // list of unserved requests in the greedy solution 
+    std::vector<PRequest> zSolution_;                       // list of unserved requests in the greedy solution
+    std::vector<PRoute> generatedRoute_;                    // list of generated route
 
     //Constructor and Destructor
     GreedyModeler();

@@ -60,9 +60,6 @@ public:
     void addRouteVarInt(const PRoute& newRoute, VarSign sign, const PInstance& pInst);
     void addRouteVarFloat(const PRoute& newRoute, VarSign sign, const PInstance& pInst);
 
-    // Batch operations
-    void beginBatchUpdate();
-    void endBatchUpdate();
 
     // Set parameters
     void setParameters(const PInstance& pInst, float availableTime);
@@ -79,6 +76,9 @@ public:
 
     // Get dual values
     void getDuals(const PInstance& pInst);
+
+    void getBarrierDuals(const PInstance &pInst);
+
     void getDualsFromRelaxed(GRBModel &relaxedModel, const PInstance& pInst);
 
     // Access to variables

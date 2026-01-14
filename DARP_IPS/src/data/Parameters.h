@@ -24,6 +24,7 @@ public:
     bool isDropPickPossible_{};                             // whether pick-up is allowed when a drop-off is already visited
     LabelingStrategy LabelingStrategy_{};                   // labeling strategy: PUSHING, PULLING, RE_PULLING
     LabelingReOptimizeStrategy labelingReOptimizeStrategy_; // labeling re-optimization strategy: RE_INSERT, BY_ROUTE, BY_GRAPH
+    bool reoptimizeSP_{};                                   // whether to re-optimize subproblems or not
     int nbPick_{};                                          // number of pick-ups limits in routes, used in labeling
     SortPaths sortPath_;                                    // path sorting criteria used in truncated labeling
     int newRequestLimit_{};                                 // limit on the number of new requests accepted to decide whether to re-optimize
@@ -38,8 +39,8 @@ public:
     SolverBase(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
                bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
-               int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1, float ride_W2, bool req_W3,
-               bool ride_W4, bool relative_W5, bool normal_W6);
+               bool reoptimizeSP, int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1,
+               float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
 
     virtual ~SolverBase() = default;
 
@@ -109,18 +110,17 @@ public:
     // other Parameters
     bool greedyReOptimize_;                 // restart greedy (re-assigning) considering the current state of the system 
     float timeWindow_;                      // time window for rejecting requests
-    int numVehicleSwitch_;                  // the number of times we are allowed to change the vehicle assigned to a customer
 
     // Constructor and Destructor
     Parameters(float alphaParam, float betaParam, float deltaPram, int epochLength, int penaltyL,
                int committedTime, int nbThreads, InitialDual initialDual, DualMethod dualMethod,
                MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
-               float WaitForReturn, int numVehicleSwitch, WarmStart initialStart,
+               float WaitForReturn, WarmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool reducedCP, float minImp, bool useZoom,
                int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
-               bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle,
+               bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool reoptimizeSP,
                int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
                int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
@@ -140,10 +140,11 @@ public:
 //-----------------------------------------------------------------------------
 struct solverOption: public SolverBase {
     // Constructor and Destructor
-    solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased, int nbPick,
-                 SortPaths pathSort, bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
-                 bool isDropPickPossible, LabelingStrategy labelingStrategy, int newRequestLimit,float wait_W1,
-                 float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
+    solverOption(bool isTruncated, int maxLabel, int MaxCommittedLabel, bool isDominanceReleased,
+               bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath, bool isDropPickPossible,
+               LabelingStrategy labelingStrategy, LabelingReOptimizeStrategy labelingReOptimizeStrategy,
+               bool reoptimizeSP, int nbPick, SortPaths pathSort, int newRequestLimit, float wait_W1,
+               float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
 
     // Construct from Parameters
     explicit solverOption(const PParameters &MainParams);

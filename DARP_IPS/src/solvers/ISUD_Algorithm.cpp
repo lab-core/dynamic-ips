@@ -69,29 +69,28 @@ void ISUD_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPath
 
 void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
-
-    initialization(pInst, inputPaths, GreedyModel);
-    masterTime_->start();
-
     CPEpochSolveTime_ = 0;
     maxIncDegree_ = pInst->parameters_->CP_IncDegree_;
     CPBuilt_ = false;
 
-    // Building models
+    initialization(pInst, inputPaths, GreedyModel);
+    masterTime_->start();
+
+    // build CP model
     CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
     CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
+
+    // Build RP model
     RPGurobiPro_ = std::make_shared<RP_Gurobi>(inputPaths.getOutputSolverLog());
-
-    RPGurobiPro_->routesToAdd_.clear();
-
     for (auto & vehicleObj : pInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->emptyRoute_->routeSize_)
             RPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
     }
-
     MPBuildTime_->start();
     RPGurobiPro_->buildModelRP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
+
+    // set initial duals
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
         for (auto & requestObj : zSolution_) {
@@ -104,8 +103,16 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
             if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
                 RPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
         }
-        RPGurobiPro_->updateModel_batch(pInst);
+        RPGurobiPro_->updateRPModel_batch(pInst);
         RPGurobiPro_->routesToAdd_.clear();
+    }
+    if (pInst->parameters_->smoothDual_) {
+        for (auto & requestObj : pInst->requests_) {
+            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->lastDual_;
+            requestObj->lastDual_ = requestObj->dual_;
+        }
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
     }
     for (auto & requestObj : pInst->requests_) {
         requestObj->setMaxMinDual();
@@ -167,7 +174,7 @@ int ISUD_Algorithm::solveRP_Gurobi(PInstance &pInst, int compDegree, const Input
 
     if (!RPGurobiPro_->routesToAdd_.empty()){
         MPBuildTime_->start();
-        RPGurobiPro_->updateModel_batch(pInst);
+        RPGurobiPro_->updateRPModel_batch(pInst);
         MPBuildTime_->stop();
         RPGurobiPro_->solveModelRelaxInt(pInst, zSolution_, routeSolution_, inputPaths,
                                      availableTime_, objValue_);
@@ -210,7 +217,7 @@ void ISUD_Algorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, int
 //        if (RPIter_ == 2)
  //            break;
 
-        break;
+ //       break;
 
         if (nbColumns == 0)
             break;
@@ -519,29 +526,45 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 isCPImproved = false;
             }
             iterTime_ = masterTime_->dSinceStart().count();
-            int CpCounter = 0;
+
+            if (!pInst->parameters_->reducedCP_) {
+                CPBuildTime_->start();
+                CPGurobiPro_->resetForNextIteration();
+                CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
+                CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
+                CPBuildTime_->stop();
+            }
             while (isCPImproved) {
                 isCPImproved = false;
                 previousObj_ = objValue_;
                 CPGurobiPro_->routesToAdd_.clear();
 
                 updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
+                for (auto &vehicleObj: pInst->vehicles_) {
+                    if (!vehicleObj->currentRoute_->routeRequests_.empty())
+                        CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+                }
+
                 setAvailableTime();
                 if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
-                    CPGurobiPro_->resetForNextIteration();
-                    CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
-                    CPBuildTime_->start();
+
                     if (pInst->parameters_->reducedCP_) {
+                        CPBuildTime_->start();
+                        CPGurobiPro_->resetForNextIteration();
+                        CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
                         CPGurobiPro_->buildModel_batch(pInst);
                         CPBuildTime_->stop();
                         CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
                     }
                     else {
-                        CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
+                        CPBuildTime_->start();
                         CPGurobiPro_->updateModel();
                         CPBuildTime_->stop();
-                        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, true);
+                        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, false);
                         setCurrentRoutes(pInst);
+     //                   for (auto & veh : pInst->vehicles_)
+     //                       veh->adjustCPZeroDuals(pInst->parameters_->Wait_W1_,pInst->parameters_->Ride_W2_);
+
                     }
 
                     CPIter_++;
@@ -614,6 +637,11 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
             updateReducedCosts(pInst);
             if (minReducedCost_ > 0 || availableTime_ <= 0)
                 restartAlgorithm = false;
+            else {
+                CPGurobiPro_.reset();
+                CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
+                CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
+            }
  //           CPGurobiPro_.reset();
  //           CPGurobiPro_ = std::make_shared<CP_Gurobi>();
             CPBuilt_ = false;

@@ -21,6 +21,8 @@ public:
     // Update model with new routes
     void updateModel(PInstance& pInst);
 
+    void updateMPModel_batch(PInstance &pInst);
+
     // Getters
     const std::vector<PRoute>& getCompRoutes() const { return compRoutes_; }
 

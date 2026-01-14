@@ -47,14 +47,17 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
 
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
-        for (auto & vehicleObj : pInst->vehicles_)
-            MasterPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
-        MasterPro_->updateModel(pInst);
-        for (auto & requestObj : zSolution_) {
-            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
+        for (auto & vehicleObj : pInst->vehicles_) {
+            if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
+                MasterPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
         }
- //       for (auto & vehicleObj : pInst->vehicles_)
- //           vehicleObj->dual_ = 0;
+        MasterPro_->updateModel(pInst);
+        MasterPro_->routesToAdd_.clear();
+
+        for (auto & requestObj : zSolution_)
+            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;
+        for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;
     }
     else if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
         (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)){
@@ -71,14 +74,15 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
 void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch,
     const PGreedyModeler &GreedyModel) {
     initialization(pInst, inputPaths, GreedyModel);
+    previousObj_ = objValue_;
     masterTime_->start();
 
-    // build the model
-    MPGurobiPro_ = std::make_shared<MP_Gurobi>(inputPaths.getOutputSolverLog());
-    MPGurobiPro_->routesToAdd_.clear();
+    // build AUX dual model
     if (pInst->parameters_->dualMethod_ == AUX_D)
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
 
+    // build MP model
+    MPGurobiPro_ = std::make_shared<MP_Gurobi>(inputPaths.getOutputSolverLog());
     for (auto & vehicleObj : pInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->emptyRoute_->routeSize_)
             MPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
@@ -87,33 +91,76 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
     MPBuildTime_->start();
     MPGurobiPro_->buildModelMP(pInst, routeSolution_, nbVehicles_);
     MPBuildTime_->stop();
+    MPGurobiPro_->routesToAdd_.clear();
+
+    // set initial duals
     setInitialDuals(pInst, inputPaths, epoch);
     if (pInst->parameters_->initialDual_ == GREEDY_D) {
- //       if (epoch == 1) {
-            for (auto & requestObj : zSolution_) {
-                if (requestObj->dual_ == 0)
-                    requestObj->dual_ = requestObj->penalty_;
-
-            }
- //       }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
+        routeSolution_.clear();
         for (auto & vehicleObj : pInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_)
+            if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->greedyRoute_->routeSize_) {
                 MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+            }
+            routeSolution_.push_back(vehicleObj->greedyRoute_);
         }
-        MPGurobiPro_->updateModel(pInst);
+        setCurrentRoutes(pInst);
+        MPGurobiPro_->updateMPModel_batch(pInst);
+        MPGurobiPro_->routesToAdd_.clear();
+        for (auto & vehicleObj : pInst->vehicles_) {
+            vehicleObj->currentRoute_->calcMarginalCosts(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
+            vehicleObj->dual_ = 0;
+        }
+
+        /*for (auto & requestObj : zSolution_)
+            requestObj->dual_ = 0.5 * requestObj->marginalCost_ + 0.5 * requestObj->penalty_;*/
+        /*for (auto & vehicleObj : pInst->vehicles_)
+            vehicleObj->dual_ = 0;*/
+    }
+    if (pInst->parameters_->initialDual_ == INIT_CP && pInst->parameters_->routeRecycle_ && !availableRoutes_.empty()) {
+        for (auto & routeObj : GreedyModel->generatedRoute_) {
+            routeObj->createColumn(pInst->nbRequests_);
+            availableRoutes_[routeObj->vehicleID_].push_back(routeObj);
+        }
+        solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
+    }
+    if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP) {
+        for (auto & routeObj : GreedyModel->generatedRoute_) {
+            routeObj->createColumn(pInst->nbRequests_);
+            MPGurobiPro_->routesToAdd_.push_back(routeObj);
+        }
+
+        if (pInst->parameters_->routeRecycle_ && !availableRoutes_.empty()) {
+            reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        }
+        MPGurobiPro_->updateMPModel_batch(pInst);
+        MPGurobiPro_->solveLPDual(pInst, inputPaths);
+        /*MPGurobiPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths, availableTime_, previousObj_);
+        setCurrentRoutes(pInst);
+        setObjValue();*/
         MPGurobiPro_->routesToAdd_.clear();
     }
-    if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_ &&
+    /*if (!availableRoutes_.empty() && pInst->parameters_->routeRecycle_ &&
         (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->initialDual_ == INITIAL_LP)) {
         MPGurobiPro_->routesToAdd_.clear();
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
-        /*for (auto & vehicleObj : pInst->vehicles_)
-            MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);*/
+        for (auto & vehicleObj : pInst->vehicles_) {
+            if (vehicleObj->greedyRoute_->getRouteId() != vehicleObj->currentRoute_->getRouteId()) {
+                vehicleObj->greedyRoute_->createColumn(pInst->nbRequests_);
+                MPGurobiPro_->routesToAdd_.push_back(vehicleObj->greedyRoute_);
+            }
+        }
 
-        MPGurobiPro_->updateModel(pInst);
+        MPGurobiPro_->updateMPModel_batch(pInst);
         MPGurobiPro_->solveLPDual(pInst, inputPaths);
+        MPGurobiPro_->solveModelInt(pInst, zSolution_, routeSolution_, inputPaths,
+                                     availableTime_, previousObj_);
+        setCurrentRoutes(pInst);
+        for (auto & vehicleObj : pInst->vehicles_) {
+            vehicleObj->currentRoute_->calcMarginalCosts(pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
+            vehicleObj->adjustZeroDuals();
+        }
+        MPGurobiPro_->routesToAdd_.clear();
+
         /*for (auto & requestObj : pInst->requests_) {
             if (requestObj->dual_ == 0)
                 requestObj->dual_ = requestObj->penalty_;
@@ -123,7 +170,7 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
  //       for (auto & vehicleObj : pInst->vehicles_)
  //           vehicleObj->dual_ = 0;
  //       resetMPGurobi(pInst, inputPaths);
-    }
+ //   }
     if (pInst->parameters_->smoothDual_) {
         for (auto & requestObj : pInst->requests_) {
             requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->lastDual_;
@@ -301,7 +348,7 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
 
         if (!MPGurobiPro_->routesToAdd_.empty()){
             MPBuildTime_->start();
-            MPGurobiPro_->updateModel(pInst);
+            MPGurobiPro_->updateMPModel_batch(pInst);
             MPBuildTime_->stop();
             MPGurobiPro_->solveModelLP(pInst, inputPaths);
             MPEpochSolveTime_ += MPGurobiPro_->solveTime_->dSinceStart().count();
@@ -543,7 +590,7 @@ void CG_Algorithm::solveMP_Gurobi_tune(PInstance &pInst, int epoch, InputPaths &
     updateRoutesToAdd(NR, pInst, MPGurobiPro_->routesToAdd_);
 
     MPBuildTime_->start();
-    MPGurobiPro_->updateModel(pInst);
+    MPGurobiPro_->updateMPModel_batch(pInst);
     MPBuildTime_->stop();
 //    MPGurobiPro_->tuneModel(inputPaths, 1800.0f, 120.0f, 3);
 

@@ -79,7 +79,7 @@ void Request::setMaxTravelTime(const float &alphaParam, const float &betaParam) 
 // This function updates penalties based on elapsed time for any time framework
 void Request::setPenalty(float elapsedTime, const PParameters &parameters, float simulationStart) {
 
-    penalty_ = static_cast<float>(parameters->deltaPram_
+    penalty_ = static_cast<int>(parameters->deltaPram_
                                   * pow(2, (elapsedTime - (initialEarlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
 }
 

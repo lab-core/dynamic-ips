@@ -49,15 +49,16 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         }
         if (mainInst->parameters_->routeRecycle_) {
             if (!MP_solver_->availableRoutes_.empty()) {
-                for (auto &vehicleObj: mainInst->vehicles_) {
-                    if (vehicleObj->stateChanged_)
-                        MP_solver_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                }
-                /*if (removedRequests.count()) {
-                    updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_);
-                }*/
+                updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
             }
         }
+        else {
+            MP_solver_->availableRoutes_.clear();
+            MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
+        }
+        MP_solver_->duplicatesRoutes_.clear();
+        MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
+
 
         buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
 
