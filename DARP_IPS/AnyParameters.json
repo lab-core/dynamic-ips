@@ -116,7 +116,7 @@
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 2,
-      "isDropPickPossible": 1,
+      "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0
@@ -174,7 +174,7 @@
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 40,
-      "isDropPickPossible": 1,
+      "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "LabelingStrategy": 0,
       "nbPick": 4
