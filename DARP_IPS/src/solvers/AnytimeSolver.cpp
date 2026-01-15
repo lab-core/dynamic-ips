@@ -78,12 +78,14 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
                 updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
             }
         }
-        else {
+        else if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)  {
             MP_solver_->availableRoutes_.clear();
             MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
         }
-        MP_solver_->duplicatesRoutes_.clear();
-        MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY) {
+            MP_solver_->duplicatesRoutes_.clear();
+            MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
+        }
 
         buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
 
