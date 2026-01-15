@@ -790,7 +790,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
                         "InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
                         "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,reducedCP,"
                         "useZoom,nbColumns,isTruncated,MaxLabel,MaxCommitLabel,isDominanceReleased,isDropPickPossible,"
-                        "pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,"
+                        "pruneNodes,pruneArcs,discardSuboptimalPath,LabelingStrategy,LabelingReOptimize,ReOptimizeStrategy,"
                         "Vehicle_portion,Dynamic_Pricing,Partial_Pricing,Route_Recycle,newRequestLimit,nbPick,"
                         "sortPath,sortColumn,MIPGap\n" << pInstance->name_ << ",";
 

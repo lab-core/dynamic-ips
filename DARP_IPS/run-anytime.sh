@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=16G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-12
+#SBATCH --array=1-64
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -35,13 +35,14 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(2)
-readonly BATCH_MODES=(1)
+readonly BATCH_ALGOS=(6)
+readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+readonly SCENS_anytime=("Dynamic" "Partial" "SP_reoptimize1" "SP_reoptimize2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Rebalance[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
@@ -54,14 +55,14 @@ G1_instances=("20150926_11-240m" "20151025_11-240m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
-G2_vehicle_counts=(1300)
+G2_vehicle_counts=(1300 1400 1500 1600)
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20160109_11-240m")
 G2_initial_state=1
 
 G3_vehicle_folder="vehicles_byDemand_w11"
-G3_vehicle_counts=(800)
+G3_vehicle_counts=(800 900 1000 1100)
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20151230_11-240m")
@@ -162,7 +163,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G2 G3)
+ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")

@@ -106,6 +106,78 @@
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "nbPick": 4
+    },
+    "Dynamic": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 2,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 1,
+      "nbPick": 2,
+      "LabelingStrategy": 0
+    },
+    "Partial": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "LabelingStrategy": 0
+    },
+    "SP_reoptimize1": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "LabelingStrategy": 0,
+      "LabelingReOptimizeStrategy": 1
+    },
+    "SP_reoptimize2": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "LabelingStrategy": 0,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "batch": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 40,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 1,
+      "LabelingStrategy": 0,
+      "nbPick": 4
     }
   }
 }
