@@ -69,17 +69,21 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
+            mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
+        }
         if (mainInst->parameters_->routeRecycle_) {
-            if (MP_solver_->availableRoutes_.size() > 0) {
-                for (auto &vehicleObj: mainInst->vehicles_) {
-                    if (vehicleObj->stateChanged_)
-                        MP_solver_->availableRoutes_[vehicleObj->vehicleID_].clear();
-                }
-                /*if (removedRequests.count()) {
-                    updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_);
-                }*/
+            if (!MP_solver_->availableRoutes_.empty()) {
+                updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
             }
         }
+        else {
+            MP_solver_->availableRoutes_.clear();
+            MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
+        }
+        MP_solver_->duplicatesRoutes_.clear();
+        MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
 
         buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
 
