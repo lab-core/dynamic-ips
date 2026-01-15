@@ -43,7 +43,7 @@ readonly SCENS_anytime=("Dynamic" "Partial" "SP_reoptimize1" "SP_reoptimize2")
 readonly SCENS_ISUD=("SP_reoptimize2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
