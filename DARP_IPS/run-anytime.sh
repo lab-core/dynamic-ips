@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=16G
-#SBATCH --time=4:20:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=4G
+#SBATCH --time=0:10:00
 #SBATCH --array=1-16
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
@@ -35,7 +35,7 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(3)
+readonly BATCH_ALGOS=(0)
 readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
