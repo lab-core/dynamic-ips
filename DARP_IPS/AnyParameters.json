@@ -148,6 +148,7 @@
       "Partial_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
     },
     "SP_reoptimize2": {
@@ -163,6 +164,7 @@
       "Partial_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2
     },
     "batch": {
