@@ -704,8 +704,8 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
     objValue_ = MP_solver_->objValue_;
     MP_solver_->setLastDuals(EpochInst);
     MP_solver_->checkCoveredVehicles(EpochInst);
-    for (auto & vehicleObj : EpochInst->vehicles_)
-        (*pLogEpochVehicleStream_) << vehicleObj->toStringOut(epoch_);
+ //   for (auto & vehicleObj : EpochInst->vehicles_)
+ //       (*pLogEpochVehicleStream_) << vehicleObj->toStringOut(epoch_);
 
     labelsPool_.clear();
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
