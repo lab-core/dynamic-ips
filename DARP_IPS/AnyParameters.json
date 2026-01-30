@@ -3,7 +3,7 @@
     "alphaParam": 1.5,
     "betaParam": 300,
     "deltaPram": 420,
-    "epochLength": 5,
+    "epochLength": 30,
     "nbThreads": 16,
     "reducedCP": 0,
     "ModelSolver": 1
@@ -37,10 +37,13 @@
       "Ride_W2": 0.5,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Rebalance_1": {
       "Wait_W1": 1,
@@ -50,10 +53,13 @@
       "MaxWait": 60,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Rebalance_2": {
       "Wait_W1": 1,
@@ -63,10 +69,13 @@
       "MaxWait": 120,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Rebalance_3": {
       "Wait_W1": 1,
@@ -76,10 +85,13 @@
       "MaxWait": 180,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Rebalance_4": {
       "Wait_W1": 1,
@@ -89,10 +101,13 @@
       "MaxWait": 240,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Rebalance_5": {
       "Wait_W1": 1,
@@ -102,10 +117,13 @@
       "MaxWait": 300,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
+      "LabelingStrategy": 0
     },
     "Dynamic": {
       "Wait_W1": 1,
@@ -133,6 +151,8 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
     "SP_reoptimize1": {
