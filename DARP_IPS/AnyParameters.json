@@ -200,6 +200,20 @@
       "Dynamic_Pricing": 1,
       "LabelingStrategy": 0,
       "nbPick": 4
+    },
+    "batch_1": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 40,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 1,
+      "LabelingStrategy": 0,
+      "nbPick": 4
     }
   }
 }
