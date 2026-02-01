@@ -41,7 +41,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
@@ -57,7 +57,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
@@ -73,7 +73,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
@@ -89,7 +89,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
@@ -105,7 +105,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
@@ -121,7 +121,7 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
+      "reoptimizeSP": 0,
       "LabelingReOptimizeStrategy": 2,
       "LabelingStrategy": 0
     },
