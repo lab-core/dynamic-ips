@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
+#SBATCH --mem=36G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-4
+#SBATCH --array=1-2
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -35,16 +35,16 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(6)
-readonly BATCH_MODES=(2)
+readonly BATCH_ALGOS=(2)
+readonly BATCH_MODES=(1)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_reoptimize1" "SP_reoptimize2")
 readonly SCENS_ISUD=("Rebalance_1")
-readonly SCENS_BATCH=("batch" "batch_1")
+readonly SCENS_BATCH=("batch_1")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
@@ -165,7 +165,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2)
+ALL_GROUPS=(G1)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
