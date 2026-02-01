@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=60G
+#SBATCH --mem=80G
 #SBATCH --time=4:20:00
 #SBATCH --array=1-4
 #SBATCH --output=slurm-%A_%a.out
@@ -40,7 +40,7 @@ readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_reoptimize1" "SP_reoptimize2")
-readonly SCENS_ISUD=("Rebalance_no")
+readonly SCENS_ISUD=("Rebalance_1")
 readonly SCENS_BATCH=("batch" "batch_1")
 
 # Bundle scenario for group tests
