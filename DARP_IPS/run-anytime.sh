@@ -36,11 +36,11 @@ exe="bin/realtime_DARP"
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
 readonly BATCH_ALGOS=(6)
-readonly BATCH_MODES=(1)
+readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_reoptimize1" "SP_reoptimize2")
-readonly SCENS_ISUD=("Rebalance_1")
+readonly SCENS_ISUD=("SP_reoptimize2")
 readonly SCENS_BATCH=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "SP_reoptimize1" "SP_reoptimize2")
 
 # Bundle scenario for group tests
