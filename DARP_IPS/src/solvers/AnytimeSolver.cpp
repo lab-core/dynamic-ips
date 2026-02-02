@@ -69,10 +69,6 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
-        for (auto &vehicleObj: mainInst->vehicles_) {
-            vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
-            mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
-        }
         if (mainInst->parameters_->routeRecycle_) {
             if (!MP_solver_->availableRoutes_.empty()) {
                 updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
