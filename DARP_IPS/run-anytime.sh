@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=46G
 #SBATCH --time=4:20:00
 #SBATCH --array=1-64
 #SBATCH --output=slurm-%A_%a.out
@@ -50,14 +50,14 @@ readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
 # GROUP DEFINITIONS
 # -------------------------
 G1_vehicle_folder="vehicles_byDemand_w11"
-G1_vehicle_counts=(1500 1600)
+G1_vehicle_counts=(1300 1400)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160512_11-240m" "20151211_11-240m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
-G2_vehicle_counts=(1600 1700)
+G2_vehicle_counts=(1400 1500)
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20151008_11-240m" "20150917_11-240m")
