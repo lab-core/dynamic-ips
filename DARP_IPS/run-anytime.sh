@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=56G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-4
+#SBATCH --array=1-8
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -41,7 +41,7 @@ readonly BATCH_MODES=(1)
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance" "Partial")
-readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1")
+readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3")
 readonly SCENS_BATCH=("batch")
 
 # Bundle scenario for group tests
@@ -51,10 +51,10 @@ readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
 # GROUP DEFINITIONS
 # -------------------------
 G1_vehicle_folder="vehicles_byDemand_w11"
-G1_vehicle_counts=(1300)
+G1_vehicle_counts=(1400 1500)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
-G1_instances=("20160512_11-240m" "20151211_11-240m")
+G1_instances=("20160512_11-240m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
@@ -166,7 +166,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G2)
+ALL_GROUPS=(G1)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
