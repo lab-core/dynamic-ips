@@ -54,7 +54,7 @@ G1_vehicle_folder="vehicles_byDemand_w11"
 G1_vehicle_counts=(1600)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
-G1_instances=("20160512_11-240m")
+G1_instances=("20151211_11-240m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
