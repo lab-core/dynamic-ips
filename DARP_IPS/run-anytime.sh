@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=46G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-80
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -45,7 +45,7 @@ readonly SCENS_ISUD=("SP_reoptimize2")
 readonly SCENS_BATCH=("batch")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_MEM[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS
