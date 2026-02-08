@@ -135,8 +135,8 @@ void ISUD_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPath
     if (availableRoutes_.empty())
         availableRoutes_.resize(pInst->nbVehicles_);
 
-    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
+ //   (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
+ //   (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
 }
 
 int ISUD_Algorithm::solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths) {
@@ -521,7 +521,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
             CPTime_->start();
             setAvailableTime();
 
-            if (minReducedCost_ > 0 || availableTime_ < 3) {
+            if (minReducedCost_ > 0 || availableTime_ < 0.2) {
                 restartAlgorithm = false;
                 isCPImproved = false;
             }
@@ -546,7 +546,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                 }
 
                 setAvailableTime();
-                if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 1) {
+                if (!CPGurobiPro_->routesToAdd_.empty() && availableTime_ > 0.2) {
 
                     if (pInst->parameters_->reducedCP_) {
                         CPBuildTime_->start();
@@ -580,7 +580,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                     if (CPGurobiPro_->status_ == FRACTIONAL) {
                         CPFails_++;
                         setAvailableTime();
-                        if (pInst->parameters_->useZoom_ && availableTime_ > 1) {
+                        if (pInst->parameters_->useZoom_ && availableTime_ > 0.2) {
                             iterTime_ = masterTime_->dSinceStart().count();
                             ZOOMTime_->start();
                             solveRP_Gurobi(pInst, 1, inputPaths);
@@ -623,7 +623,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         setAvailableTime();
                         restartAlgorithm = false;
 
-                        if (availableTime_ <= 1) {
+                        if (availableTime_ <= 0.2) {
                             restartAlgorithm = false;
                             break;
                         }

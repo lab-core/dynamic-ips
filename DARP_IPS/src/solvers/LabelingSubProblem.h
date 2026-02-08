@@ -27,7 +27,7 @@ public:
     int nbGenerated_;                           // number of generated labels
     int nbRecycledColumns_;                     // number of labels recycled from routes
     int nbOutputs_;                             // total number of generated routes
-    int maxPickup_;                             // number of pickups that are allowed in each path
+
     vector<PRoute> availableRoutes_;            // available routes in the pool to be recycled as labels
 
     PSolverOption solverOptions_;               // solver options for labeling algorithm
@@ -63,9 +63,11 @@ public:
 
     // this function sorts the list of nodes based on their dual values
     void sortSuccessors(const std::vector<PNode> &nodeList, bool prunedArcs) const;
+    void sortSuccessorsNew(const std::vector<PNode> &nodeList, bool prunedArcs) const;
     
     // function to extend a label to a new node
     bool labelExtend(const PLabel &parentLabel, Node *outNode, bool Terminate);
+    void labelExtendOnly(const PLabel &parentLabel, Node *outNode);
 
     // function to check if a new label should be added to the active list of a node
     bool isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate);

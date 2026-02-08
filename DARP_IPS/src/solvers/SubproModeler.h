@@ -29,6 +29,7 @@ public:
     int possibleInsert_;                    // number of possible requests insertions in the subproblem        
     int labelSize_;                         // size of labels in labeling algorithm (for bit sets)
     myTools::Timer *subproTime_;            // timer for labeling algorithm
+    int maxPickup_;                             // number of pickups that are allowed in each path
 
     // Constructor and Destructor
     explicit SubproModeler(const PVehicle &vehicle);

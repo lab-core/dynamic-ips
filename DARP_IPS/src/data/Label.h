@@ -90,5 +90,23 @@ public:
 };
 
 inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNode_.size() < rhs->pathNode_.size()); }
+static std::string makeKey(const Label& r, float wait_W1, float ride_W2) {
+    float obj = wait_W1 * r.totalWait_ + ride_W2 * r.totalTripDelay_;
+    std::string key = std::to_string(obj) + "|";
+    std::vector<int> ids;
+    for (auto & node : r.pathNode_) {
+        if (node->type_ == PICKUP)
+            ids.push_back(node->related_Request_->getRequestId());
+    }
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i) key += ",";
+        key += std::to_string(ids[i]);
+    }
+    return key;
+}
+
+
+
+
 
 #endif //LABEL_H

@@ -41,6 +41,21 @@ Route::~Route(){
     delete[] name_;
 }
 
+void Route::setKey() {
+    std::vector<int> ids;
+    ids.reserve(routeRequests_.size());
+    for (const auto &req : routeRequests_) {
+        ids.push_back(req->getRequestId());
+    }
+
+    std::string key = std::to_string(objCoef_) + "|";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i) key += ",";
+        key += std::to_string(ids[i]);
+    }
+    key_ = std::move(key);
+}
+
 void Route::swapState(Route &other) noexcept {
     using std::swap;
 
@@ -277,6 +292,8 @@ bool Route::reConstruct(const PVehicle& vehicle, float wait_W1, float ride_W2)
     // Fast commit: move or swap
     this->swapState(tmp);              // simplest if move assignment is OK
     // or: this->swap(tmp);              // if you prefer explicit swap
+    /*if (this->routeSize_ != (this->routeRequests_.size() * 2 + vehicle->onboards_.size() + 1))
+        std::cout << "error";*/
 
     return true;
 }
@@ -478,4 +495,6 @@ void Route::calculateTripDelay(float wait_W1, float ride_W2) {
             objCoef_ += routeNodes_[i]->related_Request_->Req_W3_ * (wait_W1 * waitTime + ride_W2 * (tripDelay + routeNodes_[i]->related_Request_->Ride_W4_))/routeNodes_[i]->related_Request_->Relative_W5_;
         }
     }
+    // Refresh the unique key after objCoef_ and routeRequests_ are finalized
+    setKey();
 }

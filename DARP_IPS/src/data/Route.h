@@ -22,6 +22,7 @@ private:
 public:
     static unsigned int routeCount_;            // Global counter for total routes created
     const char* name_;
+    std::string key_;
     int vehicleID_;                             // the vehicle for which the route has been created
     float totalWait_;                           // sum of waiting times of the requests served by the route
     float totalTripDelay_;                      // sum of trip delays of the requests served by the route
@@ -52,6 +53,9 @@ public:
     explicit Route(int vehicleId);
     virtual ~Route();
     void swapState(Route& other) noexcept;
+
+    // Update the route key based on objCoef_ and routeRequests_
+    void setKey();
 
     // Getters and Setters
     unsigned int getRouteId() const;
@@ -117,17 +121,6 @@ static std::string makeKey(const Route& r, int vehicleID) {
     for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);
 
     std::string key = std::to_string(vehicleID) + "|";
-    for (size_t i = 0; i < ids.size(); ++i) {
-        if (i) key += ",";
-        key += std::to_string(ids[i]);
-    }
-    return key;
-}
-static std::string makeKey2(const Route& r) {
-    std::vector<int> ids;
-    for (auto & req : r.routeRequests_) ids.push_back(req->taskIndex_);
-
-    std::string key = std::to_string(r.objCoef_) + "|";
     for (size_t i = 0; i < ids.size(); ++i) {
         if (i) key += ",";
         key += std::to_string(ids[i]);

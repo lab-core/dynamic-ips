@@ -69,7 +69,9 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << nbTwoPickGenerated_ << ",";
     repStr << nbOnePickGenerated_ << ",";
     repStr << nbOutCover_ << ",";
-    repStr << nbPriorCover_ << "\n";
+    repStr << nbPriorCover_ << ",";
+    repStr << Vehicle_->nbCommitted_ << ",";
+    repStr << Vehicle_->routeAvail_ << "\n";
     return repStr.str();
 }
 
@@ -144,7 +146,8 @@ bool LabelingSubProblem::solveDynamic_pushing(float availableTime) {
                 currentNode->nbActiveLabels_--;
                 selectedLabel->status_ = INACTIVE;
                 // drop onboard requests
-                extendToDropOnboards(selectedLabel);
+                if (!selectedLabel->isDropExtend_)
+                    extendToDropOnboards(selectedLabel);
                 // push to pickup points
                 if (selectedLabel->load_ < capacity) {
                     for (auto &neighbourNode: last->successors_) {
@@ -265,14 +268,18 @@ bool LabelingSubProblem::solveDynamic_pullingWaveStep(float availableTime) {
 }
 
 void LabelingSubProblem::initialization() {
-    sortSuccessors(subGraph_->sourceNodes_, false);
-    sortSuccessors(subGraph_->pickNodes_, solverOptions_->pruneArcs_);
-    sortSuccessors(subGraph_->dropNodes_, solverOptions_->pruneArcs_);
-    sortSuccessors(subGraph_->onboards_, solverOptions_->pruneArcs_);
-    /*if (solverOptions_->isDropPickPossible_) {
-        sortSuccessors(subGraph_->dropNodes_);
-        sortSuccessors(subGraph_->onboards_);
-    }*/
+    if (reOptimize_  && solverOptions_->labelingReOptimizeStrategy_ == RE_INSERT &&  !subGraph_->newPickNodes_.empty()) {
+        sortSuccessorsNew(subGraph_->sourceNodes_, false);
+        sortSuccessorsNew(subGraph_->pickNodes_, solverOptions_->pruneArcs_);
+        sortSuccessorsNew(subGraph_->dropNodes_, solverOptions_->pruneArcs_);
+        sortSuccessorsNew(subGraph_->onboards_, solverOptions_->pruneArcs_);
+    }
+    else {
+        sortSuccessors(subGraph_->sourceNodes_, false);
+        sortSuccessors(subGraph_->pickNodes_, solverOptions_->pruneArcs_);
+        sortSuccessors(subGraph_->dropNodes_, solverOptions_->pruneArcs_);
+        sortSuccessors(subGraph_->onboards_, solverOptions_->pruneArcs_);
+    }
 
     // create the initial label at the source and add the source to the list active nodes
     PLabel initialLabel;
@@ -292,17 +299,6 @@ void LabelingSubProblem::initialization() {
         initialLabel->travelResources_[nodeObj->related_Request_->taskIndexLabel_] = nodeObj->related_Request_->latestDrop_ - Vehicle_->departTime_;
     }
 
-    /*if ((Vehicle_)->currentRoute_->routeSize_ > 1) {
-        int i = 1;
-        while ((Vehicle_)->currentRoute_->routeNodes_[i]->nodeStatus_ == COMMITTED){
-            initialLabel->extend(&(*subGraph_->nodes_[(Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_]), solverOptions_->isDropPickPossible_);
-            initialNodeID_  = (Vehicle_)->currentRoute_->routeNodes_[i]->nodeID_;
-            i++;
-            if (i == (Vehicle_)->currentRoute_->routeSize_)
-                break;
-        }
-    }*/
-
     initialLabel->pathNode_.back()->nbActiveLabels_++;
     initialLabel->pathNode_.back()->bestLabelReduceCost_ = initialLabel->reducedCost_;
     activeNodes_.clear();
@@ -321,6 +317,31 @@ void LabelingSubProblem::sortSuccessors(const std::vector<PNode> &nodeList, bool
             nodeObj->prunedArcs_.reset();
             nodeObj->prunedArcs_.resize(labelSize_);
             for (auto &pickNodeObj : subGraph_->pickNodes_) {
+                if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
+                    if (prunedArcs) {
+                        float reachTime =
+                                Vehicle_->departTime_ + nodeObj->travelTimeFromSource_ + nodeObj->serviceTime_ +
+                                durationMatrix_[nodeObj->locationID_][pickNodeObj->locationID_];
+                        if (reachTime > pickNodeObj->related_Request_->latestPickup_)
+                            nodeObj->prunedArcs_.set(pickNodeObj->related_Request_->taskIndexLabel_, true);
+                        else
+                            nodeObj->successors_.push_back(&*pickNodeObj);
+                    }
+                    else
+                        nodeObj->successors_.push_back(&*pickNodeObj);
+                }
+            }
+        }
+    }
+}
+
+void LabelingSubProblem::sortSuccessorsNew(const std::vector<PNode> &nodeList, bool prunedArcs) const {
+    for (auto & nodeObj: nodeList){
+        if (nodeObj->type_ != SINK){
+            nodeObj->successors_.clear();
+            nodeObj->prunedArcs_.reset();
+            nodeObj->prunedArcs_.resize(labelSize_);
+            for (auto &pickNodeObj : subGraph_->newPickNodes_) {
                 if (nodeObj->nodeID_ != pickNodeObj->nodeID_) {
                     if (prunedArcs) {
                         float reachTime =
@@ -361,6 +382,23 @@ bool LabelingSubProblem::labelExtend(const PLabel &parentLabel, Node *outNode, b
         return false;
     }
     return true;
+}
+
+void LabelingSubProblem::labelExtendOnly(const PLabel &parentLabel, Node *outNode) {
+    PLabel newLabel;
+    if (!labelPool_.empty()){
+        newLabel = std::move(labelPool_.back());
+        labelPool_.pop_back();
+        newLabel->copyLabel(*parentLabel);
+    }
+    else {
+        newLabel = std::make_shared<Label>(*parentLabel);
+    }
+
+    newLabel->extend(outNode, solverOptions_->isDropPickPossible_, solverOptions_->Wait_W1_, solverOptions_->Ride_W2_);
+    outNode->activeLabels_.push_back(newLabel);
+    outNode->nbActiveLabels_++;
+    nbGenerated_++;
 }
 
 bool LabelingSubProblem::isLabelAdded(PLabel &newLabel, Node *outNode, bool Terminate) {
@@ -779,26 +817,23 @@ void LabelingSubProblem::constructLabels(const PLabel &initialLabel) {
 void LabelingSubProblem::constructBaseLabels(const PLabel &initialLabel) {
     for (auto &route: availableRoutes_) {
         nbRecycledColumns_++;
+        if (route->getRouteId() == 545438)
+            std::cout << std::endl;
         PLabel parentLabel = initialLabel;
 
         for (int i = 1; i < route->routeSize_; ++i) {
-            if (route->routeNodes_[i]->type_ == DROPOFF || route->routeNodes_[i]->related_Request_->solVehicleID_ == LARGE_CONSTANT)
-                break;
-            
             auto currentNode = subGraph_->nodes_[route->routeNodes_[i]->nodeID_];
 
-            if (parentLabel->isExtendFeasible(&*currentNode, maxPickup_, solverOptions_->discardSuboptimalPath_,
-                Vehicle_->capacity_, nbPrunedPath_,nbEliminated_, nbPrunedArcs_)) {
-                int nbActive = currentNode->nbActiveLabels_;
-                if (labelExtend(parentLabel, &(*currentNode), false)) {
-                    // Update the parent label for the next iteration
-                    parentLabel = currentNode->activeLabels_.back();
+            int nbActive = currentNode->nbActiveLabels_;
+            labelExtendOnly(parentLabel, &(*currentNode));
+            // Update the parent label for the next iteration
+            parentLabel = currentNode->activeLabels_.back();
+            currentNode->activeLabels_.back()->isDropExtend_ = true;
 
-                    if ((currentNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
-                        activeNodes_.push_back(&(*currentNode));
-                    }
-                }
+            if ((currentNode->nbActiveLabels_ == 1) && (nbActive == 0)) {
+                activeNodes_.push_back(&(*currentNode));
             }
+
         }
     }
     for (auto &nodeObj: activeNodes_) {
@@ -821,9 +856,10 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
     unCoveredRequests.resize(nbRequests);
     for (auto & labelObj : subGraph_->sinkNodes_[0]->activeLabels_) {
         if (labelObj->numCompleted_ > 0) {
-            PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
-            std::string key = makeKey2(*newRoute);
+            std::string key = makeKey(*labelObj, pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_);
             if (duplicatesRoutes.insert(key).second) {
+                PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
+                newRoute->setKey();
                 newRoute->createColumn(nbRequests);
                 if (!newRoute->equal(*vehicle->currentRoute_)) {
                     if (newRoute->reducedCost_ < -0.01)
@@ -841,6 +877,9 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
                     availableRoutes.emplace_back(std::move(newRoute));
                 }
             }
+            /*else {
+                std::cout << makeKey(*labelObj, pInst->parameters_->Wait_W1_, pInst->parameters_->Ride_W2_) << std::endl;
+            }*/
         }
     }
     for (auto & nodeObj : subGraph_->nodes_){

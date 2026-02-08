@@ -58,14 +58,13 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
                 nbPriorCover_ ++;
 
             const bool isRequestUnassigned = (pInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT);
-            if (isRequestUnassigned || pInst->requests_[i]->committedPickTime_ < LARGE_CONSTANT ||
-                pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
+            if (isRequestUnassigned || pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
                 possibleInsert_ ++;
                 insertRequest = true;
                 pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,true);
             }
         }
-        if (reOptimize_ && pInst->parameters_->labelingReOptimizeStrategy_ != RE_INSERT)
+        if (reOptimize_)
             addRequest = addRequest && insertRequest;
 
         if (addRequest) {

@@ -50,7 +50,7 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
     *pLogEpochSubRuntimeStream_ << "Epoch,vehicleID,nbRequests,nbNodes,nbOnboards,nbOnboards_nodes,plannedPick,"
                                      "possibleInsert,maxPick,#LGenerated,#LDominated,#LEliminated,#nbPrunedArcs,"
                                      "#nbPrunedPath,nbNegative,nbRoutes,BestRCost,runtime,stateChanged,removePick,"
-                                     "removeDrop,#TwoPickRoute,#OnePickRoute,#newCovered,#PriorCover" << std::endl;
+                                     "removeDrop,#TwoPickRoute,#OnePickRoute,#newCovered,#PriorCover,#Committed,#avail" << std::endl;
 
     pLogEpochVehicleStream_= new Tools::LogOutput(inputPaths.getOutputVehicleEpoch());
     *pLogEpochVehicleStream_ << "Epoch,VehicleID,RouteID,nbOnboards,nbOnboards_nodes,nbCommitted,nbRequests,nbNodes,"
@@ -157,13 +157,12 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
     }
 
     // Handle route recycling
-    if (EpochInst->parameters_->reoptimizeSP_) {
+    if (EpochInst->parameters_->reoptimizeSP_ && vehicleObj->currentRoute_->routeSize_ > 1) {
         if (EpochInst->parameters_->labelingReOptimizeStrategy_ == RE_INSERT) {
-            if (availableRoutes[vehicleObj->vehicleID_].size() >= 10 && EpochInst->nbNewRequests_ < EpochInst->parameters_->newRequestLimit_
-                && !vehicleObj->currentRoute_->routeRequests_.empty() && EpochInst->nbNewRequests_ > 0) {
+            if (availableRoutes[vehicleObj->vehicleID_].size() >= 50 && subProblem->maxPickup_ == 2 && EpochInst->nbNewRequests_ > 0) {
                 subProblem->reOptimize_ = true;
+                subProblem->availableRoutes_ = availableRoutes[vehicleObj->vehicleID_];
                 nbRecycle_++;
-                availableRoutes[vehicleObj->vehicleID_].clear();
             }
             else
                 subProblem->reOptimize_ = false;
@@ -175,6 +174,8 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
         else
             subProblem->reOptimize_ = false;
     }
+    else
+        subProblem->reOptimize_ = false;
 }
 
 void BaseSolver::returnVehiclesAssign(const PInstance &EpochInst) const {
@@ -589,6 +590,8 @@ void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests,
                 vehicleRoutes.end()
         );
     }
+    for (auto& vehicleObj : EpochInst->vehicles_)
+        vehicleObj->routeAvail_ = availableRoutes[vehicleObj->vehicleID_].size();
 }
 
 void BaseSolver::CreateOneStopRoutes(const PVehicle &vehicle, std::vector<PRoute> &availableRoutes,

@@ -84,6 +84,20 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
         }
 
         buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
+        if (mainInst->parameters_->routeRecycle_) {
+            // Process available routes: create columns and add keys to duplicates set
+            for (size_t vehicleID = 0; vehicleID < MP_solver_->availableRoutes_.size(); ++vehicleID) {
+                for (auto &routeObj : MP_solver_->availableRoutes_[vehicleID]) {
+                    // Create column once for this route
+                    routeObj->mpAdded_ = false;
+                    routeObj->createColumn(EpochInst->nbRequests_);
+                    // Update the route key based on objCoef_ and routeRequests_
+                    routeObj->setKey();
+                    // Add the key to duplicatesRoutes_ set for this vehicle
+                    MP_solver_->duplicatesRoutes_[vehicleID].insert(routeObj->key_);
+                }
+            }
+        }
 
         // saving the status in the middle of running
         if (middleSave && elapsedTime_ >= saveTime) {

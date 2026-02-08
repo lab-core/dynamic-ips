@@ -29,6 +29,8 @@ Vehicle::Vehicle(int vehicleId, int capacity, float departTime, float endTime, c
     removePickup_ = false;
     preSolvePickLimit_ = 2;
     removeNodes_.clear();
+    routeAvail_ = 0;
+    nbCommitted_ = 0;
 }
 
 Vehicle::~Vehicle() = default;
@@ -113,7 +115,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
     removePickup_ = false;
     removeDrop_ = false;
     removeNodes_.clear();
-
+    nbCommitted_ = 0;
     if (currentRoute_->routeSize_ > 1) {
    //     if (currentRoute_->routeRequests_.empty() || currentRoute_->routeRequests_.size() > 1 || preSolvePickLimit_ != 1) {
             // this condition is useful for cases that the vehicle does not have any stops in the current epoch
@@ -208,8 +210,11 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                     mainInst->parameters_->pickupDeviationWindow_;
                 currentRoute_->routeNodes_[i]->readyTime_ = currentRoute_->routeNodes_[i]->related_Request_->earlyPick_;
                 currentRoute_->routeNodes_[i]->related_Request_->commitTime_ = elapsedTime;
+                nbCommitted_++;
             }
         }
+        else if (currentRoute_->routeNodes_[i]->type_ == PICKUP && currentRoute_->routeNodes_[i]->related_Request_->committedPickTime_ < LARGE_CONSTANT)
+            nbCommitted_++;
     }
 }
 

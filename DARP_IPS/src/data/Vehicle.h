@@ -46,6 +46,8 @@ public:
     float driveFullTime_;                   // time the vehicle drives with passengers
     float driveEmptyTime_;                  // time the vehicle drives empty to reach passengers
     float returnEmptyTime_;                 // time the vehicle drives empty to return
+    int routeAvail_;
+    int nbCommitted_;
 
 
     // Constructor and Destructor
