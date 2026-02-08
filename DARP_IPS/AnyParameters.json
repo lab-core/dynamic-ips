@@ -113,7 +113,7 @@
       "nbPick": 4,
       "LabelingStrategy": 0
     },
-    "Dynamic": {
+    "Partial": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -121,13 +121,13 @@
       "MaxWait": 240,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 2,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
       "nbPick": 2,
+      "Route_Recycle": 1,
       "LabelingStrategy": 0
     },
-    "Partial": {
+    "Baseline": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -139,8 +139,22 @@
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0
+    },
+    "Penalty": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 60,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "InitialDual": 0,
+      "isDropPickPossible": 1,
+      "Partial_Pricing": 1,
+      "nbPick": 2,
       "LabelingStrategy": 0
     },
     "SP_Re_1": {
@@ -209,19 +223,16 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "Penalty": {
+    "rebalance": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 60,
-      "MaxWait": 240,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 1,
-      "InitialDual": 0,
       "isDropPickPossible": 1,
       "Partial_Pricing": 1,
       "nbPick": 2,
+      "Route_Recycle": 1,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
@@ -234,25 +245,11 @@
       "MaxWait": 240,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "LabelingStrategy": 0,
-      "nbPick": 4
-    },
-    "batch_1": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 60,
-      "MaxWait": 240,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 40,
+      "NumIter": 100,
       "isDropPickPossible": 1,
       "Dynamic_Pricing": 1,
-      "LabelingStrategy": 0,
-      "nbPick": 4
+      "nbPick": 4,
+      "LabelingStrategy": 0
     },
     "Greedy": {
       "Wait_W1": 1,
