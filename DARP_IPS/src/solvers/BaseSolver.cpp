@@ -70,9 +70,9 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
     }
     else {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
-        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,RebalancingRuntime,"
-                                  "GreedyObj,Objective,waitTime,GreedyTime,#Return,#Idle,#passPerVehicle,"
-                                  "#requestPerVehicle,#nodePerVehicle" << std::endl;
+        (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,"
+                                  "GreedyObj,Objective,waitTime,TripDelay,RebalancingRuntime,GreedyTime,#Return,#Idle,#passPerVehicle,"
+                                  "#requestPerVehicle,#nodePerVehicle,#StateChanged,nbCommitted" << std::endl;
     }
 
 }
@@ -536,7 +536,7 @@ void BaseSolver::logEpochInfo(int epoch, float elapsedTime, float simulationTime
 }
 
 void BaseSolver::handleVehicleReturn(PInstance &EpochInst) {
-    if (EpochInst->parameters_->vehicleReturn_ && elapsedTime_ - rebalanceTime_ >= EpochInst->parameters_->epochLength_) {
+    if (EpochInst->parameters_->vehicleReturn_ && elapsedTime_ - rebalanceTime_ >= EpochInst->parameters_->committedTime_) {
         if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
             returnVehiclesSource(EpochInst);
         else if (EpochInst->parameters_->returnPolicy_ == ZONE)
@@ -769,10 +769,11 @@ std::string BaseSolver::saveRuntimesGreedy(const PInstance &EpochInst) {
            << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ","
            << runtimeMetrics_->epochRuntime_ << ","
            << simulationTime_->dSinceInit().count() << ","
+           << GreedyModel_->objValue_ << ","
+           << GreedyModel_->objValue_ << ","    
+           << GreedyModel_->totalWaitTime_ << ","
+           << GreedyModel_->totalTripDelay_ << ","
            << rebalancingProcessTime_->dSinceStart().count()<< ","
-           << GreedyModel_->objValue_ << ","
-           << GreedyModel_->objValue_ << ","
-           << GreedyModel_->objValue_ << ","
            << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ",";
 
     EpochInst->calcVehicleMetric();
@@ -781,7 +782,9 @@ std::string BaseSolver::saveRuntimesGreedy(const PInstance &EpochInst) {
            << EpochInst->nbIdle_ << ","
            << EpochInst->passPerVehicle_ << ","
            << EpochInst->requestPerVehicle_ << ","
-           << EpochInst->nodePerVehicle_ <<"\n";
+           << EpochInst->nodePerVehicle_ << ","
+           << EpochInst->nbStateChanged_ << ","
+           << EpochInst->nbCommitted_ << "\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }

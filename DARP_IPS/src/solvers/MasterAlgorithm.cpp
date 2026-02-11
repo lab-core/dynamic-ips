@@ -648,15 +648,16 @@ void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &r
  //       }
     }*/
 
+
     for (auto & vehicleObj : pInst->vehicles_) {
-        std::unordered_set<std::string> seen;
+//        std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
             if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
                 continue;
             // Build a simple signature for this column
-            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
+//            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
             // Insert returns {iterator, inserted}; inserted==true means new
-            if (seen.insert(key).second) {
+            if (routeObj->mpAdded_) {
                 // first time we see this column pattern → keep it
                 routeObj->createColumn(pInst->nbRequests_);
                 routesToAdd.push_back(routeObj);

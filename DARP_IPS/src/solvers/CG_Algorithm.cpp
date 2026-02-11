@@ -171,6 +171,11 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
  //           vehicleObj->dual_ = 0;
  //       resetMPGurobi(pInst, inputPaths);
  //   }
+    if (pInst->parameters_->routeRecycle_ && !availableRoutes_.empty()) {
+        reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
+        MPGurobiPro_->updateMPModel_batch(pInst);
+        MPGurobiPro_->routesToAdd_.clear();
+    }
     if (pInst->parameters_->smoothDual_) {
         for (auto & requestObj : pInst->requests_) {
             requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->lastDual_;

@@ -19,7 +19,9 @@ public:
     myTools::Timer *greedyTime_;                            // time to solve the problem with greedy
     std::vector<PStopLabel> greedyLabelPool_;               // pool of greedy labels to re-use
     std::vector<PInsertPosition> positionList_;             // list of possible insertion positions   
-    float objValue_;                                        // objective value of the greedy solution    
+    float objValue_;                                        // objective value of the greedy solution
+    float totalWaitTime_;                                   // total waiting time without penalties
+    float totalTripDelay_;                                  // total trip delay
     std::vector<PRequest> zSolution_;                       // list of unserved requests in the greedy solution
     std::vector<PRoute> generatedRoute_;                    // list of generated route
 

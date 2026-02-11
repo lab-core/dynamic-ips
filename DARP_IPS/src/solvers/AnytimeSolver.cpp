@@ -69,16 +69,17 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
-        if (mainInst->parameters_->routeRecycle_) {
-            if (!MP_solver_->availableRoutes_.empty()) {
-                updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
-            }
-        }
-        else if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)  {
-            MP_solver_->availableRoutes_.clear();
-            MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
-        }
+
         if (EpochInst->parameters_->mainAlgorithm_ != GREEDY) {
+            if (mainInst->parameters_->routeRecycle_) {
+                if (!MP_solver_->availableRoutes_.empty()) {
+                    updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
+                }
+            }
+            else {
+                MP_solver_->availableRoutes_.clear();
+                MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
+            }
             MP_solver_->duplicatesRoutes_.clear();
             MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
         }
@@ -89,7 +90,7 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             for (size_t vehicleID = 0; vehicleID < MP_solver_->availableRoutes_.size(); ++vehicleID) {
                 for (auto &routeObj : MP_solver_->availableRoutes_[vehicleID]) {
                     // Create column once for this route
-                    routeObj->mpAdded_ = false;
+ //                   routeObj->mpAdded_ = false;
                     routeObj->createColumn(EpochInst->nbRequests_);
                     // Update the route key based on objCoef_ and routeRequests_
                     routeObj->setKey();

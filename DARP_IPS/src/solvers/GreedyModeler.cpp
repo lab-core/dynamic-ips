@@ -148,8 +148,12 @@ float GreedyModeler::GreedyUpperbound(PInstance &PInst) {
 
 void GreedyModeler::setObjValue(float wait_W1, float ride_W2) {
     objValue_ = 0.0;
-    for (auto & GreedyObj : greedyRouteList_)
+    totalWaitTime_ = 0.0;
+    totalTripDelay_ = 0.0;
+    for (auto & GreedyObj : greedyRouteList_) {
         objValue_ += GreedyObj->totalObjective_;
-   //     objValue_ += wait_W1 * GreedyObj->totalWait_+ ride_W2 * GreedyObj->totalTripDelay_;
+        totalWaitTime_ += GreedyObj->totalWait_;
+        totalTripDelay_ += GreedyObj->totalTripDelay_;
+    }
 }
 
