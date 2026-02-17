@@ -26,7 +26,7 @@ public:
     int nbEliminated_;                          // number of labels detected as Unreachable due to travel time
     int nbGenerated_;                           // number of generated labels
     int nbRecycledColumns_;                     // number of labels recycled from routes
-    int nbOutputs_;                             // total number of generated routes
+
 
     vector<PRoute> availableRoutes_;            // available routes in the pool to be recycled as labels
 

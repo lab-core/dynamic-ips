@@ -21,7 +21,7 @@ LabelingSubProblem::LabelingSubProblem(const PVehicle &vehicle, const PSolverOpt
     nbPrunedPath_ = 0;
     nbPrunedArcs_ = 0;
     nbRecycledColumns_ = 0;
-    nbOutputs_ = 0;
+    SPnbOutputs_ = 0;
     maxPickup_ = solverOptions_->nbPick_;
 }
 LabelingSubProblem::~LabelingSubProblem() = default;
@@ -60,7 +60,7 @@ std::string LabelingSubProblem::toStringOut(int epoch) const {
     repStr << nbPrunedArcs_ << ",";
     repStr << nbPrunedPath_ << ",";
     repStr << nbNegativeColumns_ << ",";
-    repStr << nbOutputs_ << ",";
+    repStr << SPnbOutputs_ << ",";
     repStr << Vehicle_->bestReducedCost_ << ",";
     repStr << subproTime_->dSinceStart().count() << ",";
     repStr << Vehicle_->stateChanged_ << ",";
@@ -861,10 +861,10 @@ void LabelingSubProblem::SolutionToRoutes(const PVehicle &vehicle, vector<PRoute
                 PRoute newRoute = labelObj->labelToRoute(vehicle, pInst);
                 newRoute->setKey();
                 newRoute->createColumn(nbRequests);
-                if (!newRoute->equal(*vehicle->currentRoute_)) {
+                if (newRoute->key_ != vehicle->currentRoute_->key_) {
                     if (newRoute->reducedCost_ < -0.01)
                         nbNegativeColumns_ ++;
-                    nbOutputs_++;
+                    SPnbOutputs_++;
                     if (newRoute->routeRequests_.size() == 2)
                         nbTwoPickGenerated_++;
                     else if (newRoute->routeRequests_.size() == 1)
@@ -906,7 +906,7 @@ void LabelingSubProblem::solutionSummery(vector<int> &subProResults) const {
     }
     else
     {
-        subProResults[0] += nbOutputs_;
+        subProResults[0] += SPnbOutputs_;
         subProResults[1] += nbGenerated_;
         subProResults[2] += nbDominated_;
         subProResults[4] += subGraph_->nbNodes_;
