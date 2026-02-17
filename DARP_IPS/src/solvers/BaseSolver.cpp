@@ -54,7 +54,7 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
 
     pLogEpochVehicleStream_= new Tools::LogOutput(inputPaths.getOutputVehicleEpoch());
     *pLogEpochVehicleStream_ << "Epoch,VehicleID,RouteID,nbOnboards,nbOnboards_nodes,nbCommitted,nbRequests,nbNodes,"
-                                "length,avgPassPerStop,totalWait,totalTripDelay,objCoef" << std::endl;
+                                "length,avgPassPerStop,totalWait,totalTripDelay,objCoef,key" << std::endl;
 
     if (mainInst->parameters_->approach_ != Greedy) {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
@@ -63,7 +63,8 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
                                   "CP_SolveRuntime,ZoomISUD_Runtime,SubProbRuntime,#SP Iter,totalColumn,#LGenerated,"
                                   "#LDominated,#LEliminated,#nbPrunedArcs,#nbPrunedPath,nbNegative,#ColumnsAdded,"
                                   "#RecycledColumns,GreedyObj,Objective,LinearObjective,waitTime,TripDelay,"
-                                  "maxDual,minDual,meanDual,medianDual,destructTime,RebalancingRuntime,GreedyTime,"
+                                  "maxDual,minDual,meanDual,maxSP_Size,meanSP_Size,"
+                                  "maxRoute,meanRoute,destructTime,RebalancingRuntime,GreedyTime,"
                                   "#Return,#Idle,#passPerVehicle,#requestPerVehicle,#nodePerVehicle,#StateChanged,"
                                   "nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle,nbCommitted,"
                                   "nbLess_50,nbLess_100,nbLess_200,totalRoutes" << std::endl;
@@ -232,7 +233,10 @@ void BaseSolver::solveGurobiAssignment(const PInstance &EpochInst, std::vector<P
         for (std::size_t v = 0; v < nV; ++v) {
             y[v].resize(nR);
             for (std::size_t r = 0; r < nR; ++r) {
-                y[v][r] = model.addVar(0.0, 1.0, 0.0, GRB_CONTINUOUS);
+                if (idleVehicles[v]->departNode_->zoneID_ != EpochInst->lastCommittedRequests_[r]->pickZoneID_)
+                    y[v][r] = model.addVar(0.0, 1.0, 0.0, GRB_CONTINUOUS);
+                else
+                    y[v][r] = model.addVar(0.0, 0.0, 0.0, GRB_CONTINUOUS);
             }
         }
 
@@ -649,10 +653,10 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
         //***********************************************************************************//
         if (mainInst->parameters_->subAlgorithm_ == LABEL_SETTING)
             subProBreak = solve_SP<PLabelingSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
-                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_,MP_solver_->duplicatesRoutes_);
+                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->MPnbRoutes_,MP_solver_->duplicatesRoutes_);
         else
             subProBreak = solve_SP<PCplexSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
-                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->nbRoutes_, MP_solver_->duplicatesRoutes_);
+                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->MPnbRoutes_, MP_solver_->duplicatesRoutes_);
 
         if (subProBreak) {
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
@@ -847,6 +851,10 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
     nbTwoPick_ = 0;
     nbThreePick_ = 0;
     nbRecycle_ = 0;
+    std::vector<int> sizeValues;
+    std::vector<int> routeValues;
+    sizeValues.reserve(EpochInst->nbVehicles_);
+    routeValues.reserve(EpochInst->nbVehicles_);
 
     // Start the subproblems timer
     subProblemTime_->start();
@@ -913,21 +921,25 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
         pPool->run(job);
     }
     // Wait for all jobs to complete
-    while (true) {
-        if (!pPool->wait())
-            break;
-    }
+    pPool->wait();
 
     // Collect results from subproblems
     nbNegativeFound = 0;
     for (auto &subProblem: subProSolve) {
-        nbRoutes += static_cast<int>(availableRoutes[(subProblem->Vehicle_)->vehicleID_].size());
+        nbRoutes += static_cast<int>(availableRoutes[subProblem->Vehicle_->vehicleID_].size());
         nbNegativeFound += subProblem->nbNegativeColumns_;
         runtimeMetrics_->updateSubproblemMetrics(subProblem);
+        sizeValues.push_back(subProblem->subRequests_.size());
+        routeValues.push_back(subProblem->SPnbOutputs_);
  //       if (epoch_ >= 720 && epoch_ < 1440 && (epoch_ - 720) % 18 == 0) {
  //           (*pLogEpochSubRuntimeStream_) << subProblem->toStringOut(epoch_);
  //       }
     }
+    MP_solver_->subproSummary_.maxSize = *std::max_element(sizeValues.begin(), sizeValues.end());
+    MP_solver_->subproSummary_.meanSize = std::accumulate(sizeValues.begin(), sizeValues.end(), 0.0) / sizeValues.size();
+
+    MP_solver_->subproSummary_.maxRoute = *std::max_element(routeValues.begin(), routeValues.end());
+    MP_solver_->subproSummary_.meanRoute = std::accumulate(routeValues.begin(), routeValues.end(), 0.0) / routeValues.size();
 
     // Clean up
     preprocessTime_->start();
@@ -962,12 +974,12 @@ void RuntimeMetrics::updateSubproblemMetrics(const PLabelingSubPro &subProblem) 
     nbPrunedPath_ += subProblem->nbPrunedPath_;
     nbPrunedArcs_ += subProblem->nbPrunedArcs_;
     nbRecycledColumns_ += subProblem->nbRecycledColumns_;
-    nbRoutes_ += subProblem->nbOutputs_;
-    if (subProblem->nbOutputs_ < 200) {
+    nbRoutes_ += subProblem->SPnbOutputs_;
+    if (subProblem->SPnbOutputs_ < 200) {
         nbColumnsLess_200_ ++;
-        if (subProblem->nbOutputs_ < 100) {
+        if (subProblem->SPnbOutputs_ < 100) {
             nbColumnsLess_100_ ++;
-            if (subProblem->nbOutputs_ < 50)
+            if (subProblem->SPnbOutputs_ < 50)
                 nbColumnsLess_50_ ++;
         }
     }
