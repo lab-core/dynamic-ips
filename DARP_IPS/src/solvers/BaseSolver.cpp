@@ -572,9 +572,8 @@ void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests,
                     for (size_t i = 0; i < vehicleObj->removeNodes_.size(); i++) {
                         if (vehicleObj->removeNodes_[i] != route->routeNodes_[i+1]->nodeID_)
                             return true;
-                        else
-                            continue;
                     }
+                    return false;
                 }),
             availableRoutes[vehicleObj->vehicleID_].end());
     }
