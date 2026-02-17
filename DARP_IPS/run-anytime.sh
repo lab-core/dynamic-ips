@@ -48,7 +48,7 @@ readonly SCENS_BATCH=("batch")
 readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
 
 # -------------------------
-# GROUP DEFINITIONS
+# GROUP DEFINITIONS MYTEST
 # -------------------------
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_vehicle_counts=(1700 1800 1900 2000)
@@ -70,6 +70,24 @@ G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20151110_11-240m" "20160628_11-240m")
 G3_initial_state=1
+
+
+# -------------------------
+# GROUP DEFINITIONS RILEY
+# -------------------------
+G4_vehicle_folder="vehicles_byDemand_w11"
+G4_vehicle_counts=(1200 1300 1400 1500)
+G4_scenarios=("${SCENS_GROUP_TEST[@]}")
+G4_inst_folder="Instances_4h-11"
+G4_instances=("20160521_11-240m" "20150926_11-240m" "20151025_11-240m")
+G4_initial_state=1
+
+G5_vehicle_folder="vehicles_byDemand_w11"
+G5_vehicle_counts=(1000 1100 1200 1300)
+G5_scenarios=("${SCENS_GROUP_TEST[@]}")
+G5_inst_folder="Instances_4h-11"
+G5_instances=("20151008_11-240m")
+G5_initial_state=1
 
 # -------------------------
 # Automatic group helpers
