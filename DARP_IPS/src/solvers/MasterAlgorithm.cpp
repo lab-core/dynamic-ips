@@ -50,7 +50,7 @@ MasterAlgorithm::MasterAlgorithm(const InputPaths &inputPaths) {
 
     CGSuccess_ = 0;
 
-    nbRoutes_ = 0;
+    MPnbRoutes_ = 0;
     nbColumnsAdded_ = 0;
     GreedyObjValue_ = 0;
 
@@ -231,7 +231,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     }
 
     // create upper bound
- //   upperbound_ = GreedyModel->GreedyUpperbound(pInst);
+    upperbound_ = GreedyModel->GreedyUpperbound(pInst);
     std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
 
@@ -261,7 +261,8 @@ void MasterAlgorithm::updateIncDegrees(PInstance &pInst, bool greedyBase) {
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]){
                 routeObj->createColumn(pInst->nbRequests_);
                 if (!greedyBase)
-                    calcCompatibilityM1(routeObj, vehicleObj->currentRoute_);
+                    assessReqVehCompatibility(routeObj, pInst);
+  //                  calcCompatibilityM1(routeObj, vehicleObj->currentRoute_);
                 else
                     calcCompatibilityM1(routeObj, vehicleObj->greedyRoute_);
             }
@@ -598,13 +599,13 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                         if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ >= 1) {
+                         if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0) {
                              routesToAdd.push_back(routeObj);
                              numAdded++;
                          }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 3  && routeObj->reducedCost_ <= 0) {
+                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
@@ -657,7 +658,7 @@ void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &r
             // Build a simple signature for this column
 //            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
             // Insert returns {iterator, inserted}; inserted==true means new
-            if (routeObj->mpAdded_) {
+            if (routeObj->keepMP_) {
                 // first time we see this column pattern → keep it
                 routeObj->createColumn(pInst->nbRequests_);
                 routesToAdd.push_back(routeObj);
@@ -731,7 +732,7 @@ std::string MasterAlgorithm::save_MPResults(int epoch, const std::string& model,
     repStr << epoch << ",";
     repStr << RMPCounter_ << ",";
     repStr << SPIter_ << ",";
-    repStr << nbRoutes_ << ",";
+    repStr << MPnbRoutes_ << ",";
     repStr << nbColumns << ",";
     repStr << model << ",";
     repStr << objValue_ << ",";
@@ -825,7 +826,7 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
 
     repStr << runtimeMetrics->subproEpochTime_ << ","
            << SPIter_ << ","
-           << nbRoutes_ << ","
+           << MPnbRoutes_ << ","
            << runtimeMetrics->nbGenerated_ << ","
            << runtimeMetrics->nbDominated_ << ","
            << runtimeMetrics->nbEliminated_ << ","
@@ -843,7 +844,10 @@ std::string MasterAlgorithm::runtimesToString(PRuntimeMetrics &runtimeMetrics) {
            << summaryDuals_.maxDual << ","
            << summaryDuals_.minDual << ","
            << summaryDuals_.meanDual << ","
-           << summaryDuals_.medianDual << ",";
+           << subproSummary_.maxSize << ","
+           << subproSummary_.meanSize << ","
+           << subproSummary_.maxRoute << ","
+           << subproSummary_.meanRoute << ",";
     return repStr.str();
 }
 
@@ -1026,19 +1030,14 @@ void MasterAlgorithm::calcDualsStatistics(const PInstance &pInst) {
         // Get request constraint duals
         for (size_t i = 0; i < pInst->requests_.size(); ++i) {
             pi_values.push_back(pInst->requests_[i]->dual_);
+            if (pInst->requests_[i]->dual_ < 0)
+                std::cout << "hi";
         }
 
         // Compute stats if we have requests
         summaryDuals_.maxDual = *std::max_element(pi_values.begin(), pi_values.end());
         summaryDuals_.minDual = *std::min_element(pi_values.begin(), pi_values.end());
         summaryDuals_.meanDual = std::accumulate(pi_values.begin(), pi_values.end(), 0.0) / pi_values.size();
-
-        std::sort(pi_values.begin(), pi_values.end());
-        size_t n = pi_values.size();
-        if (n % 2 == 0)
-            summaryDuals_.medianDual = 0.5 * (pi_values[n/2 - 1] + pi_values[n/2]);
-        else
-            summaryDuals_.medianDual = pi_values[n/2];
 
     } catch (GRBException& e) {
         std::cerr << "Error in getDuals: " << e.getMessage() << std::endl;

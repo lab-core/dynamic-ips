@@ -18,7 +18,13 @@ struct DualSummary {
     double maxDual;
     double minDual;
     double meanDual;
-    double medianDual;
+};
+
+struct SubproSummary {
+    int maxSize;
+    float meanSize;
+    int maxRoute;
+    float meanRoute;
 };
 
 class MasterAlgorithm {
@@ -31,7 +37,7 @@ public:
     // Common data members from MasterAlgorithm
     vector2D<PRoute> availableRoutes_;
     std::vector<std::unordered_set<std::string>> duplicatesRoutes_;
-    int nbRoutes_;
+    int MPnbRoutes_;
     int nbColumnsAdded_;
     int nbVehicles_;
     float availableTime_;                   // time left from availableTime_ to solve MP
@@ -80,7 +86,8 @@ public:
     float epochTime_;                       // time passed inside one epoch
     float iterTime_;                        // helps in calculating and saving epochTime_;
 
-    DualSummary summaryDuals_{0, 0, 0, 0};
+    DualSummary summaryDuals_{0, 0,  0};
+    SubproSummary subproSummary_{0, 0, 0, 0};
 
     // Timers
     myTools::Timer *masterTime_;
