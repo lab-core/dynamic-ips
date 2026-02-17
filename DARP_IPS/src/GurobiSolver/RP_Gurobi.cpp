@@ -375,6 +375,8 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         // Set time limit
         model_->set(GRB_DoubleParam_TimeLimit, availableTime);
         model_->update();
+        /*model_->write(std::string("gurobi_orig_") + std::to_string(pInst->nbRequests_) + "_" +
+            std::to_string(pInst->nbNewRequests_) + ".lp" );*/
 
         solveTime_->start();
         int status = solve();
@@ -520,6 +522,7 @@ void RP_Gurobi::solveModelRelaxInt(const PInstance &pInst, std::vector<PRequest>
         }
 
         getDualsFromRelaxed(relaxedModel, pInst);
+        markColumnsToKeep(relaxedModel);
 
     }
     catch (GRBException& e) {
@@ -908,5 +911,88 @@ void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
 
     } catch (const std::exception& e) {
         std::cerr << "Error in printCoverageStatistics: " << e.what() << std::endl;
+    }
+}
+
+void RP_Gurobi::markColumnsToKeep(const GRBModel& lpModel)
+{
+    try {
+        const int status = lpModel.get(GRB_IntAttr_Status);
+        if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
+            std::cerr << "[RP_Gurobi] markColumnsToKeep called but model not optimal/suboptimal.\n";
+            return;
+        }
+
+        // Get variables from the model (order: z vars first, then route vars)
+        GRBVar* vars = lpModel.getVars();
+        const int numVars = lpModel.get(GRB_IntAttr_NumVars);
+        const int numRouteVars = static_cast<int>(compRoutes_.size());
+        const int routeStartIndex = numVars - numRouteVars;  // route vars are last
+
+        if (routeStartIndex < 0 || routeStartIndex + numRouteVars > numVars) {
+            std::cerr << "[RP_Gurobi] markColumnsToKeep: model variable count inconsistent with compRoutes_.\n";
+            return;
+        }
+
+        for (int r = 0; r < numRouteVars; ++r) {
+            compRoutes_[r]->keepMP_ = false;
+
+            const GRBVar& var = vars[routeStartIndex + r];
+
+            // Basis status: BASIC, NONBASIC_LOWER, NONBASIC_UPPER, SUPERBASIC
+            const int vb = var.get(GRB_IntAttr_VBasis);
+
+            // Current LP solution value and reduced cost
+            const double x  = var.get(GRB_DoubleAttr_X);
+            const double rc = var.get(GRB_DoubleAttr_RC);
+
+            const bool keepBasis = (vb == GRB_BASIC || vb == GRB_SUPERBASIC);
+            const bool keepX     = (std::fabs(x) > 0.1);
+            const bool keepRC0   = (std::fabs(rc) <= 1);
+
+            if (keepBasis || keepX || keepRC0) {
+                compRoutes_[r]->keepMP_ = true;
+            }
+        }
+    }
+    catch (GRBException& e) {
+        std::cerr << "GRB Error in markColumnsToKeep: " << e.getMessage() << "\n";
+        throw;
+    }
+}
+
+void RP_Gurobi::markColumnsToKeep()
+{
+    try {
+        const int status = model_->get(GRB_IntAttr_Status);
+        if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
+            std::cerr << "[RP_Gurobi] markColumnsToKeep called but model not optimal/suboptimal.\n";
+            return;
+        }
+
+        // compRoutes_ is assumed to be the list of all route-columns currently in the MP.
+        // Each route is assumed to have a member GRBVar varMP_ (or similar) for its column variable.
+        for (size_t r = 0; r < routeVar_.size(); ++r) {
+            compRoutes_[r]->keepMP_ = false;
+
+            // Basis status: BASIC, NONBASIC_LOWER, NONBASIC_UPPER, SUPERBASIC
+            const int vb = routeVar_[r].get(GRB_IntAttr_VBasis);
+
+            // Current LP solution value and reduced cost
+            const double x  = routeVar_[r].get(GRB_DoubleAttr_X);
+            const double rc = routeVar_[r].get(GRB_DoubleAttr_RC);
+
+            const bool keepBasis = (vb == GRB_BASIC || vb == GRB_SUPERBASIC);
+            const bool keepX     = (std::fabs(x) > 0.1);
+            const bool keepRC0   = (std::fabs(rc) <= 1);
+
+            if (keepBasis || keepX || keepRC0) {
+                compRoutes_[r]->keepMP_ = true;
+            }
+        }
+    }
+    catch (GRBException& e) {
+        std::cerr << "GRB Error in markColumnsToKeep: " << e.getMessage() << "\n";
+        throw;
     }
 }
