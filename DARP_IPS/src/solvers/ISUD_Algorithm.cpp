@@ -106,6 +106,12 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
         RPGurobiPro_->updateRPModel_batch(pInst);
         RPGurobiPro_->routesToAdd_.clear();
     }
+    if (pInst->parameters_->routeRecycle_ && !availableRoutes_.empty()) {
+ //       updateIncDegrees(pInst, false);
+        reFillRoutesToAdd(pInst, RPGurobiPro_->routesToAdd_);
+        RPGurobiPro_->updateRPModel_batch(pInst);
+        RPGurobiPro_->routesToAdd_.clear();
+    }
     if (pInst->parameters_->smoothDual_) {
         for (auto & requestObj : pInst->requests_) {
             requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->lastDual_;
@@ -129,7 +135,7 @@ void ISUD_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPath
     else
         initializationGurobi(pInst, inputPaths, epoch, GreedyModel);
     RMPCounter_++;
-    nbRoutes_ = 0;
+    MPnbRoutes_ = 0;
     lpObjValue_ = objValue_;
 
     if (availableRoutes_.empty())
@@ -359,7 +365,7 @@ void ISUD_Algorithm::solveISUD_CPLEX(PInstance &pInst, int epoch, InputPaths &in
         }
 
         (*pLogMPResultsStream_)
-                << save_MPResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+                << save_MPResults(epoch, "ISUD", MPnbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
         masterTime_->stop();
     }
     catch (const std::exception& e){
@@ -490,7 +496,7 @@ void ISUD_Algorithm::solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &i
         }
 
         (*pLogMPResultsStream_)
-                << save_MPResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+                << save_MPResults(epoch, "ISUD", MPnbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
         masterTime_->stop();
     }
     catch (const std::exception& e){
@@ -649,7 +655,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
         }
 
         (*pLogMPResultsStream_)
-                << save_MPResults(epoch, "ISUD", nbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+                << save_MPResults(epoch, "ISUD", MPnbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
         masterTime_->stop();
     }
     catch (const std::exception& e){

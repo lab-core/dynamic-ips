@@ -200,7 +200,7 @@ void CG_Algorithm::epochInitialization(PInstance &pInst, InputPaths &inputPaths,
     else
         initializationGurobi(pInst, inputPaths, epoch, GreedyModel);
     RMPCounter_++;
-    nbRoutes_ = 0;
+    MPnbRoutes_ = 0;
     lpObjValue_ = objValue_;
 
     if (availableRoutes_.empty())
@@ -378,6 +378,9 @@ void CG_Algorithm::solveMP_LP_Gurobi(PInstance &pInst, const InputPaths &inputPa
         else
             break;
     }
+    /*MPGurobiPro_->model_->write(std::string("gurobi_orig") + std::to_string(pInst->nbRequests_) + "_" +
+            std::to_string(pInst->nbNewRequests_) + ".bas" );*/
+    MPGurobiPro_->markColumnsToKeep();
 
 }
 
