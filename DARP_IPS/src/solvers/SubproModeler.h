@@ -30,6 +30,7 @@ public:
     int labelSize_;                         // size of labels in labeling algorithm (for bit sets)
     myTools::Timer *subproTime_;            // timer for labeling algorithm
     int maxPickup_;                             // number of pickups that are allowed in each path
+    int SPnbOutputs_;                             // total number of generated routes
 
     // Constructor and Destructor
     explicit SubproModeler(const PVehicle &vehicle);
