@@ -35,6 +35,7 @@ Route::Route(int vehicleId) : routeID_(routeCount_++), vehicleID_(vehicleId) {
     objCoef_ = 0.0;
     IncScoreRatio_ = 0;
     IncScore_ = 0;
+    keepMP_ = false;
 }
 
 Route::~Route(){

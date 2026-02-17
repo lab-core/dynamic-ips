@@ -48,6 +48,7 @@ public:
     float IncScoreRatio_;                       // incompatible score ratio used as the sorting criteria
     float IncScore_;                            // incompatible score used as the sorting criterion
     int nbCommitted_;                           // number of committed requests in the route
+    bool keepMP_;
 
     // Constructor and Destructor
     explicit Route(int vehicleId);
