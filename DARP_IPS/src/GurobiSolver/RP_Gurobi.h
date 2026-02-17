@@ -68,6 +68,10 @@ public:
     std::vector<int> countRequestCoverage(const PInstance &pInst);
 
     void printCoverageStatistics(const PInstance &pInst);
+
+    void markColumnsToKeep(const GRBModel& lpModel);
+
+    void markColumnsToKeep();
 };
 
 
