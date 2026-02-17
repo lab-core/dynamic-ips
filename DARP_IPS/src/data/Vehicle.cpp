@@ -194,6 +194,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                 }
                 currentRoute_->removeNode(breakIndex);
                 currentRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_, mainInst->parameters_->Ride_W2_);
+                currentRoute_->setKey();
             }
  //       }
         if (currentRoute_->routeNodes_.size()-1 == onboards_.size())
@@ -430,6 +431,7 @@ std::string Vehicle::toStringOut(int epoch) const {
            << avgPassPerStop << ","
            << currentRoute_->totalWait_ << ","
            << currentRoute_->totalTripDelay_ << ","
-           << currentRoute_->objCoef_ << "\n";
+           << currentRoute_->objCoef_ << ","
+           << currentRoute_->key_ << "\n";
     return repStr.str();
 }
