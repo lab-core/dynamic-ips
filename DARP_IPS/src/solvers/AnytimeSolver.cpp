@@ -28,10 +28,6 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
 
     std::vector<PRequest> zSolution;
     while (nbReceivedRequest < mainInst->nbRequests_ || !zSolution.empty()){
-        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-            zSolution = MP_solver_->zSolution_;
-        else
-            zSolution = GreedyModel_->zSolution_;
         nextEpoch:
         // start simulation timer
         simulationTime_->start();
@@ -90,7 +86,8 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             for (size_t vehicleID = 0; vehicleID < MP_solver_->availableRoutes_.size(); ++vehicleID) {
                 for (auto &routeObj : MP_solver_->availableRoutes_[vehicleID]) {
                     // Create column once for this route
- //                   routeObj->mpAdded_ = false;
+                    routeObj->mpAdded_ = false;
+                    routeObj->cpAdded_ = false;
                     routeObj->createColumn(EpochInst->nbRequests_);
                     // Update the route key based on objCoef_ and routeRequests_
                     routeObj->setKey();
@@ -146,7 +143,10 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         else
             *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
-
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            zSolution = MP_solver_->zSolution_;
+        else
+            zSolution = GreedyModel_->zSolution_;
         epoch_++;
         simulationTime_->stop();
     }
