@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "datasets/";
+    std::string dataDir = "my_datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names
@@ -64,6 +64,8 @@ int main(int argc, char** argv) {
         max_i = 3;
     else if (config->scenario_ == "dropPick" || config->scenario_ == "nbPickup")
         max_i = 2;
+    else if (config->scenario_ == "Iter_Dynamic" || config->scenario_ == "Iter_Partial")
+        max_i = 4;
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < max_i; ++i) {
@@ -106,6 +108,9 @@ int main(int argc, char** argv) {
                         mainInst->parameters_->partialPricing_ =  true;
                         mainInst->parameters_->dynamicPricing_ =  false;
                     }
+                }
+                else if (config->scenario_ == "Iter_Dynamic" || config->scenario_ == "Iter_Partial") {
+                    mainInst->parameters_->numIter_ = i+1 ;
                 }
 
 
