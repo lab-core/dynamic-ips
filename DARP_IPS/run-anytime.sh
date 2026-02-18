@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-4
+#SBATCH --array=1-1
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -42,11 +42,11 @@ readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance" "Partial")
 readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
-readonly SCENS_BATCH=("batch")
+readonly SCENS_BATCH=("Iter_Partial_4")
 readonly SCENS_Iter=("Iter_Partial_3" "Iter_Dynamic_3" "Iter_Partial_4" "Iter_Dynamic_4")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Iter[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
