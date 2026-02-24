@@ -141,22 +141,6 @@
       "nbPick": 4,
       "LabelingStrategy": 0
     },
-    "Partial": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 240,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 1
-    },
     "Baseline": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
@@ -167,7 +151,6 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "Route_Recycle": 0,
       "LabelingStrategy": 0
@@ -182,7 +165,6 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
       "LabelingStrategy": 0
@@ -198,7 +180,6 @@
       "NumIter": 1,
       "InitialDual": 0,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0
     },
@@ -212,7 +193,6 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
@@ -228,7 +208,6 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
@@ -245,7 +224,6 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
@@ -261,26 +239,37 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "rebalance": {
+    "rebalance_SP1": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
+    },
+    "rebalance_SP2": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
     },
     "batch": {
       "Wait_W1": 1,
