@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=36G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-96
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -46,7 +46,7 @@ readonly SCENS_BATCH=("batch")
 readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dynamic_1")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_MEM[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
