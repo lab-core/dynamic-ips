@@ -178,65 +178,83 @@ bool Label::checkSubsetOpen(const PLabel &otherLabel) const {
 }
 
 bool Label::checkSubsetComplete(const PLabel &otherLabel) const {
-    for (auto & node : otherLabel->pathNode_) {
-        if (node->type_ != SINK && node->type_ != SOURCE && node->nodeStatus_ != PLANNED) {
-            if (!this->completeRequests_.test(node->related_Request_->taskIndexLabel_))
-                return false;
+    if (otherLabel->pathNode_.back()->type_ != SINK) {
+        for (auto & node : otherLabel->pathNode_) {
+            if (node->type_ == PICKUP) {
+                if (!this->completeRequests_.test(node->related_Request_->taskIndexLabel_))
+                    return false;
+            }
+        }
+    }
+    else {
+        for (auto & node : otherLabel->pathNode_) {
+            if (node->type_ == PICKUP) {
+                if (!this->completeRequests_.test(node->related_Request_->taskIndexLabel_))
+                    return false;
+            }
+        }
+        for (auto & node : this->pathNode_) {
+            if (node->type_ == PICKUP) {
+                if (!otherLabel->completeRequests_.test(node->related_Request_->taskIndexLabel_))
+                    return false;
+            }
         }
     }
     return true;
 }
 
 void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float ride_W2) {
-    load_ += outNode->nbPassengers_;
-    float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
-    if (outNode->type_ == PICKUP)
-        reachedTime_ = std::max(outNode->related_Request_->earlyPick_,
-                                reachedTime_ = std::max(outNode->related_Request_->requestTime_, passedTime_) + travelTime);
-    else
-        reachedTime_ = passedTime_ + travelTime;
+    if (outNode->type_ != SINK) {
+        load_ += outNode->nbPassengers_;
+        float travelTime =  durationMatrix_[pathNode_.back()->locationID_][outNode->locationID_];
+        if (outNode->type_ == PICKUP)
+            reachedTime_ = std::max(outNode->related_Request_->earlyPick_,
+                                    reachedTime_ = std::max(outNode->related_Request_->requestTime_, passedTime_) + travelTime);
+        else
+            reachedTime_ = passedTime_ + travelTime;
 
-    for (auto &node: openNode_) {
-        travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
-                                                                        passedTime_);
-    }
-    if (outNode->type_ == DROPOFF) {
-        float rideTolerance = outNode->related_Request_->maxTravelTime_ - outNode->related_Request_->minTravelTime_;
-        float tripDelay = rideTolerance - travelResources_[outNode->related_Request_->taskIndexLabel_] - outNode->serviceTime_;
-        totalTripDelay_ += outNode->related_Request_->Req_W3_ * tripDelay;
-        reducedCost_ += ride_W2 * outNode->related_Request_->Req_W3_ * (tripDelay + outNode->related_Request_->Ride_W4_) / outNode->related_Request_->Relative_W5_;
-        travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
-        for (int i = 0; i < openNode_.size(); i++){
-            if ((openNode_[i])->nodeID_ == outNode->nodeID_){
-                openNode_.erase(openNode_.begin()+i);
-                break;
-            }
+        for (auto &node: openNode_) {
+            travelResources_[(node)->related_Request_->taskIndexLabel_] -= (reachedTime_ + outNode->serviceTime_ -
+                                                                            passedTime_);
         }
-        openRequests_.set(outNode->related_Request_->taskIndexLabel_, false);
-        isDropped_ = true;
+        if (outNode->type_ == DROPOFF) {
+            float rideTolerance = outNode->related_Request_->maxTravelTime_ - outNode->related_Request_->minTravelTime_;
+            float tripDelay = rideTolerance - travelResources_[outNode->related_Request_->taskIndexLabel_] - outNode->serviceTime_;
+            totalTripDelay_ += outNode->related_Request_->Req_W3_ * tripDelay;
+            reducedCost_ += ride_W2 * outNode->related_Request_->Req_W3_ * (tripDelay + outNode->related_Request_->Ride_W4_) / outNode->related_Request_->Relative_W5_;
+            travelResources_[outNode->related_Request_->taskIndexLabel_] = 0;
+            for (int i = 0; i < openNode_.size(); i++){
+                if ((openNode_[i])->nodeID_ == outNode->nodeID_){
+                    openNode_.erase(openNode_.begin()+i);
+                    break;
+                }
+            }
+            openRequests_.set(outNode->related_Request_->taskIndexLabel_, false);
+            isDropped_ = true;
+        }
+        else if (outNode->type_ == PICKUP){
+            openNode_.push_back(outNode->pairNode_);
+            completeRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
+            numCompleted_++;
+            extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
+            numExtendCheck_++;
+            openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
+            reducedCost_ -= (outNode->related_Request_->dual_);
+            if (outNode->related_Request_->committedPickTime_ != LARGE_CONSTANT)
+                nbCommitted_++;
+            /*if (travelTime > 0){
+                nbPickUp_++;
+            }*/
+            nbPickUp_ ++;
+            totalWait_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
+            reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_) / outNode->related_Request_->Relative_W5_;
+            travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
+            labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
+        }
+        float obj = wait_W1 * totalWait_ + ride_W2 * totalTripDelay_;
+        lambdaScore_ = obj / (obj - reducedCost_);
+        passedTime_ = reachedTime_ + outNode->serviceTime_;
     }
-    else if (outNode->type_ == PICKUP){
-        openNode_.push_back(outNode->pairNode_);
-        completeRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
-        numCompleted_++;
-        extendCheck_.set(outNode->related_Request_->taskIndexLabel_, true);
-        numExtendCheck_++;
-        openRequests_.set(outNode->related_Request_->taskIndexLabel_, true);
-        reducedCost_ -= (outNode->related_Request_->dual_);
-        if (outNode->related_Request_->committedPickTime_ != LARGE_CONSTANT)
-            nbCommitted_++;
-        /*if (travelTime > 0){
-            nbPickUp_++;
-        }*/
-        nbPickUp_ ++;
-        totalWait_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
-        reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_) / outNode->related_Request_->Relative_W5_;
-        travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
-        labelScore_ = reducedCost_ / static_cast<float>(nbPickUp_);
-    }
-    float obj = wait_W1 * totalWait_ + ride_W2 * totalTripDelay_;
-    lambdaScore_ = obj / (obj - reducedCost_);
-    passedTime_ = reachedTime_ + outNode->serviceTime_;
     pathNode_.push_back(outNode);
 }
 
@@ -346,16 +364,24 @@ bool Label::isDominated(const PLabel &otherLabel, const PSolverOption &solverOpt
     /*if (pathNode_.back() != otherLabel->pathNode_.back())
         throw myTools::myException("Label Domination error!!", __FILE__, __LINE__);*/
 
-    /*if (otherLabel->pathNode_.back()->type_ == SINK && otherLabel->nbPickUp_ == 0)
-        return false;*/
-
-    if (this->passedTime_ >= otherLabel->passedTime_) {
+    if (otherLabel->pathNode_.back()->type_ == SINK) {
         if (this->reducedCost_ >= otherLabel->reducedCost_) {
-            if (this->numCompleted_ >= otherLabel->numCompleted_) {
-                if (checkSubsetOpen(otherLabel)){
-                    if (checkSubsetComplete(otherLabel)){
-                        if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
-                            return true;
+            if (this->numCompleted_ == otherLabel->numCompleted_) {
+                if (checkSubsetComplete(otherLabel)){
+                    return true;
+                }
+            }
+        }
+    }
+    else {
+        if (this->passedTime_ >= otherLabel->passedTime_) {
+            if (this->reducedCost_ >= otherLabel->reducedCost_) {
+                if (this->numCompleted_ >= otherLabel->numCompleted_) {
+                    if (checkSubsetOpen(otherLabel)){
+                        if (checkSubsetComplete(otherLabel)){
+                            if (solverOption->isDominanceReleased_ || this->haveLessTravelResource(otherLabel))
+                                return true;
+                        }
                     }
                 }
             }

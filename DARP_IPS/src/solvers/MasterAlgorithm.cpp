@@ -307,17 +307,23 @@ void MasterAlgorithm::assessReqCompatibility(PRoute &route, PInstance &pInst) {
 void MasterAlgorithm::assessReqVehCompatibility(PRoute &route, PInstance &pInst) {
     assessReqCompatibility(route,pInst);
     boost::dynamic_bitset<> vehicles;
-    vehicles.resize(pInst->vehicles_.size());
-    for (auto & requestObj : route->routeRequests_){
-        if (requestObj->solVehicleID_ < LARGE_CONSTANT)
-            vehicles.set(requestObj->solVehicleID_, true);
-    }
-    vehicles.set(route->vehicleID_, false);
-
-    // Count incompatibility if there are any incompatible vehicles
-    if (vehicles.count() > 0) {
+    if ((route->column_ & pInst->vehicles_[route->vehicleID_]->currentRoute_->column_)!=pInst->vehicles_[route->vehicleID_]->currentRoute_->column_){
         route->isCompatible_ = false;
-        route->incompatibilityDegree_ += static_cast<int>(vehicles.count());
+        route->incompatibilityDegree_++;
+    }
+    if (route->isCompatible_ ) {
+        vehicles.resize(pInst->vehicles_.size());
+        for (auto & requestObj : route->routeRequests_){
+            if (requestObj->solVehicleID_ < LARGE_CONSTANT)
+                vehicles.set(requestObj->solVehicleID_, true);
+        }
+        vehicles.set(route->vehicleID_, false);
+
+        // Count incompatibility if there are any incompatible vehicles
+        if (vehicles.count() > 0) {
+            route->isCompatible_ = false;
+            route->incompatibilityDegree_ += static_cast<int>(vehicles.count());
+        }
     }
 }
 
@@ -346,7 +352,7 @@ void MasterAlgorithm::calcCompatibilityM1(PRoute &route, PRoute &currentVehicleR
         route->isCompatible_ = false;
 }
 
-// This function calculates calculate the incompatibility degree based on M2 function just for the request pairs
+// This function calculates the incompatibility degree based on M2 function just for the request pairs
 void MasterAlgorithm::calcCompatibilityM2(PRoute &route, PInstance &pInst) {
     route->isCompatible_ = true;
     route->incompatibilityDegree_ = 0;
@@ -599,9 +605,9 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
             for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
                 switch(selectMode){
                     case CP:
-                         if (!routeObj->cpAdded_ && routeObj->incompatibilityDegree_ > 0) {
+                         if (!routeObj->cpAdded_ && !routeObj->isCompatible_ ) {
                              routesToAdd.push_back(routeObj);
-                             numAdded++;
+  //                           numAdded++;
                          }
                         break;
                     case RP:
@@ -611,7 +617,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                         }
                         break;
                     default: // CG and MIP:
-                        if (!routeObj->mpAdded_ && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->reducedCost_ <= 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
@@ -1030,8 +1036,6 @@ void MasterAlgorithm::calcDualsStatistics(const PInstance &pInst) {
         // Get request constraint duals
         for (size_t i = 0; i < pInst->requests_.size(); ++i) {
             pi_values.push_back(pInst->requests_[i]->dual_);
-            if (pInst->requests_[i]->dual_ < 0)
-                std::cout << "hi";
         }
 
         // Compute stats if we have requests

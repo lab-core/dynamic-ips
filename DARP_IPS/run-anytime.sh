@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=34G
+#SBATCH --mem=24G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-4
+#SBATCH --array=1-96
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -39,14 +39,14 @@ readonly BATCH_ALGOS=(6)
 readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline")
-readonly SCENS_MEM=("Penalty" "rebalance" "Partial")
+readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1")
+readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
-readonly SCENS_BATCH=("Iter_Partial_4")
+readonly SCENS_BATCH=("batch")
 readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dynamic_1")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Iter[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -77,10 +77,10 @@ G3_initial_state=1
 # GROUP DEFINITIONS RILEY
 # -------------------------
 G4_vehicle_folder="vehicles_byDemand_w11"
-G4_vehicle_counts=(1300)
+G4_vehicle_counts=(1200 1300 1400 1500)
 G4_scenarios=("${SCENS_GROUP_TEST[@]}")
 G4_inst_folder="Instances_4h-11"
-G4_instances=("20151110_11-240m")
+G4_instances=("20160521_11-240m" "20150926_11-240m" "20151025_11-240m")
 G4_initial_state=1
 
 G5_vehicle_folder="vehicles_byDemand_w11"
@@ -185,7 +185,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G4)
+ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
