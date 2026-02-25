@@ -35,19 +35,19 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(6)
-readonly BATCH_MODES=(2)
+readonly BATCH_ALGOS=(2)
+readonly BATCH_MODES=(1)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
-readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
+readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7" "batch")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dynamic_1")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
