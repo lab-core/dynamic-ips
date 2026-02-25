@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
-#SBATCH --time=2:10:00
+#SBATCH --time=4:10:00
 #SBATCH --array=1-3
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
