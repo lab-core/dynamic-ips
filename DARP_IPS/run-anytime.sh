@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
 #SBATCH --time=2:10:00
-#SBATCH --array=1-48
+#SBATCH --array=1-27
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -39,7 +39,7 @@ readonly BATCH_ALGOS=(6)
 readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
-readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1")
+readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
 readonly SCENS_BATCH=("batch")
@@ -47,13 +47,13 @@ readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dy
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
 # -------------------------
 G1_vehicle_folder="vehicles_byDemand_w11"
-G1_vehicle_counts=(1700 1800 1900 2000)
+G1_vehicle_counts=(1400 1500 1600)
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160512_11-240m")
@@ -186,7 +186,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G2h_7)
+ALL_GROUPS=(G1)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
