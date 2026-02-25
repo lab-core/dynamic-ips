@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=30G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-3
+#SBATCH --array=1-27
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -47,7 +47,7 @@ readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dy
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -60,14 +60,14 @@ G1_instances=("20160512_11-240m")
 G1_initial_state=1
 
 G2_vehicle_folder="vehicles_byDemand_w11"
-G2_vehicle_counts=(1450)
+G2_vehicle_counts=(1450 1550 1650 1750)
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 G2_initial_state=1
 
 G3_vehicle_folder="vehicles_byDemand_w11"
-G3_vehicle_counts=(1300)
+G3_vehicle_counts=(1300 1400 1500 1600)
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20151110_11-240m" "20160628_11-240m")
@@ -186,7 +186,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G2 G3)
+ALL_GROUPS=(G1)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
