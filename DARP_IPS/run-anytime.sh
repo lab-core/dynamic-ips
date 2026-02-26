@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=30G
-#SBATCH --time=4:10:00
-#SBATCH --array=1-27
+#SBATCH --mem=24G
+#SBATCH --time=2:10:00
+#SBATCH --array=1-96
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -35,8 +35,8 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(2)
-readonly BATCH_MODES=(1)
+readonly BATCH_ALGOS=(6)
+readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
@@ -47,7 +47,7 @@ readonly SCENS_Iter=("Iter_Partial_2" "Iter_Dynamic_2" "Iter_Partial_1" "Iter_Dy
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_ISUD[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -135,7 +135,7 @@ G30S_initial_state=2
 discover_instances "G30S"
 
 G2h_7_vehicle_folder="vehicles_uniform"
-G2h_7_vehicle_counts=(2000)
+G2h_7_vehicle_counts=(2000 1500)
 G2h_7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2h_7_inst_folder="Instances_2h-7"
 G2h_7_initial_state=0
@@ -186,7 +186,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1)
+ALL_GROUPS=(G2h_7)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
