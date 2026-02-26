@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=40G
+#SBATCH --mem=16G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-4
+#SBATCH --array=1-14
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -43,7 +43,7 @@ readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Basel
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7" "batch")
 readonly SCENS_BATCH=("rebalance_SP1")
-readonly SCENS_Iter=("Iter_Dynamic_5" "Iter_Dynamic_6" "Iter_Dynamic_7" "Iter_Fix_4")
+readonly SCENS_Iter=("Iter_Dynamic_1_S1" "Iter_Dynamic_2_S1" "Iter_Dynamic_3_S1" "Iter_Dynamic_4_S1" "Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
 # Bundle scenario for group tests

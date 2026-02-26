@@ -242,10 +242,10 @@ void Label::extend(Node *outNode, bool isDropPickPossible, float wait_W1, float 
             reducedCost_ -= (outNode->related_Request_->dual_);
             if (outNode->related_Request_->committedPickTime_ != LARGE_CONSTANT)
                 nbCommitted_++;
-            /*if (travelTime > 0){
+            if (travelTime > 0){
                 nbPickUp_++;
-            }*/
-            nbPickUp_ ++;
+            }
+ //           nbPickUp_ ++;
             totalWait_ += outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_);
             reducedCost_ += wait_W1 * outNode->related_Request_->Req_W3_ * (reachedTime_ - outNode->initialReadyTime_) / outNode->related_Request_->Relative_W5_;
             travelResources_[outNode->related_Request_->taskIndexLabel_] = outNode->related_Request_->maxTravelTime_;
