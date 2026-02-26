@@ -355,7 +355,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
     },
     "Iter_Dynamic_3": {
       "Wait_W1": 1,
