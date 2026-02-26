@@ -385,7 +385,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Dynamic_5": {
       "Wait_W1": 1,
@@ -400,7 +402,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Dynamic_6": {
       "Wait_W1": 1,
@@ -415,7 +419,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Dynamic_7": {
       "Wait_W1": 1,
@@ -430,7 +436,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Dynamic_8": {
       "Wait_W1": 1,
@@ -445,7 +453,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Fix_4": {
       "Wait_W1": 1,
@@ -460,7 +470,9 @@
       "Dynamic_Pricing": 1,
       "nbPick": 4,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
     },
     "Iter_Partial_1": {
       "Wait_W1": 1,
