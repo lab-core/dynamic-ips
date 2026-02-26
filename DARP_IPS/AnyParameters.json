@@ -438,7 +438,7 @@
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 1
+      "LabelingReOptimizeStrategy": 2
     },
     "Iter_Dynamic_8": {
       "Wait_W1": 1,
