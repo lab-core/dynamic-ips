@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_,
                     config->scenario_, config->initialState_);
                 for (auto & vehicleObj : mainInst->vehicles_)
-                    vehicleObj->capacity_ = 8;
+                    vehicleObj->capacity_ = 7;
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<BaseSolver> instanceSolver;
