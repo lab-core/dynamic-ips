@@ -231,7 +231,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     }
 
     // create upper bound
-    upperbound_ = GreedyModel->GreedyUpperbound(pInst);
+  //  upperbound_ = GreedyModel->GreedyUpperbound(pInst);
     std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
 
@@ -611,7 +611,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                          }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->incompatibilityDegree_ < 2  && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->isCompatible_  && routeObj->reducedCost_ < 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
