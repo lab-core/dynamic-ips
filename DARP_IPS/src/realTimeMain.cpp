@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "datasets/";
+    std::string dataDir = "my_datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names
@@ -116,6 +116,8 @@ int main(int argc, char** argv) {
 
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_,
                     config->scenario_, config->initialState_);
+                for (auto & vehicleObj : mainInst->vehicles_)
+                    vehicleObj->capacity_ = 8;
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<BaseSolver> instanceSolver;
