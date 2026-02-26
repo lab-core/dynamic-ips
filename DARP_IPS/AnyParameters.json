@@ -433,6 +433,7 @@
       "pickupDeviationWindow": 60,
       "NumIter": 7,
       "isDropPickPossible": 1,
+      "Dynamic_Pricing": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
