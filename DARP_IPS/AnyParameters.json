@@ -2,7 +2,7 @@
   "defaultParameters": {
     "alphaParam": 1.5,
     "betaParam": 600,
-    "deltaPram": 420,
+    "deltaPram": 600,
     "epochLength": 30,
     "nbThreads": 16,
     "reducedCP": 0,
@@ -384,7 +384,7 @@
       "pickupDeviationWindow": 60,
       "NumIter": 1,
       "isDropPickPossible": 1,
-      "nbPick": 8,
+      "nbPick": 4,
       "Route_Recycle": 1,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
