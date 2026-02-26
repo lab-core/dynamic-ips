@@ -382,7 +382,7 @@
       "MaxWait": 240,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 4,
+      "NumIter": 1,
       "isDropPickPossible": 1,
       "nbPick": 8,
       "Route_Recycle": 1,
