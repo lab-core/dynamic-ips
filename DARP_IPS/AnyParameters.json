@@ -395,6 +395,23 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
     },
+    "Iter_Dynamic_5_S1": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 240,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 5,
+      "isDropPickPossible": 1,
+      "Dynamic_Pricing": 1,
+      "nbPick": 7,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 1
+    },
     "Iter_Dynamic_1_S2": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
