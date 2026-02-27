@@ -455,7 +455,7 @@
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 3,
-      "isDropPickPossible": 1,
+      "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "nbPick": 7,
       "Route_Recycle": 1,
