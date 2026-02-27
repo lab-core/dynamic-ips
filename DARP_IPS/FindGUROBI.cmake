@@ -133,14 +133,15 @@ endif()
 
 # Common Gurobi library name patterns
 set(GUROBI_LIB_NAMES
-        gurobi${GUROBI_LIB_SUFFIX}  # e.g., gurobi120 for version 12.0
-        gurobi120  # Explicit for version 12.0
-        gurobi110  # Version 11.0
-        gurobi100  # Version 10.0
-        gurobi95   # Version 9.5
-        gurobi91   # Version 9.1
-        gurobi90   # Version 9.0
-        gurobi     # Generic fallback
+        gurobi${GUROBI_LIB_SUFFIX}
+        gurobi130   # Version 13.0
+        gurobi120   # Version 12.0
+        gurobi110   # Version 11.0
+        gurobi100   # Version 10.0
+        gurobi95
+        gurobi91
+        gurobi90
+        gurobi
 )
 
 # Find the main Gurobi library
