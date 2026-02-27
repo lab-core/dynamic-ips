@@ -32,8 +32,8 @@ if (UNIX)
         # Default for Linux systems
         set(CPLEX_ARCH x86-64)
         # Check which CPLEX directory exists and set it accordingly.
-        if (EXISTS "/home/elamib/Documents/ibm/ILOG/CPLEX_Studio221")
-            set(CPLEX_STUDIO_DIR "/home/elamib/Documents/ibm/ILOG/CPLEX_Studio221")
+        if (EXISTS "/scratch/elamib/ibm/ILOG/CPLEX_Studio2211")
+            set(CPLEX_STUDIO_DIR "/scratch/elamib/ibm/ILOG/CPLEX_Studio2211")
         elseif (EXISTS "/home/ibm/cplex-studio/22.1.1")
             set(CPLEX_STUDIO_DIR "/home/ibm/cplex-studio/22.1.1")
         else()
