@@ -92,6 +92,7 @@ public:
     
 };
 
+// Comparator for requests based on the request ID
 inline bool operator == (const PRequest &lhs, const PRequest &rhs) {return (lhs->getRequestId() == rhs->getRequestId()); }
 
 #endif //REQUEST_H

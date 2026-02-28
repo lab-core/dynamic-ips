@@ -89,7 +89,10 @@ public:
 
 };
 
+// Comparator for labels based on the number of nodes in the path
 inline bool operator < (const PLabel &lhs, const PLabel &rhs) {return (lhs->pathNode_.size() < rhs->pathNode_.size()); }
+
+// Helper function to create a key for a label based on the total wait time and trip delay
 static std::string makeKey(const Label& r, float wait_W1, float ride_W2) {
     float obj = wait_W1 * r.totalWait_ + ride_W2 * r.totalTripDelay_;
     std::string key = std::to_string(obj) + "|";
