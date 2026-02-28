@@ -281,16 +281,6 @@
       "Dynamic_Pricing": 1,
       "nbPick": 4
     },
-    "exact": {
-      "Wait_W1": 1,
-      "Ride_W2": 0,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 100,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4
-    },
     "multiObj_0": {
       "Wait_W1": 1,
       "Ride_W2": 0,
@@ -331,24 +321,6 @@
       "isDropPickPossible": 0,
       "Dynamic_Pricing": 1,
       "nbPick": 4
-    },
-    "test": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 120,
-      "MaxWait": 120,
-      "returnType": 2,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "InitialDual": 1,
-      "DualMethod" : 0,
-      "SmoothDual" : 0,
-      "warmStart": 1,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
-      "nbPick": 2
     },
     "Relative": {
       "Wait_W1": 1,
