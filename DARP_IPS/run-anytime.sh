@@ -107,31 +107,31 @@ G5_initial_state=1
 # GROUP DEFINITIONS Shuttle Service
 # -------------------------
 G6_data_dir="my_datasets"
-G6_vehicle_folder="vehicles_uniform"
+G6_vehicle_folder="vehicles_warmStart_11"
 G6_vehicle_counts=(1200)
 G6_capacity=7
 G6_scenarios=("${SCENS_GROUP_TEST[@]}")
 G6_inst_folder="Instances_4h-11"
 G6_instances=("20150917_11-240m")
-G6_initial_state=0
+G6_initial_state=1
 
 G7_data_dir="my_datasets"
-G7_vehicle_folder="vehicles_uniform"
+G7_vehicle_folder="vehicles_warmStart_11"
 G7_vehicle_counts=(1100)
 G7_capacity=7
 G7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G7_inst_folder="Instances_4h-11"
 G7_instances=("20151110_11-240m" "20160628_11-240m")
-G7_initial_state=0
+G7_initial_state=1
 
 G8_data_dir="my_datasets"
-G8_vehicle_folder="vehicles_uniform"
+G8_vehicle_folder="vehicles_warmStart_11"
 G8_vehicle_counts=(1150)
 G8_capacity=7
 G8_scenarios=("${SCENS_GROUP_TEST[@]}")
 G8_inst_folder="Instances_4h-11"
 G8_instances=("20160512_11-240m")
-G8_initial_state=0
+G8_initial_state=1
 
 # -------------------------
 # Automatic group helpers
