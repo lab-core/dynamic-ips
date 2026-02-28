@@ -6,6 +6,7 @@ warm_1h
 20150715_06-60m
 --num-vehicles
 500
+--vehicle-capacity
 --main-algo
 0
 --sol-mode
