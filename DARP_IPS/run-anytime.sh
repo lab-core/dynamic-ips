@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #SBATCH --account=def-legraina
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=70G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-16
-#SBATCH --output=slurm-%A_%a.out
-#SBATCH --error=slurm-%A_%a.err
+#SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
+#SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
 
 set -euo pipefail
 
