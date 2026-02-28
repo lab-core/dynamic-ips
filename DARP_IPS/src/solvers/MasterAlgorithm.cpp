@@ -231,7 +231,7 @@ void MasterAlgorithm::createInitialSolution(PInstance &pInst, const PGreedyModel
     }
 
     // create upper bound
-  //  upperbound_ = GreedyModel->GreedyUpperbound(pInst);
+    upperbound_ = GreedyModel->GreedyUpperbound(pInst);
     std::cout << "Upper Bound by Greedy: " << upperbound_ << std::endl;
 }
 
