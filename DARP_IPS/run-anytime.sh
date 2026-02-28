@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#SBATCH --account=def-legraina
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -154,7 +153,10 @@ discover_instances() {
   local -n inst_folder_ref="${group}_inst_folder"
   local -n insts_ref="${group}_instances"
 
-  local main_dir="datasets/${inst_folder_ref}"
+  local -n data_dir_ref="${group}_data_dir"
+  local -n inst_folder_ref="${group}_inst_folder"
+  local main_dir="${data_dir_ref}/${inst_folder_ref}"
+
   info "discover_instances($group): looking in $main_dir"
   if [[ -d "$main_dir" ]]; then
     mapfile -t insts_ref < <(find "$main_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
