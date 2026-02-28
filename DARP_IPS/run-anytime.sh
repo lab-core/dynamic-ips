@@ -3,8 +3,8 @@
 #SBATCH --mem=4G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-44
-#SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
-#SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
+#SBATCH --output=slurm-%A_%a.out
+#SBATCH --error=slurm-%A_%a.err
 
 info() { echo "[INFO] $*"; }
 warn() { echo "[WARN] $*" >&2; }
@@ -137,6 +137,7 @@ G8_initial_state=1
 # -------------------------
 # Automatic group helpers
 # -------------------------
+G_test_data_dir="my_datasets"
 G_test_vehicle_folder="vehicles_warmStart_11"
 G_test_vehicle_counts=(1300 1400)
 G_test_capacity=4
