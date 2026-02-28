@@ -7,6 +7,9 @@
 #SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
 #SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
 
+info() { echo "[INFO] $*"; }
+warn() { echo "[WARN] $*" >&2; }
+
 set -euo pipefail
 
 # Always run from the directory where sbatch was called
@@ -150,11 +153,10 @@ G_test_initial_state=1
 # -------------------------
 discover_instances() {
   local group="$1"
+  local -n data_dir_ref="${group}_data_dir"
   local -n inst_folder_ref="${group}_inst_folder"
   local -n insts_ref="${group}_instances"
 
-  local -n data_dir_ref="${group}_data_dir"
-  local -n inst_folder_ref="${group}_inst_folder"
   local main_dir="${data_dir_ref}/${inst_folder_ref}"
 
   info "discover_instances($group): looking in $main_dir"
@@ -176,7 +178,7 @@ G30S_data_dir="datasets"
 G30S_vehicle_folder="vehicles_warmStart_11"
 G30S_vehicle_counts=(1400)
 G30S_capacity=4
-G30S_scenarios=("${SCENS_SMALL_2[@]}")
+G30S_scenarios=("${SCENS_GROUP_TEST[@]}")
 G30S_inst_folder="Instances_30s"
 G30S_initial_state=2
 discover_instances "G30S"
