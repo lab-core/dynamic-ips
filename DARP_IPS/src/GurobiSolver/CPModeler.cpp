@@ -23,8 +23,8 @@ CPModeler::CPModeler(std::string outputLog): env_(true), outputLog_(outputLog) {
         model_->set(GRB_IntParam_OutputFlag, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
  //       model_->set(GRB_IntParam_Crossover, 1);
-        model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
-        model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
+  //      model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
+ //       model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
         model_->set(GRB_StringParam_LogFile, outputLog);
 
 
@@ -77,7 +77,7 @@ void CPModeler::initializeCP(const PInstance &pInst, bool reduced) {
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
  //       model_->set(GRB_IntParam_Method, 2);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
-        model_->set(GRB_IntParam_Crossover, 0);
+ //       model_->set(GRB_IntParam_Crossover, 0);
 
         // Add normalization constraint (sum = 1)
         GRBLinExpr normalExpr = 0;
@@ -297,7 +297,7 @@ void CPModeler::addRouteIncVarBatch() {
     for (const auto& routeObj : routesToAdd_) {
         obj[k] = routeObj->objCoef_;
         columns[k] = createRouteColumn(routeObj, POSITIVE);
-        columns[k].addTerm(routeObj->incompatibilityDegree_, normalConst_);
+        columns[k].addTerm(1, normalConst_);
         IncRoute_.emplace_back(routeObj);
         routeObj->cpAdded_ = true;
         ++k;
@@ -421,6 +421,7 @@ void CPModeler::buildModel_batch(const PInstance &pInst, const std::vector<PRout
             if (requestObj->solVehicleID_ == LARGE_CONSTANT)
                 addZVar(requestObj, NEGATIVE);
         }
+        // Adding incompatible z columns
         addZVarBatch(pInst);
 
         model_->update();
@@ -556,8 +557,8 @@ void CPModeler::getDuals(const PInstance &pInst) {
                       << " CP dual=" << std::setw(6) << requestConstr_[i].get(GRB_DoubleAttr_Pi)
                       << "  CBasis=" << std::setw(6) << requestConstr_[i].get(GRB_IntAttr_CBasis) << std::endl;*/
 
-
-            pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
+            if (requestConstr_[i].get(GRB_DoubleAttr_Pi) > 0)
+                pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
             /*if (pInst->requests_[i]->dual_ == 0)
                 std::cout << "Request: " << std::left << std::setw(5) << pInst->requests_[i]->getRequestId()
                       << " LP dual=" << std::setw(6) << pInst->requests_[i]->dual_
@@ -887,7 +888,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
  //       saveModelBeforeSolve("debug_pre_solve");
         // Set up logging
         solveTime_->start();
- //       model_->update();
+        model_->update();
  //       dump_gurobi();
         model_->optimize();
         solveTime_->stop();
@@ -918,6 +919,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
         if (getStatus() != GRB_OPTIMAL) {
             status_ = INFEASIBLE;
             std::cout << "Failed to optimize the problem" << std::endl;
+            myTools::myException::throwError("CP solution is not valid!!!");
         }
         else {
             // Get dual values
@@ -972,25 +974,27 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                 // Check if solution is column disjoint
                 if (isColumnDisjoint(routeResult, pInst->nbRequests_, pInst->nbVehicles_)) {
 
-                    // Process outgoing variables (in reverse order to avoid index issues)
+                    // Process outgoing variables (reverse index order so erasures don't invalidate indices)
                     for (int idx = OutRouteVar.size() - 1; idx >= 0; --idx) {
                         int r = OutRouteVar[idx];
-                        routeSolution.erase(routeSolution.begin() + r);
+                        PRoute outRoute = routeSolution[r];
                         if (update) {
-                            addRouteVar(routeSolution[r], POSITIVE);
+                            addRouteVar(outRoute, POSITIVE);
                             model_->remove(routeSolVar_[r]);
                             routeSolVar_.erase(routeSolVar_.begin() + r);
                         }
+                        routeSolution.erase(routeSolution.begin() + r);
                     }
 
                     for (int idx = OutRequestVar.size() - 1; idx >= 0; --idx) {
                         int i = OutRequestVar[idx];
-                        zSolution.erase(zSolution.begin() + i);
+                        PRequest outRequest = zSolution[i];
                         if (update) {
-                            addZVar(zSolution[i], POSITIVE);
+                            addZVar(outRequest, POSITIVE);
                             model_->remove(zSolVar_[i]);
                             zSolVar_.erase(zSolVar_.begin() + i);
                         }
+                        zSolution.erase(zSolution.begin() + i);
                     }
 
                     // Process incoming variables (in reverse order)
@@ -1033,6 +1037,8 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                 status_ = POSITIVE_VALUE;
             }
         }
+ //       if (!isColumnDisjoint(routeSolution, pInst->nbRequests_, pInst->nbVehicles_))
+ //           myTools::myException::throwError("CP solution is not valid!!!");
   //      model_->update();
     }
     catch (GRBException& e) {
