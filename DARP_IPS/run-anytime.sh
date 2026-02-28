@@ -3,7 +3,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --time=4:10:00
-#SBATCH --array=1-16
+#SBATCH --array=1-44
 #SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
 #SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
 
@@ -44,7 +44,7 @@ readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Basel
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
-readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2")
+readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 
 # Bundle scenario for group tests
