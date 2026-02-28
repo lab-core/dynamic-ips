@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+#SBATCH --account=def-legraina
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=16G
+#SBATCH --mem=70G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-14
+#SBATCH --array=1-16
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -42,11 +43,12 @@ readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("batch")
-readonly SCENS_Iter=("Iter_Dynamic_1_S1" "Iter_Dynamic_2_S1" "Iter_Dynamic_3_S1" "Iter_Dynamic_4_S1" "Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
+readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2")
+readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Dynamic[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -75,7 +77,7 @@ G3_vehicle_counts=(1300 1400 1500 1600)
 G3_capacity=4
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
-G3_instances=("20151110_11-240m")
+G3_instances=("20151110_11-240m" "20160628_11-240m")
 G3_initial_state=1
 
 
@@ -99,6 +101,36 @@ G5_scenarios=("${SCENS_GROUP_TEST[@]}")
 G5_inst_folder="Instances_4h-11"
 G5_instances=("20151008_11-240m")
 G5_initial_state=1
+
+# -------------------------
+# GROUP DEFINITIONS Shuttle Service
+# -------------------------
+G6_data_dir="my_datasets"
+G6_vehicle_folder="vehicles_uniform"
+G6_vehicle_counts=(1200)
+G6_capacity=7
+G6_scenarios=("${SCENS_GROUP_TEST[@]}")
+G6_inst_folder="Instances_4h-11"
+G6_instances=("20150917_11-240m")
+G6_initial_state=0
+
+G7_data_dir="my_datasets"
+G7_vehicle_folder="vehicles_uniform"
+G7_vehicle_counts=(1100)
+G7_capacity=7
+G7_scenarios=("${SCENS_GROUP_TEST[@]}")
+G7_inst_folder="Instances_4h-11"
+G7_instances=("20151110_11-240m" "20160628_11-240m")
+G7_initial_state=0
+
+G8_data_dir="my_datasets"
+G8_vehicle_folder="vehicles_uniform"
+G8_vehicle_counts=(1150)
+G8_capacity=7
+G8_scenarios=("${SCENS_GROUP_TEST[@]}")
+G8_inst_folder="Instances_4h-11"
+G8_instances=("20160512_11-240m")
+G8_initial_state=0
 
 # -------------------------
 # Automatic group helpers
@@ -146,14 +178,14 @@ G30S_inst_folder="Instances_30s"
 G30S_initial_state=2
 discover_instances "G30S"
 
-G2h_7_data_dir="datasets"
-G2h_7_vehicle_folder="vehicles_uniform"
-G2h_7_vehicle_counts=(2000 1500)
-G2h_7_capacity=4
-G2h_7_scenarios=("${SCENS_GROUP_TEST[@]}")
-G2h_7_inst_folder="Instances_2h-7"
-G2h_7_initial_state=0
-discover_instances "G2h_7"
+G2h7_data_dir="datasets"
+G2h7_vehicle_folder="vehicles_uniform"
+G2h7_vehicle_counts=(2000 1500)
+G2h7_capacity=4
+G2h7_scenarios=("${SCENS_GROUP_TEST[@]}")
+G2h7_inst_folder="Instances_2h-7"
+G2h7_initial_state=0
+discover_instances "G2h7"
 
 # -------------------------
 # Build job list
@@ -202,7 +234,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G3)
+ALL_GROUPS=(G6 G7 G8)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
