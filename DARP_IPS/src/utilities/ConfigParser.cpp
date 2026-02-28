@@ -16,6 +16,7 @@ void ProgramConfig::printConfig() const {
     std::cout << "  Vehicle folder: " << vehicleFolder_ << "\n";
     std::cout << "  Instance folder: " << instFolder_ << "\n";
     std::cout << "  Number of vehicles: " << numVehicles_ << "\n";
+    std::cout << "  Vehicle capacity: " << vehicleCapacity_ << "\n";
     std::cout << "  Main algorithm: " << mainAlgo_ << "\n";
     std::cout << "  Solution mode: " << solMode_ << "\n";
     std::cout << "  Parameter file: " << paramFile_ << "\n";
@@ -42,6 +43,7 @@ void ConfigParser::printUsage(const char* programName) {
               << "  --vehicle-folder <path>     Path to vehicle folder\n"
               << "  --inst-folder <path>        Path to instance folder\n"
               << "  --num-vehicles <int>        Number of vehicles (must be positive)\n"
+              << "  --vehicle-capacity <int>    Vehicle capacity (must be positive)\n"
               << "  --main-algo <int>           Main algorithm (non-negative integer)\n"
               << "  --sol-mode <int>            Solution mode (non-negative integer)\n"
               << "  --paramfile <string>        Parameter file name\n"
@@ -56,7 +58,7 @@ void ConfigParser::printUsage(const char* programName) {
     std::cout << "Examples:\n"
               << "  # Use all instances from file:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
-              << "                    --num-vehicles 4 --main-algo 1 --sol-mode 0 \\\n"
+              << "                    --num-vehicles 4 --vehicle-capacity 4 --main-algo 1 --sol-mode 0 \\\n"
               << "                    --paramfile AnyParameters --scenario test --save-scratch 1 --initial-state 0\n\n"
               << "  # Use specific instance:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
@@ -169,6 +171,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
         config->vehicleFolder_ = args["--vehicle-folder"];
         config->instFolder_ = args["--inst-folder"];
         config->numVehicles_ = std::stoi(args["--num-vehicles"]);
+        config->vehicleCapacity_ = std::stoi(args["--vehicle-capacity"]);
         config->mainAlgo_ = std::stoi(args["--main-algo"]);
         config->solMode_ = std::stoi(args["--sol-mode"]);
         config->initialState_ = std::stoi(args["--initial-state"]);

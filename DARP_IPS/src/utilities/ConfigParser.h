@@ -17,6 +17,7 @@ struct ProgramConfig {
     std::string instFolder_;        // folder containing instance files
     std::string instanceName_;      // instance file name (optional - if empty, read from file)
     int numVehicles_;               // number of vehicles
+    int vehicleCapacity_;           // vehicle capacity
     int mainAlgo_;                  // main algorithm
     int solMode_;                   // solution mode: STATIC, DYNAMIC, ANYTIME.
     std::string paramFile_;         // parameter file name

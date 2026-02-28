@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // Set up paths and constants
-    std::string dataDir = "my_datasets/";
+    std::string dataDir = "datasets/";
     int numVehicles = config->numVehicles_;
 
     // Prepare instance names
@@ -55,7 +55,6 @@ int main(int argc, char** argv) {
     ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_);
 
     int max_i = 1, max_j = 1;
-
     if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
         max_i = 7;
         max_j = 1;
@@ -64,13 +63,11 @@ int main(int argc, char** argv) {
         max_i = 3;
     else if (config->scenario_ == "dropPick" || config->scenario_ == "nbPickup")
         max_i = 2;
-    else if (config->scenario_ == "Iter_Dynamic" || config->scenario_ == "Iter_Partial")
-        max_i = 4;
 
     for (auto & instanceName : instNames){
         for (int i = 0; i < max_i; ++i) {
             for (int j = 0; j < max_j; ++j) {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
+                std::this_thread::sleep_for(std::chrono::seconds(1));
 
                 // Create output files for epoch results
                 inputPaths.initializeInputs(config->instFolder_, instanceName);
@@ -109,15 +106,11 @@ int main(int argc, char** argv) {
                         mainInst->parameters_->dynamicPricing_ =  false;
                     }
                 }
-                else if (config->scenario_ == "Iter_Dynamic" || config->scenario_ == "Iter_Partial") {
-                    mainInst->parameters_->numIter_ = i+1 ;
-                }
-
 
                 ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_,
                     config->scenario_, config->initialState_);
                 for (auto & vehicleObj : mainInst->vehicles_)
-                    vehicleObj->capacity_ = 7;
+                    vehicleObj->capacity_ = config->vehicleCapacity_;
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<BaseSolver> instanceSolver;
