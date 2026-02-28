@@ -58,22 +58,28 @@ readonly SCENS_GROUP_TEST=("${SCENS_TEST[@]}")
 # -------------------------
 # GROUP DEFINITIONS
 # -------------------------
+G1_data_dir="datasets"
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_vehicle_counts=(1200 1300 1400 1500)
+G1_capacity=4
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 G1_initial_state=1
 
+G2_data_dir="datasets"
 G2_vehicle_folder="vehicles_byDemand_w11"
 G2_vehicle_counts=(1300 1400 1500 1600)
+G2_capacity=4
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_2h-11"
 G2_instances=("20160109_11-120m")
 G2_initial_state=1
 
+G3_data_dir="datasets"
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_vehicle_counts=(800 900 1000 1100)
+G3_capacity=4
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_2h-11"
 G3_instances=("20151230_11-120m")
@@ -82,8 +88,10 @@ G3_initial_state=1
 # -------------------------
 # Automatic group helpers
 # -------------------------
+G_test_data_dir="datasets"
 G_test_vehicle_folder="vehicles_byDemand_w11"
 G_test_vehicle_counts=(1300 1400)
+G_test_capacity=4
 G_test_algorithms=(2)
 G_test_modes=(1)
 G_test_scenarios=("Relative_5")
@@ -115,15 +123,19 @@ discover_instances() {
 }
 
 # Example auto groups (you had these; not in ALL_GROUPS unless you add them)
+G30S_data_dir="datasets"
 G30S_vehicle_folder="vehicles_byDemand"
 G30S_vehicle_counts=(1400)
+G30S_capacity=4
 G30S_scenarios=("${SCENS_SMALL_2[@]}")
 G30S_inst_folder="Instances_30s_11"
 G30S_initial_state=2
 discover_instances "G30S"
 
+G2h_7_data_dir="datasets"
 G2h_7_vehicle_folder="vehicles_uniform"
 G2h_7_vehicle_counts=(2000)
+G2h_7_capacity=4
 G2h_7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2h_7_inst_folder="Instances_2h-7"
 G2h_7_initial_state=0
@@ -137,7 +149,9 @@ jobs=()
 add_group() {
   local G="$1"
 
+  eval "data_dir=\${${G}_data_dir}"
   eval "vehicle_folder=\${${G}_vehicle_folder}"
+  eval "capacity=\${${G}_capacity}"
   eval "inst_folder=\${${G}_inst_folder}"
   eval "initial_state=\${${G}_initial_state-}"
   [[ -n "${initial_state:-}" ]] || { echo "[ERROR] Missing ${G}_initial_state" >&2; exit 1; }
@@ -165,7 +179,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity -- main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
           done
         done
       done

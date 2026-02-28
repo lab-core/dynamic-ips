@@ -38,11 +38,10 @@ readonly BATCH_PARAMFILE="AnyParameters"
 readonly BATCH_ALGOS=(6)
 readonly BATCH_MODES=(2)
 
-readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5")
+readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
-readonly SCENS_ISUD=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7" "batch")
-readonly SCENS_BATCH=("rebalance_SP1")
+readonly SCENS_BATCH=("batch")
 readonly SCENS_Iter=("Iter_Dynamic_1_S1" "Iter_Dynamic_2_S1" "Iter_Dynamic_3_S1" "Iter_Dynamic_4_S1" "Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 
@@ -52,22 +51,28 @@ readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
 # -------------------------
 # GROUP DEFINITIONS MYTEST
 # -------------------------
-G1_vehicle_folder="vehicles_byDemand_w11"
+G1_data_dir="my_datasets"
+G1_vehicle_folder="vehicles_warmStart_11"
 G1_vehicle_counts=(1400 1500 1600)
+G1_capacity=4
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160512_11-240m")
 G1_initial_state=1
 
-G2_vehicle_folder="vehicles_byDemand_w11"
+G2_data_dir="my_datasets"
+G2_vehicle_folder="vehicles_warmStart_11"
 G2_vehicle_counts=(1450 1550 1650 1750)
+G2_capacity=4
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 G2_initial_state=1
 
-G3_vehicle_folder="vehicles_byDemand_w11"
-G3_vehicle_counts=(1050)
+G3_data_dir="my_datasets"
+G3_vehicle_folder="vehicles_warmStart_11"
+G3_vehicle_counts=(1300 1400 1500 1600)
+G3_capacity=4
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20151110_11-240m")
@@ -77,15 +82,19 @@ G3_initial_state=1
 # -------------------------
 # GROUP DEFINITIONS RILEY
 # -------------------------
-G4_vehicle_folder="vehicles_byDemand_w11"
+G4_data_dir="datasets"
+G4_vehicle_folder="vehicles_warmStart_11"
 G4_vehicle_counts=(1200 1300 1400 1500)
+G4_capacity=4
 G4_scenarios=("${SCENS_GROUP_TEST[@]}")
 G4_inst_folder="Instances_4h-11"
 G4_instances=("20160521_11-240m" "20150926_11-240m" "20151025_11-240m")
 G4_initial_state=1
 
-G5_vehicle_folder="vehicles_byDemand_w11"
+G5_data_dir="datasets"
+G5_vehicle_folder="vehicles_warmStart_11"
 G5_vehicle_counts=(1000 1100 1200 1300)
+G5_capacity=4
 G5_scenarios=("${SCENS_GROUP_TEST[@]}")
 G5_inst_folder="Instances_4h-11"
 G5_instances=("20151008_11-240m")
@@ -94,8 +103,9 @@ G5_initial_state=1
 # -------------------------
 # Automatic group helpers
 # -------------------------
-G_test_vehicle_folder="vehicles_byDemand_w11"
+G_test_vehicle_folder="vehicles_warmStart_11"
 G_test_vehicle_counts=(1300 1400)
+G_test_capacity=4
 G_test_algorithms=(2)
 G_test_modes=(1)
 G_test_scenarios=("Relative_5")
@@ -127,15 +137,19 @@ discover_instances() {
 }
 
 # Example auto groups (you had these; not in ALL_GROUPS unless you add them)
-G30S_vehicle_folder="vehicles_byDemand"
+G30S_data_dir="datasets"
+G30S_vehicle_folder="vehicles_warmStart_11"
 G30S_vehicle_counts=(1400)
+G30S_capacity=4
 G30S_scenarios=("${SCENS_SMALL_2[@]}")
-G30S_inst_folder="Instances_30s_11"
+G30S_inst_folder="Instances_30s"
 G30S_initial_state=2
 discover_instances "G30S"
 
+G2h_7_data_dir="datasets"
 G2h_7_vehicle_folder="vehicles_uniform"
 G2h_7_vehicle_counts=(2000 1500)
+G2h_7_capacity=4
 G2h_7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2h_7_inst_folder="Instances_2h-7"
 G2h_7_initial_state=0
@@ -149,7 +163,9 @@ jobs=()
 add_group() {
   local G="$1"
 
+  eval "data_dir=\${${G}_data_dir}"
   eval "vehicle_folder=\${${G}_vehicle_folder}"
+  eval "capacity=\${${G}_capacity}"
   eval "inst_folder=\${${G}_inst_folder}"
   eval "initial_state=\${${G}_initial_state-}"
   [[ -n "${initial_state:-}" ]] || { echo "[ERROR] Missing ${G}_initial_state" >&2; exit 1; }
@@ -177,7 +193,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
           done
         done
       done

@@ -14,6 +14,7 @@
 struct ProgramConfig {
     std::string vehicleFolder_;     // folder containing vehicle files
     std::string vehicleFileName_;   // vehicle file name
+    std::string dataDir_;           // data directory
     std::string instFolder_;        // folder containing instance files
     std::string instanceName_;      // instance file name (optional - if empty, read from file)
     int numVehicles_;               // number of vehicles

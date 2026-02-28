@@ -13,6 +13,7 @@ ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), s
 
 void ProgramConfig::printConfig() const {
     std::cout << "Configuration:\n";
+    std::cout << "  Data directory: " << dataDir_ << "\n";
     std::cout << "  Vehicle folder: " << vehicleFolder_ << "\n";
     std::cout << "  Instance folder: " << instFolder_ << "\n";
     std::cout << "  Number of vehicles: " << numVehicles_ << "\n";
@@ -40,6 +41,7 @@ void ProgramConfig::printConfig() const {
 void ConfigParser::printUsage(const char* programName) {
     std::cout << "Usage: " << programName << " <options>\n\n"
               << "Required arguments:\n"
+              << "  --data-dir <path>           Path to data directory\n"
               << "  --vehicle-folder <path>     Path to vehicle folder\n"
               << "  --inst-folder <path>        Path to instance folder\n"
               << "  --num-vehicles <int>        Number of vehicles (must be positive)\n"
@@ -168,6 +170,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
 
     // Parse and validate values
     try {
+        config->dataDir_ = args["--data-dir"];
         config->vehicleFolder_ = args["--vehicle-folder"];
         config->instFolder_ = args["--inst-folder"];
         config->numVehicles_ = std::stoi(args["--num-vehicles"]);
