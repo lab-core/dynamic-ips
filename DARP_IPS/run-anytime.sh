@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=4G
 #SBATCH --time=4:10:00
 #SBATCH --array=1-44
 #SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
