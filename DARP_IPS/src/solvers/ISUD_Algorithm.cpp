@@ -191,6 +191,48 @@ int ISUD_Algorithm::solveRP_Gurobi(PInstance &pInst, int compDegree, const Input
     return static_cast<int>(RPGurobiPro_->compRoutes_.size());
 }
 
+int ISUD_Algorithm::solveRP_Pivot(PInstance &pInst, int compDegree, const InputPaths &inputPaths) {
+    // improve by solving the Reduced problem
+    RPGurobiPro_->routesToAdd_.clear();
+    // select compatible routes with negative reduced costs
+    updateRoutesToAdd(RP, pInst, RPGurobiPro_->routesToAdd_);
+    std::stable_sort(RPGurobiPro_->routesToAdd_.begin(),
+                             RPGurobiPro_->routesToAdd_.end(),
+                             [](const PRoute &lhs, const PRoute &rhs) { return lhs->normal_RC_ < rhs->normal_RC_; });
+
+    if (!RPGurobiPro_->routesToAdd_.empty()){
+        MPBuildTime_->start();
+        boost::dynamic_bitset<> coveredRequests(pInst->nbRequests_);
+        boost::dynamic_bitset<> usedVehicles(pInst->nbVehicles_);
+        for (auto & routeObj: RPGurobiPro_->routesToAdd_) {
+            if (!usedVehicles.test(routeObj->vehicleID_)) {
+                bool isStillCompatible = true;
+
+                for (auto & reqObj: routeObj->routeRequests_) {
+                    if (coveredRequests.test(reqObj->taskIndex_)) {
+                        isStillCompatible = false;
+                        break;
+                    }
+                }
+                if (isStillCompatible) {
+                    usedVehicles.set(routeObj->vehicleID_);
+                    coveredRequests |= routeObj->column_;
+                    pInst->vehicles_[routeObj->vehicleID_]->setCurrentRoute(routeObj);
+                }
+            }
+        }
+        routeSolution_.clear();
+        for (auto & veh : pInst->vehicles_) {
+            routeSolution_.push_back(veh->currentRoute_);
+        }
+
+        setCurrentRoutes(pInst);
+        setObjValue();
+        MPBuildTime_->stop();
+    }
+    return static_cast<int>(RPGurobiPro_->compRoutes_.size());
+}
+
 void ISUD_Algorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, int epoch, float subProTime) {
     RPTime_->start();
     iterTime_ = masterTime_->dSinceStart().count();
@@ -220,10 +262,7 @@ void ISUD_Algorithm::solveRP(PInstance &pInst, const InputPaths &inputPaths, int
             previousObj_ = objValue_;
         } else
             break;
-//        if (RPIter_ == 2)
- //            break;
 
- //       break;
 
         if (nbColumns == 0)
             break;
@@ -625,7 +664,7 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
                         CPSuccess_++;
                         previousObj_ = objValue_;
                         RMPCounter_++;
-                        isCPImproved = false;
+                        isCPImproved = true;
                         setAvailableTime();
                         restartAlgorithm = false;
 
@@ -664,11 +703,138 @@ void ISUD_Algorithm::solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &
     }
 }
 
+void ISUD_Algorithm::solveISUD_Gurobi3(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
+    try {
+        masterTime_->start();
+        setObjValue();
+        previousObj_ = objValue_;
+
+        // move these here and initialize
+        bool isCPImproved = true;
+        /************************************************************************************************/
+        //      SOLVE REDUCED PROBLEM
+        /************************************************************************************************/
+        RPTime_->start();
+        iterTime_ = masterTime_->dSinceStart().count();
+        int nbColumns = solveRP_Pivot(pInst, 0, inputPaths);
+
+        RPIter_++;
+        epochTime_ += masterTime_->dSinceStart().count() - iterTime_;
+        iterTime_ = masterTime_->dSinceStart().count();
+
+        *pLogMPResultsStream_ << save_MPResults(epoch, "RP", nbColumns,
+            masterTime_->dSinceStart().count(), subProTime,0.0);
+        RMPCounter_++;
+
+        previousObj_ = objValue_;
+        RPTime_->stop();
+
+        /************************************************************************************************/
+        //                                     COMPLEMENTARY PROBLEM
+        /************************************************************************************************/
+        // if the value of the objective function improves, the CP is built
+        CPTime_->start();
+        setAvailableTime();
+
+        if (availableTime_ < 0.2) {
+            isCPImproved = false;
+        }
+        iterTime_ = masterTime_->dSinceStart().count();
+
+        CPBuildTime_->start();
+        CPGurobiPro_->resetForNextIteration();
+        CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
+        CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
+
+        CPGurobiPro_->routesToAdd_.clear();
+        updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
+        for (auto &vehicleObj: pInst->vehicles_) {
+            if (!vehicleObj->currentRoute_->routeRequests_.empty())
+                CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
+        }
+        CPGurobiPro_->updateModel();
+        CPBuildTime_->stop();
+
+        while (isCPImproved) {
+            isCPImproved = false;
+            previousObj_ = objValue_;
+
+            setAvailableTime();
+            if (availableTime_ > 0.2) {
+                CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, true);
+                setCurrentRoutes(pInst);
+
+                CPIter_++;
+  //              (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "Dual");
+
+                CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
+                setObjValue();
+                epochTime_ += masterTime_->dSinceStart().count() - iterTime_;
+                iterTime_ = masterTime_->dSinceStart().count();
+                (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CPGurobiPro_->IncRoute_.size()),
+                                                            masterTime_->dSinceStart().count(), subProTime, 0.0);
+
+                if (CPGurobiPro_->status_ == FRACTIONAL) {
+                    CPFails_++;
+                    setAvailableTime();
+                    if (pInst->parameters_->useZoom_ && availableTime_ > 0.2) {
+                        iterTime_ = masterTime_->dSinceStart().count();
+                        ZOOMTime_->start();
+                        solveRP_Gurobi(pInst, 1, inputPaths);
+                        ZoomIter_++;
+                        epochTime_ += masterTime_->dSinceStart().count() - iterTime_;
+                        iterTime_ = masterTime_->dSinceStart().count();
+
+                        (*pLogMPResultsStream_)
+                                << save_MPResults(epoch, "ZOOM",
+                                                  static_cast<int>(RPGurobiPro_->compRoutes_.size()) - nbVehicles_,
+                                                  masterTime_->dSinceStart().count(), subProTime,
+                                                  0.0);
+                        RMPCounter_++;
+
+                        ZOOMTime_->stop();
+                        if (previousObj_ - objValue_ > 0.01) {
+                            std::cout << previousObj_ << std::endl;
+                            previousObj_ = objValue_;
+                        }
+                        break;
+                    }
+                }
+                else if (CPGurobiPro_->status_ == POSITIVE_VALUE || CPGurobiPro_->status_ == INFEASIBLE) {
+                    break;
+                }
+                else {
+                    CPSuccess_++;
+                    previousObj_ = objValue_;
+                    RMPCounter_++;
+                    isCPImproved = true;
+                    setAvailableTime();
+                }
+            }
+            else
+                break;
+
+        }
+
+        CPBuilt_ = false;
+        CPTime_->stop();
+
+        (*pLogMPResultsStream_)
+                << save_MPResults(epoch, "ISUD", MPnbRoutes_, masterTime_->dSinceStart().count(), subProTime, 0.0);
+        masterTime_->stop();
+    }
+    catch (const std::exception& e){
+        std::cout << "Error occurred at line: " << __LINE__ << std::endl;
+        std::cout << e.what() << std::endl;
+    }
+}
+
+
 void ISUD_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     timeLimit_ = availableTime_;
     epochTime_ += subProTime;
     if (pInst->parameters_->modelSolver_ == GUROBI)
-        solveISUD_Gurobi2(pInst, epoch, inputPaths, subProTime);
+        solveISUD_Gurobi3(pInst, epoch, inputPaths, subProTime);
     else if (pInst->parameters_->modelSolver_ == CPLEX)
         solveISUD_CPLEX(pInst, epoch, inputPaths, subProTime);
 }

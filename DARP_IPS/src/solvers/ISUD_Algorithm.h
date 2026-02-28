@@ -31,11 +31,13 @@ public:
 
     int solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
     int solveRP_Gurobi(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
+    int solveRP_Pivot(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
     void solveRP(PInstance &pInst, const InputPaths &inputPaths, int epoch, float subProTime);
 
     void solveISUD_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveISUD_Gurobi3(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) override;
     void resetModels() override;
