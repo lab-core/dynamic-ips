@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=4G
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
 #SBATCH --time=4:10:00
 #SBATCH --array=1-44
-#SBATCH --output=slurm-%A_%a.out
-#SBATCH --error=slurm-%A_%a.err
+#SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
+#SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
 
 info() { echo "[INFO] $*"; }
 warn() { echo "[WARN] $*" >&2; }
