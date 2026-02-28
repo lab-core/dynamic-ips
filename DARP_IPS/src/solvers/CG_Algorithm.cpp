@@ -161,16 +161,10 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
         }
         MPGurobiPro_->routesToAdd_.clear();
 
-        /*for (auto & requestObj : pInst->requests_) {
-            if (requestObj->dual_ == 0)
-                requestObj->dual_ = requestObj->penalty_;
-            else
-                requestObj->dual_ = 0.8 * requestObj->dual_ + 0.2 * requestObj->penalty_;
-        }*/
  //       for (auto & vehicleObj : pInst->vehicles_)
  //           vehicleObj->dual_ = 0;
  //       resetMPGurobi(pInst, inputPaths);
- //   }
+ //   }*/
     if (pInst->parameters_->routeRecycle_ && !availableRoutes_.empty()) {
         reFillRoutesToAdd(pInst, MPGurobiPro_->routesToAdd_);
         MPGurobiPro_->updateMPModel_batch(pInst);
