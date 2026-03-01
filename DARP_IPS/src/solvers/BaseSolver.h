@@ -32,6 +32,9 @@ public:
     PGreedyModeler GreedyModel_;                          // Greedy modeler (fast insertion heuristic)
 
 
+    GRBEnv env_;
+
+
     // Shared state
     float elapsedTime_;                                   // elapsed time of the simulation  
     float avgEpochRuntime_;                               // average epoch runtime
@@ -151,7 +154,7 @@ struct RuntimeMetrics {
     int nbColumnsLess_50_;                      // number of vehicles with less than 50 columns generated
     int nbColumnsLess_100_;                     // number of vehicles with less than 100 columns generated  
     int nbColumnsLess_200_;                     // number of vehicles with less than 200 columns generated
-    int nbRoutes_;                              // number of routes generated in the epoch 
+    int nbRoutes_;                              // number of routes generated in the epoch
 
     // Constructor
     RuntimeMetrics() : epochRuntime_(0.0f), masterEpochTime_(0), RPEpochTime_(0), CPEpochTime_(0), RPEpochBuildTime_(0),

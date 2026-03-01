@@ -31,7 +31,6 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
     masterTime_->start();
 
     // build the model
-    MasterPro_ = std::make_shared<MIPMasterProblem>();
     MasterPro_->routesToAdd_.clear();
     if (pInst->parameters_->dualMethod_ == AUX_D)
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
@@ -82,7 +81,6 @@ void CG_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPaths
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
 
     // build MP model
-    MPGurobiPro_ = std::make_shared<MP_Gurobi>(inputPaths.getOutputSolverLog());
     for (auto & vehicleObj : pInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->emptyRoute_->routeSize_)
             MPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
@@ -659,9 +657,11 @@ bool CG_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, fl
 }
 
 void CG_Algorithm::resetModels() {
-    MasterPro_.reset();
-    MPGurobiPro_.reset();
+    if (MasterPro_)
+        MasterPro_->resetForNextIteration();
+    else
+        MPGurobiPro_->resetForNextIteration();
 
-    if (DualAuxSolver_ != nullptr)
+    if (DualAuxSolver_)
         DualAuxSolver_.reset();
 }

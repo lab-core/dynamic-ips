@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --time=4:10:00
-#SBATCH --array=1-44
-#SBATCH --output=/scratch/elamib/slurm/slurm-%A_%a.out
-#SBATCH --error=/scratch/elamib/slurm/slurm-%A_%a.err
+#SBATCH --mem=24G
+#SBATCH --time=4:20:00
+#SBATCH --array=1-20
+#SBATCH --output=slurm-%A_%a.out
+#SBATCH --error=slurm-%A_%a.err
 
 info() { echo "[INFO] $*"; }
 warn() { echo "[WARN] $*" >&2; }
@@ -28,7 +27,9 @@ source /usr/share/Modules/init/bash 2>/dev/null || true
 
 if command -v module >/dev/null 2>&1; then
   module purge
-  module load gcc eigen boost gurobi
+  module load gcc eigen boost
+  module use /opt/software/commercial/modules
+  module load gurobi/13.0.0 2>/dev/null || echo "WARNING: gurobi module not loaded"
   module list
 fi
 
@@ -47,11 +48,11 @@ readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Basel
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
-readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
-readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
+readonly SCENS_S1=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Dynamic_1_S2")
+readonly SCENS_S2=("Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Dynamic[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_S1[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -231,7 +232,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 2 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
           done
         done
       done

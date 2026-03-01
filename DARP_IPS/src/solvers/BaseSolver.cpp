@@ -19,6 +19,16 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
         MP_solver_ = std::make_unique<CG_Algorithm>(inputPaths, mainInst->parameters_->modelSolver_);
     GreedyModel_ = std::make_shared<GreedyModeler>();
 
+    if (mainInst->parameters_->vehicleReturn_) {
+        env_.set(GRB_IntParam_UpdateMode, 1);
+        env_.start();
+
+        env_.set(GRB_IntParam_LogToConsole, 0);
+        env_.set(GRB_IntParam_Threads, 1);
+
+        env_.set(GRB_IntParam_OutputFlag, 0); // Suppress output
+    }
+
     // Shared state
     elapsedTime_ = 0.0;
     avgEpochRuntime_ = 0.0;
@@ -222,11 +232,7 @@ void BaseSolver::solveGurobiAssignment(const PInstance &EpochInst, std::vector<P
         const std::size_t nR = EpochInst->lastCommittedRequests_.size();
         const int need = static_cast<int>(std::min(nV, nR));
 
-        GRBEnv env = GRBEnv();
-        env.set(GRB_IntParam_OutputFlag, 0); // Suppress output
-        env.set(GRB_IntParam_Threads, EpochInst->parameters_->nbThreads_);
-
-        GRBModel model = GRBModel(env);
+        GRBModel model = GRBModel(env_);
 
         // Create decision variables y[v][r]
         std::vector<std::vector<GRBVar>> y(nV);

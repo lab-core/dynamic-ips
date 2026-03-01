@@ -11,6 +11,45 @@ RP_Gurobi::RP_Gurobi(std::string outputLog) : GurobiModeler(outputLog) {
     objValue_ = 0;
 }
 
+void RP_Gurobi::resetForNextIteration() {
+
+    try {
+        // Reset route flags
+        objValue_ = 0;
+        auxObjValue_ = 0;
+        nbRequestTask_ = 0;
+        compRoutes_.clear();
+        vehicleRHS_.clear();
+        requestRHS_.clear();
+        routesToAdd_.clear();
+
+        // --- Remove constraints ---
+        for (auto& constr : requestConstr_)
+            model_->remove(constr);
+        requestConstr_.clear();
+
+        for (auto& constr : vehicleConstr_)
+            model_->remove(constr);
+        vehicleConstr_.clear();
+
+        // --- Remove variables ---
+        for (auto& var : routeVar_) model_->remove(var);
+        for (auto& var : zVar_)     model_->remove(var);
+
+        routeVar_.clear();
+        zVar_.clear();
+        model_->reset(1);
+
+        // --- Apply all changes ---
+        model_->update();
+
+    } catch (const GRBException& e) {
+        std::cerr << "Gurobi error in resetForNextIteration: "
+                  << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
 
 // Add route variable (integer version)
 void RP_Gurobi::addRouteVar(PRoute &newRoute, PInstance &pInst) {
@@ -162,13 +201,10 @@ void RP_Gurobi::extractSolution(const PInstance &pInst, std::vector<PRequest> &z
     // Saving the result
     zSolution.clear();
     routeSolution.clear();
-    routeSolutionIndex_.clear();
-
     // Get route variable values
     for (size_t r = 0; r < routeVar_.size(); ++r) {
         if (getVarValue(routeVar_[r]) > 0.5) {
             routeSolution.push_back(compRoutes_[r]);
-            routeSolutionIndex_.push_back(static_cast<int>(r));
         }
     }
 
@@ -219,7 +255,7 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
         // Configure Gurobi logging
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
             model_->set(GRB_IntParam_Method, 2);
-            model_->set(GRB_IntParam_Crossover, 0);
+ //           model_->set(GRB_IntParam_Crossover, 0);
             model_->update();
         }
         model_->write("gurobi_orig.lp");
@@ -243,7 +279,7 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
             getDuals(pInst);
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
             model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
-            model_->set(GRB_IntParam_Crossover, 1);
+//            model_->set(GRB_IntParam_Crossover, 1);
             model_->update();
         }
     }

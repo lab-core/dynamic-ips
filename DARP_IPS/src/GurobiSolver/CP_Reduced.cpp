@@ -197,7 +197,7 @@ void CP_Reduced::initializeCPModel(const PInstance &pInst) {
         // Set basic parameters
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
         model_->set(GRB_IntParam_Method, 2);
-        model_->set(GRB_IntParam_Crossover, 0);
+ //       model_->set(GRB_IntParam_Crossover, 0);
 
         // Add normalization constraint (sum = 1)
         GRBLinExpr normalExpr = 0;

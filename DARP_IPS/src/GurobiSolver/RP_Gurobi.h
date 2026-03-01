@@ -14,7 +14,6 @@ public:
 
     float objValue_;
     float auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
-    std::vector<int> routeSolutionIndex_;
 
     std::vector<PRoute> compRoutes_;        // list of route variables in the model
 
@@ -22,6 +21,8 @@ public:
 
     // Constructor and Destructor
     RP_Gurobi(std::string outputLog);
+
+    void resetForNextIteration();
     // Add variables
     void addRouteVar(PRoute& newRoute, PInstance& pInst);
     void addRouteVarFloat_RP(PRoute& newRoute, PInstance& pInst);

@@ -7,11 +7,11 @@
 CPModeler::CPModeler(std::string outputLog): env_(true), outputLog_(outputLog) {
     try {
         // Set environment parameters before creating model
-        env_.set(GRB_IntParam_LogToConsole, 0);
         env_.set(GRB_IntParam_UpdateMode, 1);
         env_.start();
 
         model_ = new GRBModel(env_);
+        env_.set(GRB_IntParam_LogToConsole, 0);
         nbRequestTask_ = 0;
 
         solveTime_ = new myTools::Timer(); solveTime_->init();
