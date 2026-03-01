@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=44G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-20
+#SBATCH --array=1-24
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -52,7 +52,7 @@ readonly SCENS_S1=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S
 readonly SCENS_S2=("Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_S1[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_S2[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
