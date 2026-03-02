@@ -1014,14 +1014,14 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
     }
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
-            requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
+            requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
         }
     }
     if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
         for (auto & vehicleObj : pInst->vehicles_) {
             for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
                 for (auto & requestObj: routeObj->routeRequests_) {
-                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_);
+                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
                 }
             }
         }
