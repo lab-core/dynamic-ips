@@ -178,19 +178,12 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
             else
                 subProblem->reOptimize_ = false;
         }
-        else {
+        else if (!vehicleObj->removeDrop_) {
             subProblem->reOptimize_ = true;
             nbRecycle_++;
-            if (EpochInst->parameters_->labelingReOptimizeStrategy_ == BY_GRAPH && availableRoutes[vehicleObj->vehicleID_].size() >= 300) {
-                for (auto & requestObj: EpochInst->requests_) {
-
-                    if (requestObj->solVehicleID_ != vehicleObj->vehicleID_ )
-                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_,false);
-                    else
-                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_,true);
-                }
-            }
         }
+        else
+            subProblem->reOptimize_ = false;
     }
     else
         subProblem->reOptimize_ = false;
