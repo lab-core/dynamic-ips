@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=20G
+#SBATCH --mem=44G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-32
+#SBATCH --array=1-64
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -42,7 +42,7 @@ readonly BATCH_ALGOS=(6)
 readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
-readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1")
+readonly SCENS_anytime=("Baseline_Pool" "rebalance_SP1" "Penalty" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
