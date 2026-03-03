@@ -239,7 +239,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G6 G7 G8)
+ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
