@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=32G
+#SBATCH --mem=16G
 #SBATCH --time=4:20:00
 #SBATCH --array=1-32
 #SBATCH --output=slurm-%A_%a.out
@@ -42,7 +42,7 @@ readonly BATCH_ALGOS=(6)
 readonly BATCH_MODES=(2)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
-readonly SCENS_anytime=("SP_Re_2_Pool" "SP_Re_2")
+readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
@@ -50,14 +50,14 @@ readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_
 readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Fix[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
 # -------------------------
 G1_data_dir="my_datasets"
 G1_vehicle_folder="vehicles_warmStart_11"
-G1_vehicle_counts=(1400 1500 1600)
+G1_vehicle_counts=(1400 1500 1600 1700)
 G1_capacity=4
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
