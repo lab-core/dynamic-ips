@@ -624,7 +624,7 @@ std::string Instance::saveSolutionRoutes() const {
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->reachTime_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->initialType_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->locationID_ << ",";
-            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->departTime_ << ",";
+            repStr << vehicleObj->solutionRoute_->routeNodes_[j]->nodeDepartTime_ << ",";
             repStr << vehicleObj->solutionRoute_->routeNodes_[j]->nbPassengers_ << ",";
             repStr << vehicleObj->solutionRoute_->plannedPassengers_[j] << ",";
             repStr << vehicleObj->solutionRoute_->plannedReachTime_[j] << ",";
@@ -684,7 +684,7 @@ std::string Instance::saveVehicleResults() const {
         repStr << vehicleObj->capacity_ << ",";
         repStr << simulationStartTime_ << ",";
         repStr << vehicleObj->endTime_ << ",";
-        repStr << vehicleObj->solutionRoute_->routeNodes_.back()->departTime_ << ",";
+        repStr << vehicleObj->solutionRoute_->routeNodes_.back()->nodeDepartTime_ << ",";
         repStr << vehicleObj->solutionRoute_->routeSize_ << ",";
         repStr << vehicleObj->solutionRoute_->routeRequests_.size() << ",";
         repStr << vehicleObj->solutionRoute_->totalWait_ << ",";
@@ -835,7 +835,7 @@ void Instance::saveStatus(InputPaths &inputPaths, float simulationStart, float i
                 myFile << std::setw(10) << requestObj->DropOffID_ ;
                 myFile << std::setw(10) << requestObj->initialEarlyPick_ ;
                 myFile << std::setw(10) << requestObj->pickTime_;
-                myFile << std::setw(10) << (vehicleObj->currentRoute_->routeNodes_[i]->pairNode_)->departTime_;
+                myFile << std::setw(10) << (vehicleObj->currentRoute_->routeNodes_[i]->pairNode_)->nodeDepartTime_;
                 myFile << std::setw(setwSize) << vehicleObj->vehicleID_;
                 myFile << std::setw(setwSize) << requestObj->pickZoneID_;
                 myFile << std::setw(setwSize) << requestObj->dropZoneID_;
@@ -983,7 +983,7 @@ int startIndex = nbInitialOnboards_;
             repStr << std::right << std::setw(9) << requests_[i]->pickTime_ - requests_[i]->initialEarlyPick_ << " (s)  ";
 
 //            float travelTime = requests_[i]->dropTime_ - requests_[i]->pickTime_ - requests_[i]->serviceTime_;
-            float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->departTime_;
+            float travelTime = instGraph_->dropNodes_[i]->reachTime_ - instGraph_->pickNodes_[i]->nodeDepartTime_;
             if (durationMatrix_[instGraph_->pickNodes_[i]->locationID_][instGraph_->dropNodes_[i]->locationID_] == 0)
                 travelTime = 0;
             repStr << std::right << std::setw(9) << travelTime - requests_[i]->minTravelTime_ << " (s)  ";

@@ -24,10 +24,13 @@ ReducedProblem::ReducedProblem() : CplexModeler(){
 
 
 // this function initializes the model and defines an empty set of constraints
-void ReducedProblem::resetForNextIteration() {
+void ReducedProblem::ResetRPModel() {
 
     try {
-        if (routeVar_.getSize() > 0){
+        bool isModelExist = false;
+        if (routeVar_.getSize() > 0)
+            isModelExist = true;
+        if (isModelExist){
             routeVar_.endElements();
             routeVar_.clear();
             compRoutes_.clear();
@@ -171,6 +174,7 @@ void ReducedProblem::solveModelInt(const PInstance &pInst, vector<PRequest> &zSo
                 for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(static_cast<int>(r));
                     }
                 }
 
@@ -254,6 +258,7 @@ void ReducedProblem::solveModelLPInt(const PInstance &pInst, vector<PRequest> &z
                             std::cout << compRoutes_[r]->vehicleID_ << "," << compRoutes_[r]->createTime_ << "," ;
                             std::cout << compRoutes_[r]->reducedCost_ << "," << compRoutes_[r]->nbCommitted_ << ",";
                             std::cout << compRoutes_[r]->routeRequests_.size()<< "," << compRoutes_[r]->incompatibilityDegree_ << "," << compRoutes_[r]->waitScore_ << std::endl;*/
+                            routeSolutionIndex_.push_back(static_cast<int>(r));
  //                           pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
                         }
                     }
@@ -553,6 +558,7 @@ void ReducedProblem::solveModelIntAux_D(PInstance &pInst, vector<PRequest> &zSol
                 for (IloInt r = routeVal.getSize() - 1; r >= 0; --r) {
                     if (routeVal[r] > 0.5) {
                         routeSolution.push_back(compRoutes_[r]);
+                        routeSolutionIndex_.push_back(static_cast<int>(r));
             //            pInst->vehicles_[compRoutes_[r]->vehicleID_]->setCurrentRoute(compRoutes_[r]);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] - DualAuxSolver_->epsilonVar_[r] <= compRoutes_[r]->totalDelay_);
             //            DualAuxSolver_->routeConst_.add(DualAuxSolver_->routeExpr_[r] + DualAuxSolver_->epsilonVar_[r] >= compRoutes_[r]->totalDelay_);

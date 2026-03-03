@@ -76,10 +76,10 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
             newDropLabel->parent_ = lastStop_;
             lastStop_->child_ = newDropLabel;
             newDropLabel->travelResource_ = onboardNode->related_Request_->maxTravelTime_ - dropTime +
-                                            onboardNode->pairNode_->departTime_;
+                                            onboardNode->pairNode_->nodeDepartTime_;
 
             lastStop_ = newDropLabel;
-            float tripDelay = dropTime - onboardNode->pairNode_->departTime_ - onboardNode->related_Request_->minTravelTime_;
+            float tripDelay = dropTime - onboardNode->pairNode_->nodeDepartTime_ - onboardNode->related_Request_->minTravelTime_;
             totalTripDelay_ += onboardNode->related_Request_->Req_W3_ * tripDelay;
             totalObjective_ += pInst->parameters_->Ride_W2_ * onboardNode->related_Request_->Req_W3_ *
                 (tripDelay + onboardNode->related_Request_->Ride_W4_) / onboardNode->related_Request_->Relative_W5_;
@@ -131,9 +131,9 @@ GreedyRoute::GreedyRoute(PVehicle &vehicle, const PInstance &pInst, std::vector<
                 } else {
                     newLabel->travelResource_ = newLabel->currentNode_->related_Request_->maxTravelTime_ -
                                                 (*Vehicle_)->currentRoute_->plannedReachTime_[i] +
-                                                (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_;
+                                                (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->nodeDepartTime_;
                     float tripDelay = (*Vehicle_)->currentRoute_->plannedReachTime_[i] -
-                        (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->departTime_ -
+                        (*Vehicle_)->currentRoute_->routeNodes_[i]->pairNode_->nodeDepartTime_ -
                             newLabel->currentNode_->related_Request_->minTravelTime_;
                     totalTripDelay_ += newLabel->currentNode_->related_Request_->Req_W3_ * tripDelay;
                     totalObjective_ += pInst->parameters_->Ride_W2_ * newLabel->currentNode_->related_Request_->Req_W3_ *
@@ -383,7 +383,7 @@ void GreedyRoute::insertNode(const PStopLabel &preLabel, PNode &newNode, std::ve
         float rideTime;
         if (pickLabel == nullptr) {
             // Paired with node in graph (not in route yet)
-            rideTime = reachTime - newNode->pairNode_->departTime_;
+            rideTime = reachTime - newNode->pairNode_->nodeDepartTime_;
         } else {
             // Paired with pickup label in route
             rideTime = reachTime - pickLabel->leaveTime_;
@@ -406,7 +406,7 @@ void GreedyRoute::removeLabel(PStopLabel &label, std::vector<PStopLabel> &greedy
     else if (label->currentNode_->type_ == DROPOFF) {
         float rideTime;
         if (pickLabel == nullptr) {
-            rideTime = label->reachTime_ - label->currentNode_->pairNode_->departTime_;
+            rideTime = label->reachTime_ - label->currentNode_->pairNode_->nodeDepartTime_;
         } else {
             rideTime = label->reachTime_ - pickLabel->leaveTime_;
         }
@@ -494,7 +494,7 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel, float wait_W1, fl
             // Calculate old trip delay
             float oldRideTime;
             if (childLabel->pair_ == nullptr) {
-                oldRideTime = childLabel->reachTime_ - childNode->pairNode_->departTime_;
+                oldRideTime = childLabel->reachTime_ - childNode->pairNode_->nodeDepartTime_;
             } else {
                 oldRideTime = childLabel->reachTime_ - childLabel->pair_->leaveTime_;
             }
@@ -503,7 +503,7 @@ void GreedyRoute::updateReachTimes(const PStopLabel &preLabel, float wait_W1, fl
             // Calculate new trip delay
             float newRideTime;
             if (childLabel->pair_ == nullptr) {
-                newRideTime = childReachTime - childNode->pairNode_->departTime_;
+                newRideTime = childReachTime - childNode->pairNode_->nodeDepartTime_;
                 childLabel->travelResource_ = childNode->related_Request_->maxTravelTime_ - newRideTime;
             } else {
                 newRideTime = childReachTime - childLabel->pair_->leaveTime_;
@@ -552,7 +552,7 @@ PRoute GreedyRoute::greedyLabelToRoute(bool update) const {
                 newRoute->routeNodes_.back()->leaveTime_ = newRoute->routeNodes_.back()->reachTime_+
                         newRoute->routeNodes_.back()->serviceTime_;
             else*/
-            newRoute->routeNodes_.back()->departTime_ = currentLabel->leaveTime_;
+            newRoute->routeNodes_.back()->nodeDepartTime_ = currentLabel->leaveTime_;
             if (newRoute->routeNodes_.back()->type_ == PICKUP)
                 newRoute->routeNodes_.back()->related_Request_->pickTime_ = currentLabel->reachTime_;
             else if (newRoute->routeNodes_.back()->type_ == DROPOFF) {
@@ -648,7 +648,7 @@ ObjectiveAudit GreedyRoute::recomputeObjectiveAudit(float wait_W1, float ride_W2
             if (cur->pair_ != nullptr) {
                 pickLeave = static_cast<double>(cur->pair_->leaveTime_);
             } else if (node->pairNode_ != nullptr) {
-                pickLeave = static_cast<double>(node->pairNode_->departTime_);
+                pickLeave = static_cast<double>(node->pairNode_->nodeDepartTime_);
             } else {
                 // If this happens, pairing is broken.
                 // Leave pickLeave at 0 so the check fails loudly.

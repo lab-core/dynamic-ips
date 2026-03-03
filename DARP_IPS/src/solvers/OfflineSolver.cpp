@@ -57,7 +57,7 @@ void OfflineSolver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bo
     simulationTime_->stop();
     if (!middleSave && StaticInst->parameters_->mainAlgorithm_ != GREEDY) {
         for (auto & vehicleObj : mainInst->vehicles_) {
-            vehicleObj->departNode_->departTime_ = vehicleObj->currentRoute_->plannedDepartTime_[0];
+            vehicleObj->departNode_->nodeDepartTime_ = vehicleObj->currentRoute_->plannedDepartTime_[0];
             vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_ + saveTime);
             vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
         }

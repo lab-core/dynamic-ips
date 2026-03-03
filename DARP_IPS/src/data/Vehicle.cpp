@@ -128,7 +128,7 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
                     removeNodes_.push_back(currentRoute_->routeNodes_[i]->nodeID_);
                     currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
                     currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-                    currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
+                    currentRoute_->routeNodes_[i]->nodeDepartTime_ = currentRoute_->routeNodes_[i]->reachTime_ + currentRoute_->routeNodes_[i]->serviceTime_;
                     solutionRoute_->addNode(currentRoute_->routeNodes_[i]);
                     if (currentRoute_->routeNodes_[i]->initialType_ == SINK) {
                         returnEmptyTime_ += (currentRoute_->plannedReachTime_[i] - currentRoute_->plannedDepartTime_[i-1]);
@@ -222,12 +222,12 @@ void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boo
 // this function is called at the end of the algorithm to set the final stos of the solution based on final epoch
 void Vehicle::finalizeSolutionRoutes(float elapsedTime) {
     if (currentRoute_->routeSize_ == 1)
-        solutionRoute_->routeNodes_.back()->departTime_ = solutionRoute_->plannedDepartTime_.back();
+        solutionRoute_->routeNodes_.back()->nodeDepartTime_ = solutionRoute_->plannedDepartTime_.back();
     if (solutionRoute_->routeNodes_.back()->type_ == SOURCE) {
         for (int i = 1; i < currentRoute_->routeSize_; ++i) {
             currentRoute_->routeNodes_[i]->nodeStatus_ = DONE;
             currentRoute_->routeNodes_[i]->reachTime_ = currentRoute_->plannedReachTime_[i];
-            currentRoute_->routeNodes_[i]->departTime_ = currentRoute_->plannedDepartTime_[i];
+            currentRoute_->routeNodes_[i]->nodeDepartTime_ = currentRoute_->routeNodes_[i]->reachTime_ + currentRoute_->routeNodes_[i]->serviceTime_;
             solutionRoute_->addNode(currentRoute_->routeNodes_[i]);
 
             if (currentRoute_->routeNodes_[i]->initialType_ == SINK)
@@ -268,7 +268,7 @@ void Vehicle::updateCurrentRoute(float elapsedTime, float wait_W1, float ride_W2
 
 void Vehicle::updateDepartTime(float departTime, float wait_W1, float ride_W2) {
     currentRoute_->plannedDepartTime_[0] = departTime;
-    solutionRoute_->routeNodes_.back()->departTime_ = departTime;
+    solutionRoute_->routeNodes_.back()->nodeDepartTime_ = departTime;
     solutionRoute_->plannedDepartTime_.back() = departTime;
     departTime_ = departTime;
     currentRoute_->totalWait_ = 0;
@@ -288,7 +288,7 @@ void Vehicle::handleIdleState(float epochEndTime) {
     idleTime_ += (epochEndTime - departTime_);
     departTime_ = epochEndTime;
     currentRoute_->plannedDepartTime_[0] = departTime_;
-    solutionRoute_->routeNodes_.back()->departTime_ = departTime_;
+    solutionRoute_->routeNodes_.back()->nodeDepartTime_ = departTime_;
     solutionRoute_->plannedDepartTime_.back() = departTime_;
 }
 
@@ -305,7 +305,7 @@ void Vehicle::setRequestStatus(const PNode &node, float reachTime) const {
         node->related_Request_->requestStatus_ = COMPLETED;
         node->related_Request_->dropTime_ = reachTime;
         // check travelTime violation
-        float travelTime = node->related_Request_->dropTime_ - node->pairNode_->departTime_;
+        float travelTime = node->related_Request_->dropTime_ - node->pairNode_->nodeDepartTime_;
         if (travelTime > node->related_Request_->maxTravelTime_){
             std::cout << "Trip delay constraint is violated by request: " ;
             std::cout << node->related_Request_->getRequestId() << std::endl;

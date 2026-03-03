@@ -17,7 +17,7 @@ Node::Node(int locationID, NodeType type, int vehicleID, int zoneID) : locationI
 
     related_Request_ = nullptr;
     reachTime_ = 0;
-    departTime_ = 0;
+    nodeDepartTime_ = 0;
     nbPassengers_ = 0;
     serviceTime_ = 0;
     readyTime_ = 0;
@@ -43,7 +43,7 @@ Node::Node(const PNode &oldNode) {
     type_ = oldNode->type_;
     initialType_ = oldNode->initialType_;
     reachTime_ = oldNode->reachTime_;
-    departTime_ = oldNode->departTime_;
+    nodeDepartTime_ = oldNode->nodeDepartTime_;
     nbPassengers_ = oldNode->nbPassengers_;
     serviceTime_ = oldNode->serviceTime_;
     nodeStatus_ = oldNode->nodeStatus_;
@@ -61,7 +61,7 @@ Node::Node(string nodeId, const PRequest &relatedRequest, NodeType type) : nodeI
                                                                                   related_Request_(relatedRequest),
                                                                                   type_(type) {
     reachTime_ = 0;
-    departTime_ = 0;
+    nodeDepartTime_ = 0;
     serviceTime_ = relatedRequest->serviceTime_;
     nodeStatus_ = DEFINED;
     readyTime_ = relatedRequest->earlyPick_;

@@ -114,7 +114,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, const PInstanc
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, zoneID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, zoneID));
                 pInstance->instGraph_->sourceNodes_.back()->reachTime_ = pInstance->simulationStartTime_;
-                pInstance->instGraph_->sourceNodes_.back()->departTime_ = pInstance->simulationStartTime_;
+                pInstance->instGraph_->sourceNodes_.back()->nodeDepartTime_ = pInstance->simulationStartTime_;
                 pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
@@ -168,7 +168,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, const PInstan
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(departID, SOURCE, vehicleID, departZoneID));
                 pInstance->instGraph_->addNewNode(std::make_shared<Node>(sinkID, SINK, vehicleID, sinkZoneID));
                 pInstance->instGraph_->sourceNodes_.back()->reachTime_ = departTime;
-                pInstance->instGraph_->sourceNodes_.back()->departTime_ = departTime;
+                pInstance->instGraph_->sourceNodes_.back()->nodeDepartTime_ = departTime;
                 pInstance->instGraph_->sourceNodes_.back()->nodeStatus_ = DONE;
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
@@ -297,7 +297,7 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 pInstance->instGraph_->dropNodes_.back()->nodeStatus_ = PLANNED;
                 pInstance->instGraph_->pickNodes_.back()->nodeStatus_ = DONE;
                 pInstance->instGraph_->pickNodes_.back()->reachTime_ = pickTime;
-                pInstance->instGraph_->pickNodes_.back()->departTime_ = pickup_depart;
+                pInstance->instGraph_->pickNodes_.back()->nodeDepartTime_ = pickup_depart;
                 routeNodes[vehicleID][position] = pInstance->instGraph_->dropNodes_.back();
 
             }

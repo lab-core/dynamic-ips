@@ -31,6 +31,7 @@ void CG_Algorithm::initializationCPLEX(PInstance &pInst, InputPaths &inputPaths,
     masterTime_->start();
 
     // build the model
+    MasterPro_ = std::make_shared<MIPMasterProblem>();
     MasterPro_->routesToAdd_.clear();
     if (pInst->parameters_->dualMethod_ == AUX_D)
         DualAuxSolver_ = std::make_shared<DualAuxSolver>(pInst->nbTasks_, nbVehicles_);
@@ -658,7 +659,7 @@ bool CG_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, fl
 
 void CG_Algorithm::resetModels() {
     if (MasterPro_)
-        MasterPro_->resetForNextIteration();
+        MasterPro_.reset();
     else
         MPGurobiPro_->resetForNextIteration();
 

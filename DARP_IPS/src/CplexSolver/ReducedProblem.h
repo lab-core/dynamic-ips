@@ -25,6 +25,7 @@ public:
 
     float objValue_;
     float auxObjValue_;                    // objective of auxiliary model use for getting duals from MIP
+    std::vector<int> routeSolutionIndex_;
 
     std::vector<PRoute> compRoutes_;        // list of route variables in the model
 
@@ -33,7 +34,7 @@ public:
 
 
     // this function initializes the model and defines an empty set of constraints
-    void resetForNextIteration();
+    void ResetRPModel();
 
     // this function adds routeVar to the model
     void addRouteVar(PRoute &newRoute, PInstance &pInst);

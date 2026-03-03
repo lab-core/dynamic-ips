@@ -502,9 +502,11 @@ void BaseSolver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<
                 if (!availableRoutes[vehicleObj->vehicleID_][i]->reConstruct(vehicleObj, mainInst->parameters_->Wait_W1_,
                     mainInst->parameters_->Ride_W2_))
                     availableRoutes[vehicleObj->vehicleID_].erase(availableRoutes[vehicleObj->vehicleID_].begin() + i);
-                else
+                else {
                     availableRoutes[vehicleObj->vehicleID_][i]->calculateTripDelay(mainInst->parameters_->Wait_W1_,
                         mainInst->parameters_->Ride_W2_);
+                }
+
             }
         }
     }
