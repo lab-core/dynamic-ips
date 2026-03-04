@@ -77,13 +77,13 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
                                   "maxRoute,meanRoute,destructTime,RebalancingRuntime,GreedyTime,"
                                   "#Return,#Idle,#passPerVehicle,#requestPerVehicle,#nodePerVehicle,#StateChanged,"
                                   "nbOnePick,nbTwoPick,nbThreePick,heuristicCG,upperBound,nbRecycle,nbCommitted,"
-                                  "nbLess_50,nbLess_100,nbLess_200,totalRoutes" << std::endl;
+                                  "nbLess_50,nbLess_100,nbLess_200,totalRoutes,nbUnassigned" << std::endl;
     }
     else {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
         (*pLogRunTimesStream_) << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,"
                                   "GreedyObj,Objective,waitTime,TripDelay,RebalancingRuntime,GreedyTime,#Return,#Idle,#passPerVehicle,"
-                                  "#requestPerVehicle,#nodePerVehicle,#StateChanged,nbCommitted" << std::endl;
+                                  "#requestPerVehicle,#nodePerVehicle,#StateChanged,nbCommitted,nbUnassigned" << std::endl;
     }
 
 }
@@ -717,6 +717,7 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
 //    EpochInst->parameters_->dynamicPricing_ = true;
     objValue_ = MP_solver_->objValue_;
     MP_solver_->setLastDuals(EpochInst);
+
     MP_solver_->checkCoveredVehicles(EpochInst);
  //   for (auto & vehicleObj : EpochInst->vehicles_)
  //       (*pLogEpochVehicleStream_) << vehicleObj->toStringOut(epoch_);
@@ -764,7 +765,8 @@ std::string BaseSolver::saveRuntimes(const PInstance &EpochInst) {
            << runtimeMetrics_->nbColumnsLess_50_ <<","
            << runtimeMetrics_->nbColumnsLess_100_ <<","
            << runtimeMetrics_->nbColumnsLess_200_ <<","
-           << runtimeMetrics_->nbRoutes_ <<"\n";
+           << runtimeMetrics_->nbRoutes_ << ","
+           << MP_solver_->zSolution_.size() <<"\n";
 
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
@@ -795,7 +797,8 @@ std::string BaseSolver::saveRuntimesGreedy(const PInstance &EpochInst) {
            << EpochInst->requestPerVehicle_ << ","
            << EpochInst->nodePerVehicle_ << ","
            << EpochInst->nbStateChanged_ << ","
-           << EpochInst->nbCommitted_ << "\n";
+           << EpochInst->nbCommitted_ << ","
+           << GreedyModel_->zSolution_.size() << "\n";
     runtimeMetrics_->GreedyTime_ = GreedyModel_->greedyTime_->dSinceInit().count();
     return repStr.str();
 }

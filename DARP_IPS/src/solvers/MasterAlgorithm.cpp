@@ -1006,12 +1006,18 @@ void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPath
 }
 
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
+    constexpr double reducedCostThreshold = 100.0;
+
+    // Reset coverage / insertion flags
     for (auto & requestObj: pInst->requests_) {
-  //      requestObj->coveredVehicles_.reset();
-  //      requestObj->coveredVehicles_.resize(nbVehicles_);
+        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
+            requestObj->coveredVehicles_.reset();
+            requestObj->coveredVehicles_.resize(nbVehicles_);
+        }
         requestObj->insertedVehicles_.reset();
         requestObj->insertedVehicles_.resize(nbVehicles_);
     }
+    // Cover requests already present in current routes
     for (auto & vehicleObj : pInst->vehicles_) {
         for (auto & requestObj: vehicleObj->currentRoute_->routeRequests_) {
             requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
@@ -1019,7 +1025,20 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
     }
     if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
         for (auto & vehicleObj : pInst->vehicles_) {
-            for (auto & routeObj: availableRoutes_[vehicleObj->vehicleID_]) {
+            auto & routes = availableRoutes_[vehicleObj->vehicleID_];
+
+            // Remove routes with high reduced cost and keepMP_ == false
+            routes.erase(
+                std::remove_if(routes.begin(), routes.end(),
+                    [reducedCostThreshold](const auto &routeObj) {
+                        return (routeObj->reducedCost_ > reducedCostThreshold &&
+                                routeObj->keepMP_ == false);
+                    }),
+                routes.end()
+            );
+
+            // Coverage check only on remaining routes
+            for (auto & routeObj: routes) {
                 for (auto & requestObj: routeObj->routeRequests_) {
                     requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
                 }

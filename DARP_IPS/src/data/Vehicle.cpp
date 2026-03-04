@@ -107,10 +107,10 @@ void Vehicle::setCurrentRoute(const PRoute &currentRoute) {
 
 void Vehicle::updateStateTime(const PInstance & mainInst, float elapsedTime, boost::dynamic_bitset<> &removedRequests) {
     float committedTime = 0;
-    if (mainInst->parameters_->solutionMode_ == ANYTIME)
+//    if (mainInst->parameters_->solutionMode_ == ANYTIME)
         committedTime = mainInst->parameters_->committedTime_;
-    else
-        committedTime = mainInst->parameters_->epochLength_;
+//    else
+//        committedTime = mainInst->parameters_->epochLength_;
     stateChanged_ = false;
     removePickup_ = false;
     removeDrop_ = false;
