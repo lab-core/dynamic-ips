@@ -15,6 +15,9 @@ set -euo pipefail
 # Always run from the directory where sbatch was called
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
+# Redirect HOME to SCRATCH to prevent "Permission denied" errors on compute nodes
+export HOME=$SCRATCH
+
 # Default: actually execute on the server (set DRY_RUN=1 to only echo)
 : "${DRY_RUN:=0}"
 : "${SELECTED_GROUPS:=ALL}"
