@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+#SBATCH --account=def-legraina
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=36G
 #SBATCH --time=4:20:00
-#SBATCH --array=1-112
+#SBATCH --array=1-28
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -50,7 +51,7 @@ readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_
 readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_anytime[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Fix[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -230,7 +231,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 2 --initial-state $initial_state")
           done
         done
       done
@@ -239,7 +240,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2 G3)
+ALL_GROUPS=(G6 G7 G8)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
