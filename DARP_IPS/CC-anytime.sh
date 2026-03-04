@@ -207,19 +207,18 @@ if (( DRY_RUN == 1 )); then
   exit 0
 fi
 
-# 1. STRICTLY restrict OpenMP and Gurobi to 16 threads per task
+# 1. Restrict threads so Gurobi doesn't accidentally try to use all 192 cores
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export GRB_ENV_THREADS=$SLURM_CPUS_PER_TASK
 
 task_num=1
 for cmd in "${jobs[@]}"; do
   echo "[INFO] Launching Task $task_num: $cmd"
 
-  # 2. Redirect EACH task's output into its own clean log file
+  # 2. Redirect EACH task's output into its own clean log file (task_1.log, etc.)
   srun --ntasks=1 --cpus-per-task=16 --exact bash -lc "$cmd" > "task_${task_num}.log" 2>&1 &
 
-  # 3. Sleep for 3 to 8 seconds before pinging the license server again
-  sleep $((RANDOM % 6 + 3))
+  # 3. Sleep for 5 seconds to stagger the Gurobi token requests
+  sleep 5
 
   ((task_num++))
 done
