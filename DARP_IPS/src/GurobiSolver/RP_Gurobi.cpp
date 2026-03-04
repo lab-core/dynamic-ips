@@ -223,7 +223,8 @@ void RP_Gurobi::solveModelLP(const PInstance &pInst, const InputPaths &inputPath
         // Redirect output to log file
         // Configure Gurobi logging
         myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
-
+        // Convert back to continuous for next iteration
+        convertToFloat();
         model_->update();
 
         solveTime_->start();
@@ -253,6 +254,8 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
     try {
         // Redirect output to log file
         // Configure Gurobi logging
+        // Convert back to continuous for next iteration
+        convertToFloat();
         if (pInst->parameters_->initialDual_ == BARRIER || pInst->parameters_->dualMethod_ == INTERIOR) {
             model_->set(GRB_IntParam_Method, 2);
  //           model_->set(GRB_IntParam_Crossover, 0);
@@ -431,8 +434,7 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
                 extractSolution(pInst, zSolution, routeSolution);
 
             }
-            // Convert back to continuous for next iteration
-            convertToFloat();
+
         }
     }
     catch (GRBException& e) {
