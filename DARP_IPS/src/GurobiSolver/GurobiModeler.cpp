@@ -14,7 +14,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         env_.start();
 
         model_ = new GRBModel(env_);
-//        env_.set(GRB_IntParam_LogToConsole, 0);
+        env_.set(GRB_IntParam_LogToConsole, 0);
         nbRequestTask_ = 0;
 
         solveTime_ = new myTools::Timer(); solveTime_->init();
@@ -23,12 +23,12 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         model_->set(GRB_IntAttr_ModelSense, GRB_MINIMIZE);
 
         // Apply tuned parameters
- //       model_->set(GRB_IntParam_OutputFlag, 0);
+        model_->set(GRB_IntParam_OutputFlag, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
  //       model_->set(GRB_IntParam_Crossover, 1);
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
-//        model_->set(GRB_StringParam_LogFile, outputLog);
+        model_->set(GRB_StringParam_LogFile, outputLog);
 
     } catch (GRBException& e) {
         std::cerr << "Error in GurobiModeler constructor: " << e.getMessage() << std::endl;
