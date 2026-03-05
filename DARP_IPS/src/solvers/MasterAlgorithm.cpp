@@ -790,7 +790,7 @@ bool MasterAlgorithm::hasTimeRemaining(const PInstance &pInst, float elapsedTime
                 break;
             case DYNAMIC:
                 if (pInst->parameters_->mainAlgorithm_ == RT_CG)
-                    availableTime_ = pInst->parameters_->epochLength_ - elapsedTime - 7;
+                    availableTime_ = pInst->parameters_->epochLength_ - elapsedTime - 2;
                 else
                     availableTime_ = pInst->parameters_->epochLength_ - elapsedTime;
                 break;
