@@ -573,7 +573,7 @@ void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests,
                 availableRoutes[vehicleObj->vehicleID_].end(),
                 [&](const auto& route) {
                     // remove if route is invalid OR condition is true
-                    if (!route || route->routeNodes_.size() < 2 || route->getRouteId() == vehicleObj->currentRoute_->getRouteId()) {
+                    if (!route || route->routeNodes_.size() < vehicleObj->removeNodes_.size()+2 || route->getRouteId() == vehicleObj->currentRoute_->getRouteId()) {
                         return true;
                     }
 
