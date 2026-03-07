@@ -430,13 +430,13 @@ PRoute Label::labelToRoute(const PVehicle &vehicle, const PInstance &pInst) cons
     }
     newRoute->createTime_ = createTime_;
 
-    if (totalTripDelay_ != newRoute->totalTripDelay_) {
+    if (static_cast<int>(totalTripDelay_) != static_cast<int>(newRoute->totalTripDelay_)) {
         std::cout << "Total trip delay of the label partial path is not the same as the route delay" << std::endl;
         std::cout << newRoute->toString() << std::endl;
         std::cout << toString() << std::endl;
         throw myTools::myException("Label convert problem!!!", __FILE__,__LINE__);
     }
-    if (totalWait_ != newRoute->totalWait_) {
+    if (static_cast<int>(totalWait_) != static_cast<int>(newRoute->totalWait_))
         std::cout << "Total delay of the label partial path is not the same as the route delay" << std::endl;
         std::cout << "label: " << std::endl;
         std::cout << toString();
