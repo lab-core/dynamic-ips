@@ -151,6 +151,7 @@ std::string Label::toString() const {
     repStr << "#\t" << std::setw(24) << "- PASSED_TIME (seconds)" << " : " << passedTime_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- NUMBER_OF_STOPS" << " : " << pathNode_.size() << std::endl;
     repStr << "#\t" << std::setw(24) << "- TOTAL_WAITING (seconds)" << " : " << totalWait_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TOTAL_DELAY (seconds)" << " : " << totalTripDelay_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- REDUCED_COST" << " : " << reducedCost_ << std::endl;
     repStr << "#\t" << std::setw(24) << "- STATUS" << " : " << status_ << std::endl;
     if (!openNode_.empty()) {
