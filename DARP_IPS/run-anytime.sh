@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
-#SBATCH --time=2:05:00
-#SBATCH --array=1-96
+#SBATCH --mem=46G
+#SBATCH --time=4:15:00
+#SBATCH --array=1-24
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -47,7 +47,7 @@ readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_BATCH=("SP_Re_1_Pool" "SP_Re_2_Pool")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
-readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
+readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2")
 
 # Bundle scenario for group tests
 readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
@@ -239,7 +239,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G2h7)
+ALL_GROUPS=(G6 G7 G8)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
