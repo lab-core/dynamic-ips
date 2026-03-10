@@ -50,7 +50,7 @@ readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_
 readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Fix[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
