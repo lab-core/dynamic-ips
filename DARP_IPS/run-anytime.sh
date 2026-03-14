@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=16G
+#SBATCH --mem=10G
 #SBATCH --time=2:15:00
-#SBATCH --array=1-48
+#SBATCH --array=1-24
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -38,13 +38,13 @@ exe="bin/realtime_DARP"
 # Shared defaults (DRY)
 # -------------------------
 readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(6)
-readonly BATCH_MODES=(2)
+readonly BATCH_ALGOS=(2)
+readonly BATCH_MODES=(1)
 
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
 readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
 readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
-readonly SCENS_BATCH=("SP_Re_2_Pool")
+readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
 readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
 readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2")
@@ -185,7 +185,7 @@ discover_instances "G30S"
 
 G2h7_data_dir="datasets"
 G2h7_vehicle_folder="vehicles_uniform"
-G2h7_vehicle_counts=(2000 1500)
+G2h7_vehicle_counts=(2000)
 G2h7_capacity=4
 G2h7_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2h7_inst_folder="Instances_2h-7"
