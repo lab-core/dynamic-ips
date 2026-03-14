@@ -230,7 +230,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 3 --initial-state $initial_state")
           done
         done
       done
