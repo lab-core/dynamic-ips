@@ -507,6 +507,8 @@ void CPModeler::updateNormalCoefficients() {
 
 void CPModeler::resetForNextIteration() {
     try {
+        nbRequestTask_ = 0;
+
         // Reset route flags
         for (auto &routeObj : IncRoute_)
             routeObj->cpAdded_ = false;
@@ -514,6 +516,9 @@ void CPModeler::resetForNextIteration() {
         IncRoute_.clear();
         fractionalRoutes_.clear();
         fractionalZ_.clear();
+        vehicleRHS_.clear();
+        requestRHS_.clear();
+        routesToAdd_.clear();
 
         // --- Remove constraints ---
         for (auto& constr : requestConstr_)
@@ -536,6 +541,7 @@ void CPModeler::resetForNextIteration() {
         zIncVar_.clear();
         routeSolVar_.clear();
         zSolVar_.clear();
+        model_->reset(1);
 
         // --- Apply all changes ---
         model_->update();

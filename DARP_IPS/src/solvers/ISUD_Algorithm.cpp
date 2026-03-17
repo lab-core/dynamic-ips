@@ -77,11 +77,11 @@ void ISUD_Algorithm::initializationGurobi(PInstance &pInst, InputPaths &inputPat
     masterTime_->start();
 
     // build CP model
-    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
+//    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
     CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
 
     // Build RP model
-    RPGurobiPro_ = std::make_shared<RP_Gurobi>(inputPaths.getOutputSolverLog());
+//    RPGurobiPro_ = std::make_shared<RP_Gurobi>(inputPaths.getOutputSolverLog());
     for (auto & vehicleObj : pInst->vehicles_) {
         if (vehicleObj->currentRoute_->routeSize_ != vehicleObj->emptyRoute_->routeSize_)
             RPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
@@ -842,8 +842,8 @@ void ISUD_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, 
 void ISUD_Algorithm::resetModels() {
     CompPro_.reset();
     ReducedPro_.reset();
-    CPGurobiPro_.reset();
-    RPGurobiPro_.reset();
+    CPGurobiPro_->resetForNextIteration();
+    RPGurobiPro_->resetForNextIteration();
 }
 
 bool ISUD_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) {

@@ -611,7 +611,7 @@ void MasterAlgorithm::updateRoutesToAdd(SelectionMode selectMode, PInstance &pIn
                          }
                         break;
                     case RP:
-                        if (!routeObj->mpAdded_ && routeObj->isCompatible_  && routeObj->reducedCost_ < 0) {
+                        if (!routeObj->mpAdded_ && routeObj->isCompatible_  && routeObj->reducedCost_ <= 0) {
                             routesToAdd.push_back(routeObj);
                             numAdded++;
                         }
