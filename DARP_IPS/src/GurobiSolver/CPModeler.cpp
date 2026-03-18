@@ -563,7 +563,7 @@ void CPModeler::getDuals(const PInstance &pInst) {
                       << " CP dual=" << std::setw(6) << requestConstr_[i].get(GRB_DoubleAttr_Pi)
                       << "  CBasis=" << std::setw(6) << requestConstr_[i].get(GRB_IntAttr_CBasis) << std::endl;*/
 
-            if (requestConstr_[i].get(GRB_DoubleAttr_Pi) > 0)
+ //           if (requestConstr_[i].get(GRB_DoubleAttr_Pi) > 0)
                 pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
             /*if (pInst->requests_[i]->dual_ == 0)
                 std::cout << "Request: " << std::left << std::setw(5) << pInst->requests_[i]->getRequestId()
