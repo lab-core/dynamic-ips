@@ -1006,7 +1006,8 @@ void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPath
 }
 
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
-    constexpr double reducedCostThreshold = 100.0;
+//   constexpr double reducedCostThreshold = 100.0;
+    constexpr double reducedCostThreshold = 1.0;
 
     // Reset coverage / insertion flags
     for (auto & requestObj: pInst->requests_) {
