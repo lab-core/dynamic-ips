@@ -1006,8 +1006,8 @@ void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPath
 }
 
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
-//   constexpr double reducedCostThreshold = 100.0;
-    constexpr double reducedCostThreshold = 1.0;
+   constexpr double reducedCostThreshold = 100.0;
+//    constexpr double reducedCostThreshold = 1.0;
 
     // Reset coverage / insertion flags
     for (auto & requestObj: pInst->requests_) {
@@ -1029,19 +1029,21 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
             auto & routes = availableRoutes_[vehicleObj->vehicleID_];
 
             // Remove routes with high reduced cost and keepMP_ == false
-            routes.erase(
+            /*routes.erase(
                 std::remove_if(routes.begin(), routes.end(),
                     [reducedCostThreshold](const auto &routeObj) {
                         return (routeObj->reducedCost_ > reducedCostThreshold &&
                                 routeObj->keepMP_ == false);
                     }),
                 routes.end()
-            );
+            );*/
 
             // Coverage check only on remaining routes
             for (auto & routeObj: routes) {
-                for (auto & requestObj: routeObj->routeRequests_) {
-                    requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
+                if (routeObj->keepMP_) {
+                    for (auto & requestObj: routeObj->routeRequests_) {
+                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
+                    }
                 }
             }
         }
