@@ -1,8 +1,8 @@
 {
   "defaultParameters": {
     "alphaParam": 1.5,
-    "betaParam": 300,
-    "deltaPram": 420,
+    "betaParam": 600,
+    "deltaPram": 600,
     "epochLength": 30,
     "nbThreads": 16,
     "reducedCP": 0,
