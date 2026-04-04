@@ -2,7 +2,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=10G
 #SBATCH --time=4:15:00
-#SBATCH --array=1-8
+#SBATCH --array=1-4
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -239,7 +239,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G6 G7 G8)
+ALL_GROUPS=(G1 G2 G3)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
