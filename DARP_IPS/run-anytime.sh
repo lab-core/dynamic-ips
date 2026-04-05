@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=24G
+#SBATCH --mem=46G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-16
+#SBATCH --array=1-4
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -57,7 +57,7 @@ readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
 # -------------------------
 G1_data_dir="my_datasets"
 G1_vehicle_folder="vehicles_warmStart_11"
-G1_vehicle_counts=(1400 1500 1600 1700)
+G1_vehicle_counts=(1400)
 G1_capacity=4
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
@@ -66,7 +66,7 @@ G1_initial_state=1
 
 G2_data_dir="my_datasets"
 G2_vehicle_folder="vehicles_warmStart_11"
-G2_vehicle_counts=(1450 1550 1650 1750)
+G2_vehicle_counts=(1450)
 G2_capacity=4
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
@@ -75,7 +75,7 @@ G2_initial_state=1
 
 G3_data_dir="my_datasets"
 G3_vehicle_folder="vehicles_warmStart_11"
-G3_vehicle_counts=(1300 1400 1500 1600)
+G3_vehicle_counts=(1300)
 G3_capacity=4
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
