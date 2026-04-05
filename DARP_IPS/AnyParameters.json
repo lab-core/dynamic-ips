@@ -1,7 +1,7 @@
 {
   "defaultParameters": {
     "alphaParam": 1.5,
-    "betaParam": 240,
+    "betaParam": 300,
     "deltaPram": 420,
     "epochLength": 30,
     "nbThreads": 16,
@@ -234,7 +234,7 @@
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
       "WaitForReturn": 240,
-      "MaxWait": 120,
+      "MaxWait": 300,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 1,
@@ -291,6 +291,19 @@
       "LabelingReOptimizeStrategy": 1
     },
     "rebalance_SP2": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "rebalance_SP3": {
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "informTimeLimit": 60,
