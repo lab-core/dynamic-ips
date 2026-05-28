@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
-#SBATCH --time=4:10:00
-#SBATCH --array=1-64
+#SBATCH --mem=16G
+#SBATCH --time=2:10:00
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -37,10 +37,11 @@ exe="bin/realtime_DARP"
 # -------------------------
 # Output directory (change this to your scratch path)
 # -------------------------
-OUTPUT_DIR="/scratch/amirelah/dynamic-ips"
+
 OUTPUT_DIR="/scratch/rezaehsa/dynamic-ips"
 OUTPUT_DIR="/home/elamib/scratch/dynamic-ips"
 OUTPUT_DIR="/home/elamib/links/scratch/dynamic-ips"
+OUTPUT_DIR="/scratch/amirelah/dynamic-ips"
 
 # -------------------------
 # Shared defaults (DRY)
@@ -60,10 +61,10 @@ readonly SCENS_no_rebalance=("no_rebalance_Basis" "no_rebalance_Pool")
 readonly SCENS_process=("Basis_warm_keep" "Greedy")
 readonly SCENS_BATCH=("batch")
 readonly SCENS_Compare=("Compare_rebalance" "Compare_no_rebalance")
-readonly SCENS_Shuttle=("Shuttle_basis" "Shuttle_Greedy")
+readonly SCENS_Shuttle=("Shuttle_basis")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_reOptimize[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -220,7 +221,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2 G3)
+ALL_GROUPS=(G2h7)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
