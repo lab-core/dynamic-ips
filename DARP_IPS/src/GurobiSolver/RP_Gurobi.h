@@ -29,8 +29,8 @@ public:
     void addZVar(PRequest& request);
 
     // Update model with new routes
+    void updateRPModel_columns(PInstance& pInst);
     void updateRPModel(PInstance& pInst);
-    void updateRPModel_batch(PInstance& pInst);
 
     // Build the complete model
     void buildModelRP(PInstance& pInst, std::vector<PRoute>& routeSolution, int nbVehicles);
@@ -48,10 +48,6 @@ public:
                        std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
                        float availableTime, float preObj);
 
-    void solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& zSolution,
-                       std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
-                       float availableTime, float preObj);
-
     void solveModelRelaxInt(const PInstance& pInst, std::vector<PRequest>& zSolution,
                        std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
                        float availableTime, float preObj);
@@ -63,16 +59,16 @@ public:
     void tuneModel(const InputPaths &inputPaths, float tuneTimeLimit, float individualSolveTimeLimit,
                    int numTuneResults);
 
-    void loadTunedParameters(const InputPaths &inputPaths);
+    void loadTunedParameters(const InputPaths &inputPaths) const;
     void recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &removedRequests);
 
-    std::vector<int> countRequestCoverage(const PInstance &pInst);
+    std::vector<int> countRequestCoverage(const PInstance &pInst) const;
 
-    void printCoverageStatistics(const PInstance &pInst);
+    void printCoverageStatistics(const PInstance &pInst) const;
 
-    void markColumnsToKeep(const GRBModel& lpModel);
+    void markColumnsToKeep(const GRBModel& lpModel) const;
 
-    void markColumnsToKeep();
+    void markColumnsToKeep() const;
 };
 
 

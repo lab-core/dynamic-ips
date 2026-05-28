@@ -135,3 +135,27 @@ bool SubproModeler::checkInsertionPossibility(PNode &pick, float Wait_W1) const 
     }
     return false;
 }
+
+std::string SubproModeler::toStringOut(int epoch) const {
+    std::stringstream repStr;
+    repStr << epoch                                                << ","
+           << Vehicle_->vehicleID_                                  << ","
+           << subRequests_.size()                                   << ","
+           << subGraph_->nbNodes_ - 2                               << ","
+           << Vehicle_->numPassengers_                              << ","
+           << Vehicle_->onboards_.size()                            << ","
+           << Vehicle_->currentRoute_->routeRequests_.size()        << ","
+           << possibleInsert_                                       << ","
+           << nbGenerated_                                          << ","
+           << nbNegativeColumns_                                    << ","
+           << Vehicle_->bestReducedCost_                            << ","
+           << subproTime_->dSinceStart().count()                    << ","
+           << Vehicle_->stateChanged_                               << ","
+           << Vehicle_->removePickup_                               << ","
+           << Vehicle_->removeDrop_                                 << ","
+           << nbTwoPickGenerated_                                   << ","
+           << nbOnePickGenerated_                                   << ","
+           << nbOutCover_                                           << ","
+           << nbPriorCover_                                         << "\n";
+    return repStr.str();
+}

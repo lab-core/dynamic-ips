@@ -10,7 +10,6 @@ CplexModeler::CplexModeler() {
     Model_ = IloModel(env_);
     Cplex_ = IloCplex(Model_);
     objFunction_ = IloMinimize(env_);
-//    Model_.add(objFunction_);
 
     requestDuals_ = IloNumArray(env_);
     vehicleDuals_ = IloNumArray(env_);
@@ -20,16 +19,27 @@ CplexModeler::CplexModeler() {
     solveTime_ = new myTools::Timer(); solveTime_->init();
 }
 
+void CplexModeler::renewEnv() {
+    env_.end();
+    env_ = IloEnv();
+    Model_        = IloModel(env_);
+    Cplex_        = IloCplex(Model_);
+    objFunction_  = IloMinimize(env_);
+    requestDuals_ = IloNumArray(env_);
+    vehicleDuals_ = IloNumArray(env_);
+    requestRHS_   = IloNumArray(env_);
+    vehicleRHS_   = IloNumArray(env_);
+    nbRequestTask_ = 0;
+}
+
 CplexModeler::~CplexModeler() {
     delete solveTime_;
-    env_.end();
 }
 
 
 // this function clears all objects from the model at the start of each epoch
 void CplexModeler::clearModel() {
     Model_.end();
-    std::cout << "The Model is destroyed" << std::endl;
     Model_ = IloModel(env_);
     objFunction_ = IloMinimize(env_);
 }
@@ -86,25 +96,6 @@ void CplexModeler::addZVarFloat(IloNumVarArray &zVar, const PRequest &request, V
     }
 }
 
-void CplexModeler::addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, const PRequest &request) {
-
-    try {
-        IloNumColumn uCol = objFunction_(0.8 * request->Req_W3_ * request->penalty_) +
-                              requestConst_[request->taskIndex_](1);
-        uVar.add(IloNumVar(uCol, 0.0, 0.0, ILOFLOAT));
-
-        IloNumColumn vCol = objFunction_(0) +
-                              requestConst_[request->taskIndex_](-1);
-        vVar.add(IloNumVar(vCol, 0.0, 0.0, ILOFLOAT));
-    }
-    catch (const IloException& e) {
-        std::cerr << "Error in CplexModeler::addZVarFloat at line " << __LINE__ << std::endl;
-        std::cout << e << std::endl;
-    }
-}
-
-
-
 // this function adds routeVar to the model
 void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst) {
     try {
@@ -116,6 +107,7 @@ void CplexModeler::addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRou
 
         routeVar.add(IloNumVar(numVar,0,IloInfinity,ILOINT));
         routeVar[routeVar.getSize()-1].setName(newRoute->name_);
+        columnVar.end();
     }
     catch (const IloException& e) {
         std::cerr << "Error in CplexModeler::addRouteVarInt at line " << __LINE__ << std::endl;
@@ -134,6 +126,7 @@ void CplexModeler::addRouteVarFloat(IloNumVarArray &routeVar, const PRoute &newR
 
         routeVar.add(IloNumVar(numVar, 0,IloInfinity,ILOFLOAT));
         routeVar[routeVar.getSize()-1].setName(newRoute->name_);
+        columnVar.end();
     }
     catch (const IloException& e) {
         std::cerr << "Error in CplexModeler::addRouteVarFloat at line " << __LINE__ << std::endl;

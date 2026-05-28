@@ -31,16 +31,17 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
                        MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn,
                        float timeWindow, float WaitForReturn,
                        WarmStart initialStart, int MIP_maxIncDegree, int CP_IncDegree, bool reducedCP,
-                       float minImp, bool useZoom, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
+                       float minImp, bool useZoom, ISUDVariant isudVariant, int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel,
                        bool pruneNodes, bool pruneArcs, bool discardSuboptimalPath,
                        bool isDominanceReleased, bool isDropPickPossible, LabelingStrategy LabelingStrategy,
                        SubproblemAlgorithm subAlgorithm, bool constPortion, bool vehiclePortion,
                        bool dynamicPricing, bool partialPricing, bool routeRecycle, bool reoptimizeSP, int nbPick,
                        SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit, int solveTimeLimit,
                        int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-                       int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
+                       int pickupDeviationWindow, ReturnType returnPolicy, float maxWait,
                        LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1,
-                       float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6):
+                       float ride_W2, bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6,
+                       double reducedCostThreshold):
         SolverBase(isTruncated, maxLabel, MaxCommittedLabel, isDominanceReleased, pruneNodes, pruneArcs,
                    discardSuboptimalPath, isDropPickPossible, LabelingStrategy, labelingReOptimizeStrategy, reoptimizeSP,
                    nbPick, sortPath, newRequestLimit, wait_W1, ride_W2, req_W3, ride_W4, relative_W5, normal_W6),
@@ -51,10 +52,12 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         WaitForReturn_(WaitForReturn), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
         CP_IncDegree_(CP_IncDegree), reducedCP_(reducedCP), minImp_(minImp), useZoom_(useZoom),
+        isudVariant_(isudVariant),
         nbColumn_(nbColumn), subAlgorithm_(subAlgorithm), smoothDual_(smoothDual),
         vehiclePortion_(vehiclePortion), dynamicPricing_(dynamicPricing), partialPricing_(partialPricing),
-        routeRecycle_(routeRecycle), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit), modelSolver_(modelSolver),
-        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait) {}
+        routeRecycle_(routeRecycle), sortColumn_(sortColumn), bigM_(bigM), solveTimeLimit_(solveTimeLimit),
+        populateTimeLimit_(populateTimeLimit), MIPGap_(MIPGap), returnPolicy_(returnPolicy), maxWait_(maxWait),
+        reducedCostThreshold_(reducedCostThreshold) {}
 
 Parameters::~Parameters() = default;
 
@@ -104,8 +107,8 @@ std::string Parameters::toString() const {
     repStr << std::setw(setwLength) << "# use Reduced CP " << " = " << reducedCP_ << std::endl;
     repStr << std::setw(setwLength) << "# min ISUD improvement " << " = " << minImp_ << std::endl;
     repStr << std::setw(setwLength) << "# is Zooming used " << " = " << useZoom_ << std::endl;
+    repStr << std::setw(setwLength) << "# ISUD variant " << " = " << eu::toString(isudVariant_) << std::endl;
     repStr << std::setw(setwLength) << "# Column added to MP " << " = " << nbColumn_ << std::endl;
-    repStr << std::setw(setwLength) << "# MIP model solver " << " = " << eu::toString(modelSolver_) << std::endl;
     repStr << std::endl;
 
     repStr << "# LABEL SETTING STRATEGIES" << std::endl;
@@ -145,8 +148,7 @@ std::string Parameters::toString() const {
 
 std::string Parameters::toStr() const {
     std::stringstream repStr;
-    repStr << eu::toString(modelSolver_) << ","
-           << alphaParam_ << ","
+    repStr << alphaParam_ << ","
            << betaParam_ << ","
            << deltaPram_ << ","
            << Wait_W1_ << ","
@@ -175,6 +177,7 @@ std::string Parameters::toStr() const {
            << CP_IncDegree_ << ","
            << boolToString(reducedCP_) << ","
            << boolToString(useZoom_) << ","
+           << eu::toString(isudVariant_) << ","
            << nbColumn_ << ","
            << boolToString(isTruncated_) << ","
            << MaxLabel_ << ","

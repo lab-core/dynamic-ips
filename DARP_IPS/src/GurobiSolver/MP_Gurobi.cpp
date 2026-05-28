@@ -50,7 +50,7 @@ void MP_Gurobi::buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolutio
 }
 
 // Update model with new routes
-void MP_Gurobi::updateModel(PInstance& pInst) {
+void MP_Gurobi::updateModel_columns(PInstance& pInst) {
     try {
         // Use batch mode for efficiency
         // Add the new compatible columns to the model
@@ -68,7 +68,7 @@ void MP_Gurobi::updateModel(PInstance& pInst) {
 
 
 // Batch update model with new (continuous) routes
-void MP_Gurobi::updateMPModel_batch(PInstance& pInst) {
+void MP_Gurobi::updateModel(PInstance& pInst) {
     try {
         if (routesToAdd_.empty()) return;
 

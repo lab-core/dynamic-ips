@@ -9,12 +9,19 @@
 #include "utilities/Tools.h"
 #include "utilities/MyTools.h"
 #include "utilities/InputPaths.h"
-#include "CplexSolver/MIPSolver.h"
-#include "CplexSolver/CPLEXSubProblem.h"
-#include "GurobiSolver/MP_Gurobi.h"
 #include "solvers/LabelingSubProblem.h"
 #include "solvers/CG_Algorithm.h"
 #include "solvers/ISUD_Algorithm.h"
+#include "solvers/AssignmentSolver.h"
+#include "solvers/SolverEnv.h"
+
+#ifdef DARP_USE_CPLEX
+#include "CplexSolver/SubProblem_Cplex.h"
+#endif
+#ifdef DARP_USE_GUROBI
+#include "GurobiSolver/MP_Gurobi.h"
+#include "GurobiSolver/SubProblem_Gurobi.h"
+#endif
 
 
 //---------------------------------------------------------------------------------------------
@@ -28,12 +35,7 @@ public:
     PRuntimeMetrics runtimeMetrics_;                      // Runtime metrics
     myTools::SharedVector<PLabel> labelsPool_;            // Pool of generated labels used for recycling
     PMasterAlgorithm MP_solver_;                          // Master Problem solver
-    PMIPSolver MIPModel_;                                 // MIP Solver for solving the 3-index MIP formulation
-    PGreedyModeler GreedyModel_;                          // Greedy modeler (fast insertion heuristic)
-
-
-    GRBEnv env_;
-
+    PGreedyModeler GreedyModel_;                          // Greedy modeler (fast insertion heuristic)// 3-index MIP (backend chosen at compile time)
 
     // Shared state
     float elapsedTime_;                                   // elapsed time of the simulation  
@@ -79,16 +81,10 @@ public:
     bool solve_SP(PInstance & EpochInst, PInstance & mainInst, int &iter, int &nbNegativeFound,
         vector2D<PRoute> &availableRoutes, float availableTime, int &nbRoutes, std::vector<std::unordered_set<std::string>> &duplicatesRoutes);
 
-    // functions related to rebalancing policy based on Alonso mora Assignment
-    void returnVehiclesAssign(const PInstance & EpochInst) const;
-    void solveGurobiAssignment(const PInstance & EpochInst, std::vector<PVehicle> &idleVehicles) const;
-    void solveCplexAssignment(const PInstance & EpochInst, std::vector<PVehicle> &idleVehicles) const;
-
-    // function related to rebalancing policy based on returning to source
-    void returnVehiclesSource(const PInstance & EpochInst) const;
-
-    // function related to rebalancing policy based on returning to high demand zones
-    void returnVehiclesZone(const PInstance & EpochInst) const;
+    // Relocate idle vehicles according to the active return policy (TO_SOURCE or ASSIGN).
+    // All relocation logic lives in AssignmentSolver; this function handles
+    // timing, idle-vehicle collection, and policy dispatch.
+    void returnVehicles(const PInstance & EpochInst) const;
 
     // function to reconstruct available routes from th elast epoch
     static void reconstructAvailableRoutes(const PInstance &mainInst, vector2D<PRoute> &availableRoutes);
@@ -165,7 +161,12 @@ struct RuntimeMetrics {
     // functions to reset and update metrics                  
     void resetSubproblemMetrics();
     void updateSubproblemMetrics(const PLabelingSubPro & subProblem );
+#ifdef DARP_USE_CPLEX
     void updateSubproblemMetrics(const PCplexSubPro & subProblem );
+#endif
+#ifdef DARP_USE_GUROBI
+    void updateSubproblemMetrics(const PGurobiSubPro & subProblem );
+#endif
 };
 
 #endif //CP_GUROBI_CPP_BASESOLVER_H

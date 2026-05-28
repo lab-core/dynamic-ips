@@ -3,18 +3,13 @@
 //
 
 #include "GurobiModeler.h"
+#include "solvers/SolverEnv.h"
 #include <iostream>
 #include <iomanip>
 
-// Constructor
-GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(outputLog) {
+GurobiModeler::GurobiModeler(const std::string &outputLog) : env_(solverEnv::gurobi()), outputLog_(outputLog) {
     try {
-        // Set environment parameters before creating model
-        env_.set(GRB_IntParam_UpdateMode, 1);
-        env_.start();
-
         model_ = new GRBModel(env_);
-        env_.set(GRB_IntParam_LogToConsole, 0);
         nbRequestTask_ = 0;
 
         solveTime_ = new myTools::Timer(); solveTime_->init();
@@ -25,7 +20,6 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
         // Apply tuned parameters
         model_->set(GRB_IntParam_OutputFlag, 0);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);      // Dual simplex is typically best for CG
- //       model_->set(GRB_IntParam_Crossover, 1);
         model_->set(GRB_DoubleParam_Heuristics, 0.001);        // Minimal heuristics
         model_->set(GRB_IntParam_Presolve, 0);                  // Disable presolve
         model_->set(GRB_StringParam_LogFile, outputLog);
@@ -39,9 +33,7 @@ GurobiModeler::GurobiModeler(std::string outputLog) : env_(true), outputLog_(out
 // Destructor
 GurobiModeler::~GurobiModeler() {
     delete solveTime_;
-    if (model_) {
-        delete model_;
-    }
+    delete model_;
 }
 
 // Display function
@@ -77,14 +69,15 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
 
         // Add request constraints (= rhs)
         for (int i = 0; i < nbRequestTask_; ++i) {
-            requestConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs, "R" + std::to_string(pInst->requests_[i]->getRequestId())));
+            requestConstr_.push_back(
+                model_->addConstr(GRBLinExpr(),GRB_EQUAL,rhs,
+                    "R" + std::to_string(pInst->requests_[i]->getRequestId())));
         }
-
-
 
         // Add vehicle constraints (= rhs)
         for (int i = 0; i < nbVehicles; ++i) {
-            vehicleConstr_.push_back(model_->addConstr(GRBLinExpr() == rhs, "V_" + std::to_string(i)));
+            vehicleConstr_.push_back(model_->addConstr(GRBLinExpr(), GRB_EQUAL, rhs,
+                "V_" + std::to_string(i)));
         }
 
         // Set basic parameters
@@ -102,7 +95,7 @@ void GurobiModeler::initializeModel(const PInstance& pInst, int rhs, int nbVehic
 }
 
 // Helper function to create column
-GRBColumn GurobiModeler::createColumn(const PRoute& route, VarSign sign, const PInstance& pInst) {
+GRBColumn GurobiModeler::createColumn(const PRoute& route, VarSign sign, const PInstance& pInst) const {
     GRBColumn col;
     int signMultiplier = (sign == POSITIVE) ? 1 : -1;
 
@@ -121,7 +114,7 @@ GRBColumn GurobiModeler::createColumn(const PRoute& route, VarSign sign, const P
 // Add integer z variable
 void GurobiModeler::addZVarInt(const PRequest& request, VarSign sign) {
     try {
-        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        int signMultiplier = (sign == POSITIVE) ? 1.0 : -1.0;
 
         GRBColumn col;
         col.addTerm(signMultiplier, requestConstr_[request->taskIndex_]);
@@ -158,7 +151,7 @@ void GurobiModeler::addZVarFloat(const PRequest& request, VarSign sign) {
 // Add integer route variable
 void GurobiModeler::addRouteVarInt(const PRoute& newRoute, VarSign sign, const PInstance& pInst) {
     try {
-        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        int signMultiplier = (sign == POSITIVE) ? 1.0 : -1.0;
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
         double objCoeff = signMultiplier * newRoute->objCoef_;
@@ -174,7 +167,7 @@ void GurobiModeler::addRouteVarInt(const PRoute& newRoute, VarSign sign, const P
 // Add continuous route variable
 void GurobiModeler::addRouteVarFloat(const PRoute& newRoute, VarSign sign, const PInstance& pInst) {
     try {
-        int signMultiplier = (sign == POSITIVE) ? 1 : -1;
+        int signMultiplier = (sign == POSITIVE) ? 1.0 : -1.0;
         GRBColumn col = createColumn(newRoute, sign, pInst);
 
         double objCoeff = signMultiplier * newRoute->objCoef_;
@@ -207,7 +200,7 @@ void GurobiModeler::convertToFloat() {
 
 
 // Set parameters
-void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) {
+void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) const {
     try {
         // Thread control
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
@@ -221,22 +214,17 @@ void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) {
 
         model_->set(GRB_DoubleParam_TimeLimit, availableTime);      // time limit
 
-        // Output control
-//        model_->set(GRB_IntParam_OutputFlag, 0); // Silent mode
-
 
         // For MIP solving (if needed)
-        /*model_->set(GRB_IntParam_PrePasses, 0);
-        model_->set(GRB_IntParam_Aggregate, 0);
-        model_->set(GRB_IntParam_ScaleFlag, 1);                   // Enable scaling
-        model_->set(GRB_IntParam_NormAdjust, 2);                // Aggressive normalization
+        /*model_->set(GRB_IntParam_OutputFlag, 0);                // Turns off Gurobi log output.
+        model_->set(GRB_IntParam_PrePasses, 0);                 // Limits presolve to zero passes.
+        model_->set(GRB_IntParam_Aggregate, 0);                 // Disables presolve aggregation.
         model_->set(GRB_IntParam_DegenMoves, 0);                // Disable degeneracy moves
-        model_->set(GRB_IntParam_NodeMethod, 1); // Dual simplex for nodes
-        model_->set(GRB_IntParam_Cuts, 0); // Disable all cuts
-        model_->set(GRB_IntParam_MIPFocus, 1); // Focus on finding feasible solutions
-
-        model_->set(GRB_IntParam_DualReductions, 0); // Disable dual reductions
-        model_->set(GRB_DoubleParam_MarkowitzTol, 0.999);*/ // Numerical stability
+        model_->set(GRB_IntParam_NodeMethod, 1);                // Dual simplex for nodes
+        model_->set(GRB_IntParam_Cuts, 0);                      // Disable all cuts
+        model_->set(GRB_IntParam_MIPFocus, 1);                  // Focus on finding feasible solutions
+        model_->set(GRB_IntParam_DualReductions, 0);            // Disable dual reductions
+        model_->set(GRB_DoubleParam_MarkowitzTol, 0.999);*/       // Numerical stability
 
     } catch (GRBException& e) {
         std::cerr << "Error in setParameters: " << e.getMessage() << std::endl;
@@ -245,7 +233,7 @@ void GurobiModeler::setParameters(const PInstance& pInst, float availableTime) {
 }
 
 // Solve the model
-int GurobiModeler::solve() {
+int GurobiModeler::solve() const {
     try {
         model_->optimize();
         return model_->get(GRB_IntAttr_Status);
@@ -261,6 +249,7 @@ int GurobiModeler::getStatus() const {
     try {
         return model_->get(GRB_IntAttr_Status);
     } catch (GRBException& e) {
+        std::cerr << "Error in get status: " << e.getMessage() << std::endl;
         return -1;
     }
 }
@@ -276,7 +265,7 @@ double GurobiModeler::getObjValue() const {
 }
 
 // Get variable value
-double GurobiModeler::getVarValue(const GRBVar& var) const {
+double GurobiModeler::getVarValue(const GRBVar& var) {
     try {
         return var.get(GRB_DoubleAttr_X);
     } catch (GRBException& e) {
@@ -286,31 +275,18 @@ double GurobiModeler::getVarValue(const GRBVar& var) const {
 }
 
 // Get dual values
-void GurobiModeler::getDuals(const PInstance& pInst) {
+void GurobiModeler::getDuals(const PInstance& pInst) const {
     try {
-
         // Get request constraint duals
-        for (size_t i = 0; i < requestConstr_.size(); ++i) {
+        for (size_t i = 0; i < requestConstr_.size(); ++i)
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_Pi);
-            if (std::fabs(pInst->requests_[i]->dual_) <= EPS)
-                std::cout << "Zero Dual for Request: " << pInst->requests_[i]->getRequestId() << std::endl;
-            /*double slack = requestConstr_[i].get(GRB_DoubleAttr_Slack);
-
-            if (pInst->requests_[i]->dual_ == slack)
-                std::cout << pInst->requests_[i]->getRequestId()
-                      << " dual=" << pInst->requests_[i]->dual_
-                      << " slack=" << slack << std::endl;*/
-        }
 
         // Get vehicle constraint duals
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
-            if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
+            if (pInst->vehicles_[i]->vehicleIndex_ > -1)
                 pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_Pi);
- //               pInst->vehicles_[i]->dual_ = 0;
-            }
-            else {
+            else
                 pInst->vehicles_[i]->dual_ = 0;
-            }
         }
 
     } catch (GRBException& e) {
@@ -319,27 +295,18 @@ void GurobiModeler::getDuals(const PInstance& pInst) {
     }
 }
 
-void GurobiModeler::getBarrierDuals(const PInstance& pInst) {
+void GurobiModeler::getBarrierDuals(const PInstance& pInst) const {
     try {
-
         // Get request constraint duals
-        for (size_t i = 0; i < requestConstr_.size(); ++i) {
-
-            /*std::cout << pInst->requests_[i]->getRequestId()
-                  << " old dual=" << pInst->requests_[i]->dual_
-                  << " new dual=" << requestConstr_[i].get(GRB_DoubleAttr_BarPi) << std::endl;*/
+        for (size_t i = 0; i < requestConstr_.size(); ++i)
             pInst->requests_[i]->dual_ = requestConstr_[i].get(GRB_DoubleAttr_BarPi);
 
-        }
-
         // Get vehicle constraint duals
         for (size_t i = 0; i < vehicleConstr_.size(); ++i) {
-            if (pInst->vehicles_[i]->vehicleIndex_ > -1) {
+            if (pInst->vehicles_[i]->vehicleIndex_ > -1)
                 pInst->vehicles_[i]->dual_ = vehicleConstr_[i].get(GRB_DoubleAttr_BarPi);
-            }
-            else {
+            else
                 pInst->vehicles_[i]->dual_ = 0;
-            }
         }
 
     } catch (GRBException& e) {
@@ -348,7 +315,7 @@ void GurobiModeler::getBarrierDuals(const PInstance& pInst) {
     }
 }
 
-void GurobiModeler::getDualsFromRelaxed(GRBModel& relaxedModel, const PInstance& pInst) {
+void GurobiModeler::getDualsFromRelaxed(const GRBModel& relaxedModel, const PInstance& pInst) const {
     try {
         // Get all constraints from the relaxed model
         GRBConstr* allConstrs = relaxedModel.getConstrs();

@@ -24,7 +24,6 @@ public:
     int nbPrunedPath_;                          // number of labels detected as non-promising by soft time window
     int nbPrunedArcs_;                          // number of labels detected as non-promising by pruned arcs
     int nbEliminated_;                          // number of labels detected as Unreachable due to travel time
-    int nbGenerated_;                           // number of generated labels
     int nbRecycledColumns_;                     // number of labels recycled from routes
 
 

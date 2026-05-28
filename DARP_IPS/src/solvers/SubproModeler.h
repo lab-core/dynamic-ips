@@ -21,6 +21,7 @@ public:
     std::vector<PRequest> subRequests_;     // List of requests
     int nbNegativeColumns_;                 // number negative reduced cost routes found
     int nbTotalRequest_;                    // equals the number of requests in the corresponding graph
+    int nbGenerated_;                       // number of generated labels
     bool reOptimize_;                       // whether we re-optimization the subproblem or not
     int nbOnePickGenerated_;                // number of one-pickup routes generated
     int nbTwoPickGenerated_;                // number of two-pickup routes generated
@@ -44,6 +45,7 @@ public:
 
     // function to check if inserting a pickup node is possible
     bool checkInsertionPossibility(PNode &pick, float Wait_W1) const;
+    std::string toStringOut(int epoch) const;
 };
 
 // function to compute detour delay of inserting a pickup node between two nodes

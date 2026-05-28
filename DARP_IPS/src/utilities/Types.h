@@ -34,16 +34,17 @@ class Graph;
 class Node;
 class Route;
 class Zone;
-class ReducedProblem;
-class ComplementPro;
+class RP_Cplex;
+class CP_Cplex;
 class DualAuxSolver;
 class Label;
 class StopLabel;
 class GreedyRoute;
 class GreedyModeler;
-class MIPMasterProblem;
+class MP_Cplex;
 class LabelingSubProblem;
-class CPLEXSubProblem;
+class SubProblem_Cplex;
+class SubProblem_Gurobi;
 struct Parameters;
 struct solverOption;
 struct insertPosition;
@@ -51,13 +52,14 @@ struct ProgramConfig;
 struct RuntimeMetrics;
 class MP_Gurobi;
 class RP_Gurobi;
-class CP_Gurobi;
-class CP_Reduced;
 class GurobiModeler;
 class MasterAlgorithm;
 class CG_Algorithm;
 class ISUD_Algorithm;
-class MIPSolver;
+class MIPSolver_Cplex;
+#ifdef DARP_USE_GUROBI
+class MIPSolver_Gurobi;
+#endif
 class CPModeler;
 
 //-----------------------------------------------------------------------------
@@ -70,31 +72,34 @@ using PGraph = std::shared_ptr<Graph>;
 using PNode = std::shared_ptr<Node>;
 using PRoute = std::shared_ptr<Route>;
 using PZone = std::shared_ptr<Zone>;
-using PReducedProblem = std::shared_ptr<ReducedProblem>;
-using PComplementPro = std::shared_ptr<ComplementPro>;
-using PDualAuxSolver = std::shared_ptr<DualAuxSolver>;
 using PLabel = std::shared_ptr<Label>;
 using PStopLabel = std::shared_ptr<StopLabel>;
 using PGreedyRoute = std::shared_ptr<GreedyRoute>;
 using PGreedyModeler = std::shared_ptr<GreedyModeler>;
-using PMasterPro = std::shared_ptr<MIPMasterProblem>;
 using PLabelingSubPro = std::shared_ptr<LabelingSubProblem>;
-using PCplexSubPro = std::shared_ptr<CPLEXSubProblem>;
+using PCplexSubPro = std::shared_ptr<SubProblem_Cplex>;
+using PGurobiSubPro = std::shared_ptr<SubProblem_Gurobi>;
 using PParameters = std::shared_ptr<Parameters>;
 using PSolverOption = std::shared_ptr<solverOption>;
 using PInsertPosition = std::shared_ptr<insertPosition>;
 using PConfig = std::unique_ptr<ProgramConfig>;
-using PMP_Gurobi = std::shared_ptr<MP_Gurobi>;
 using PRP_Gurobi = std::shared_ptr<RP_Gurobi>;
 using PGurobiModeler = std::shared_ptr<GurobiModeler>;
-using PCP_Gurobi = std::shared_ptr<CP_Gurobi>;
-using PCP_Reduced = std::shared_ptr<CP_Reduced>;
 using PMasterAlgorithm = std::shared_ptr<MasterAlgorithm>;
 using PCG_Algorithm = std::unique_ptr<CG_Algorithm>;
 using PISUD_Algorithm = std::unique_ptr<ISUD_Algorithm>;
-using PMIPSolver = std::unique_ptr<MIPSolver>;
+#ifdef DARP_USE_CPLEX
+using PMIPSolver = std::unique_ptr<MIPSolver_Cplex>;
+using PMaster = std::shared_ptr<MP_Cplex>;
+using PReducedPro = std::shared_ptr<RP_Cplex>;
+using PCPSolver = std::shared_ptr<CP_Cplex>;
+#elif DARP_USE_GUROBI
+using PMIPSolver = std::unique_ptr<MIPSolver_Gurobi>;
+using PMaster = std::shared_ptr<MP_Gurobi>;
+using PReducedPro = std::shared_ptr<RP_Gurobi>;
+using PCPSolver = std::shared_ptr<CPModeler>;
+#endif
 using PRuntimeMetrics = std::unique_ptr<RuntimeMetrics>;
-using PCPModeler = std::shared_ptr<CPModeler>;
 //-----------------------------------------------------------------------------
 //  Container Type Aliases
 //-----------------------------------------------------------------------------
@@ -112,18 +117,18 @@ enum LabelingStrategy : int {
 
 enum LabelingReOptimizeStrategy : int {
     RE_INSERT = 0,
-    BY_ROUTE = 1,
-    BY_GRAPH = 2,
+    BY_BASIS = 1,
+    BY_POOL = 2,
 };
 
 enum SubproblemAlgorithm : int {
-    CPLEX_SUB = 0,
+    MIP_SUB = 0,        // pricing subproblem via MIP (CPLEX or Gurobi at compile time)
     LABEL_SETTING = 1
 };
 
 enum MainAlgorithm : int {
     GREEDY = 0,
-    MIP_CPLEX = 1,
+    MIP = 1,            // full 3-index MIP (CPLEX or Gurobi at compile time)
     RT_CG = 2,
     MP_ISUD = 3,
     MP_MIP = 4,
@@ -135,6 +140,11 @@ enum Approach : int {
     ISUD = 0,
     CG = 1,
     Greedy = 2
+};
+
+enum ISUDVariant : int {
+    ISUD_MIP_RP = 0,
+    ISUD_PIVOT_RP = 1
 };
 
 enum SolutionMode : int {
@@ -165,12 +175,10 @@ enum InitialDual : int {
 
 enum DualMethod : int {
     LMP = 0,
-    AUX_D = 1,
-    AUX_P = 2,
-    AUX_BOX = 3,
-    LP_CP = 4,
-    INTERIOR = 5,
-    LAGRANGE = 6
+    AUX_P = 1,
+    LP_CP = 2,
+    INTERIOR = 3,
+    LAGRANGE = 4
 };
 
 enum NodeStatus : int {
@@ -236,8 +244,7 @@ enum RequestStatus : int {
 
 enum ReturnType : int {
     TO_SOURCE = 0,
-    ZONE = 1,
-    ASSIGN = 2
+    ASSIGN = 1
 };
 
 enum NodeType : int {
@@ -245,11 +252,6 @@ enum NodeType : int {
     SINK = 1,
     PICKUP = 2,
     DROPOFF = 3
-};
-
-enum ModelSOLVER: int {
-    CPLEX = 0,
-    GUROBI = 1
 };
 
 //-----------------------------------------------------------------------------
@@ -261,15 +263,15 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 3> labelingReOptimizeStrategyNames = {
-        "RE_INSERT", "BY_ROUTE" , "BY_GRAPH"
+        "RE_INSERT", "BY_BASIS" , "BY_POOL"
     };
 
     constexpr std::array<const char*, 2> subproblemAlgorithmNames = {
-        "CPLEX        ", "LABEL_SETTING"
+        "MIP_SUB", "LABEL_SETTING"
     };
 
     constexpr std::array<const char*, 7> mainAlgorithmNames = {
-        "GREEDY", "MIP_CPLEX", "RT_CG", "MP_ISUD", "MP_MIP", "MP_CP", "A_CG"
+        "GREEDY", "MIP", "RT_CG", "MP_ISUD", "MP_MIP", "MP_CP", "A_CG"
     };
 
     constexpr std::array<const char*, 3> solutionModeNames = {
@@ -284,8 +286,8 @@ namespace enum_strings {
         "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP", "GREEDY_D", "ZERO", "RANDOM", "DELAY"
     };
 
-    constexpr std::array<const char*, 7> dualMethodNames = {
-        "LINEAR", "AUX_D", "AUX_P", "AUX_BOX", "LP_CP", "BARRIER", "LAGRANGE"
+    constexpr std::array<const char*, 5> dualMethodNames = {
+        "LINEAR", "AUX_P", "LP_CP", "BARRIER", "LAGRANGE"
     };
 
     constexpr std::array<const char*, 4> nodeStatusNames = {
@@ -325,19 +327,19 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 3> returnTypeNames = {
-        "TO_SOURCE", "ZONE     ", "ASSIGN   "
+        "TO_SOURCE", "ASSIGN   "
     };
 
     constexpr std::array<const char*, 4> nodeTypeNames = {
         "SOURCE ", "SINK   ", "PICKUP ", "DROPOFF"
     };
 
-    constexpr std::array<const char*, 2> modelSolverNames = {
-        "CPLEX ", "GUROBI"
-    };
-
     constexpr std::array<const char*, 3> approachNames = {
         "ISUD ", "CG  ", "Greedy"
+    };
+
+    constexpr std::array<const char*, 2> isudVariantNames = {
+        "ISUD_MIP_RP", "ISUD_PIVOT_RP"
     };
 
 }
@@ -485,17 +487,17 @@ namespace enum_utils {
     }
 
     template<>
-    inline const char* toString<ModelSOLVER>(ModelSOLVER value) {
-        auto index = static_cast<size_t>(value);
-        return (index < enum_strings::modelSolverNames.size()) ?
-               enum_strings::modelSolverNames[index] : "UNKNOWN";
-    }
-
-    template<>
     inline const char* toString<Approach>(Approach value) {
         auto index = static_cast<size_t>(value);
         return (index < enum_strings::approachNames.size()) ?
                enum_strings::approachNames[index] : "UNKNOWN";
+    }
+
+    template<>
+    inline const char* toString<ISUDVariant>(ISUDVariant value) {
+        auto index = static_cast<size_t>(value);
+        return (index < enum_strings::isudVariantNames.size()) ?
+               enum_strings::isudVariantNames[index] : "UNKNOWN";
     }
 }
 

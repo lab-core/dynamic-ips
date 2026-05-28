@@ -19,9 +19,9 @@ public:
     void buildModelMP(PInstance& pInst, std::vector<PRoute>& routeSolution, int nbVehicles);
 
     // Update model with new routes
-    void updateModel(PInstance& pInst);
+    void updateModel_columns(PInstance& pInst);
 
-    void updateMPModel_batch(PInstance &pInst);
+    void updateModel(PInstance &pInst);
 
     // Getters
     const std::vector<PRoute>& getCompRoutes() const { return compRoutes_; }

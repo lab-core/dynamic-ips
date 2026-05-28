@@ -88,7 +88,7 @@ void RP_Gurobi::addZVar(PRequest &request) {
 }
 
 // Update model with new routes
-void RP_Gurobi::updateRPModel(PInstance &pInst) {
+void RP_Gurobi::updateRPModel_columns(PInstance &pInst) {
     try {
         // Use batch mode for efficiency
 
@@ -108,7 +108,7 @@ void RP_Gurobi::updateRPModel(PInstance &pInst) {
 }
 
 
-void RP_Gurobi::updateRPModel_batch(PInstance& pInst) {
+void RP_Gurobi::updateRPModel(PInstance& pInst) {
     try {
         if (routesToAdd_.empty()) return;
 
@@ -274,7 +274,6 @@ void RP_Gurobi::solveLPDual(const PInstance &pInst, const InputPaths &inputPaths
             std::cerr << "Failed to optimize the LMP. Status: " << status << std::endl;
             throw std::runtime_error("Failed to optimize the LMP");
         }
-        std::cout << "Linear Objective: " << static_cast<float>(getObjValue()) << std::endl;
         // Getting dual values
         if (pInst->parameters_->initialDual_ == BARRIER)
             getBarrierDuals(pInst);
@@ -401,12 +400,6 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         for (auto& var : routeVar_) {
             var.set(GRB_CharAttr_VType, GRB_BINARY);
         }
-        // Count coverage for all requests
-        /*auto coverage = countRequestCoverage(pInst);
-        std::cout << "Request 0 is covered by " << coverage[0] << " routes" << std::endl;
-
-        // Print detailed statistics
-        printCoverageStatistics(pInst);*/
 
         // Redirect output to log file
         myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "LMP");
@@ -414,8 +407,6 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         // Set time limit
         model_->set(GRB_DoubleParam_TimeLimit, availableTime);
         model_->update();
-        /*model_->write(std::string("gurobi_orig_") + std::to_string(pInst->nbRequests_) + "_" +
-            std::to_string(pInst->nbNewRequests_) + ".lp" );*/
 
         solveTime_->start();
         int status = solve();
@@ -424,93 +415,18 @@ void RP_Gurobi::solveModelInt(const PInstance &pInst, std::vector<PRequest> &zSo
         if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL && status != GRB_TIME_LIMIT) {
             throw std::runtime_error("Failed to optimize the MP");
         }
-        else {
-            double currentObj = getObjValue();
+        double currentObj = getObjValue();
 
-            if (currentObj < preObj) {
-                objValue_ = static_cast<float>(currentObj);
+        if (currentObj < preObj) {
+            objValue_ = static_cast<float>(currentObj);
 
-                // Saving the result
-                extractSolution(pInst, zSolution, routeSolution);
-
-            }
+            // Saving the result
+            extractSolution(pInst, zSolution, routeSolution);
 
         }
     }
     catch (GRBException& e) {
         std::cerr << "Error occurred in solveModelInt at line: " << __LINE__ << std::endl;
-        std::cerr << "GRB Error: " << e.getMessage() << std::endl;
-        throw;
-    }
-}
-
-// Solve LP then convert to MIP
-void RP_Gurobi::solveModelLPInt(const PInstance& pInst, std::vector<PRequest>& zSolution,
-                                     std::vector<PRoute>& routeSolution, const InputPaths& inputPaths,
-                                     float availableTime, float preObj) {
-    try {
-        // Configure Gurobi logging
-        myTools::CoutRedirector redirector(inputPaths.getOutputSolverLog(), "MP");
-
-        solveTime_->start();
-        int status = solve();
-        solveTime_->stop();
-
-        if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
-            std::cerr << "Failed to optimize the LMP" << std::endl;
-            throw std::runtime_error("Failed to optimize the LMP");
-        }
-        else {
-            objValue_ = static_cast<float>(getObjValue());
-
-            // Getting dual values
-            getDuals(pInst);
-            // Convert to integer
-            std::cout << "----------------------- MP ------------------------" << std::endl;
-
-            // Convert z variables to integer
-            for (auto& var : zVar_) {
-                var.set(GRB_CharAttr_VType, GRB_BINARY);
-            }
-
-            // Convert route variables to integer
-            for (auto& var : routeVar_) {
-                var.set(GRB_CharAttr_VType, GRB_BINARY);
-            }
-
-            // Set time limit
-            model_->set(GRB_DoubleParam_TimeLimit, availableTime);
-
-            model_->update();
-
-            solveTime_->start();
-            status = solve();
-            solveTime_->stop();
-
-            if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL && status != GRB_TIME_LIMIT) {
-                throw std::runtime_error("Failed to optimize the MP");
-            }
-            else {
-                double currentObj = getObjValue();
-
-                if (currentObj >= preObj) {
-                    // Solution is not better
-                    convertToFloat();
-                }
-                else {
-                    objValue_ = static_cast<float>(currentObj);
-
-                    // Saving the result
-                    extractSolution(pInst, zSolution, routeSolution);
-
-                    // Convert back to continuous for next iteration
-                    convertToFloat();
-                }
-            }
-        }
-    }
-    catch (GRBException& e) {
-        std::cerr << "Error occurred in solveModelLPInt at line: " << __LINE__ << std::endl;
         std::cerr << "GRB Error: " << e.getMessage() << std::endl;
         throw;
     }
@@ -815,7 +731,7 @@ void RP_Gurobi::tuneModel(const InputPaths &inputPaths, float tuneTimeLimit,
 }
 
 // Helper function to load previously saved parameters
-void RP_Gurobi::loadTunedParameters(const InputPaths &inputPaths) {
+void RP_Gurobi::loadTunedParameters(const InputPaths &inputPaths) const {
     try {
         std::string paramFile = inputPaths.getOutputSolverLog() + "_best_params.prm";
         model_->read(paramFile);
@@ -875,7 +791,7 @@ void RP_Gurobi::recoverModelForDuals(PInstance &pInst, boost::dynamic_bitset<> &
 }
 
 // Count how many times each request is covered by route variables in the model
-std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
+std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) const {
     try {
         std::vector<int> coverageCount(pInst->requests_.size(), 0);
 
@@ -893,8 +809,6 @@ std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
 
                     if (route->column_.size() > i && route->column_[i]) {
                         coverageCount[i]++;
-                        /*if (pInst->requests_[i]->getRequestId() == 1007)
-                            std::cout << route->toString() << std::endl;*/
                     }
                 }
             }
@@ -912,7 +826,7 @@ std::vector<int> RP_Gurobi::countRequestCoverage(const PInstance &pInst) {
 }
 
 // Function to print coverage statistics
-void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
+void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) const {
     try {
         auto coverage = countRequestCoverage(pInst);
 
@@ -952,8 +866,7 @@ void RP_Gurobi::printCoverageStatistics(const PInstance &pInst) {
     }
 }
 
-void RP_Gurobi::markColumnsToKeep(const GRBModel& lpModel)
-{
+void RP_Gurobi::markColumnsToKeep(const GRBModel& lpModel) const {
     try {
         const int status = lpModel.get(GRB_IntAttr_Status);
         if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {
@@ -999,8 +912,7 @@ void RP_Gurobi::markColumnsToKeep(const GRBModel& lpModel)
     }
 }
 
-void RP_Gurobi::markColumnsToKeep()
-{
+void RP_Gurobi::markColumnsToKeep() const {
     try {
         const int status = model_->get(GRB_IntAttr_Status);
         if (status != GRB_OPTIMAL && status != GRB_SUBOPTIMAL) {

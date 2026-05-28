@@ -30,8 +30,7 @@ struct SubproSummary {
 class MasterAlgorithm {
 public:
     // solvers
-    PComplementPro CompPro_;
-    PCPModeler CPGurobiPro_;
+    PCPSolver CPSolver_;
     std::unique_ptr<LagrangianSolver> lagSolver_;
 
     // Common data members from MasterAlgorithm
@@ -162,12 +161,6 @@ public:
     void updateEpochTimers(PRuntimeMetrics &runtimeMetrics);
     std::string runtimesToString(PRuntimeMetrics &runtimeMetrics);
     void createFinalOutputString(const PInstance &pInst, float subproblemTime, float greedyRuntime, float rebalancingRuntime);
-
-    // CP solvers
-    void solveCP_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-    void solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-
-    void solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
 
     void checkCoveredVehicles(PInstance &pInst);
     void calcDualsStatistics(const PInstance &pInst);

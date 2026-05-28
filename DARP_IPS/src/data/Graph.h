@@ -34,7 +34,7 @@ public:
     std::vector<Node *> successors_;        // List of nodes sorted based on distance from the current node
     boost::dynamic_bitset<> prunedArcs_;    // used to mark the pruned arcs from this node
     float travelTimeFromSource_;            // is used in labeling for sorting successors_
-    int nodeIndex_;                         // index used to define variables in CPLEXSubProblem / MIPSolver
+    int nodeIndex_;                         // index used to define variables in SubProblem_Cplex / MIPSolver_Cplex
     std::vector<PLabel> activeLabels_;      // is used in labeling list of active labels (non-extended labels)
 
     // Constructor and Destructor

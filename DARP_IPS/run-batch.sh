@@ -34,7 +34,7 @@ exe="bin/realtime_DARP"
 # -------------------------
 # Shared defaults (DRY)
 # -------------------------
-readonly BATCH_PARAMFILE="BatchParameters"
+readonly PARAMFILE="BatchParameters"
 readonly BATCH_ALGOS=(2)
 readonly BATCH_MODES=(1)
 
@@ -50,7 +50,6 @@ readonly SCENS_COMPARE=("multiObj_5" "multiObj_0")
 readonly SCENS_W3=("Cust_W3")
 readonly SCENS_W5=("Relative" "Relative_5" "Total")
 readonly SCENS_W4=("Jung")
-readonly SCENS_TEST=("Ab_dynamic_0" "Ab_dynamic_1")
 
 # Bundle scenario for group tests
 readonly SCENS_GROUP_TEST=("${SCENS_TEST[@]}")
@@ -58,7 +57,7 @@ readonly SCENS_GROUP_TEST=("${SCENS_TEST[@]}")
 # -------------------------
 # GROUP DEFINITIONS
 # -------------------------
-G1_data_dir="datasets"
+G1_data_dir="Riley_Benchmark"
 G1_vehicle_folder="vehicles_byDemand_w11"
 G1_vehicle_counts=(1200 1300 1400 1500)
 G1_capacity=4
@@ -67,7 +66,7 @@ G1_inst_folder="Instances_2h-11"
 G1_instances=("20150926_11-120m" "20151025_11-120m")
 G1_initial_state=1
 
-G2_data_dir="datasets"
+G2_data_dir="Riley_Benchmark"
 G2_vehicle_folder="vehicles_byDemand_w11"
 G2_vehicle_counts=(1300 1400 1500 1600)
 G2_capacity=4
@@ -76,7 +75,7 @@ G2_inst_folder="Instances_2h-11"
 G2_instances=("20160109_11-120m")
 G2_initial_state=1
 
-G3_data_dir="datasets"
+G3_data_dir="Riley_Benchmark"
 G3_vehicle_folder="vehicles_byDemand_w11"
 G3_vehicle_counts=(800 900 1000 1100)
 G3_capacity=4
@@ -88,7 +87,7 @@ G3_initial_state=1
 # -------------------------
 # Automatic group helpers
 # -------------------------
-G_test_data_dir="datasets"
+G_test_data_dir="Riley_Benchmark"
 G_test_vehicle_folder="vehicles_byDemand_w11"
 G_test_vehicle_counts=(1300 1400)
 G_test_capacity=4
@@ -107,7 +106,7 @@ discover_instances() {
   local -n inst_folder_ref="${group}_inst_folder"
   local -n insts_ref="${group}_instances"
 
-  local main_dir="datasets/${inst_folder_ref}"
+  local main_dir="Riley_Benchmark/${inst_folder_ref}"
   info "discover_instances($group): looking in $main_dir"
   if [[ -d "$main_dir" ]]; then
     mapfile -t insts_ref < <(find "$main_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
@@ -123,7 +122,7 @@ discover_instances() {
 }
 
 # Example auto groups (you had these; not in ALL_GROUPS unless you add them)
-G30S_data_dir="datasets"
+G30S_data_dir="Riley_Benchmark"
 G30S_vehicle_folder="vehicles_byDemand"
 G30S_vehicle_counts=(1400)
 G30S_capacity=4
@@ -132,7 +131,7 @@ G30S_inst_folder="Instances_30s_11"
 G30S_initial_state=2
 discover_instances "G30S"
 
-G2h_7_data_dir="datasets"
+G2h_7_data_dir="Riley_Benchmark"
 G2h_7_vehicle_folder="vehicles_uniform"
 G2h_7_vehicle_counts=(2000)
 G2h_7_capacity=4
@@ -157,7 +156,7 @@ add_group() {
   [[ -n "${initial_state:-}" ]] || { echo "[ERROR] Missing ${G}_initial_state" >&2; exit 1; }
 
   eval "paramfile=\${${G}_paramfile-}"
-  [[ -n "${paramfile:-}" ]] || paramfile="$BATCH_PARAMFILE"
+  [[ -n "${paramfile:-}" ]] || paramfile="$PARAMFILE"
 
   eval "algos_ref=(\"\${${G}_algorithms[@]-}\")"
   if [[ ${#algos_ref[@]} -eq 0 || -z "${algos_ref[0]:-}" ]]; then

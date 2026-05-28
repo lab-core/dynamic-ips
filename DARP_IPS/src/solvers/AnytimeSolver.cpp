@@ -49,11 +49,9 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
         float avg = ceil(std::accumulate(EpochTime.begin(), EpochTime.end(),0.0f) / static_cast<float>(EpochTime.size()));
         if (mainInst->parameters_->committedTime_ > std::max(avg, mainInst->parameters_->epochLength_)) {
             mainInst->parameters_->committedTime_ = std::max(avg, mainInst->parameters_->epochLength_);
-            std::cout << "dec commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
         if (mainInst->parameters_->committedTime_ < runtimeMetrics_->epochRuntime_) {
             mainInst->parameters_->committedTime_ = ceil(runtimeMetrics_->epochRuntime_ + 2);
-            std::cout << "inc commit time: " << mainInst->parameters_->committedTime_ << std::endl;
         }
 
         // update vehicle status
@@ -108,34 +106,12 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
             instance_count ++;
         }
 
-        /*if (EpochInst->nbNewRequests_ == 0) {
-            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-                MP_solver_->availableRoutes_.clear();
-            simulationTime_->stop();
-            simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ -
-                    mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());
-            epoch_++;
-            goto nextEpoch;
-        }*/
-
-        switch (EpochInst->parameters_->mainAlgorithm_) {
-            case GREEDY:
-                GreedyModel_->GreedySolver(EpochInst);
-                handleVehicleReturn(EpochInst);
-
-                break;
-            case MIP_CPLEX:
-                MIPModel_ = std::make_unique<MIPSolver>();
-                MIPModel_->SolveMIP(EpochInst, inputPaths);
-  //              masterModel_->zSolution_ = MIPModel_->zSolution_;
-  //              masterModel_->routeSolution_ = MIPModel_->routeSolution_;
-                MIPModel_.reset();
-                break;
-            default:
-  //              solveCG_Epoch_CPLEX(EpochInst, mainInst, inputPaths);
-                solveEpoch(EpochInst, mainInst, inputPaths);
-                break;
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
+            GreedyModel_->GreedySolver(EpochInst);
+            handleVehicleReturn(EpochInst);
         }
+        else
+            solveEpoch(EpochInst, mainInst, inputPaths);
 
         elapsedTime_ = simulationTime_->dSinceInit().count();
         EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_ + elapsedTime_);

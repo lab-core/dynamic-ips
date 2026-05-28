@@ -14,7 +14,11 @@ lib/
 **/.DS_Store
 
 # Local datasets (not for distribution)
-my_datasets/
+NYC-DARP-Benchmark/
+
+# Personal HPC run scripts (cluster-specific paths and account settings)
+run-batch.sh
+run-anytime.sh
 
 # Solver model dumps
 *.lp

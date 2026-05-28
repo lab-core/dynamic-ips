@@ -1,11 +1,4 @@
 {
-  "defaultParameters": {
-    "alphaParam": 1.5,
-    "betaParam": 240,
-    "deltaPram": 420,
-    "epochLength": 30,
-    "nbThreads": 16
-  },
   "scenarios": {
     "nbPick1": {
       "Wait_W1": 1,

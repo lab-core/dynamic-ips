@@ -37,8 +37,12 @@ void OfflineSolver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bo
 
 //    preprocessTime_->stop();
     switch(StaticInst->parameters_->mainAlgorithm_) {
-        case MIP_CPLEX :
-            MIPModel_ = std::make_unique<MIPSolver>();
+        case MIP:
+#if defined(DARP_USE_CPLEX)
+            MIPModel_ = std::make_unique<MIPSolver_Cplex>();
+#elif defined(DARP_USE_GUROBI)
+            MIPModel_ = std::make_unique<MIPSolver_Gurobi>();
+#endif
             MIPModel_->SolveMIP(StaticInst, inputPaths);
             MIPModel_.reset();
             break;

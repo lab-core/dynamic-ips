@@ -1,54 +1,9 @@
 {
-  "defaultParameters": {
-    "alphaParam": 1.5,
-    "betaParam": 300,
-    "deltaPram": 420,
-    "epochLength": 30,
-    "nbThreads": 16,
-    "reducedCP": 0,
-    "ModelSolver": 1
-  },
   "scenarios": {
-    "test": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 120,
-      "returnType": 2,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "InitialDual": 1,
-      "DualMethod" : 0,
-      "SmoothDual" : 0,
-      "warmStart": 1,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "Partial_Pricing": 1,
-      "Dynamic_Pricing": 0,
-      "nbPick": 2,
-      "Route_Recycle": 0,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
     "Rebalance_no": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 100,
-      "isDropPickPossible": 1,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4,
-      "LabelingStrategy": 0
-    },
-    "Rebalance_1": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 60,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
       "NumIter": 100,
@@ -58,6 +13,7 @@
       "LabelingStrategy": 0
     },
     "Rebalance_2": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -72,6 +28,7 @@
       "LabelingStrategy": 0
     },
     "Rebalance_3": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -86,6 +43,7 @@
       "LabelingStrategy": 0
     },
     "Rebalance_4": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -100,6 +58,7 @@
       "LabelingStrategy": 0
     },
     "Rebalance_5": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -114,6 +73,7 @@
       "LabelingStrategy": 0
     },
     "Rebalance_6": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -127,49 +87,80 @@
       "nbPick": 4,
       "LabelingStrategy": 0
     },
-    "Rebalance_7": {
+    "profile_5": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 420,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 100,
-      "isDropPickPossible": 1,
-      "Dynamic_Pricing": 1,
-      "nbPick": 4,
-      "LabelingStrategy": 0
-    },
-    "Baseline": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
+      "epochLength": 5,
       "vehicleReturn": 1,
       "WaitForReturn": 240,
       "MaxWait": 300,
       "informTimeLimit": 60,
       "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 0,
-      "LabelingStrategy": 0
-    },
-    "Baseline_Pool": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
+      "NumIter": 40,
       "isDropPickPossible": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
-      "LabelingStrategy": 0
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
     },
-    "Penalty": {
+    "profile_10": {
+      "betaParam": 300,
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "epochLength": 10,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 300,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 40,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "profile_20": {
+      "betaParam": 300,
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "epochLength": 20,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 300,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 40,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "profile_30": {
+      "betaParam": 300,
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "epochLength": 30,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 300,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 40,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0,
+      "reoptimizeSP": 1,
+      "LabelingReOptimizeStrategy": 2
+    },
+    "Full_cold": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -183,7 +174,38 @@
       "nbPick": 2,
       "LabelingStrategy": 0
     },
-    "SP_Re_1": {
+    "Full_warm": {
+      "betaParam": 300,
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 300,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 0,
+      "LabelingStrategy": 0
+    },
+    "Full_warm_keep": {
+      "betaParam": 300,
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "vehicleReturn": 1,
+      "WaitForReturn": 240,
+      "MaxWait": 300,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "NumIter": 1,
+      "isDropPickPossible": 1,
+      "nbPick": 2,
+      "Route_Recycle": 1,
+      "LabelingStrategy": 0
+    },
+    "Basis_warm": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -198,7 +220,8 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
     },
-    "SP_Re_1_Pool": {
+    "Basis_warm_keep": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -214,7 +237,8 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
     },
-    "SP_Re_2": {
+    "Pool_warm": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -229,39 +253,8 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "SP_Re_2_Pool": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "SP_Re_3": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-
-    "SP_Re_3_Pool": {
+    "Pool_warm_keep": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -277,7 +270,8 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2
     },
-    "rebalance_SP1": {
+    "no_rebalance_Basis": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "informTimeLimit": 60,
@@ -290,20 +284,8 @@
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
     },
-    "rebalance_SP2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "rebalance_SP3": {
+    "no_rebalance_Pool": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "informTimeLimit": 60,
@@ -317,6 +299,7 @@
       "LabelingReOptimizeStrategy": 2
     },
     "batch": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -331,6 +314,7 @@
       "LabelingStrategy": 0
     },
     "Greedy": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -343,91 +327,8 @@
       "LabelingStrategy": 0,
       "nbPick": 4
     },
-    "Iter_Dynamic_1_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "Dynamic_Pricing": 1,
-      "nbPick": 7,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Dynamic_2_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 2,
-      "isDropPickPossible": 1,
-      "Dynamic_Pricing": 1,
-      "nbPick": 7,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Dynamic_3_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 3,
-      "isDropPickPossible": 0,
-      "Dynamic_Pricing": 1,
-      "nbPick": 7,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Dynamic_4_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 4,
-      "isDropPickPossible": 1,
-      "Dynamic_Pricing": 1,
-      "nbPick": 7,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Fix_1_S1": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 1,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 1
-    },
-    "Iter_Fix_2_S1": {
+    "Shuttle_basis": {
+      "betaParam": 300,
       "Wait_W1": 1,
       "Ride_W2": 0.5,
       "vehicleReturn": 1,
@@ -442,102 +343,6 @@
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 1
-    },
-    "Iter_Fix_3_S1": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 3,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 1
-    },
-    "Iter_Fix_4_S1": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 4,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 1
-    },
-    "Iter_Fix_2_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Fix_3_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 3,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_Fix_4_S2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 1,
-      "isDropPickPossible": 1,
-      "nbPick": 4,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
-    },
-    "Iter_2": {
-      "Wait_W1": 1,
-      "Ride_W2": 0.5,
-      "vehicleReturn": 1,
-      "WaitForReturn": 240,
-      "MaxWait": 300,
-      "informTimeLimit": 60,
-      "pickupDeviationWindow": 60,
-      "NumIter": 40,
-      "isDropPickPossible": 1,
-      "nbPick": 2,
-      "Route_Recycle": 1,
-      "LabelingStrategy": 0,
-      "reoptimizeSP": 1,
-      "LabelingReOptimizeStrategy": 2
     }
   }
 }

@@ -4,17 +4,22 @@
 
 #include "MasterAlgorithm.h"
 
-#include "GurobiSolver/MP_Gurobi.h"
-#include "CplexSolver/MIPMasterProblem.h"
-#include "CplexSolver/DualAuxSolver.h"
-#include "CplexSolver/ComplementPro.h"
-#include "GurobiSolver/CP_Gurobi.h"
-#include "GurobiSolver/CP_Reduced.h"
 #include <unordered_set>
-#include "GurobiSolver/CPModeler.h"
 #include <cstdlib>
 
 #include "BaseSolver.h"
+
+// Solver-agnostic logic. CPLEX-specific bodies (solveCP_CPLEX) live in
+// MasterAlgorithm_CPLEX.cpp; Gurobi-specific bodies (solveCP_Gurobi,
+// solveCP_Dual_Gurobi) live in MasterAlgorithm_Gurobi.cpp. Each is compiled
+// only when the matching USE_* option is enabled (see src/solvers/CMakeLists.txt).
+#ifdef DARP_USE_CPLEX
+#include "CplexSolver/CP_Cplex.h"
+#endif
+#ifdef DARP_USE_GUROBI
+// calcDualsStatistics() catches GRBException; this transitively pulls in gurobi_c++.h.
+#include "GurobiSolver/CPModeler.h"
+#endif
 
 //---------------------------------------------------------------------------------------------
 //  Reduced Problem class
@@ -115,67 +120,7 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
-        /*for (auto & requestObj : pInst->requests_) {
-            requestObj->dual_ = 0.5 * requestObj->dual_ + 0.5 * requestObj->penalty_;
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;*/
-    }
-    else if (pInst->parameters_->initialDual_ == ADJUSTED) {
-        for (auto &requestObj : zSolution_) {
-            requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
-        }
-        for (auto &vehicleObj: pInst->vehicles_)
-            vehicleObj->adjustDuals();
-    }
-    else if (pInst->parameters_->initialDual_ == ZERO) {
-        float box = 0.8;
-        for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = 0;
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-    }
-    else if (pInst->parameters_->initialDual_ == RANDOM) {
-        for (auto &requestObj : pInst->requests_) {
-            requestObj->dual_ = (rand() % (int) requestObj->penalty_);
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-    }
-    else if (pInst->parameters_->initialDual_ == DELAY) {
-        for (auto &vehicleObj : pInst->vehicles_) {
-            for (size_t i =0; i < vehicleObj->greedyRoute_->routeRequests_.size(); i++) {
-                vehicleObj->greedyRoute_->routeRequests_[i]->dual_ = vehicleObj->greedyRoute_->plannedDelay_[i] + 100;
-            }
-        }
-        for (auto & vehicleObj : pInst->vehicles_)
-            vehicleObj->dual_ = 0;
-    }
-    else if (availableRoutes_.size() > 0 && pInst->parameters_->routeRecycle_) {
-        if (pInst->parameters_->initialDual_ == LAGRANGIAN) {
-            lagSolver_ = std::make_unique<LagrangianSolver>(pInst, objValue_,routeSolution_, zSolution_,
-                availableRoutes_);
-            lagSolver_->run(pInst);
-            lagSolver_.reset();
-        }
-        /*else if (pInst->parameters_->initialDual_ == INIT_CP) {
-  //          solveCP_Dual_Gurobi(pInst, epoch, inputPaths, 0.0);
-            for (auto &requestObj : zSolution_) {
-                requestObj->dual_ = requestObj->penalty_;
-            }
-        }*/
-    }
-    if (pInst->parameters_->dualMethod_ == AUX_BOX) {
-        float box = 0.8;
-        for (auto &requestObj : zSolution_) {
-            requestObj->dual_ = box * requestObj->penalty_;
-        }
-    }
-    if (pInst->parameters_->initialDual_ == INITIAL_LP || pInst->parameters_->initialDual_ == BARRIER) {
-        for (auto &requestObj : zSolution_) {
-            requestObj->dual_ = requestObj->InitialDual_;
-        }
+
     }
 }
 
@@ -345,9 +290,6 @@ void MasterAlgorithm::calcCompatibilityM1(PRoute &route, PRoute &currentVehicleR
         }
     }
 
-    // XOR operation to find differences (differences.count() should be added to incompatibilityDegree_)
-    // auto differences = route->column_ ^ pInst->vehicles_[route->vehicleID_]->currentRoute_->column_;
-
     if (route->incompatibilityDegree_ > 0)
         route->isCompatible_ = false;
 }
@@ -363,8 +305,6 @@ void MasterAlgorithm::calcCompatibilityM2(PRoute &route, PInstance &pInst) {
     }
     if (route->incompatibilityDegree_ > 0)
         route->isCompatible_ = false;
-
-    // route->IncScore_ = route->reducedCost_/ std::max(route->incompatibilityDegree_, 1);
 }
 
 void MasterAlgorithm::calcCompatibilityM2Full(PRoute &route, PInstance &pInst) {
@@ -410,7 +350,6 @@ void MasterAlgorithm::updateScore1(PInstance &pInst) {
                     if (requestObj->solVehicleID_ == LARGE_CONSTANT)
                         routeObj->IncScoreRatio_ += 1 / m_j;
                 }
- //               std::cout << "score: " << routeObj->IncScore_ << " - " << routeObj->incompatibilityDegree_ << std::endl;
                 routeObj->IncScoreRatio_ *= routeObj->reducedCost_;
             }
         }
@@ -642,27 +581,10 @@ void MasterAlgorithm::updateRoutesToAddOne(SelectionMode selectMode, PInstance &
 
 void MasterAlgorithm::reFillRoutesToAdd(PInstance &pInst, std::vector<PRoute> &routesToAdd) {
 
-    /*for (auto & vehicleObj : pInst->vehicles_) {
-        for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
-            if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
-                continue;
- //           if (routeObj->mpAdded_) {
-                // first time we see this column pattern → keep it
-                routeObj->createColumn(pInst->nbRequests_);
-                routesToAdd.push_back(routeObj);
-                nbColumnsAdded_++;
-            }
- //       }
-    }*/
-
-
     for (auto & vehicleObj : pInst->vehicles_) {
-//        std::unordered_set<std::string> seen;
         for (auto & routeObj : availableRoutes_[vehicleObj->vehicleID_]) {
             if (routeObj->getRouteId() == vehicleObj->currentRoute_->getRouteId())
                 continue;
-            // Build a simple signature for this column
-//            std::string key = makeKey(*routeObj, vehicleObj->vehicleID_);
             // Insert returns {iterator, inserted}; inserted==true means new
             if (routeObj->keepMP_) {
                 // first time we see this column pattern → keep it
@@ -698,18 +620,16 @@ void MasterAlgorithm::reFillRoutesToAddCP(PInstance &pInst, std::vector<PRoute> 
 }
 
 void MasterAlgorithm::updateRoutesToAddZoom(std::vector<PRoute> &routesToAdd) const {
-    // add fractional routes
-    for (auto & routeObj: CompPro_->fractionalRoutes_) {
+    if (!CPSolver_) return;
+    for (auto &routeObj : CPSolver_->fractionalRoutes_) {
         if (!routeObj->mpAdded_)
             routesToAdd.push_back(routeObj);
     }
-
-    for (auto & routeObj : CompPro_->IncRoute_) {
+    for (auto &routeObj : CPSolver_->IncRoute_) {
         if (!routeObj->mpAdded_ && routeObj->reducedCost_ <= 0)
             routesToAdd.push_back(routeObj);
     }
 }
-
 
 // function to save the reduced costs and incompatibility degree of the created routes
 void MasterAlgorithm::save_IncDegree_RDCost(const InputPaths &inputPaths, int epoch, int isudIter) const {
@@ -717,7 +637,6 @@ void MasterAlgorithm::save_IncDegree_RDCost(const InputPaths &inputPaths, int ep
     myFile.open (inputPaths.getOutputIncDegreeRdCost(), std::ofstream::app);
 
     for (int i = 0; i < availableRoutes_.size(); i++){
-        //   for (auto & routeListObj : availableRoutes_) {
         for (auto & routeObj : availableRoutes_[i]) {
             myFile << epoch << ",";
             myFile << isudIter << ",";
@@ -884,134 +803,12 @@ void MasterAlgorithm::createFinalOutputString(const PInstance &pInst, float subp
     pInst->instRepStr_ << CGSuccess_ << ",";
 }
 
-void MasterAlgorithm::solveCP_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    CompPro_ = std::make_shared<ComplementPro>();
-    CompPro_->routesToAdd_.clear();
-    updateRoutesToAdd(CP, pInst, CompPro_->routesToAdd_);
-    if (minReducedCost_ < 0 && CompPro_->routesToAdd_.size() > 0) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        CompPro_->buildModel(pInst, zSolution_, routeSolution_, nbVehicles_);
-        CompPro_->updateModel(pInst, zSolution_, routeSolution_);
-        CPBuildTime_->stop();
-
-        while (true) {
-            previousObj_ = objValue_;
-            CompPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
-            CPIter_++;
-            setCurrentRoutes(pInst);
-
-            CPEpochSolveTime_ += CompPro_->solveTime_->dSinceStart().count();
-            setObjValue();
-            epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-            iterTime_ = masterTime_->dSinceStart().count();
-            (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CompPro_->IncRoute_.size()),
-                                                        masterTime_->dSinceStart().count(), subProTime, 0.0);
-
-            if (CompPro_->status_ == NEGATIVE_VALUE) {
-
-                CPSuccess_++;
-                previousObj_ = objValue_;
-                RMPCounter_++;
-                setAvailableTime();
-                if (availableTime_ < 3) {
-                    break;
-                }
-            }
-            else {
-                break;
-            }
-        }
-
-        CompPro_.reset();
-        CompPro_ = std::make_shared<ComplementPro>();
-        CPTime_->stop();
-    }
-}
-
-void MasterAlgorithm::solveCP_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
-    CPGurobiPro_->routesToAdd_.clear();
-    updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    CPTime_->start();
-    CPBuildTime_->start();
-    if (pInst->parameters_->reducedCP_) {
-        CPGurobiPro_->buildModel_batch(pInst);
-        CPBuildTime_->stop();
-        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths);
-    }
-    else {
-        CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
-        CPGurobiPro_->updateModel();
-        CPBuildTime_->stop();
-        CPGurobiPro_->solveCPModel(pInst, zSolution_, routeSolution_, inputPaths, true);
-        setCurrentRoutes(pInst);
-    }
-    CPIter_++;
-    CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
-    setObjValue();
-    epochTime_ += (masterTime_->dSinceStart().count() - iterTime_);
-    iterTime_ = masterTime_->dSinceStart().count();
-    (*pLogMPResultsStream_) << save_MPResults(epoch, "CP", static_cast<int>(CPGurobiPro_->IncRoute_.size()),
-                                                masterTime_->dSinceStart().count(), subProTime, 0.0);
-
-    CPGurobiPro_.reset();
-    CPTime_->stop();
-}
-
-void MasterAlgorithm::solveCP_Dual_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
-    /************************************************************************************************/
-    //                                     COMPLEMENTARY PROBLEM
-    /************************************************************************************************/
-    /*std:: vector<PRoute> routeBack = routeSolution_;
-    routeSolution_.clear();
-    for (auto & vehicleObj : pInst->vehicles_) {
-        availableRoutes_[vehicleObj->vehicleID_].push_back(vehicleObj->currentRoute_);
-        availableRoutes_[vehicleObj->vehicleID_].push_back(vehicleObj->emptyRoute_);
-        routeSolution_.push_back(vehicleObj->greedyRoute_);
-    }
-    setCurrentRoutes(pInst);*/
-    CPGurobiPro_ = std::make_shared<CPModeler>(inputPaths.getOutputSolverLog());
-    CPGurobiPro_->initializeCP(pInst, pInst->parameters_->reducedCP_);
-    CPGurobiPro_->routesToAdd_.clear();
-    reFillRoutesToAddCP(pInst, CPGurobiPro_->routesToAdd_);
-    //   updateRoutesToAdd(CP, pInst, CPGurobiPro_->routesToAdd_);
-    /*for (auto & vehicleObj : pInst->vehicles_) {
-        CPGurobiPro_->routesToAdd_.push_back(vehicleObj->emptyRoute_);
-    }*/
-    if (!CPGurobiPro_->routesToAdd_.empty()) {
-        CPTime_->start();
-        CPBuildTime_->start();
-        if (pInst->parameters_->reducedCP_) {
-            CPGurobiPro_->buildModel_batch(pInst);
-        }
-        else {
-            CPGurobiPro_->buildModel_batch(pInst, routeSolution_);
-            CPGurobiPro_->updateModel();
-        }
-        CPBuildTime_->stop();
-        CPGurobiPro_->solveCPDual(pInst, inputPaths);
-        CPIter_++;
-        CPEpochSolveTime_ += CPGurobiPro_->solveTime_->dSinceStart().count();
-        CPGurobiPro_.reset();
-        CPTime_->stop();
-    }
-}
-
 void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
-   constexpr double reducedCostThreshold = 100.0;
-//    constexpr double reducedCostThreshold = 1.0;
+    const double reducedCostThreshold = pInst->parameters_->reducedCostThreshold_;
 
     // Reset coverage / insertion flags
     for (auto & requestObj: pInst->requests_) {
-        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
+        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_BASIS) {
             requestObj->coveredVehicles_.reset();
             requestObj->coveredVehicles_.resize(nbVehicles_);
         }
@@ -1024,19 +821,33 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
             requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
         }
     }
-    if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_ROUTE) {
+    if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_BASIS) {
+        for (auto & vehicleObj : pInst->vehicles_) {
+            auto & routes = availableRoutes_[vehicleObj->vehicleID_];
+
+            // Coverage check only on remaining routes
+            for (auto & routeObj: routes) {
+                if (routeObj->keepMP_) {
+                    for (auto & requestObj: routeObj->routeRequests_) {
+                        requestObj->coveredVehicles_.set(vehicleObj->vehicleID_, true);
+                    }
+                }
+            }
+        }
+    }
+    else if (pInst->parameters_->labelingReOptimizeStrategy_ == BY_POOL) {
         for (auto & vehicleObj : pInst->vehicles_) {
             auto & routes = availableRoutes_[vehicleObj->vehicleID_];
 
             // Remove routes with high reduced cost and keepMP_ == false
-            /*routes.erase(
+            routes.erase(
                 std::remove_if(routes.begin(), routes.end(),
                     [reducedCostThreshold](const auto &routeObj) {
                         return (routeObj->reducedCost_ > reducedCostThreshold &&
                                 routeObj->keepMP_ == false);
                     }),
                 routes.end()
-            );*/
+            );
 
             // Coverage check only on remaining routes
             for (auto & routeObj: routes) {
@@ -1051,30 +862,18 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
 }
 
 void MasterAlgorithm::calcDualsStatistics(const PInstance &pInst) {
-    try {
-        std::vector<double> pi_values;
-        pi_values.reserve(pInst->requests_.size());
+    std::vector<double> pi_values;
+    pi_values.reserve(pInst->requests_.size());
 
-        // Get request constraint duals
-        for (size_t i = 0; i < pInst->requests_.size(); ++i) {
-            pi_values.push_back(pInst->requests_[i]->dual_);
-        }
-
-        // Compute stats if we have requests
-        summaryDuals_.maxDual = *std::max_element(pi_values.begin(), pi_values.end());
-        summaryDuals_.minDual = *std::min_element(pi_values.begin(), pi_values.end());
-        summaryDuals_.meanDual = std::accumulate(pi_values.begin(), pi_values.end(), 0.0) / pi_values.size();
-
-    } catch (GRBException& e) {
-        std::cerr << "Error in getDuals: " << e.getMessage() << std::endl;
-        throw;
+    // Get request constraint duals
+    for (size_t i = 0; i < pInst->requests_.size(); ++i) {
+        pi_values.push_back(pInst->requests_[i]->dual_);
     }
-}
 
-// save initial duals
-/*if (pInst->parameters_->solutionMode_ != ANYTIME) {
-    (*pLogIterReqDualStream_) << pInst->saveReqDuals(epoch, RMPCounter_, "initial");
-    (*pLogIterVehDualStream_) << pInst->saveVehDuals(epoch, RMPCounter_, "initial");
-}*/
+    // Compute stats if we have requests
+    summaryDuals_.maxDual = *std::max_element(pi_values.begin(), pi_values.end());
+    summaryDuals_.minDual = *std::min_element(pi_values.begin(), pi_values.end());
+    summaryDuals_.meanDual = std::accumulate(pi_values.begin(), pi_values.end(), 0.0) / pi_values.size();
+}
 
 

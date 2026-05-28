@@ -11,5 +11,9 @@ set(SOURCE_FILES
         SolutionMetrics.cpp)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
-target_link_libraries(${LIB_NAME} ${LIBS})
+
+# `data` is a pure data-model library. It has no CPLEX, Gurobi, or threading
+# symbols of its own, and Boost/Eigen are header-only via include_directories
+# at the project root, so no link-time dependencies are required here.
+
 set_property(TARGET ${LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)

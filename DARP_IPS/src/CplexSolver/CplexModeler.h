@@ -17,11 +17,14 @@
 class CplexModeler {
 public:
     // CPLEX environment and model objects
-    IloEnv env_;
+    IloEnv env_;                             // owned value — each modeler has its own env
     IloModel Model_;
     IloCplex Cplex_;
     IloObjective objFunction_;
 
+    // Variables
+    IloNumVarArray routeVar_;               // route variables
+    IloNumVarArray zVar_;                   // request(z) variables
 
     // dual variables
     IloNumArray requestDuals_;
@@ -42,6 +45,11 @@ public:
     // Constructor and Destructor
     CplexModeler();
 
+    // End the entire IloEnv and reinitialise all Concert base members from a
+    // fresh env. Used in resetForNextIteration() as a debugging nuclear option
+    // to confirm whether accumulated env-pool memory is the source of growth.
+    void renewEnv();
+
     virtual ~CplexModeler();
 
     // this function clears all objects from the model at the start of each epoch
@@ -59,7 +67,6 @@ public:
     // this function adds zVar to the model
     void addZVarInt(IloNumVarArray &zVar, const PRequest &request, VarSign sign);
     void addZVarFloat(IloNumVarArray &zVar, const PRequest &request, VarSign sign);
-    void addUVarFloat(IloNumVarArray &uVar, IloNumVarArray &vVar, const PRequest &request);
 
     // this function adds routeVar to the model
     void addRouteVarInt(IloNumVarArray &routeVar, const PRoute &newRoute, VarSign sign, const PInstance &pInst);

@@ -285,7 +285,7 @@ bool Route::reConstruct(const PVehicle& vehicle, float wait_W1, float ride_W2)
             else {
                 for (std::size_t j = start; j < k; ++j) {
                     if (n->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
-                        if (reach - (tmp.plannedReachTime_[j] + routeNodes_[j]->serviceTime_) > n->related_Request_->maxTravelTime_) {
+                        if (reach - (tmp.plannedReachTime_[j - start + 1] + routeNodes_[j]->serviceTime_) > n->related_Request_->maxTravelTime_) {
                             return false;
                         }
                     }

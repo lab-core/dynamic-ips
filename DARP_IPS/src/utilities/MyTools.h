@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include "json.hpp"
 #include "Types.h"
+#include <stdexcept>
 
 using json = nlohmann::json;
 namespace eu = enum_utils;

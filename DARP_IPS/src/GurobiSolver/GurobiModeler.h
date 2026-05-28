@@ -15,7 +15,7 @@
 
 class GurobiModeler {
 public:
-    GRBEnv env_;
+    GRBEnv& env_;
     GRBModel* model_;
     std::string outputLog_;
 
@@ -40,14 +40,14 @@ public:
 
 
     // Constructor and Destructor
-    GurobiModeler(std::string outputLog);
+    GurobiModeler(const std::string &outputLog);
     ~GurobiModeler();
 
     // Helper function for creating column
-    GRBColumn createColumn(const PRoute& route, VarSign sign, const PInstance& pInst);
+    [[nodiscard]] GRBColumn createColumn(const PRoute& route, VarSign sign, const PInstance& pInst) const;
 
     // Display function
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     // Initialize the model
     void initializeModel(const PInstance& pInst, int rhs, int nbVehicles);
@@ -62,31 +62,31 @@ public:
 
 
     // Set parameters
-    void setParameters(const PInstance& pInst, float availableTime);
+    void setParameters(const PInstance& pInst, float availableTime) const;
 
     // Solve the model
-    int solve();
+    int solve() const;
 
     // Get solution status and objective value
     int getStatus() const;
     double getObjValue() const;
 
     // Get variable values
-    double getVarValue(const GRBVar& var) const;
+    static double getVarValue(const GRBVar& var);
 
     // Get dual values
-    void getDuals(const PInstance& pInst);
+    void getDuals(const PInstance& pInst) const;
 
-    void getBarrierDuals(const PInstance &pInst);
+    void getBarrierDuals(const PInstance &pInst) const;
 
-    void getDualsFromRelaxed(GRBModel &relaxedModel, const PInstance& pInst);
+    void getDualsFromRelaxed(const GRBModel &relaxedModel, const PInstance& pInst) const;
 
     // Access to variables
     const std::vector<GRBVar>& getRouteVar() const { return routeVar_; }
     const std::vector<GRBVar>& getZVar() const { return zVar_; }
 
     // Timer access
-    myTools::Timer* getSolveTimer() { return solveTime_; }
+    myTools::Timer* getSolveTimer() const { return solveTime_; }
 
     // Convert variables to integer/continious
     void convertToInt();

@@ -16,7 +16,8 @@
 
 class CPModeler {
 public:
-    GRBEnv env_;
+    // Reference to the process-wide Gurobi env (see solvers/SolverEnv.h).
+    GRBEnv& env_;
     GRBModel* model_;
     std::string outputLog_;
 
@@ -54,8 +55,8 @@ public:
     void initializeCP(const PInstance& pInst, bool reduced);
 
     // Helper functions
-    GRBColumn createRouteColumn(const PRoute& newRoute, const PRoute &currentVehicleRoute);
-    GRBColumn createRouteColumn(const PRoute& newRoute, VarSign sign);
+    GRBColumn createRouteColumn(const PRoute& newRoute, const PRoute &currentVehicleRoute) const;
+    GRBColumn createRouteColumn(const PRoute& newRoute, VarSign sign) const;
 
     // add route variables
     void addRouteVar(const PRoute& newRoute, const PRoute &currentVehicleRoute);
@@ -82,6 +83,7 @@ public:
     void repairModel(const PInstance& pInst, const std::vector<PRoute>& routeSolution);
     // Adding incompatible route columns
     void updateModel();
+    void updateModel(const PInstance& pInst);  // pInst ignored; unified signature for merged ISUD
     void updateNormalCoefficients();
     void resetForNextIteration();
 
@@ -106,7 +108,7 @@ public:
 
     void solveCPDual(PInstance& pInst, InputPaths& inputPaths);
 
-    bool isColumnDisjoint(const std::vector<PRoute>& routeResults, int nbRequests, int nbVehicles);
+    static bool isColumnDisjoint(const std::vector<PRoute>& routeResults, int nbRequests, int nbVehicles);
 
     bool isColumnDisjointFast(const std::vector<PRequest> &zResults, const std::vector<PRoute> &routeResults,
                               const PInstance &pInst);

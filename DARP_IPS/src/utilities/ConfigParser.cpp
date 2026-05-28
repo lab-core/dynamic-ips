@@ -5,7 +5,6 @@
 #include "ConfigParser.h"
 #include <iostream>
 #include <map>
-#include <stdexcept>
 #include <algorithm>
 
 // ProgramConfig implementation

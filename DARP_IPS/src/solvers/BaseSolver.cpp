@@ -3,31 +3,17 @@
 //
 
 #include "BaseSolver.h"
-#include "data/Instance.h"
-#include "solvers/LabelingSubProblem.h"
-#include "CplexSolver/CPLEXSubProblem.h"
-#include "GurobiSolver/MP_Gurobi.h"
-#include "CG_Algorithm.h"
-#include "ISUD_Algorithm.h"
+
 
 BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) {
     labelsPool_.defineSize(mainInst->parameters_->nbThreads_);
     subProOptions_ = std::make_shared<solverOption>(mainInst->parameters_);
     if (mainInst->parameters_->approach_ == ISUD)
-        MP_solver_ = std::make_unique<ISUD_Algorithm>(inputPaths, mainInst->parameters_->modelSolver_);
+        MP_solver_ = std::make_unique<ISUD_Algorithm>(inputPaths);
     else if (mainInst->parameters_->approach_ == CG)
-        MP_solver_ = std::make_unique<CG_Algorithm>(inputPaths, mainInst->parameters_->modelSolver_);
+        MP_solver_ = std::make_unique<CG_Algorithm>(inputPaths);
     GreedyModel_ = std::make_shared<GreedyModeler>();
 
-    if (mainInst->parameters_->vehicleReturn_) {
-        env_.set(GRB_IntParam_UpdateMode, 1);
-        env_.start();
-
-        env_.set(GRB_IntParam_LogToConsole, 0);
-        env_.set(GRB_IntParam_Threads, 1);
-
-        env_.set(GRB_IntParam_OutputFlag, 0); // Suppress output
-    }
 
     // Shared state
     elapsedTime_ = 0.0;
@@ -49,8 +35,6 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
     nbThreePick_ = 0;
     nbRecycle_ = 0;
     heuristicEpochObj_ = 0.0;
-
-
 
     runtimeMetrics_ = std::make_unique<RuntimeMetrics>();
 
@@ -189,301 +173,50 @@ void BaseSolver::configureLabelingSubproblem(PLabelingSubPro &subProblem, PVehic
         subProblem->reOptimize_ = false;
 }
 
-void BaseSolver::returnVehiclesAssign(const PInstance &EpochInst) const {
+void BaseSolver::returnVehicles(const PInstance &EpochInst) const {
     rebalancingProcessTime_->start();
     rebalancingTime_->stop();
 
-    if (!EpochInst->lastCommittedRequests_.empty()) {
-        /* ---------- 1. reference time for "idle" test ---------- */
-        float epochStartTime = 0;
-        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-            epochStartTime = EpochInst->simulationStartTime_ + elapsedTime_;
+    // For ASSIGN, nothing to do if no committed requests to target
+    if (EpochInst->parameters_->returnPolicy_ == ASSIGN &&
+        EpochInst->lastCommittedRequests_.empty()) {
+        rebalancingTime_->start();
+        rebalancingProcessTime_->stop();
+        return;
+    }
+
+    // Unified cutoff time using WaitForReturn_
+    float epochStartTime;
+    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
+        epochStartTime = EpochInst->simulationStartTime_ + elapsedTime_;
+    else
+        epochStartTime = EpochInst->simulationStartTime_ +
+                         static_cast<float>(epoch_) * EpochInst->parameters_->epochLength_;
+    const float lastEpoch = epochStartTime - EpochInst->parameters_->WaitForReturn_;
+
+    // Collect idle vehicles
+    std::vector<PVehicle> idleVehicles;
+    for (auto &vehicleObj : EpochInst->vehicles_) {
+        if (vehicleObj->currentRoute_->routeSize_ == 1 &&
+            vehicleObj->currentRoute_->plannedReachTime_[0] +
+            vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch)
+            idleVehicles.push_back(vehicleObj);
+    }
+
+    if (!idleVehicles.empty()) {
+#ifdef DARP_USE_GUROBI
+        AssignmentSolver assignSolver(solverEnv::gurobi());
+#elif defined(DARP_USE_CPLEX)
+        AssignmentSolver assignSolver(solverEnv::cplex());
+#endif
+        if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
+            assignSolver.returnToSource(EpochInst, idleVehicles, elapsedTime_, simulationTime_);
         else
-            epochStartTime = EpochInst->simulationStartTime_ + static_cast<float>(epoch_) * EpochInst->parameters_->epochLength_;
-        float lastEpoch = epochStartTime - EpochInst->parameters_->WaitForReturn_;
-
-        /* ---------- 2. collect idle vehicles ---------- */
-        std::vector<PVehicle> idleVehicles;
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ == 1 &&
-                vehicleObj->currentRoute_->plannedReachTime_[0] +
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
-                idleVehicles.push_back(vehicleObj);
-                }
-        }
-
-        if (!idleVehicles.empty()) {
-            if (EpochInst->parameters_->modelSolver_ == GUROBI)
-                solveGurobiAssignment(EpochInst, idleVehicles);
-            else
-                solveCplexAssignment(EpochInst, idleVehicles);
-        }
+            assignSolver.solve(EpochInst, idleVehicles, durationMatrix_,
+                               elapsedTime_, simulationTime_);
     }
 
     EpochInst->lastCommittedRequests_.clear();
-    rebalancingTime_->start();
-    rebalancingProcessTime_->stop();
-}
-
-void BaseSolver::solveGurobiAssignment(const PInstance &EpochInst, std::vector<PVehicle> &idleVehicles) const {
-    /* ---------- 4. build and solve assignment MIP ---------- */
-    try {
-        const std::size_t nV = idleVehicles.size();
-        const std::size_t nR = EpochInst->lastCommittedRequests_.size();
-        const int need = static_cast<int>(std::min(nV, nR));
-
-        GRBModel model = GRBModel(env_);
-
-        // Create decision variables y[v][r]
-        std::vector<std::vector<GRBVar>> y(nV);
-        for (std::size_t v = 0; v < nV; ++v) {
-            y[v].resize(nR);
-            for (std::size_t r = 0; r < nR; ++r) {
-                if (idleVehicles[v]->departNode_->zoneID_ != EpochInst->lastCommittedRequests_[r]->pickZoneID_)
-                    y[v][r] = model.addVar(0.0, 1.0, 0.0, GRB_CONTINUOUS);
-                else
-                    y[v][r] = model.addVar(0.0, 0.0, 0.0, GRB_CONTINUOUS);
-            }
-        }
-
-        /* objective */
-        GRBLinExpr obj = 0;
-        for (std::size_t v = 0; v < nV; ++v) {
-            int vehLoc = idleVehicles[v]->departNode_->locationID_;
-            for (std::size_t r = 0; r < nR; ++r) {
-                int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                float cost = durationMatrix_[vehLoc][reqLoc];
-                obj += cost * y[v][r];
-            }
-        }
-        model.setObjective(obj, GRB_MINIMIZE);
-
-        /* (1) at most one request per vehicle */
-        for (std::size_t v = 0; v < nV; ++v) {
-            GRBLinExpr sum = 0;
-            for (std::size_t r = 0; r < nR; ++r) {
-                sum += y[v][r];
-            }
-            model.addConstr(sum <= 1);
-        }
-
-        /* (2) at most one vehicle per request */
-        for (std::size_t r = 0; r < nR; ++r) {
-            GRBLinExpr sum = 0;
-            for (std::size_t v = 0; v < nV; ++v) {
-                sum += y[v][r];
-            }
-            model.addConstr(sum <= 1);
-        }
-
-        /* (3) use exactly min(|V_idle|, |R_late|) vehicles */
-        GRBLinExpr tot = 0;
-        for (std::size_t v = 0; v < nV; ++v) {
-            for (std::size_t r = 0; r < nR; ++r) {
-                tot += y[v][r];
-            }
-        }
-        model.addConstr(tot == need);
-
-        // Solve the model
-        model.optimize();
-
-        /* ---------- 5. write back assignments ---------- */
-        if (model.get(GRB_IntAttr_Status) == GRB_OPTIMAL) {
-            for (std::size_t v = 0; v < nV; ++v) {
-                for (std::size_t r = 0; r < nR; ++r) {
-                    if (y[v][r].get(GRB_DoubleAttr_X) > 0.5) {
-                        std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Requests " << EpochInst->lastCommittedRequests_[r]->pickZoneID_ << std::endl;
-
-                        PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
-                        sinkNode->zoneID_ = EpochInst->lastCommittedRequests_[r]->pickZoneID_;
-                        sinkNode->locationID_ = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                        idleVehicles[v]->currentRoute_->addSink(sinkNode);
-                        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                            idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
-                                + elapsedTime_ + simulationTime_->dSinceStart().count(),
-                                EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    catch (const GRBException &e) {
-        std::cerr << "Gurobi error in returnVehiclesAssign: "
-                  << e.getMessage() << std::endl;
-    }
-}
-
-void BaseSolver::solveCplexAssignment(const PInstance &EpochInst, std::vector<PVehicle> &idleVehicles) const {
-    /* ---------- 4. build and solve assignment MIP ---------- */
-    IloEnv   env;
-    try {
-        const std::size_t nV = idleVehicles.size();
-        const std::size_t nR = EpochInst->lastCommittedRequests_.size();
-        const int need = static_cast<int>(std::min(nV, nR));
-
-        IloModel model(env);
-        IloArray<IloBoolVarArray> y(env, nV);          // y[v][r]
-        for (std::size_t v = 0; v < nV; ++v) {
-            y[v] = IloBoolVarArray(env, nR);
-            for (std::size_t r = 0; r < nR; ++r) y[v][r] = IloBoolVar(env);
-        }
-
-        /* objective */
-        IloExpr obj(env);
-        for (std::size_t v = 0; v < nV; ++v) {
-            int vehLoc = idleVehicles[v]->departNode_->locationID_;
-            for (std::size_t r = 0; r < nR; ++r) {
-                int reqLoc = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                float cost = durationMatrix_[vehLoc][reqLoc];
-                obj += cost * y[v][r];
-            }
-        }
-        model.add(IloMinimize(env, obj)); obj.end();
-        IloExpr total(env);
-        /* (1) at most one request per vehicle */
-        for (std::size_t v = 0; v < nV; ++v) {
-            IloExpr sum(env);
-            for (std::size_t r = 0; r < nR; ++r) sum += y[v][r];
-            model.add(sum <= 1); sum.end();
-        }
-
-        /* (2) at most one vehicle per request */
-        for (std::size_t r = 0; r < nR; ++r) {
-            IloExpr sum(env);
-            for (std::size_t v = 0; v < nV; ++v) sum += y[v][r];
-            model.add(sum <= 1); sum.end();
-        }
-
-        /* (3) use exactly min(|V_idle|, |R_late|) vehicles */
-        IloExpr tot(env);
-        for (std::size_t v = 0; v < nV; ++v)
-            for (std::size_t r = 0; r < nR; ++r) tot += y[v][r];
-        model.add(tot == need); tot.end();
-
-        IloCplex cplex(model);
-        cplex.setOut(env.getNullStream());
-        cplex.setParam(IloCplex::Param::RootAlgorithm, 2);
-        cplex.setParam(IloCplex::Param::Threads, EpochInst->parameters_->nbThreads_);
-        cplex.solve();
-
-        /* ---------- 5. write back assignments ---------- */
-        for (std::size_t v = 0; v < nV; ++v)
-            for (std::size_t r = 0; r < nR; ++r)
-                if (cplex.getValue(y[v][r]) > 0.5) {
-                    std::cout << "Vehicle " << idleVehicles[v]->departNode_->zoneID_ << " to " << "Requests " << EpochInst->lastCommittedRequests_[r]->pickZoneID_ << std::endl;
-
-                    PNode sinkNode = std::make_shared<Node>(idleVehicles[v]->sinkNode_);
-                    sinkNode->zoneID_ = EpochInst->lastCommittedRequests_[r]->pickZoneID_;
-                    sinkNode->locationID_ = EpochInst->lastCommittedRequests_[r]->PickUpID_;
-                    idleVehicles[v]->currentRoute_->addSink(sinkNode);
-                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                        idleVehicles[v]->updateCurrentRoute(EpochInst->simulationStartTime_
-                            + elapsedTime_ + simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_,
-                            EpochInst->parameters_->Ride_W2_);
-                    break;
-                }
-    }
-    catch (const IloException &e) {
-        std::cerr << "CPLEX error in returnVehiclesAssign: "
-                  << e.getMessage() << std::endl;
-    }
-    env.end();
-}
-
-void BaseSolver::returnVehiclesSource(const PInstance &EpochInst) const {
-    rebalancingProcessTime_->start();
-    rebalancingTime_->stop();
-    float lastEpoch = 0;
-    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-        lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->committedTime_;
-    else
-        lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->epochLength_;
-
-    // Return Idle Vehicles
-    if (EpochInst->parameters_->vehicleReturn_) {
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
-                if (vehicleObj->currentRoute_->routeNodes_.back()->locationID_ != vehicleObj->sinkNode_->locationID_){
-                    PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
-                    vehicleObj->currentRoute_->addSink(sinkNode);
-                    if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                        vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_ + elapsedTime_+
-                        simulationTime_->dSinceStart().count(), EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
-                }
-                }
-        }
-    }
-    rebalancingTime_->start();
-    rebalancingProcessTime_->stop();
-}
-
-void BaseSolver::returnVehiclesZone(const PInstance &EpochInst) const {
-    rebalancingProcessTime_->start();
-    rebalancingTime_->stop();
-    if (EpochInst->parameters_->vehicleReturn_) {
-        float lastEpoch = 0;
-        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-            lastEpoch = EpochInst->simulationStartTime_ + elapsedTime_ - EpochInst->parameters_->WaitForReturn_;
-        else
-            lastEpoch = EpochInst->simulationStartTime_ + static_cast<float> (epoch_) * EpochInst->parameters_->epochLength_ - EpochInst->parameters_->WaitForReturn_;
-
-        for (auto & zoneObj : EpochInst->zones_) {
-            zoneObj.second->nbVehicles_ = 0;
-        }
-
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            EpochInst->zones_[vehicleObj->currentRoute_->routeNodes_.back()->zoneID_]->nbVehicles_++;
-        }
-        for (auto &zoneObj : EpochInst->zones_) {
-            if (zoneObj.second->nbVehicles_ < zoneObj.second->nbVehiclesRef_ * 0.95 && zoneObj.second->highDemandZone_) {
-                zoneObj.second->underCapacity_ = true;
-            }
-            else
-                zoneObj.second->underCapacity_ = false;
-        }
-
-        // Return Idle Vehicles
-        std::vector<PVehicle> idleVehicles;
-
-        for (auto &vehicleObj: EpochInst->vehicles_) {
-            if (vehicleObj->currentRoute_->routeSize_ == 1 && vehicleObj->currentRoute_->plannedReachTime_[0]+
-                vehicleObj->currentRoute_->routeNodes_.back()->serviceTime_ < lastEpoch) {
-                if (!EpochInst->zones_[vehicleObj->departNode_->zoneID_]->underCapacity_ ) {
-                    idleVehicles.push_back(vehicleObj);
-                }
-            }
-        }
-
-        if (!idleVehicles.empty()) {
-            for (auto &vehicleObj : idleVehicles) {
-                // Retrieve the current zone from the vehicle's last route node.
-                int currentZoneID = vehicleObj->currentRoute_->routeNodes_.back()->zoneID_;
-                PZone currentZone = EpochInst->zones_[currentZoneID];
-
-                // Iterate over the current zone's successors (assumed to be ordered by proximity).
-                for (Zone* successor : currentZone->successors_) {
-                    // Check if the successor zone is under capacity (i.e., less than 90% of its reference).
-                    if (successor->nbVehicles_ < successor->nbVehiclesRef_ * 0.95 && successor->highDemandZone_ &&
-                        vehicleObj->sinkNode_->zoneID_ != successor->zoneID_) {
-                        PNode sinkNode = std::make_shared<Node>(vehicleObj->sinkNode_);
-                        sinkNode->zoneID_ = static_cast<int>(successor->zoneID_);
-                        sinkNode->locationID_ = successor->centerLocationID_;
-                        successor->nbVehicles_++; // Update vehicle count.
-                        vehicleObj->currentRoute_->addSink(sinkNode);
-                        if (EpochInst->parameters_->solutionMode_ == ANYTIME)
-                            vehicleObj->updateCurrentRoute(EpochInst->simulationStartTime_
-                                + elapsedTime_ + simulationTime_->dSinceStart().count(),
-                                EpochInst->parameters_->Wait_W1_, EpochInst->parameters_->Ride_W2_);
-                        break; // Assign to the nearest eligible successor.
-                        }
-                }
-                // If no eligible successor is found, the vehicle remains unassigned.
-            }
-        }
-    }
     rebalancingTime_->start();
     rebalancingProcessTime_->stop();
 }
@@ -548,14 +281,10 @@ void BaseSolver::logEpochInfo(int epoch, float elapsedTime, float simulationTime
 }
 
 void BaseSolver::handleVehicleReturn(PInstance &EpochInst) {
-    if (EpochInst->parameters_->vehicleReturn_ && elapsedTime_ - rebalanceTime_ >= EpochInst->parameters_->committedTime_) {
-        if (EpochInst->parameters_->returnPolicy_ == TO_SOURCE)
-            returnVehiclesSource(EpochInst);
-        else if (EpochInst->parameters_->returnPolicy_ == ZONE)
-            returnVehiclesZone(EpochInst);
-        else
-            returnVehiclesAssign(EpochInst);
-        rebalanceTime_ = elapsedTime_;
+    if (EpochInst->parameters_->vehicleReturn_ &&
+        elapsedTime_ - rebalanceTime_ >= EpochInst->parameters_->committedTime_) {
+        returnVehicles(EpochInst);
+        rebalanceTime_ = static_cast<int>(elapsedTime_);
     }
 }
 
@@ -591,7 +320,7 @@ void BaseSolver::updateAvailableRoutes(boost::dynamic_bitset<> &removedRequests,
         // Remove routes with overlapping requests or empty route requests
         for (auto &route : vehicleRoutes) {
             if (route->column_.size() != removedRequests.size())
-                std::cout << "error";
+                std::cerr << "[ERROR] column size mismatch in route recycling\n";
         }
         vehicleRoutes.erase(
                 std::remove_if(vehicleRoutes.begin(), vehicleRoutes.end(),
@@ -661,10 +390,16 @@ void BaseSolver::solveEpoch(PInstance &EpochInst, PInstance &mainInst, InputPath
         if (mainInst->parameters_->subAlgorithm_ == LABEL_SETTING)
             subProBreak = solve_SP<PLabelingSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
                 MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->MPnbRoutes_,MP_solver_->duplicatesRoutes_);
-        else
-            subProBreak = solve_SP<PCplexSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
+        else {
+#ifdef DARP_USE_GUROBI
+            subProBreak = solve_SP<PGurobiSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
                 MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->MPnbRoutes_, MP_solver_->duplicatesRoutes_);
 
+#elif DARP_USE_CPLEX
+            subProBreak = solve_SP<PCplexSubPro>(EpochInst, mainInst, iter, nbNegativeFound,
+                MP_solver_->availableRoutes_, MP_solver_->availableTime_, MP_solver_->MPnbRoutes_, MP_solver_->duplicatesRoutes_);
+#endif
+        }
         if (subProBreak) {
             std::cout << "Terminate CG-> Not enough time to run the subproblems! " << std::endl;
             break;
@@ -888,8 +623,13 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
                 // Configure labeling-specific parameters
                 configureLabelingSubproblem(subProSolve.back(), vehicleObj, EpochInst, iter, availableRoutes);
 
-            } else { // CPLEX subproblem
-                subProSolve.emplace_back(std::make_shared<CPLEXSubProblem>(vehicleObj));
+            }
+            else {
+#if defined(DARP_USE_GUROBI)
+                subProSolve.emplace_back(std::make_shared<SubProblem_Gurobi>(vehicleObj));
+#elif defined(DARP_USE_CPLEX)
+                subProSolve.emplace_back(std::make_shared<SubProblem_Cplex>(vehicleObj));
+#endif
             }
 
 //            availableRoutes[vehicleObj->vehicleID_].clear();
@@ -918,15 +658,25 @@ bool BaseSolver::solve_SP(PInstance &EpochInst, PInstance &mainInst, int &iter, 
                 }
                 labelsPool_.push_data(std::move(subProblem->labelPool_));
             }
+#if defined(DARP_USE_CPLEX)
             else {
                 try {
-                    subProblem->initSubGraph(EpochInst);
-                    subProblem->solveSP(EpochInst,availableRoutes[subProblem->Vehicle_->vehicleID_]);
+                    subProblem->solveSP(EpochInst, availableRoutes[subProblem->Vehicle_->vehicleID_]);
                 } catch (IloException& e) {
                     std::cerr << "CPLEX Exception in subproblem: " << e.getMessage() << std::endl;
                     subProBreak = true;
                 }
             }
+#elif defined(DARP_USE_GUROBI)
+            else {
+                try {
+                    subProblem->solveSP(EpochInst, availableRoutes[subProblem->Vehicle_->vehicleID_]);
+                } catch (GRBException& e) {
+                    std::cerr << "Gurobi Exception in subproblem: " << e.getMessage() << std::endl;
+                    subProBreak = true;
+                }
+            }
+#endif
         });
         pPool->run(job);
     }
@@ -995,7 +745,7 @@ void RuntimeMetrics::updateSubproblemMetrics(const PLabelingSubPro &subProblem) 
     }
 }
 
-void RuntimeMetrics::updateSubproblemMetrics(const PCplexSubPro &subProblem) {
-    nbNegativeFound_ += subProblem->nbNegativeColumns_;
-    nbGenerated_ += subProblem->nbGenerated_;
-}
+// RuntimeMetrics::updateSubproblemMetrics(const PCplexSubPro &) lives in
+// src/CplexSolver/SubProblem_Cplex.cpp.
+// RuntimeMetrics::updateSubproblemMetrics(const PGurobiSubPro &) lives in
+// src/GurobiSolver/SubProblem_Gurobi.cpp.

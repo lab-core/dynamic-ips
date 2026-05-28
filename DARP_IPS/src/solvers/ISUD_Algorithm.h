@@ -9,36 +9,20 @@
 
 class ISUD_Algorithm : public MasterAlgorithm {
 public:
-    // CPLEX solver
-    PComplementPro CompPro_;
-    PReducedProblem ReducedPro_;
-
-    // Gurobi solver
-    PRP_Gurobi RPGurobiPro_;
-    PCPModeler CPGurobiPro_;
-
+    PReducedPro ReducedPro_;
     int maxIncDegree_;
-
-    bool CPBuilt_;                          // check whether CP model is built or not (one time during each iteration CP is built)
-
+    bool CPBuilt_;                          // true while CP model is live within an ISUD outer iteration
 
     // Constructor and Destructor
-    explicit ISUD_Algorithm(const InputPaths &inputPaths, ModelSOLVER modelSolver);
+    explicit ISUD_Algorithm(const InputPaths &inputPaths);
 
-    void initializationCPLEX(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
-    void initializationGurobi(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
     void epochInitialization(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel) override;
-
-    int solveRP_CPLEX(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
-    int solveRP_Gurobi(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
-    int solveRP_Pivot(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
+    void initializations(PInstance &pInst, InputPaths &inputPaths, int epoch, const PGreedyModeler &GreedyModel);
     void solveRP(PInstance &pInst, const InputPaths &inputPaths, int epoch, float subProTime);
-
-    void solveISUD_CPLEX(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-    void solveISUD_Gurobi(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-    void solveISUD_Gurobi2(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-    void solveISUD_Gurobi3(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
-
+    int solveReducedPro(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
+    int solveRP_Pivot(PInstance &pInst, int compDegree, const InputPaths &inputPaths);
+    void solveISUD_MIP(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
+    void solveISUD_Pivot(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime);
     void solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) override;
     void resetModels() override;
     bool shouldTerminate(const PInstance &pInst, float previousObj, float previousLpObj, int iter) override;

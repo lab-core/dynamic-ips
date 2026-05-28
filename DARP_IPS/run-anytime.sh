@@ -37,99 +37,82 @@ exe="bin/realtime_DARP"
 # -------------------------
 # Shared defaults (DRY)
 # -------------------------
-readonly BATCH_PARAMFILE="AnyParameters"
-readonly BATCH_ALGOS=(6)
-readonly BATCH_MODES=(2)
+readonly PARAMFILE="AnyParameters"
+readonly BATCH_ALGOS=(2)
+readonly BATCH_MODES=(1)
 
-readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_1" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6" "Rebalance_7")
-readonly SCENS_anytime=("SP_Re_1_Pool" "SP_Re_1" "SP_Re_2_Pool" "SP_Re_2" "Baseline_Pool" "rebalance_SP1" "Penalty" "rebalance_SP2" "Baseline")
-readonly SCENS_MEM=("Penalty" "rebalance_SP2" "Baseline")
-readonly SCENS_BATCH=("rebalance_SP3")
-readonly SCENS_Compare=("SP_Re_1_Pool" "SP_Re_2_Pool")
-readonly SCENS_Dynamic=("Iter_Dynamic_1_S2" "Iter_Dynamic_2_S2" "Iter_Dynamic_3_S2" "Iter_Dynamic_4_S2" "Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2" "Iter_Fix_4_S2")
-readonly SCENS_Fix=("Iter_Fix_1_S1" "Iter_Fix_2_S1" "Iter_Fix_3_S1" "Iter_Fix_4_S1" "Iter_Fix_2_S2" "Iter_Fix_3_S2")
+readonly ANY_ALGOS=(6)
+readonly ANY_MODES=(2)
+
+readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6")
+readonly SCENS_Profile=("profile_5" "profile_10" "profile_20" "profile_30")
+readonly SCENS_reOptimize=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_keep")
+readonly SCENS_reOptimize_keep=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_keep")
+readonly SCENS_no_rebalance=("no_rebalance_Basis" "no_rebalance_Pool")
+readonly SCENS_process=("Basis_warm_keep" "Greedy")
+readonly SCENS_BATCH=("batch")
+readonly SCENS_Compare=("Basis_warm_keep")
+readonly SCENS_Shuttle=("Shuttle_basis" "Greedy")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_BATCH[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Rebalance[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
 # -------------------------
-G1_data_dir="my_datasets"
+G1_data_dir="NYC-DARP-Benchmark"
 G1_vehicle_folder="vehicles_warmStart_11"
-G1_vehicle_counts=(1400)
+G1_vehicle_counts=(1400 1500 1600 1700)
 G1_capacity=4
 G1_scenarios=("${SCENS_GROUP_TEST[@]}")
 G1_inst_folder="Instances_4h-11"
 G1_instances=("20160512_11-240m")
 G1_initial_state=1
 
-G2_data_dir="my_datasets"
+G2_data_dir="NYC-DARP-Benchmark"
 G2_vehicle_folder="vehicles_warmStart_11"
-G2_vehicle_counts=(1450)
+G2_vehicle_counts=(1450 1550 1650 1750)
 G2_capacity=4
 G2_scenarios=("${SCENS_GROUP_TEST[@]}")
 G2_inst_folder="Instances_4h-11"
 G2_instances=("20150917_11-240m")
 G2_initial_state=1
 
-G3_data_dir="my_datasets"
+G3_data_dir="NYC-DARP-Benchmark"
 G3_vehicle_folder="vehicles_warmStart_11"
-G3_vehicle_counts=(1300)
+G3_vehicle_counts=(1300 1400 1500 1600)
 G3_capacity=4
 G3_scenarios=("${SCENS_GROUP_TEST[@]}")
 G3_inst_folder="Instances_4h-11"
 G3_instances=("20151110_11-240m" "20160628_11-240m")
 G3_initial_state=1
 
-
-# -------------------------
-# GROUP DEFINITIONS RILEY
-# -------------------------
-G4_data_dir="datasets"
-G4_vehicle_folder="vehicles_warmStart_11"
-G4_vehicle_counts=(1200 1300 1400 1500)
-G4_capacity=4
-G4_scenarios=("${SCENS_GROUP_TEST[@]}")
-G4_inst_folder="Instances_4h-11"
-G4_instances=("20160521_11-240m" "20150926_11-240m" "20151025_11-240m")
-G4_initial_state=1
-
-G5_data_dir="datasets"
-G5_vehicle_folder="vehicles_warmStart_11"
-G5_vehicle_counts=(1000 1100 1200 1300)
-G5_capacity=4
-G5_scenarios=("${SCENS_GROUP_TEST[@]}")
-G5_inst_folder="Instances_4h-11"
-G5_instances=("20151008_11-240m")
-G5_initial_state=1
-
 # -------------------------
 # GROUP DEFINITIONS Shuttle Service
 # -------------------------
-G6_data_dir="my_datasets"
+G6_data_dir="NYC-DARP-Benchmark"
 G6_vehicle_folder="vehicles_warmStart_11"
 G6_vehicle_counts=(1200)
 G6_capacity=7
-G6_scenarios=("${SCENS_GROUP_TEST[@]}")
+G6_scenarios=("${SCENS_Shuttle[@]}")
 G6_inst_folder="Instances_4h-11"
 G6_instances=("20150917_11-240m")
 G6_initial_state=1
 
-G7_data_dir="my_datasets"
+G7_data_dir="NYC-DARP-Benchmark"
 G7_vehicle_folder="vehicles_warmStart_11"
 G7_vehicle_counts=(1100)
 G7_capacity=7
-G7_scenarios=("${SCENS_GROUP_TEST[@]}")
+G7_scenarios=("${SCENS_Shuttle[@]}")
 G7_inst_folder="Instances_4h-11"
 G7_instances=("20151110_11-240m" "20160628_11-240m")
 G7_initial_state=1
 
-G8_data_dir="my_datasets"
+G8_data_dir="NYC-DARP-Benchmark"
 G8_vehicle_folder="vehicles_warmStart_11"
 G8_vehicle_counts=(1150)
 G8_capacity=7
-G8_scenarios=("${SCENS_GROUP_TEST[@]}")
+G8_scenarios=("${SCENS_Shuttle[@]}")
 G8_inst_folder="Instances_4h-11"
 G8_instances=("20160512_11-240m")
 G8_initial_state=1
@@ -137,7 +120,7 @@ G8_initial_state=1
 # -------------------------
 # Automatic group helpers
 # -------------------------
-G_test_data_dir="my_datasets"
+G_test_data_dir="NYC-DARP-Benchmark"
 G_test_vehicle_folder="vehicles_warmStart_11"
 G_test_vehicle_counts=(1300 1400)
 G_test_capacity=4
@@ -149,7 +132,7 @@ G_test_instances=("20150926_11-120m")
 G_test_initial_state=1
 
 # -------------------------
-# Automatic group helpers
+# Automatic group helpers for Riley Tests
 # -------------------------
 discover_instances() {
   local group="$1"
@@ -173,17 +156,7 @@ discover_instances() {
   fi
 }
 
-# Example auto groups (you had these; not in ALL_GROUPS unless you add them)
-G30S_data_dir="datasets"
-G30S_vehicle_folder="vehicles_warmStart_11"
-G30S_vehicle_counts=(1400)
-G30S_capacity=4
-G30S_scenarios=("${SCENS_GROUP_TEST[@]}")
-G30S_inst_folder="Instances_30s"
-G30S_initial_state=2
-discover_instances "G30S"
-
-G2h7_data_dir="datasets"
+G2h7_data_dir="Riley_Benchmark"
 G2h7_vehicle_folder="vehicles_uniform"
 G2h7_vehicle_counts=(2000)
 G2h7_capacity=4
@@ -208,7 +181,7 @@ add_group() {
   [[ -n "${initial_state:-}" ]] || { echo "[ERROR] Missing ${G}_initial_state" >&2; exit 1; }
 
   eval "paramfile=\${${G}_paramfile-}"
-  [[ -n "${paramfile:-}" ]] || paramfile="$BATCH_PARAMFILE"
+  [[ -n "${paramfile:-}" ]] || paramfile="$PARAMFILE"
 
   eval "algos_ref=(\"\${${G}_algorithms[@]-}\")"
   if [[ ${#algos_ref[@]} -eq 0 || -z "${algos_ref[0]:-}" ]]; then

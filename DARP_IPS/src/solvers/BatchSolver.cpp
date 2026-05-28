@@ -96,23 +96,12 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             goto nextEpoch;
         }
 
-        switch (EpochInst->parameters_->mainAlgorithm_) {
-            case GREEDY:
-                GreedyModel_->GreedySolver(EpochInst);
-                handleVehicleReturn(EpochInst);
-
-                break;
-            case MIP_CPLEX:
-                MIPModel_ = std::make_unique<MIPSolver>();
-                MIPModel_->SolveMIP(EpochInst, inputPaths);
-  //              masterModel_->zSolution_ = MIPModel_->zSolution_;
-  //              masterModel_->routeSolution_ = MIPModel_->routeSolution_;
-                MIPModel_.reset();
-                break;
-            default:
-                solveEpoch(EpochInst, mainInst, inputPaths);
-                break;
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
+            GreedyModel_->GreedySolver(EpochInst);
+            handleVehicleReturn(EpochInst);
         }
+        else
+            solveEpoch(EpochInst, mainInst, inputPaths);
 
         elapsedTime_ = static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_;
         EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_ + elapsedTime_);

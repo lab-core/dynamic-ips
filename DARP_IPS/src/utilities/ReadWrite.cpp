@@ -93,11 +93,7 @@ void ReadWrite::readVehiclesData(const std::string& strTripsFile, const PInstanc
     int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1, zoneID = -1;
     float departTime = -1, endTime = -1;
 
-    // add this only when I want to use less vehicles
-//    pInstance->nbVehicles_ = 150;
-
     while (file.good()) {
-//        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "VEHICLES_INFO")) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
@@ -144,11 +140,7 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, const PInstan
     int vehicleID = -1, capacity = -1, departID = -1, sinkID = -1, departZoneID = -1, sinkZoneID = -1, routeSize = -1;
     float departTime = -1, endTime = -1, lDual = -1, iDual = -1;
 
-    // add this only when I want to use less vehicles
-//    pInstance->nbVehicles_ = 150;
-
     while (file.good()) {
-//        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "VEHICLES_INFO")) {
             for (int v = 0; v < pInstance->nbVehicles_; ++v) {
@@ -173,14 +165,8 @@ void ReadWrite::readVehiclesDataF(const std::string& strTripsFile, const PInstan
                 pInstance->vehicles_.emplace_back(std::make_shared<Vehicle>(vehicleID, capacity, departTime,
                                                                             endTime, pInstance->instGraph_->sourceNodes_.back(),
                                                                             pInstance->instGraph_->sinkNodes_.back()));
-/*                if (pInstance->parameters_->mainAlgorithm_ == RT_CG) {
-                    pInstance->vehicles_.back()->dual_ = lDual;
-                    pInstance->vehicles_.back()->InitialDual_ = lDual;
-                }
-                else {*/
                 pInstance->vehicles_.back()->dual_ = iDual;
                 pInstance->vehicles_.back()->InitialDual_ = iDual;
-//                }
                 routeNodes[v].resize(routeSize);
             }
         }
@@ -234,7 +220,6 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
     }
 
     while (file.good()) {
-        //       readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
 
@@ -242,7 +227,6 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 // attributes for reading the trip requests file
                 int nbPassengers = -1, vehicleID = -1, pickZoneID = -1, dropZoneID = -1, position = -1;
                 float pickUpID = -1, dropOffID = -1, earlyPick = -1, pickTime = -1, pickup_depart = -1;
- //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -255,8 +239,6 @@ void ReadWrite::readOnboardRequests(const std::string& strTripsFile, PInstance &
                 file >> dropZoneID;
                 file >> position;
 
-                // the starting time of the instance is 16pm
-                // deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 pInstance->requests_.emplace_back(std::make_shared<Request>(pickUpID, dropOffID, earlyPick, earlyPick,
                                                                             nbPassengers, static_cast<float>(SERVICE_TIME),
                                                                             pickZoneID, dropZoneID));
@@ -325,7 +307,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
     string title;
 
     while (file.good()) {
-//        readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "REQUESTS_INFO")) {
             for (int r = 0; r < nbRequest; ++r) {
@@ -333,7 +314,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 int nbPassengers = -1;
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, dropZoneID = -1;
                 float earlyPick = -1, requestTime;
- //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -342,8 +322,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 file >> pickZoneID;
                 file >> dropZoneID;
 
-                // the starting time of the instance is 16pm
-                // deltaTime = static_cast<float>(nbPassengers * TimePerPassenger);
                 if (pInstance->parameters_->solutionMode_ == STATIC)
                     requestTime = 0;
                 else
@@ -374,7 +352,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
                 pickNode->zoneID_ = pickZoneID;
                 dropNode->zoneID_ = dropZoneID;
                 pInstance->instGraph_->addRequestToMainGraph(pickNode,dropNode);
-                //        pInstance->instGraph_->addNewRequestToGraph(pInstance);
 
                 if (pInstance->parameters_->timeWindow_ > 0)
                     pInstance->requests_.back()->penalty_ = pInstance->parameters_->timeWindow_;
@@ -386,7 +363,6 @@ void ReadWrite::readTripRequests(const std::string& strTripsFile, PInstance &pIn
             }
         }
     }
-//    pInstance->instGraph_->addRequestsToGraph(pInstance);
 }
 
 void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes) {
@@ -415,7 +391,6 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
                 int pickUpID = -1, dropOffID = -1, pickZoneID = -1, vehicleID = -1, pickPosition = -1, dropPosition = -1;
                 int dropZoneID = -1;
                 float earlyPick = -1, lDual = -1, iDual = -1;
- //               float deltaTime = -1;
 
                 file >> nbPassengers;
                 file >> pickUpID;
@@ -477,7 +452,6 @@ void ReadWrite::readWaitRequests(const std::string& strTripsFile, PInstance &pIn
             }
         }
     }
-//    pInstance->instGraph_->addRequestsToGraph(pInstance);
 }
 
 
@@ -511,7 +485,6 @@ void ReadWrite::readDurations(const std::string& strDurFile, vector2D<float> &du
     }
 
     while (file.good()) {
-        //       readUntilChar(file, '\n', title);
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "DURATION_INFO")) {
 
@@ -553,36 +526,6 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         throw myTools::myException("Failed to parse JSON file!", __LINE__);
     }
 
-    // ==================== READ DEFAULT PARAMETERS ====================
-    auto defaultParams = j["defaultParameters"];
-
-    // Default Parameters (stable parameters that rarely change)
-    float alphaParam = defaultParams.value("alphaParam", 1.5);
-    float betaParam = defaultParams.value("betaParam", 240.0f);
-    float deltaPram = defaultParams.value("deltaPram", 420.0f);
-    float epochLength = defaultParams.value("epochLength", 30.0f);
-    int penaltyL = defaultParams.value("penaltyL", 30);
-    float committedTime = defaultParams.value("committedTime", 30.0f);
-    int nbThreads = defaultParams.value("nbThreads", 16);
-    int mainAlgorithm = defaultParams.value("mainAlgorithm", 0);
-    int solutionMode = defaultParams.value("solutionMode", 1);
-    bool greedyReOptimize = defaultParams.value("GreedyReOptimize", 0) != 0;
-    float timeWindows = defaultParams.value("timeWindows", 0.0f);
-    int MIP_maxIncDegree = defaultParams.value("MIP_maxIncDegree", 2);
-    int CP_IncDegree = defaultParams.value("CP_IncDegree", 10);
-    bool reducedCP = defaultParams.value("reducedCP", 0) != 0;
-    float minImp = defaultParams.value("minImp", 0.0025f);
-    bool useZoom = defaultParams.value("useZoom", 0) != 0;
-    bool isDominanceReleased = defaultParams.value("isDominanceReleased", 0) != 0;
-    int subAlgorithm = defaultParams.value("subproblemAlgorithm", 1);
-    bool constPortion = defaultParams.value("constPortion", 0) != 0;
-    bool vehiclePortion = defaultParams.value("Vehicle_portion", 0) != 0;
-    int bigM = defaultParams.value("BigM", 27000);
-    int solveTimeLimit = defaultParams.value("solveTimeLimit", 300);
-    int populateTimeLimit = defaultParams.value("populateTimeLimit", 200);
-    float mipGap = defaultParams.value("MIPGap", 0.001f);
-    int modelSolver = defaultParams.value("ModelSolver", 1);
-
     // ==================== READ SCENARIO PARAMETERS ====================
     json scenarioParams;
 
@@ -616,7 +559,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     bool vehicleReturn = scenarioParams.value("vehicleReturn", 0) != 0;
     int WaitForReturn = scenarioParams.value("WaitForReturn", LARGE_CONSTANT);
     float maxWait = scenarioParams.value("MaxWait", LARGE_CONSTANT);
-    int returnType = scenarioParams.value("returnType", 2);
+    int returnType = scenarioParams.value("returnType", 1);
     float informTimeLimit = scenarioParams.value("informTimeLimit", LARGE_CONSTANT);
     float pickupDeviationWindow = scenarioParams.value("pickupDeviationWindow", LARGE_CONSTANT);
     int initialDual = scenarioParams.value("InitialDual", 1);
@@ -642,6 +585,32 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     bool reoptimizeSP = scenarioParams.value("reoptimizeSP", 0) != 0;
     int reptimizeLabelstrategy = scenarioParams.value("LabelingReOptimizeStrategy", 2);
     bool smoothDual = scenarioParams.value("SmoothDual", 0) != 0;
+    float alphaParam = scenarioParams.value("alphaParam", 1.5f);
+    float betaParam = scenarioParams.value("betaParam", 240.0f);
+    float deltaPram = scenarioParams.value("deltaPram", 420.0f);
+    float epochLength = scenarioParams.value("epochLength", 30.0f);
+    int penaltyL = scenarioParams.value("penaltyL", 30);
+    float committedTime = scenarioParams.value("committedTime", 30.0f);
+    int nbThreads = scenarioParams.value("nbThreads", 16);
+    int mainAlgorithm = scenarioParams.value("mainAlgorithm", 0);
+    int solutionMode = scenarioParams.value("solutionMode", 1);
+    bool greedyReOptimize = scenarioParams.value("GreedyReOptimize", 0) != 0;
+    float timeWindows = scenarioParams.value("timeWindows", 0.0f);
+    int MIP_maxIncDegree = scenarioParams.value("MIP_maxIncDegree", 2);
+    int CP_IncDegree = scenarioParams.value("CP_IncDegree", 10);
+    bool reducedCP = scenarioParams.value("reducedCP", 0) != 0;
+    float minImp = scenarioParams.value("minImp", 0.0025f);
+    bool useZoom = scenarioParams.value("useZoom", 0) != 0;
+    int isudVariant = scenarioParams.value("isudVariant", 1);
+    bool isDominanceReleased = scenarioParams.value("isDominanceReleased", 0) != 0;
+    int subAlgorithm = scenarioParams.value("subproblemAlgorithm", 1);
+    bool constPortion = scenarioParams.value("constPortion", 0) != 0;
+    bool vehiclePortion = scenarioParams.value("Vehicle_portion", 0) != 0;
+    int bigM = scenarioParams.value("BigM", 27000);
+    int solveTimeLimit = scenarioParams.value("solveTimeLimit", 300);
+    int populateTimeLimit = scenarioParams.value("populateTimeLimit", 200);
+    float mipGap = scenarioParams.value("MIPGap", 0.001f);
+    double reducedCostThreshold = scenarioParams.value("reducedCostThreshold", 100.0);
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
@@ -660,7 +629,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         WaitForReturn,
         static_cast<WarmStart>(initialStart),
         MIP_maxIncDegree, CP_IncDegree, reducedCP, minImp,
-        useZoom, nbColumns, isTruncated, maxLabel,maxCommittedLabel,
+        useZoom, static_cast<ISUDVariant>(isudVariant), nbColumns, isTruncated, maxLabel,maxCommittedLabel,
         pruneNodes, pruneArcs, discardSuboptimalPath,
         isDominanceReleased, isPickDropPossible,
         static_cast<LabelingStrategy>(strategy),
@@ -672,9 +641,10 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
         bigM, newRequestLimit, solveTimeLimit, populateTimeLimit,
         static_cast<SolutionMode>(solutionMode), mipGap,
         informTimeLimit, pickupDeviationWindow,
-        static_cast<ReturnType>(returnType), maxWait, static_cast<ModelSOLVER>(modelSolver),
+        static_cast<ReturnType>(returnType), maxWait,
         static_cast<LabelingReOptimizeStrategy>(reptimizeLabelstrategy),
-        smoothDual, wait_W1, ride_W2, req_W3, ride_W4, relative_W5, normal_W6
+        smoothDual, wait_W1, ride_W2, req_W3, ride_W4, relative_W5, normal_W6,
+        reducedCostThreshold
     );
 
     std::cout << "Parameters loaded successfully with scenario: " << scenarioName << std::endl;
@@ -785,7 +755,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
     myFile.close();
 
     Tools::LogOutput parametersStream(inputPaths.getOutputParamCsv(), true);
-    parametersStream << "Instance,ModelSolver,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,Ride_W4,Relative_W5,normal_W6,"
+    parametersStream << "Instance,alpha,beta,delta,Wait_W1,Ride_W2,Req_W3,Ride_W4,Relative_W5,normal_W6,"
                         "epochLength,committedTime,informTimeLimit,pickupDeviationWindow,maxWait,nbThreads,"
                         "InitialDual,dualMethod,smoothDual,warmStart,mainAlgorithm,solutionMode,NumIter,"
                         "GreedyReOptimize,vehicleReturn,ReturnPolicy,MIP_maxIncDegree,CP_IncDegree,reducedCP,"

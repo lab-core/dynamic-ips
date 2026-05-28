@@ -23,7 +23,7 @@ public:
     bool discardSuboptimalPath_{};                          // whether to discard suboptimal paths (3rd pruning policy) in labeling
     bool isDropPickPossible_{};                             // whether pick-up is allowed when a drop-off is already visited
     LabelingStrategy LabelingStrategy_{};                   // labeling strategy: PUSHING, PULLING, RE_PULLING
-    LabelingReOptimizeStrategy labelingReOptimizeStrategy_; // labeling re-optimization strategy: RE_INSERT, BY_ROUTE, BY_GRAPH
+    LabelingReOptimizeStrategy labelingReOptimizeStrategy_; // labeling re-optimization strategy: RE_INSERT, BY_BASIS, BY_POOL
     bool reoptimizeSP_{};                                   // whether to re-optimize subproblems or not
     int nbPick_{};                                          // number of pick-ups limits in routes, used in labeling
     SortPaths sortPath_;                                    // path sorting criteria used in truncated labeling
@@ -64,7 +64,7 @@ public:
     float pickupDeviationWindow_;           // allowable deviation window for committed pickup time
 
     Approach approach_;                     // solution approach: ISUD, CG, Greedy
-    MainAlgorithm mainAlgorithm_;           // main algorithm: GREEDY, MIP_CPLEX, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG
+    MainAlgorithm mainAlgorithm_;           // main algorithm: GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG
     SolutionMode solutionMode_;             // solution mode: STATIC, DYNAMIC, ANYTIME
     
     // CG Parameters
@@ -79,7 +79,7 @@ public:
     // Vehicle Return Parameters
     bool vehicleReturn_;                   // whether the rebalancing of the vehicles is done by returning to crowded areas
     float WaitForReturn_;                  // The time that a vehicle remains idle before returning to crowded areas
-    ReturnType returnPolicy_;              // return policy for vehicles: TO_SOURCE, ZONE, ASSIGN
+    ReturnType returnPolicy_;              // return policy for vehicles: TO_SOURCE, ASSIGN
     float maxWait_;                        // maximum wait time to define crowded zones for vehicle rebalancing
     
 
@@ -89,9 +89,10 @@ public:
     bool reducedCP_;                       // whether to use reduced CP model or not
     float minImp_;                         // minimum improvement threshold for ISUD
     bool useZoom_;                         // whether to use Zoom or not
+    ISUDVariant isudVariant_;              // ISUD solve strategy: ISUD_MIP_RP or ISUD_PIVOT_RP
 
     // Parameters related to the subproblem
-    SubproblemAlgorithm subAlgorithm_;     // subproblem algorithm: CPLEX_SUB, LABEL_SETTING
+    SubproblemAlgorithm subAlgorithm_;     // subproblem algorithm: MIP_SUB, LABEL_SETTING
     bool vehiclePortion_{};                // whether to solve subproblems for a portion of vehicles or all vehicles
     bool dynamicPricing_{};                // whether to use dynamic pickup limits in labelling
     bool partialPricing_{};                // whether to use partial pickup limits in labelling
@@ -101,11 +102,11 @@ public:
     //Solver Parameters
     int nbThreads_{};                      // number of threads used in parallel computations
     int saveScratch_;                      // save the results in the scratch place of the server
-    ModelSOLVER modelSolver_;              // the solver used for MIP and CP: CPLEX, GUROBI
     int bigM_{};                           // big M value used in MIP formulations
     int solveTimeLimit_{};                 // time limit for solving MIP models
     int populateTimeLimit_{};              // time limit for populating MIP models
     float MIPGap_{};                       // optimality gap for MIP models
+    double reducedCostThreshold_{};        // threshold for pruning high-reduced-cost routes in BY_POOL reoptimization
 
     // other Parameters
     bool greedyReOptimize_;                 // restart greedy (re-assigning) considering the current state of the system 
@@ -117,15 +118,16 @@ public:
                MainAlgorithm mainAlgorithm, int numIter, bool greedyReOptimize, bool vehicleReturn, float timeWindow,
                float WaitForReturn, WarmStart initialStart,
                int MIP_maxIncDegree, int CP_IncDegree, bool reducedCP, float minImp, bool useZoom,
+               ISUDVariant isudVariant,
                int nbColumn, bool isTruncated, int maxLabel, int MaxCommittedLabel, bool pruneNodes, bool pruneArcs,
                bool discardSuboptimalPath, bool isDominanceReleased, bool isDropPickPossible,
                LabelingStrategy LabelingStrategy, SubproblemAlgorithm subAlgorithm, bool constPortion,
                bool vehiclePortion, bool dynamicPricing, bool partialPricing, bool routeRecycle, bool reoptimizeSP,
                int nbPick, SortPaths sortPath, SortColumns sortColumn, int bigM, int newRequestLimit,
                int solveTimeLimit, int populateTimeLimit, SolutionMode solutionMode, float MIPGap, int informTimeLimit,
-               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait, ModelSOLVER modelSolver,
+               int pickupDeviationWindow, ReturnType returnPolicy, float maxWait,
                LabelingReOptimizeStrategy labelingReOptimizeStrategy, bool smoothDual, float wait_W1, float ride_W2,
-               bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6);
+               bool req_W3, bool ride_W4, bool relative_W5, bool normal_W6, double reducedCostThreshold);
 
     virtual ~Parameters();
 

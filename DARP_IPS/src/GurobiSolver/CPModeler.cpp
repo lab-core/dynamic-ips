@@ -3,15 +3,13 @@
 //
 
 #include "CPModeler.h"
+#include "solvers/SolverEnv.h"
 
-CPModeler::CPModeler(std::string outputLog): env_(true), outputLog_(outputLog) {
+// Constructor. env_ is now a reference to the process-wide Gurobi env so the
+// per-instance env setup has moved into solverEnv::gurobi() (runs once).
+CPModeler::CPModeler(std::string outputLog): env_(solverEnv::gurobi()), outputLog_(outputLog) {
     try {
-        // Set environment parameters before creating model
-        env_.set(GRB_IntParam_UpdateMode, 1);
-        env_.start();
-
         model_ = new GRBModel(env_);
-        env_.set(GRB_IntParam_LogToConsole, 0);
         nbRequestTask_ = 0;
 
         solveTime_ = new myTools::Timer(); solveTime_->init();
@@ -46,13 +44,13 @@ void CPModeler::initializeCP(const PInstance &pInst, bool reduced) {
         nbRequestTask_ = pInst->nbTasks_;
 
         // Initialize RHS arrays
+        requestRHS_.clear();
         requestRHS_.resize(nbRequestTask_, rhs);
 
-        // Reserve space for constraints
-        requestConstr_.reserve(nbRequestTask_);
-
-        // Clear existing constraints (in case of reinitialization)
+        // Clear existing constraints & Reserve space for constraints)
+        for (auto& c : requestConstr_) model_->remove(c);
         requestConstr_.clear();
+        requestConstr_.reserve(nbRequestTask_);
 
         // Add request constraints (= rhs)
         for (int i = 0; i < nbRequestTask_; ++i) {
@@ -61,9 +59,11 @@ void CPModeler::initializeCP(const PInstance &pInst, bool reduced) {
 
         if (!reduced) {
             int nbVehicles = pInst->nbVehicles_;
+            for (auto& c : vehicleConstr_) model_->remove(c);
+            vehicleRHS_.clear();
             vehicleRHS_.resize(nbVehicles, rhs);
-            vehicleConstr_.reserve(nbVehicles);
             vehicleConstr_.clear();
+            vehicleConstr_.reserve(nbVehicles);
 
             // Add vehicle constraints (= rhs)
             for (int i = 0; i < nbVehicles; ++i) {
@@ -72,12 +72,9 @@ void CPModeler::initializeCP(const PInstance &pInst, bool reduced) {
             }
         }
 
-
         // Set basic parameters
         model_->set(GRB_IntParam_Threads, pInst->parameters_->nbThreads_);
- //       model_->set(GRB_IntParam_Method, 2);
         model_->set(GRB_IntParam_Method, GRB_METHOD_DUAL);
- //       model_->set(GRB_IntParam_Crossover, 0);
 
         // Add normalization constraint (sum = 1)
         GRBLinExpr normalExpr = 0;
@@ -88,12 +85,12 @@ void CPModeler::initializeCP(const PInstance &pInst, bool reduced) {
         model_->update();
     }
     catch (GRBException& e) {
-        std::cerr << "Error in initializeCPReduced: " << e.getMessage() << std::endl;
+        std::cerr << "Error in initializeCP: " << e.getMessage() << std::endl;
         throw;
     }
 }
 
-GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, const PRoute &currentVehicleRoute) {
+GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, const PRoute &currentVehicleRoute) const {
     GRBColumn col;
 
     newRoute->IncScore_ = 0;
@@ -116,7 +113,7 @@ GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, const PRoute &cur
     return col;
 }
 
-GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, VarSign sign) {
+GRBColumn CPModeler::createRouteColumn(const PRoute &newRoute, VarSign sign) const {
     GRBColumn col;
     int signMultiplier = (sign == POSITIVE) ? 1 : -1;
 
@@ -464,6 +461,18 @@ void CPModeler::repairModel(const PInstance &pInst, const std::vector<PRoute> &r
 }
 
 void CPModeler::updateModel() {
+    try {
+        // Adding incompatible route columns
+        addRouteIncVarBatch();
+        model_->update();
+    }
+    catch (GRBException& e) {
+        std::cerr << "Error in updateModel: " << e.getMessage() << std::endl;
+        throw;
+    }
+}
+
+void CPModeler::updateModel(const PInstance& pInst) {
     try {
         // Adding incompatible route columns
         addRouteIncVarBatch();

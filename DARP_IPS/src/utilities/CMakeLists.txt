@@ -8,5 +8,5 @@ set(SOURCE_FILES
         Types.h)
 
 add_library(${LIB_NAME} STATIC ${SOURCE_FILES})
-target_link_libraries(${LIB_NAME} ${LIBS})
+target_link_libraries(${LIB_NAME} PUBLIC Threads::Threads)
 set_property(TARGET ${LIB_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
