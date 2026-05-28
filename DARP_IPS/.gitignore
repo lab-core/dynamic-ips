@@ -1,0 +1,32 @@
+# Build output
+build-cplex/
+build-gurobi/
+cmake-build-*/
+bin/
+lib/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Local datasets (not for distribution)
+my_datasets/
+
+# Solver model dumps
+*.lp
+*.mps
+*.prm
+
+# Compiled objects
+*.o
+*.a
+*.so
+*.dylib
+
+# Logs and output files
+*.log
+*.csv
