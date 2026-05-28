@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
-#SBATCH --time=4:10:00
+#SBATCH --time=2:10:00
 #SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
@@ -51,11 +51,11 @@ readonly SCENS_reOptimize_keep=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_ke
 readonly SCENS_no_rebalance=("no_rebalance_Basis" "no_rebalance_Pool")
 readonly SCENS_process=("Basis_warm_keep" "Greedy")
 readonly SCENS_BATCH=("batch")
-readonly SCENS_Compare=("Basis_warm_keep")
+readonly SCENS_Compare=("Basis_warm_keep" "no_rebalance_Basis")
 readonly SCENS_Shuttle=("Shuttle_basis" "Greedy")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_reOptimize_keep[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_Compare[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -212,7 +212,7 @@ add_group() {
 }
 
 # Which groups to use
-ALL_GROUPS=(G1 G2 G3)
+ALL_GROUPS=(G2h7)
 
 if [[ "$SELECTED_GROUPS" == "ALL" ]]; then
   selected=("${ALL_GROUPS[@]}")
