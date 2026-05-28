@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=46G
+#SBATCH --mem=16G
 #SBATCH --time=4:10:00
-#SBATCH --array=1-4
+#SBATCH --array=1-48
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 
@@ -55,7 +55,7 @@ readonly SCENS_Compare=("Basis_warm_keep")
 readonly SCENS_Shuttle=("Shuttle_basis" "Greedy")
 
 # Bundle scenario for group tests
-readonly SCENS_GROUP_TEST=("${SCENS_Rebalance[@]}")
+readonly SCENS_GROUP_TEST=("${SCENS_reOptimize_keep[@]}")
 
 # -------------------------
 # GROUP DEFINITIONS MYTEST
@@ -185,12 +185,12 @@ add_group() {
 
   eval "algos_ref=(\"\${${G}_algorithms[@]-}\")"
   if [[ ${#algos_ref[@]} -eq 0 || -z "${algos_ref[0]:-}" ]]; then
-    algos_ref=("${BATCH_ALGOS[@]}")
+    algos_ref=("${ANY_ALGOS[@]}")
   fi
 
   eval "modes_ref=(\"\${${G}_modes[@]-}\")"
   if [[ ${#modes_ref[@]} -eq 0 || -z "${modes_ref[0]:-}" ]]; then
-    modes_ref=("${BATCH_MODES[@]}")
+    modes_ref=("${ANY_MODES[@]}")
   fi
 
   eval "counts_ref=(\"\${${G}_vehicle_counts[@]}\")"
@@ -203,7 +203,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 3 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
           done
         done
       done
