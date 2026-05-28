@@ -1,9 +1,10 @@
 # FindEigen3.cmake
 # Priority:
-#   1. Eigen3's own config package (most `module load eigen` cases, since the
-#      module usually adds its prefix to CMAKE_PREFIX_PATH).
-#   2. Manual header search honouring module env vars (EBROOTEIGEN, EIGEN_ROOT)
-#      and user-provided EIGEN_DIR / EIGEN3_ROOT_DIR.
+#   1. Eigen3's own config package (CMAKE_PREFIX_PATH / installed configs).
+#   2. Manual header search, honouring:
+#        - user-provided EIGEN_DIR / EIGEN3_ROOT_DIR
+#        - module env vars (EBROOTEIGEN, EIGEN_ROOT, ...)
+#        - compiler include paths exported by `module load` (CPATH & friends)
 
 # --- 1. Official config package (CONFIG forces config mode -> no recursion) ---
 find_package(Eigen3 CONFIG QUIET)
@@ -14,6 +15,15 @@ if(Eigen3_FOUND AND TARGET Eigen3::Eigen)
     return()
 endif()
 
+# --- collect include dirs exported by environment modules via CPATH-style vars ---
+set(_eigen_env_includes "")
+foreach(_var CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH)
+    if(DEFINED ENV{${_var}})
+        string(REPLACE ":" ";" _paths "$ENV{${_var}}")
+        list(APPEND _eigen_env_includes ${_paths})
+    endif()
+endforeach()
+
 # --- 2. Manual header search ---
 find_path(EIGEN3_INCLUDE_DIR
         NAMES Eigen/Core
@@ -23,8 +33,9 @@ find_path(EIGEN3_INCLUDE_DIR
         ENV EIGEN3_ROOT_DIR
         ENV EIGEN_DIR
         ENV EIGEN_ROOT
-        ENV EBROOTEIGEN        # EasyBuild (Alliance Canada and many HPC clusters)
+        ENV EBROOTEIGEN
         ENV Eigen3_ROOT
+        ${_eigen_env_includes}      # <-- picks up the CPATH entry from `module load eigen`
         PATHS
         /usr/include
         /usr/local/include
@@ -34,7 +45,7 @@ find_path(EIGEN3_INCLUDE_DIR
         PATH_SUFFIXES
         eigen3
         include
-        include/eigen3         # headers often live under <prefix>/include/eigen3
+        include/eigen3
 )
 
 set(EIGEN3_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
