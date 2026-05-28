@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
                     }
                 }
 
-                ReadWrite::readDatafiles(inputPaths, mainInst, mainInst->parameters_->saveScratch_,
+                ReadWrite::readDatafiles(inputPaths, mainInst, config->outputDir_,
                     config->scenario_, config->initialState_);
                 for (auto & vehicleObj : mainInst->vehicles_)
                     vehicleObj->capacity_ = config->vehicleCapacity_;

@@ -14,33 +14,59 @@
 #   /opt/IBM/ILOG/CPLEX_Studio<edition>124 - UNIX
 #   ~/Applications/IBM/ILOG/CPLEX_Studio<edition>124 - Mac OS X
 #   C:\Program Files\IBM\ILOG\CPLEX_Studio<edition>124 - Windows
-#     set(CPLEX_STUDIO_DIR /opt/ibm/ILOG/CPLEX_Studio221 /opt/IBM/ILOG/CPLEX_Studio221 /home/elamib/Documents/ibm/ILOG/CPLEX_Studio221 /home/ibm/cplex-studio/22.1)
 
+# Search order for CPLEX_STUDIO_DIR:
+#   1. -DCPLEX_STUDIO_DIR=/path/to/CPLEX_Studio2211 passed at configure time
+#   2. CPLEX_STUDIO_DIR environment variable
+#   3. Standard system-wide install locations (no personal paths)
+if(NOT CPLEX_STUDIO_DIR AND DEFINED ENV{CPLEX_STUDIO_DIR})
+    set(CPLEX_STUDIO_DIR $ENV{CPLEX_STUDIO_DIR})
+endif()
 
 if (UNIX)
     # Determine if the system is macOS or Linux and set the architecture accordingly
     if (APPLE)
         if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
             set(CPLEX_ARCH arm64)
-            set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio2211)
         else()
             set(CPLEX_ARCH x86-64)
-            set(CPLEX_STUDIO_DIR /Applications/CPLEX_Studio221)
         endif()
         set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_osx/static_pic)
-    else()
-        # Default for Linux systems
-        set(CPLEX_ARCH x86-64)
-        # Check which CPLEX directory exists and set it accordingly.
-        if (EXISTS "/scratch/elamib/ibm/ILOG/CPLEX_Studio2211")
-            set(CPLEX_STUDIO_DIR "/scratch/elamib/ibm/ILOG/CPLEX_Studio2211")
-        elseif (EXISTS "/home/ibm/cplex-studio/22.1.1")
-            set(CPLEX_STUDIO_DIR "/home/ibm/cplex-studio/22.1.1")
-        else()
-            message(FATAL_ERROR "No valid CPLEX installation found on Linux system.")
+        if(NOT CPLEX_STUDIO_DIR)
+            foreach(_candidate
+                    /Applications/CPLEX_Studio2211
+                    /Applications/CPLEX_Studio221
+                    /Applications/CPLEX_Studio2212)
+                if(EXISTS ${_candidate})
+                    set(CPLEX_STUDIO_DIR ${_candidate})
+                    break()
+                endif()
+            endforeach()
         endif()
+    else()
+        set(CPLEX_ARCH x86-64)
         set(CPLEX_LIB_PATH_SUFFIXES lib/${CPLEX_ARCH}_linux/static_pic)
+        if(NOT CPLEX_STUDIO_DIR)
+            foreach(_candidate
+                    /opt/ibm/ILOG/CPLEX_Studio2211
+                    /opt/IBM/ILOG/CPLEX_Studio2211
+                    /opt/ibm/ILOG/CPLEX_Studio221
+                    /home/ibm/cplex-studio/22.1.1
+                    /usr/local/CPLEX_Studio2211)
+                if(EXISTS ${_candidate})
+                    set(CPLEX_STUDIO_DIR ${_candidate})
+                    break()
+                endif()
+            endforeach()
+        endif()
     endif()
+endif()
+
+if(NOT CPLEX_STUDIO_DIR)
+    message(FATAL_ERROR
+        "CPLEX Studio not found. Provide the installation path:\n"
+        "  cmake -DCPLEX_STUDIO_DIR=/path/to/CPLEX_Studio2211 ..\n"
+        "  or: export CPLEX_STUDIO_DIR=/path/to/CPLEX_Studio2211")
 endif()
 
 # Clear previous search paths to prevent fallback to older directories.

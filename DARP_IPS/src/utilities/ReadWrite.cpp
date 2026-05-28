@@ -690,7 +690,7 @@ void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance)
 }
 
 // function that opens all input files and update main instance data
-void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int saveScratch,
+void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, const std::string& outputDir,
     const std::string& paramFile, int initialState) {
     readZones(inputPaths.getInputZones(), pInstance);
     vector2D<PNode> routeNodes;
@@ -746,7 +746,7 @@ void ReadWrite::readDatafiles(InputPaths &inputPaths, PInstance &pInstance, int 
 
     inputPaths.initializeOutputs(eu::toString(pInstance->parameters_->mainAlgorithm_),
                                  eu::toString(pInstance->parameters_->solutionMode_),
-                                 saveScratch, pInstance->nbVehicles_, paramFile);
+                                 outputDir, pInstance->nbVehicles_, paramFile);
 
     // write the parameters in file
     std::ofstream myFile;

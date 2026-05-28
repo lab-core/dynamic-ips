@@ -48,7 +48,7 @@ Parameters::Parameters(float alphaParam, float betaParam, float deltaPram, int e
         alphaParam_(alphaParam), betaParam_(betaParam), deltaPram_(deltaPram), epochLength_(epochLength),
         penaltyL_(penaltyL), committedTime_(committedTime), nbThreads_(nbThreads), initialDual_(initialDual),
         mainAlgorithm_(mainAlgorithm), solutionMode_(solutionMode), numIter_(numIter), dualMethod_(dualMethod),
-        greedyReOptimize_(greedyReOptimize), saveScratch_(0), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
+        greedyReOptimize_(greedyReOptimize), vehicleReturn_(vehicleReturn), timeWindow_(timeWindow),
         WaitForReturn_(WaitForReturn), informTimeLimit_(informTimeLimit),
         pickupDeviationWindow_(pickupDeviationWindow), initialStart_(initialStart), MIP_maxIncDegree_(MIP_maxIncDegree),
         CP_IncDegree_(CP_IncDegree), reducedCP_(reducedCP), minImp_(minImp), useZoom_(useZoom),

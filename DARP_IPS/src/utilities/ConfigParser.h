@@ -23,7 +23,7 @@ struct ProgramConfig {
     int solMode_;                   // solution mode: STATIC, DYNAMIC, ANYTIME.
     std::string paramFile_;         // parameter file name
     std::string scenario_;          // scenario name
-    int saveScratch_;               // flag to save scratch (0 or 1)
+    std::string outputDir_;         // output root directory (empty = write next to instance data)
     int initialState_;              // initial state (have onboard/fresh start/etc.)
 
 

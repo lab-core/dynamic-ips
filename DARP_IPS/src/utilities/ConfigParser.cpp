@@ -8,7 +8,7 @@
 #include <algorithm>
 
 // ProgramConfig implementation
-ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), saveScratch_(0), initialState_(-1) {}
+ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), initialState_(-1) {}
 
 void ProgramConfig::printConfig() const {
     std::cout << "Configuration:\n";
@@ -21,7 +21,7 @@ void ProgramConfig::printConfig() const {
     std::cout << "  Solution mode: " << solMode_ << "\n";
     std::cout << "  Parameter file: " << paramFile_ << "\n";
     std::cout << "  Scenario name: " << scenario_ << "\n";
-    std::cout << "  Save scratch: " << saveScratch_ << "\n";
+    std::cout << "  Output directory: " << (outputDir_.empty() ? "(local — next to instance data)" : outputDir_) << "\n";
     std::cout << "  Vehicle file: " << vehicleFileName_ << "\n";
 
     if (!instanceName_.empty()) {
@@ -49,22 +49,24 @@ void ConfigParser::printUsage(const char* programName) {
               << "  --sol-mode <int>            Solution mode (non-negative integer)\n"
               << "  --paramfile <string>        Parameter file name\n"
               << "  --scenario <string>         Scenario name\n"
-              << "  --save-scratch <int>        Save scratch flag (0 or 1)\n"
               << "  --initial-state <int>       Initial state (non-negative integer)\n\n";
 
     std::cout << "Optional arguments:\n"
               << "  --instance-name <string>    Specific instance name (if not provided, reads from file)\n"
+              << "  --output-dir <path>         Root directory for output files (default: next to instance data)\n"
+              << "                              Can also be set via the DARP_OUTPUT_DIR environment variable\n"
               << "  --help, -h                  Show this help message\n\n";
 
     std::cout << "Examples:\n"
               << "  # Use all instances from file:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
               << "                    --num-vehicles 4 --vehicle-capacity 4 --main-algo 1 --sol-mode 0 \\\n"
-              << "                    --paramfile AnyParameters --scenario test --save-scratch 1 --initial-state 0\n\n"
-              << "  # Use specific instance:\n"
+              << "                    --paramfile AnyParameters --scenario test --initial-state 0\n\n"
+              << "  # Write results to an HPC scratch directory:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
               << "                    --instance-name test.txt --num-vehicles 4 --main-algo 1 --sol-mode 0\\\n"
-              << "                    --paramfile AnyParameters --scenario test --save-scratch 0 --initial-state 1 \n";
+              << "                    --paramfile AnyParameters --scenario test --initial-state 1 \\\n"
+              << "                    --output-dir /scratch/myuser/dynamic-ips\n";
 }
 
 
@@ -84,12 +86,6 @@ bool ConfigParser::validateConfig(const PConfig& config) {
     if (config->solMode_ < 0) {
         std::cerr << "Error: Solution mode must be non-negative (got "
                   << config->solMode_ << ").\n";
-        return false;
-    }
-
-    if (config->saveScratch_ > 3) {
-        std::cerr << "Error: Save scratch must be less than (got "
-                  << config->saveScratch_ << ").\n";
         return false;
     }
 
@@ -157,7 +153,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
     // Check for required arguments
     std::vector<std::string> required = {
         "--vehicle-folder", "--inst-folder", "--num-vehicles", "--main-algo", "--sol-mode",
-        "--paramfile", "--scenario", "--save-scratch", "--initial-state"
+        "--paramfile", "--scenario", "--initial-state"
     };
 
     for (const auto& req : required) {
@@ -179,12 +175,19 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
         config->initialState_ = std::stoi(args["--initial-state"]);
         config->paramFile_ = args["--paramfile"];
         config->scenario_ = args["--scenario"];
-        config->saveScratch_ = std::stoi(args["--save-scratch"]);
         config->vehicleFileName_ = "vehicles_" + std::to_string(config->numVehicles_) + "_4";
 
         // Optional instance name
         if (args.find("--instance-name") != args.end()) {
             config->instanceName_ = args["--instance-name"];
+        }
+
+        // Optional output directory: CLI flag takes priority, then env var, then empty (local)
+        if (args.find("--output-dir") != args.end()) {
+            config->outputDir_ = args["--output-dir"];
+        } else {
+            const char* envDir = std::getenv("DARP_OUTPUT_DIR");
+            config->outputDir_ = (envDir != nullptr) ? envDir : "";
         }
 
     } catch (const std::invalid_argument& e) {

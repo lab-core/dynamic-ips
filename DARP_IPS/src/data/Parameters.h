@@ -101,7 +101,6 @@ public:
 
     //Solver Parameters
     int nbThreads_{};                      // number of threads used in parallel computations
-    int saveScratch_;                      // save the results in the scratch place of the server
     int bigM_{};                           // big M value used in MIP formulations
     int solveTimeLimit_{};                 // time limit for solving MIP models
     int populateTimeLimit_{};              // time limit for populating MIP models

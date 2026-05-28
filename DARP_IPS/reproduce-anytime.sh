@@ -42,6 +42,15 @@ cd "${SLURM_SUBMIT_DIR:-$PWD}"
 : "${DRY_RUN:=0}"
 : "${SELECTED_GROUPS:=ALL}"
 
+# ── Output directory ──────────────────────────────────────────────────────────
+# Results are written next to each instance by default.
+# To redirect outputs to a scratch or HPC directory, set DARP_OUTPUT_DIR:
+#   export DARP_OUTPUT_DIR=/scratch/myuser/dynamic-ips
+#   bash reproduce-anytime.sh
+: "${DARP_OUTPUT_DIR:=}"
+out_dir_arg=""
+[[ -n "${DARP_OUTPUT_DIR}" ]] && out_dir_arg="--output-dir ${DARP_OUTPUT_DIR}"
+
 # ── Binary ────────────────────────────────────────────────────────────────────
 exe="bin/realtime_DARP"
 [[ -x "$exe" ]] || {
@@ -60,11 +69,13 @@ readonly ANY_MODES=(2)
 # Scenario sets — names must match entries in AnyParameters.json
 readonly SCENS_Rebalance=("Rebalance_no" "Rebalance_2" "Rebalance_3" "Rebalance_4" "Rebalance_5" "Rebalance_6")
 readonly SCENS_Profile=("profile_5" "profile_10" "profile_20" "profile_30")
-readonly SCENS_reOptimize=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_keep")
+readonly SCENS_reOptimize=("Full_warm" "Basis_warm" "Pool_warm" "Full_cold")
+readonly SCENS_reOptimize_keep=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_keep")
 readonly SCENS_no_rebalance=("no_rebalance_Basis" "no_rebalance_Pool")
 readonly SCENS_process=("Basis_warm_keep" "Greedy")
 readonly SCENS_BATCH=("batch")
-readonly SCENS_Shuttle=("Shuttle_basis" "Greedy")
+readonly SCENS_Compare=("Compare_rebalance" "Compare_no_rebalance")
+readonly SCENS_Shuttle=("Shuttle_basis" "Shuttle_Greedy")
 
 # Default scenario set for the main paper experiments
 readonly SCENS_MAIN=("${SCENS_Rebalance[@]}")
@@ -167,7 +178,7 @@ add_group() {
             jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder \
 --inst-folder $inst_folder --instance-name $inst --num-vehicles $c \
 --vehicle-capacity $capacity --main-algo $a --sol-mode $m \
---paramfile $paramfile --scenario $s --save-scratch 3 --initial-state $initial_state")
+--paramfile $paramfile --scenario $s $out_dir_arg --initial-state $initial_state")
           done
         done
       done

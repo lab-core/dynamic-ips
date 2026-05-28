@@ -169,7 +169,6 @@ std::string Instance::solutionToString() {
 }
 
 void Instance::adjustParameters(const PConfig &config) const {
-    parameters_->saveScratch_ = config->saveScratch_;
     parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
     parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
     if (parameters_->mainAlgorithm_ == MP_ISUD)

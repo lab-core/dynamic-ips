@@ -40,6 +40,15 @@ cd "${SLURM_SUBMIT_DIR:-$PWD}"
 : "${DRY_RUN:=0}"
 : "${SELECTED_GROUPS:=ALL}"
 
+# ── Output directory ──────────────────────────────────────────────────────────
+# Results are written next to each instance by default.
+# To redirect outputs to a scratch or HPC directory, set DARP_OUTPUT_DIR:
+#   export DARP_OUTPUT_DIR=/scratch/myuser/dynamic-ips
+#   bash reproduce-batch.sh
+: "${DARP_OUTPUT_DIR:=}"
+out_dir_arg=""
+[[ -n "${DARP_OUTPUT_DIR}" ]] && out_dir_arg="--output-dir ${DARP_OUTPUT_DIR}"
+
 # ── Binary ────────────────────────────────────────────────────────────────────
 exe="bin/realtime_DARP"
 [[ -x "$exe" ]] || {
@@ -154,7 +163,7 @@ add_group() {
             jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder \
 --inst-folder $inst_folder --instance-name $inst --num-vehicles $c \
 --vehicle-capacity $capacity --main-algo $a --sol-mode $m \
---paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+--paramfile $paramfile --scenario $s $out_dir_arg --initial-state $initial_state")
           done
         done
       done

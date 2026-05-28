@@ -110,10 +110,9 @@ foreach(base_path ${GUROBI_SEARCH_PATHS})
   )
 endforeach()
 
-# Add some direct platform-specific paths for macOS
+# Add platform-specific paths for macOS (version-independent globs)
 if(APPLE)
   list(APPEND GUROBI_LIB_SEARCH_PATHS
-          /Library/gurobi1200/macos_universal2/lib
           /Library/gurobi*/macos_universal2/lib
           /Library/gurobi*/mac64/lib
   )

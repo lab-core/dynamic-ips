@@ -75,62 +75,38 @@ void InputPaths::initializeInputs(const std::string &instFolder, const std::stri
     input_waitRequests_ = instanceDir_ + "WaitRequests_" + instanceName + ".txt";
 }
 
-void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode, int saveScratch,
-                                   int nbVehicles, const std::string& scenario) {
-    // create directory for results
-    if (saveScratch > 0) {
-        std::string instFolder;
-        if (saveScratch == 1)
-            instFolder = "/scratch/amirelah/dynamic-ips/" + instanceFolder_;
-        else if (saveScratch == 2){
-            instFolder = "/home/elamib/links/scratch/dynamic-ips/" + instanceFolder_;
-//            instFolder = "/home/elamib/scratch/dynamic-ips/" + instanceFolder_;
-        }
-        else
-            instFolder = "/scratch/rezaehsa/dynamic-ips/" + instanceFolder_;
+void InputPaths::initializeOutputs(const std::string &algorithm, const std::string &solutionMode,
+                                   const std::string &outputDir, int nbVehicles, const std::string& scenario) {
+    time_t now = time(nullptr);
+    tm *curr_tm = localtime(&now);
+    char resultFolder[50];
+    strftime(resultFolder, sizeof(resultFolder), "%m%d-%I%M%S", curr_tm);
+    const std::string runTag = solutionMode + "_" + algorithm + "_" + scenario + "_" + resultFolder + "_" +
+                               std::to_string(nbVehicles);
+
+    std::string parentDir;
+    if (!outputDir.empty()) {
+        // Write to the user-specified scratch/HPC directory
+        const std::string instFolder = outputDir + "/" + instanceFolder_;
         struct stat buffer{};
         if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
-            char *folderPath = const_cast<char *>(instFolder.c_str());
-            int check = mkdir(folderPath, 0777);
-            if (check == -1){
-                throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
-            }
+            if (mkdir(instFolder.c_str(), 0777) == -1)
+                throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
         }
-        std::string outputFolder = instFolder + "/" + instanceName_;
-        if (!(stat(outputFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
-            char *folderPath = const_cast<char *>(outputFolder.c_str());
-            int check = mkdir(folderPath, 0777);
-            if (check == -1)
-                throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
+        parentDir = instFolder + "/" + instanceName_;
+        if (!(stat(parentDir.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
+            if (mkdir(parentDir.c_str(), 0777) == -1)
+                throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
         }
-
-        time_t now = time(nullptr);
-        tm *curr_tm = localtime(&now);
-        char resultFolder[100];
-        strftime(resultFolder, 50, "%m%d-%I%M%S", curr_tm);
-        std::string folder_name = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + scenario +"_" + resultFolder + "_" +
-                                  std::to_string(nbVehicles);
-        char *path = const_cast<char *>(folder_name.c_str());
-        int check = mkdir(path, 0777);
-        if (check == -1)
-            throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
-        outputDir_ = outputFolder + "/" + solutionMode + "_" + algorithm + "_" + scenario + "_" + resultFolder + "_" +
-                     std::to_string(nbVehicles) + "/";
     } else {
-        time_t now = time(nullptr);
-        tm *curr_tm = localtime(&now);
-        char resultFolder[100];
-        strftime(resultFolder, 50, "%m%d-%I%M%S", curr_tm);
-        std::string folder_name = instanceDir_ + solutionMode + "_" + algorithm + "_" + scenario + "_"+ resultFolder + "_" +
-                                  std::to_string(nbVehicles);
-        char *path = const_cast<char *>(folder_name.c_str());
-        if (mkdir(path, 0777) != 0) {
-            std::cout << "Output directory can not be created!!!" << std::endl;
-            throw myTools::myException("Output directory can not be created!!!", __FILE__,__LINE__);
-        }
-        outputDir_ = instanceDir_ + solutionMode + "_" + algorithm + "_" + scenario + "_" + resultFolder + "_" +
-                     std::to_string(nbVehicles) + "/";
+        // Write next to the instance data
+        parentDir = instanceDir_;
     }
+
+    const std::string folder_name = parentDir + "/" + runTag;
+    if (mkdir(folder_name.c_str(), 0777) != 0)
+        throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
+    outputDir_ = folder_name + "/";
     prefix_ = solutionMode[0];
     prefix_ = prefix_ + "_" + algorithm;
 

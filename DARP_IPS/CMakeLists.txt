@@ -89,13 +89,34 @@ endif()
 
 
 ######## GUROBI Dependency (optional)
+# Search order:
+#   1. -DGUROBI_ROOT=/path/to/gurobi passed at configure time
+#   2. GUROBI_ROOT environment variable
+#   3. Standard macOS install location (version-independent glob)
 if(USE_GUROBI)
-    if (APPLE)
-        set(GUROBI_ROOT "/Library/gurobi1200/macos_universal2")
+    if(NOT GUROBI_ROOT AND DEFINED ENV{GUROBI_ROOT})
+        set(GUROBI_ROOT $ENV{GUROBI_ROOT})
+    endif()
+    if(NOT GUROBI_ROOT AND APPLE)
+        file(GLOB _gurobi_candidates
+            "/Library/gurobi*/macos_universal2"
+            "/Library/gurobi*/macos_arm64"
+            "/Library/gurobi*/mac64")
+        if(_gurobi_candidates)
+            list(SORT _gurobi_candidates ORDER DESCENDING)
+            list(GET _gurobi_candidates 0 GUROBI_ROOT)
+            message(STATUS "Gurobi auto-detected at: ${GUROBI_ROOT}")
+        endif()
+    endif()
+    if(GUROBI_ROOT)
         set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
-        set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi120.dylib")
+        file(GLOB _gurobi_lib "${GUROBI_ROOT}/lib/libgurobi[0-9]*.dylib"
+                               "${GUROBI_ROOT}/lib/libgurobi[0-9]*.so")
+        if(_gurobi_lib)
+            list(GET _gurobi_lib 0 GUROBI_LIBRARY)
+        endif()
         set(GUROBI_CXX_LIBRARY "${GUROBI_ROOT}/lib/libgurobi_c++.a")
-    endif ()
+    endif()
     find_package(GUROBI)
     if(GUROBI_FOUND)
         message("-----GUROBI IS FOUND-----")
@@ -110,16 +131,28 @@ if(USE_GUROBI)
 endif()
 
 ######## Eigen Dependency
-if (UNIX)
-    if (APPLE)
-        set (EIGEN_DIR "/Applications/eigen-3.4.0")
-    else()
-        set (EIGEN_DIR /home/elamib/Documents/eigen-3.4.0 /home/ella/eigen-3.4.0)
-    endif()
+# Search order:
+#   1. System-installed Eigen (e.g. apt install libeigen3-dev, brew install eigen)
+#   2. -DEIGEN_DIR=/path/to/eigen passed at configure time
+#   3. EIGEN_DIR environment variable
+find_package(Eigen3 QUIET)
+if(Eigen3_FOUND)
+    message(STATUS "Eigen3 found via find_package: ${EIGEN3_INCLUDE_DIR}")
+    set(EIGEN_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})
 else()
-    set (EIGEN_DIR "C:/Program Files/eigen-3.4.0")
+    if(NOT EIGEN_DIR AND DEFINED ENV{EIGEN_DIR})
+        set(EIGEN_DIR $ENV{EIGEN_DIR})
+    endif()
+    if(EIGEN_DIR)
+        message(STATUS "Eigen3 found via EIGEN_DIR: ${EIGEN_DIR}")
+        set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
+    else()
+        message(FATAL_ERROR
+            "Eigen3 not found. Install it system-wide or provide the path:\n"
+            "  cmake -DEIGEN_DIR=/path/to/eigen-3.x.x ..\n"
+            "  or: export EIGEN_DIR=/path/to/eigen-3.x.x")
+    endif()
 endif()
-set(EIGEN_INCLUDE_DIR ${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 
 # Threads for portability

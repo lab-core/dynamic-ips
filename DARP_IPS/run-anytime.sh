@@ -35,6 +35,14 @@ exe="bin/realtime_DARP"
 [[ -x "$exe" ]] || { echo "[ERROR] Executable not found or not executable: $exe" >&2; ls -la bin || true; exit 1; }
 
 # -------------------------
+# Output directory (change this to your scratch path)
+# -------------------------
+OUTPUT_DIR="/scratch/amirelah/dynamic-ips"
+OUTPUT_DIR="/scratch/rezaehsa/dynamic-ips"
+OUTPUT_DIR="/home/elamib/scratch/dynamic-ips"
+OUTPUT_DIR="/home/elamib/links/scratch/dynamic-ips"
+
+# -------------------------
 # Shared defaults (DRY)
 # -------------------------
 readonly PARAMFILE="AnyParameters"
@@ -51,8 +59,8 @@ readonly SCENS_reOptimize_keep=("Full_warm_keep" "Basis_warm_keep" "Pool_warm_ke
 readonly SCENS_no_rebalance=("no_rebalance_Basis" "no_rebalance_Pool")
 readonly SCENS_process=("Basis_warm_keep" "Greedy")
 readonly SCENS_BATCH=("batch")
-readonly SCENS_Compare=("Basis_warm_keep" "no_rebalance_Basis")
-readonly SCENS_Shuttle=("Shuttle_basis" "Greedy")
+readonly SCENS_Compare=("Compare_rebalance" "Compare_no_rebalance")
+readonly SCENS_Shuttle=("Shuttle_basis" "Shuttle_Greedy")
 
 # Bundle scenario for group tests
 readonly SCENS_GROUP_TEST=("${SCENS_reOptimize[@]}")
@@ -203,7 +211,7 @@ add_group() {
       for s in "${scens_ref[@]}"; do
         for c in "${counts_ref[@]}"; do
           for inst in "${insts_ref[@]}"; do
-            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --save-scratch 1 --initial-state $initial_state")
+            jobs+=("$exe --data-dir $data_dir --vehicle-folder $vehicle_folder --inst-folder $inst_folder --instance-name $inst --num-vehicles $c --vehicle-capacity $capacity --main-algo $a --sol-mode $m --paramfile $paramfile --scenario $s --output-dir $OUTPUT_DIR --initial-state $initial_state")
           done
         done
       done
