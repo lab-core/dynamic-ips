@@ -1,3 +1,4 @@
+import constants as c
 from typing import Union, Sequence, Mapping
 
 import pandas as pd
@@ -124,11 +125,12 @@ def _plot_grouped_bars(ax, pivot_df, categories, palette, config,
     # Add target line if specified
     if target_line is not None:
         ax.axhline(y=target_line, color='red', linestyle='--',
-                   linewidth=1, label=f'Epoch Size ({target_line}s)')
+                   linewidth=1, label=f'Epoch size ({target_line}s)')
 
     # Set labels and ticks
     ax.set_xticks(positions + width * n_bars / 2)
-    ax.set_xticklabels(pivot_df.index, rotation=rotation, fontsize=config.tick_label_fsize)
+    ax.set_xticklabels(c.customer_groups_labels, rotation=rotation, fontsize=config.tick_label_fsize)
+ #   ax.set_xticklabels(pivot_df.index, rotation=rotation, fontsize=config.tick_label_fsize)
 
     if show_ylabel:
         ax.set_ylabel(ylabel, fontsize=config.axis_label_fsize, fontweight='bold')
@@ -326,7 +328,7 @@ def create_double_grouped_barplot(data_path, config: PlotConfig, output_filename
     # Adjust layout and save
     fig.tight_layout(rect=[0, 0, 1, 0.85])
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path
@@ -434,7 +436,7 @@ def create_double_relative_barplot(data_path, config: PlotConfig,
     # Adjust layout and save
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path

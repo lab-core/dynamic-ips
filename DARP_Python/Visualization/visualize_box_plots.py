@@ -163,7 +163,10 @@ def plot_boxplot_group(ax, plot_data, categories, palette, config: PlotConfig,
     )
 
     legend_handles = []
-    legend_labels = category_labels if category_labels else categories
+    if category_labels:
+        legend_labels = list(category_labels)  # make a copy
+    else:
+        legend_labels = list(categories)  # also copy here
 
     # Plot boxplots for each category
     for i, cat in enumerate(categories):
@@ -183,10 +186,11 @@ def plot_boxplot_group(ax, plot_data, categories, palette, config: PlotConfig,
             medianprops={'color': darkened_palette[i], 'linewidth': 0.6},
             flierprops={
                 'marker': 'o',
-                'color': 'grey',
-                'markersize': 2,
+                'color': 'gray',
+                'markersize': 1.2,
                 'markerfacecolor': light_palette[i],
-                'markeredgewidth': 0.1
+                'markeredgewidth': 0.1,
+                'markeredgecolor': darkened_palette[i],
             }
         )
         legend_handles.append(bp["boxes"][0])
@@ -198,7 +202,7 @@ def plot_boxplot_group(ax, plot_data, categories, palette, config: PlotConfig,
             line = ax.axhline(y=target_lines, color='red', linestyle='--',
                               linewidth=1.5, label=f'Target ({target_lines})')
             legend_handles.append(line)
-            legend_labels.append(f'Target ({target_lines})')
+            legend_labels.append(f'Epoch size ({target_lines}s)')
         elif isinstance(target_lines, dict):
             # Multiple target lines
             colors = ['red', 'blue', 'green', 'orange', 'purple']
@@ -218,7 +222,7 @@ def plot_boxplot_group(ax, plot_data, categories, palette, config: PlotConfig,
             ax.set_ylabel(ylabel, fontsize=config.axis_label_fsize, fontweight='bold')
 
     if xlabel:
-        ax.set_xlabel(xlabel, fontweight='bold', fontsize=config.axis_label_fsize)
+        ax.set_xlabel(xlabel, fontweight='bold', fontsize=config.axis_label_fsize_small)
 
     # Set x-ticks
     if x_tick_labels is not None:
@@ -276,7 +280,8 @@ def create_multi_subplot_boxplots(
         tight_layout_rect: Optional[List[float]] = None,
         additional_filter: Optional[Callable] = None,
         color_reverse: bool = True,
-        palette_name: str = "gist_earth"
+        palette_name: str = "gist_earth",
+        palette = None,
 ) -> str:
     """
     Create multiple boxplot subplots with maximum flexibility.
@@ -328,16 +333,25 @@ def create_multi_subplot_boxplots(
     palette_name : str
         Name of color palette to use
 
+    Each entry of `subplot_configs` may ALSO contain:
+
+    - 'data_path': optional path to a CSV file for THIS subplot only.
+                   If omitted, the global `data_path` is used.
+    - 'data_df'  : optional pandas DataFrame for THIS subplot.
+                   If provided, it overrides both global `data_path`
+                   and subplot 'data_path' for that subplot.
+
     Returns:
     --------
     str : Path to saved figure
     """
     # Read data
-    df = read_csv_with_encoding(data_path)
-
-    # Apply global filter if provided
+    df_global = read_csv_with_encoding(data_path)
     if additional_filter is not None:
-        df = additional_filter(df)
+        df_global = additional_filter(df_global)
+
+    # Cache to avoid re-reading the same CSV multiple times
+    df_cache = {data_path: df_global}
 
     # Determine subplot layout
     n_subplots = len(subplot_configs)
@@ -351,10 +365,15 @@ def create_multi_subplot_boxplots(
 
     # Determine figure size
     if fig_size is None:
-        fig_size = (6 * n_cols, 5 * n_rows)
+        fig_size = (3 * n_cols, 4 * n_rows)
 
     # Create figure and subplots
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=fig_size)
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=fig_size,
+ #                            gridspec_kw={'width_ratios': [3, 2]}
+                             )
+ #   fig.subplots_adjust(wspace=0.1)
+ #   axes[0].axhspan(0, 10, color="lightgray", alpha=0.4)
+ #   axes[1].axhspan(0, 12, color="lightgray", alpha=0.4)
 
     # Ensure axes is always a list
     if n_subplots == 1:
@@ -364,7 +383,8 @@ def create_multi_subplot_boxplots(
 
     # Get color palette
     max_categories = max(len(cfg['categories']) for cfg in subplot_configs)
-    palette = sns.color_palette(palette_name, n_colors=max_categories)
+    if palette is None:
+        palette = sns.color_palette(palette_name, n_colors=max_categories)
     if color_reverse:
         palette = palette[::-1]
 
@@ -377,6 +397,7 @@ def create_multi_subplot_boxplots(
 
         # Extract subplot-specific configuration
         item_column = subplot_config.get('item_column', 'Instance')
+        x_tick_labels = subplot_config.get('x_tick_labels', None)
         category_column = subplot_config['category_column']
         value_column = subplot_config['value_column']
         categories = subplot_config['categories']
@@ -394,18 +415,47 @@ def create_multi_subplot_boxplots(
         legend_config = subplot_config.get('legend_config', {})
         gap_factors = subplot_config.get('gap_factors', None)
         show_grid = subplot_config.get('show_grid', False)
+        show_ylabel = subplot_config.get('show_ylabel', True)
 
-        # Apply subplot-specific filter
-        df_subplot = df.copy()
+        # --- decide which dataframe this subplot uses ---
+        subplot_data_path = subplot_config.get('data_path', None)
+        subplot_df = subplot_config.get('data_df', None)
+
+        if subplot_df is not None:
+            # Directly provided DataFrame
+            df_subplot = subplot_df.copy()
+        else:
+            if subplot_data_path is not None:
+                # Subplot has its own CSV
+                if subplot_data_path in df_cache:
+                    df_subplot = df_cache[subplot_data_path].copy()
+                else:
+                    df_tmp = read_csv_with_encoding(subplot_data_path)
+                    if additional_filter is not None:
+                        df_tmp = additional_filter(df_tmp)
+                    df_cache[subplot_data_path] = df_tmp
+                    df_subplot = df_tmp.copy()
+            else:
+                # Fall back to global data
+                df_subplot = df_global.copy()
+
+            # Apply subplot-specific filter AFTER choosing the dataframe
         if subplot_filter is not None:
             df_subplot = subplot_filter(df_subplot)
 
-        # Ensure proper data types
+        # Get sorted items
+        x_items = np.sort(df_subplot[item_column].unique()).astype(str)
+
+        # If category_column is None → create a dummy one
+        if category_column is None:
+            category_column = '_dummy_category'
+            df_subplot[category_column] = str(subplot_config['categories'][0])
+        else:
+            df_subplot[category_column] = df_subplot[category_column].astype(str)
+
         df_subplot[item_column] = df_subplot[item_column].astype(str)
         df_subplot[category_column] = df_subplot[category_column].astype(str)
 
-        # Get sorted items
-        x_items = np.sort(df_subplot[item_column].unique())
 
         # Prepare data
         plot_data = prepare_boxplot_data(
@@ -415,20 +465,24 @@ def create_multi_subplot_boxplots(
 
         # Use subset of palette for this subplot
         subplot_palette = palette[:len(categories)]
-#        cleaned_x_tick_labels = [item.split('.', 1)[1] for item in x_items]
+  #      if len(categories) == 2:
+  #          subplot_palette = [palette[0], palette[2]]
+  #      if len(categories) == 1:
+  #          subplot_palette = [palette[1]]
 
-
+        if x_tick_labels is None:
+            x_tick_labels = x_items
         # Plot boxplots
         handles, labels = plot_boxplot_group(
             ax, plot_data, categories, subplot_palette, config,
             show_outliers=show_outliers,
-            show_ylabel=True,
+            show_ylabel=show_ylabel,
             ylabel=ylabel,
             width=width,
             gap_factors=gap_factors,
             target_lines=target_lines,
             xlabel=xlabel,
-            x_tick_labels=x_items,
+            x_tick_labels=x_tick_labels,
             rotation=rotation,
             ylim=ylim,
             show_legend=show_legend,
@@ -478,7 +532,7 @@ def create_multi_subplot_boxplots(
     # Add separate target line legend if specified
     if shared_target_line_legend:
         target_line_value = shared_target_line_legend.get('value', 30)
-        target_line_label = shared_target_line_legend.get('label', f'Epoch Size ({target_line_value}s)')
+        target_line_label = shared_target_line_legend.get('label', f'Epoch size ({target_line_value}s)')
 
         fig.legend(
             handles=[mlines.Line2D([], [], color='red', linestyle='--', lw=1.5)],
@@ -504,7 +558,7 @@ def create_multi_subplot_boxplots(
 
     # Save figure
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path)
     plt.close(fig)
 
     return figure_path
@@ -535,6 +589,7 @@ def create_single_boxplot(data_path, config, **kwargs):
             'ncol': kwargs.get('legend_ncol', 1),
         }
     }
+    tight_layout_rect = kwargs.get('tight_layout_rect', None)
 
     return create_multi_subplot_boxplots(
         data_path=data_path,
@@ -544,7 +599,8 @@ def create_single_boxplot(data_path, config, **kwargs):
         fig_size=kwargs.get('fig_size', config.fig_size),
         additional_filter=kwargs.get('additional_filter', None),
         color_reverse=kwargs.get('color_reverse', True),
-        palette_name=kwargs.get('palette_name', 'gist_earth')
+        palette_name=kwargs.get('palette_name', 'gist_earth'),
+        tight_layout_rect=tight_layout_rect,
     )
 
 
@@ -590,7 +646,7 @@ def create_comparison_boxplots(data_path, config, comparison_column, comparison_
         if isinstance(target_lines, (int, float)):
             shared_target_line_legend = {
                 'value': target_lines,
-                'label': f'Epoch Size ({target_lines}s)',
+                'label': f'Epoch size ({target_lines}s)',
                 'bbox': kwargs.get('legend_bbox2', (0.5, 0.92))
             }
         elif isinstance(target_lines, dict):
@@ -618,3 +674,660 @@ def create_comparison_boxplots(data_path, config, comparison_column, comparison_
         color_reverse=kwargs.get('color_reverse', True),
         tight_layout_rect = tight_layout_rect,
     )
+
+
+def plot_epoch_vehicle_boxplot(
+        results_df,
+        output_path: str,
+        config: PlotConfig,
+        ylim: float,
+        value_column: str = "nbNodes",
+        ylabel: str = "nbNodes",
+):
+    """
+    Create an epoch boxplot (nbNodes vs Epoch) with:
+    - results_df instead of data_path
+    - saving to output_path
+    - epochs 1..240 (all epochs)
+    - sparse tick labels only at selected positions
+    - no legend
+    """
+
+    # Make sure epochs are integers and sorted
+    df_plot = results_df.copy()
+    df_plot["Epoch"] = df_plot["Epoch"].astype(int)
+
+    # Use all epochs from 1 to 240
+    kept_epochs = np.arange(1, 241)
+
+    # Build list of lists: boxplot_data[i] contains values for epoch_i
+    boxplot_data = []
+    for e in kept_epochs:
+        vals = df_plot.loc[df_plot["Epoch"] == e, value_column]
+        if len(vals) == 0:
+            # keep structure even if some epochs have no data
+            boxplot_data.append([np.nan])
+        else:
+            boxplot_data.append(vals.values)
+
+    # Create figure
+    fig, ax = plt.subplots(figsize=config.fig_size_wide)
+
+    # Plot boxplots at their actual epoch numbers (1..240)
+    bp = ax.boxplot(
+        boxplot_data,
+        positions=kept_epochs,
+        widths=0.2,
+        showfliers=True,
+        patch_artist=True,
+        boxprops=dict(facecolor=(0.6, 0.8, 0.6, 0.5),
+                      edgecolor="green", linewidth=1),
+        medianprops=dict(color="green", linewidth=1),
+        whiskerprops=dict(color="black", linewidth=0.7),
+        flierprops=dict(marker='o', markersize=2, markerfacecolor="green",
+                        markeredgecolor="black", linestyle="none"),
+    )
+
+    # Axis labels
+    ax.set_ylabel(ylabel, fontsize=config.axis_label_fsize, fontweight="bold")
+    ax.set_xlabel("Runtime Epochs", fontsize=config.axis_label_fsize_small,
+                  fontweight="bold")
+
+    # X-ticks: only display at key positions (you can change these lists)
+    tick_positions = [0, 30, 60, 90, 120, 150, 180, 210, 240]
+    tick_labels    = [0, 30, 60, 90, 120, 150, 180, 210, 240]
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, fontsize=config.tick_label_fsize, rotation=0)
+
+    # Ensure the 0 tick is visible
+    ax.set_xlim(left=0, right=max(kept_epochs) + 1)
+    ax.set_ylim(0, ylim)
+
+    # Clean axes
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.tick_params(axis='both', which='major', length=3.8)
+
+    # No legend
+
+    plt.tight_layout()
+    fig.savefig(output_path, bbox_inches="tight")
+    plt.close(fig)
+
+
+def create_anytime_improve_boxplot_with_zoom1(
+    data_path: str,
+    config: PlotConfig,
+    outlier: bool = True,
+    output_filename: str = None,
+    inset_group_idx: int = 1,              # 0-based -> 1 means second column
+    inset_bounds=(0.30, 0.18, 0.28, 0.28), # (x0, y0, w, h) in axes fraction
+    inset_ylim=(-0.01, 0.22),
+    inset_xpad=0.18,
+    additional_filter: Optional[Callable] = None,
+) -> str:
+    """
+    Create the anytime improvement boxplot with an inset zoom on one x-group.
+
+    This is a standalone function and does not require changing any of your
+    existing plotting functions.
+    """
+
+    def preprocess_anytime(df):
+        return df[df['subProIter'] < 5].copy()
+
+
+
+    # ----------------------------
+    # Load and preprocess data
+    # ----------------------------
+    df = read_csv_with_encoding(data_path)
+
+    if additional_filter is not None:
+        df = additional_filter(df)
+
+    item_column = 'subProIter'
+    category_column = 'epochLength'
+    value_column = 'RelativeImprove'
+    categories = ['30', '20', '10', '5']
+
+    df[item_column] = df[item_column].astype(str)
+    df[category_column] = df[category_column].astype(str)
+
+    x_items = np.sort(df[item_column].unique()).astype(str)
+
+    plot_data = prepare_boxplot_data(
+        df, x_items, item_column, categories, category_column, value_column
+    )
+
+    # ----------------------------
+    # Figure + main plot
+    # ----------------------------
+    fig, ax = plt.subplots(figsize=config.fig_size)
+
+    palette = sns.color_palette("gist_earth", n_colors=len(categories))
+
+    plot_boxplot_group(
+        ax=ax,
+        plot_data=plot_data,
+        categories=categories,
+        palette=palette,
+        config=config,
+        show_outliers=outlier,
+        show_ylabel=True,
+        ylabel='Relative Improve %',
+        width=0.4,
+        gap_factors=None,
+        target_lines=None,
+        xlabel='Iterations',
+        x_tick_labels=x_items,
+        rotation=0,
+        ylim=(-0.3, 22),
+        show_legend=True,
+        legend_loc='upper right',
+        legend_bbox=None,
+        legend_title='Epoch size (s)',
+        category_labels=None,
+        show_grid=False,
+        ylabel_pad=None,
+        legend_ncol=2
+    )
+
+    # ----------------------------
+    # Build inset zoom
+    # ----------------------------
+    n_items = len(x_items)
+    n_categories = len(categories)
+
+    base_positions, positions = calculate_positions(
+        n_items,
+        n_categories,
+        0.4,
+        None
+    )
+
+    # Create inset
+    axins = ax.inset_axes(inset_bounds)
+
+    # Match basic style
+    axins.spines['top'].set_visible(False)
+    axins.spines['right'].set_visible(False)
+
+    # Reuse the same color prep logic as plot_boxplot_group
+    darkened_palette = [darken_color(color, factor=0.8) for color in palette]
+    light_palette = [(r, g, b, 0.5) for r, g, b in palette]
+
+    # Draw only the selected group in the inset
+    for i, cat in enumerate(categories):
+        pos = [positions[i][inset_group_idx]]
+        data_for_group = [plot_data[cat][inset_group_idx]]
+
+        axins.boxplot(
+            data_for_group,
+            positions=pos,
+            widths=0.4,
+            patch_artist=True,
+            showfliers=outlier,
+            boxprops=dict(
+                facecolor=light_palette[i],
+                edgecolor=darkened_palette[i],
+                linewidth=1
+            ),
+            whiskerprops={'linewidth': 0.6},
+            medianprops={'color': darkened_palette[i], 'linewidth': 0.6},
+            flierprops={
+                'marker': 'o',
+                'color': 'grey',
+                'markersize': 2,
+                'markerfacecolor': light_palette[i],
+                'markeredgewidth': 0.1
+            }
+        )
+
+    axins.set_facecolor('#f7f7f7')
+
+    # Zoom around the second column
+    group_positions = [positions[i][inset_group_idx] for i in range(n_categories)]
+    axins.set_xlim(min(group_positions) - inset_xpad, max(group_positions) + inset_xpad)
+    axins.set_ylim(-0.02, 0.32)
+
+    # Optional inset ticks
+    axins.set_xticks([base_positions[inset_group_idx]])
+    axins.set_xticklabels([x_items[inset_group_idx]], fontsize=max(config.tick_label_fsize - 2, 6))
+    axins.tick_params(axis='y', which='major', labelsize=config.tick_label_fsize)
+
+    # Draw rectangle + connectors
+    ax.indicate_inset_zoom(axins, edgecolor="grey", linewidth=0.5)
+
+    # ----------------------------
+    # Layout + save
+    # ----------------------------
+    fig.tight_layout()
+
+    figure_path = os.path.join(os.path.dirname(data_path), output_filename)
+    fig.savefig(figure_path, bbox_inches='tight')
+    plt.close(fig)
+
+    return figure_path
+
+
+def create_anytime_improve_boxplot_with_zoom(
+    data_path: str,
+    config: PlotConfig,
+    outlier: bool = True,
+    output_filename: str = None,
+    item_column: str = 'subProIter',
+    category_column: str = 'epochLength',
+    value_column: str = 'RelativeImprove',
+    ylabel: str = 'RelativeImprove',
+    xlabel: str = 'CG Iterations',
+    ylim=(-0.3, 22),
+    categories: Optional[List[str]] = None,
+    box_width: float = 0.4,
+    inset_group_idx: int = 1,                # start group: 0-based -> 1 means second column
+    inset_group_end_idx: int = 2,            # end group: 0-based -> 2 means third column
+    inset_bounds=(0.30, 0.18, 0.28, 0.28),   # (x0, y0, w, h) in axes fraction
+    inset_ylim=(-0.02, 0.32),
+    inset_xpad=0.18,
+    additional_filter: Optional[Callable] = None,
+) -> str:
+    """
+    Create the anytime improvement boxplot with an inset zoom on a range of x-groups.
+
+    By default, the inset zooms into the second and third columns.
+    """
+    if categories is None:
+        categories = ['30', '20', '10', '5']
+
+    # ----------------------------
+    # Load and preprocess data
+    # ----------------------------
+    df = read_csv_with_encoding(data_path)
+
+    if additional_filter is not None:
+        df = additional_filter(df)
+
+    df[item_column] = df[item_column].astype(str)
+    df[category_column] = df[category_column].astype(str)
+
+    x_items = np.sort(df[item_column].unique()).astype(str)
+
+    plot_data = prepare_boxplot_data(
+        df, x_items, item_column, categories, category_column, value_column
+    )
+
+    # ----------------------------
+    # Figure + main plot
+    # ----------------------------
+    fig, ax = plt.subplots(figsize=(4, 4))
+
+    palette = sns.color_palette("gist_earth", n_colors=len(categories))
+
+    plot_boxplot_group(
+        ax=ax,
+        plot_data=plot_data,
+        categories=categories,
+        palette=palette,
+        config=config,
+        show_outliers=outlier,
+        show_ylabel=True,
+        ylabel=ylabel,
+        width=box_width,
+        gap_factors=None,
+        target_lines=None,
+        xlabel=xlabel,
+        x_tick_labels=x_items,
+        rotation=0,
+        ylim=ylim,
+        show_legend=True,
+        legend_loc='upper right',
+        legend_bbox=None,
+        legend_title='Epoch size (s)',
+        category_labels=None,
+        show_grid=False,
+        ylabel_pad=None,
+        legend_ncol=2
+    )
+
+    # ----------------------------
+    # Build inset zoom
+    # ----------------------------
+    n_items = len(x_items)
+    n_categories = len(categories)
+
+    base_positions, positions = calculate_positions(
+        n_items,
+        n_categories,
+        box_width,
+        None
+    )
+
+    # Keep indices valid
+    start_idx = max(0, inset_group_idx)
+    end_idx = min(inset_group_end_idx, n_items - 1)
+
+    # Create inset
+    axins = ax.inset_axes(inset_bounds)
+    axins.set_facecolor('#f7f7f7')
+
+    # Match basic style
+    axins.spines['top'].set_visible(False)
+    axins.spines['right'].set_visible(False)
+
+    # Reuse the same color prep logic as plot_boxplot_group
+    darkened_palette = [darken_color(color, factor=0.8) for color in palette]
+    light_palette = [(r, g, b, 0.5) for r, g, b in palette]
+
+    # Draw the selected group range in the inset
+    for i, cat in enumerate(categories):
+        pos = [positions[i][g] for g in range(start_idx, end_idx + 1)]
+        data_for_groups = [plot_data[cat][g] for g in range(start_idx, end_idx + 1)]
+
+        axins.boxplot(
+            data_for_groups,
+            positions=pos,
+            widths=box_width,
+            patch_artist=True,
+            showfliers=outlier,
+            boxprops=dict(
+                facecolor=light_palette[i],
+                edgecolor=darkened_palette[i],
+                linewidth=1
+            ),
+            whiskerprops={'linewidth': 0.6},
+            medianprops={'color': darkened_palette[i], 'linewidth': 0.6},
+            flierprops={
+                'marker': 'o',
+                'color': 'grey',
+                'markersize': 2,
+                'markerfacecolor': light_palette[i],
+                'markeredgewidth': 0.1
+            }
+        )
+
+    # Zoom around the selected columns
+    all_group_positions = []
+    for g in range(start_idx, end_idx + 1):
+        all_group_positions.extend([positions[i][g] for i in range(n_categories)])
+
+    axins.set_xlim(min(all_group_positions) - inset_xpad,
+                   max(all_group_positions) + inset_xpad)
+    axins.set_ylim(inset_ylim)
+
+    # Optional inset ticks
+    tick_positions = [base_positions[g] for g in range(start_idx, end_idx + 1)]
+    tick_labels = [x_items[g] for g in range(start_idx, end_idx + 1)]
+    axins.set_xticks(tick_positions)
+    axins.set_xticklabels(
+        tick_labels,
+        fontsize=max(config.tick_label_fsize - 2, 6)
+    )
+    axins.tick_params(axis='y', which='major', labelsize=config.tick_label_fsize)
+
+    # Draw rectangle + connectors
+    ax.indicate_inset_zoom(axins, edgecolor="grey", linewidth=0.5)
+
+    # ----------------------------
+    # Layout + save
+    # ----------------------------
+    fig.tight_layout()
+
+    figure_path = os.path.join(os.path.dirname(data_path), output_filename)
+    fig.savefig(figure_path, bbox_inches='tight')
+    plt.close(fig)
+
+    return figure_path
+
+def create_anytime_improve_lineplot_with_zoom(
+    data_path: str,
+    config: PlotConfig,
+    outlier: bool = True,  # unused, kept for compatibility
+    output_filename: str = None,
+    item_column: str = 'subProIter',
+    category_column: str = 'epochLength',
+    value_column: str = 'RelativeImprove',
+    ylabel: str = 'RelativeImprove',
+    xlabel: str = 'CG Iterations',
+    ylim=(-0.3, 22),
+    categories: Optional[List[str]] = None,
+    box_width: float = 0.4,  # unused, kept for compatibility
+    inset_group_idx: int = 1,
+    inset_group_end_idx: int = 2,
+    inset_bounds=(0.30, 0.18, 0.28, 0.28),
+    inset_ylim=(-0.02, 0.32),
+    inset_xpad=0.18,
+    additional_filter: Optional[Callable] = None,
+) -> str:
+    """
+    Create an anytime improvement line plot showing only averages,
+    with an inset zoom on a selected range of x-groups.
+    """
+    if categories is None:
+        categories = ['30', '20', '10', '5']
+
+    # ----------------------------
+    # Load and preprocess data
+    # ----------------------------
+    df = read_csv_with_encoding(data_path)
+
+    if additional_filter is not None:
+        df = additional_filter(df)
+
+    df[item_column] = df[item_column].astype(str)
+    df[category_column] = df[category_column].astype(str)
+
+    # robust numeric-ish sort for x labels
+    def _sort_key(v):
+        try:
+            return float(v)
+        except ValueError:
+            return v
+
+    x_items = sorted(df[item_column].unique(), key=_sort_key)
+    x_pos = np.arange(len(x_items))
+
+    # Compute mean values for each category across x_items
+    mean_data = {}
+    for cat in categories:
+        cat_means = []
+        for x in x_items:
+            vals = df.loc[
+                (df[item_column] == x) & (df[category_column] == cat),
+                value_column
+            ].dropna()
+
+            cat_means.append(vals.mean() if len(vals) > 0 else np.nan)
+
+        mean_data[cat] = cat_means
+
+    # ----------------------------
+    # Figure + main plot
+    # ----------------------------
+    fig, ax = plt.subplots(figsize=(3.5, 4))
+    palette = sns.color_palette("gist_earth", n_colors=len(categories))
+
+    for i, cat in enumerate(categories):
+        ax.plot(
+            x_pos,
+            mean_data[cat],
+            marker='o',
+            linewidth=1.5,
+            markersize=4,
+            color=palette[i],
+            label=cat
+        )
+
+    ax.set_xlabel(xlabel, fontweight='bold', fontsize=config.axis_label_fsize)
+    ax.set_ylabel(ylabel, fontweight='bold', fontsize=config.axis_label_fsize)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(x_items, rotation=0, fontsize=config.tick_label_fsize)
+    ax.tick_params(axis='y', which='major', labelsize=config.tick_label_fsize)
+    ax.set_ylim(ylim)
+
+    ax.legend(
+        title='Epoch size (s)',
+        loc='upper right',
+        ncol=2,
+        fontsize=config.legend_fsize,
+        title_fontsize=config.legend_fsize
+    )
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(False)
+
+    # ----------------------------
+    # Build inset zoom
+    # ----------------------------
+    n_items = len(x_items)
+    start_idx = max(0, inset_group_idx)
+    end_idx = min(inset_group_end_idx, n_items - 1)
+
+    axins = ax.inset_axes(inset_bounds)
+    axins.set_facecolor('#f7f7f7')
+    axins.spines['top'].set_visible(False)
+    axins.spines['right'].set_visible(False)
+
+    zoom_x = x_pos[start_idx:end_idx + 1]
+
+    for i, cat in enumerate(categories):
+        zoom_y = mean_data[cat][start_idx:end_idx + 1]
+        axins.plot(
+            zoom_x,
+            zoom_y,
+            marker='o',
+            linewidth=1.2,
+            markersize=3,
+            color=palette[i]
+        )
+
+    axins.set_xlim(
+        x_pos[start_idx] - inset_xpad,
+        x_pos[end_idx] + inset_xpad
+    )
+    axins.set_ylim(inset_ylim)
+
+    axins.set_xticks(zoom_x)
+    axins.set_xticklabels(
+        x_items[start_idx:end_idx + 1],
+        fontsize=max(config.tick_label_fsize - 2, 6)
+    )
+    axins.tick_params(axis='y', which='major', labelsize=max(config.tick_label_fsize - 2, 6))
+
+    ax.indicate_inset_zoom(axins, edgecolor="grey", linewidth=0.5)
+
+    # ----------------------------
+    # Layout + save
+    # ----------------------------
+    fig.tight_layout()
+
+    if output_filename is None:
+        output_filename = "anytime_lineplot_with_zoom.pdf"
+
+    figure_path = os.path.join(os.path.dirname(data_path), output_filename)
+    fig.savefig(figure_path, bbox_inches='tight')
+    plt.close(fig)
+
+    return figure_path
+
+def create_anytime_epoch_count_barplot(
+    data_path: str,
+    config: PlotConfig,
+    output_filename: str = None,
+    item_column: str = 'subProIter',
+    category_column: str = 'epochLength',
+    ylabel: str = '# Epochs',
+    xlabel: str = 'CG Iterations',
+    categories: Optional[List[str]] = None,
+    bar_width: float = 0.18,
+    additional_filter: Optional[Callable] = None,
+) -> str:
+    """
+    Grouped bar plot:
+      - x-axis: item_column (e.g. subProIter)
+      - y-axis: number of rows
+      - one bar per category_column value (e.g. epochLength)
+    """
+    if categories is None:
+        categories = ['30', '20', '10', '5']
+
+    # ----------------------------
+    # Load and preprocess data
+    # ----------------------------
+    df = read_csv_with_encoding(data_path)
+
+    if additional_filter is not None:
+        df = additional_filter(df)
+
+    df[item_column] = df[item_column].astype(str)
+    df[category_column] = df[category_column].astype(str)
+
+    def _sort_key(v):
+        try:
+            return float(v)
+        except ValueError:
+            return v
+
+    x_items = sorted(df[item_column].unique(), key=_sort_key)
+    x = np.arange(len(x_items))
+
+    # ----------------------------
+    # Count rows for each (item, category)
+    # ----------------------------
+    num_epochs = [1932,2901, 5775, 11550]
+    epochs_by_item = dict(zip(categories, num_epochs))
+    count_data = {}
+    for cat in categories:
+        counts = []
+        for item in x_items:
+            n = len(df[(df[item_column] == item) & (df[category_column] == cat)])
+            counts.append(n/epochs_by_item[cat])
+        count_data[cat] = counts
+
+    # ----------------------------
+    # Plot
+    # ----------------------------
+    fig, ax = plt.subplots(figsize=(3.5, 4))
+    palette = sns.color_palette("gist_earth", n_colors=len(categories))
+
+    n_categories = len(categories)
+    offsets = (np.arange(n_categories) - (n_categories - 1) / 2) * bar_width
+
+    for i, cat in enumerate(categories):
+        ax.bar(
+            x + offsets[i],
+            count_data[cat],
+            width=bar_width,
+            color=palette[i],
+            label=cat
+        )
+
+    ax.set_xlabel(xlabel, fontweight='bold', fontsize=config.axis_label_fsize)
+    ax.set_ylabel(ylabel, fontweight='bold', fontsize=config.axis_label_fsize)
+    ax.set_xticks(x)
+    ax.set_xticklabels(x_items, rotation=0, fontsize=config.tick_label_fsize)
+    ax.tick_params(axis='y', which='major', labelsize=config.tick_label_fsize)
+
+    ax.legend(
+        title='Epoch size (s)',
+        loc='upper right',
+        ncol=2,
+        fontsize=config.legend_fsize,
+        title_fontsize=config.legend_fsize
+    )
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(False)
+
+    fig.tight_layout()
+
+    if output_filename is None:
+        output_filename = "anytime_epoch_count_barplot.pdf"
+
+    figure_path = os.path.join(os.path.dirname(data_path), output_filename)
+    fig.savefig(figure_path, bbox_inches='tight')
+    plt.close(fig)
+
+    return figure_path

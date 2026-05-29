@@ -14,7 +14,7 @@ def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
     df = read_csv_with_encoding(data_path)
 
     # Group by 'MaxLabel' and 'sortPath' and calculate the mean for '(Lim)wait/req' and '#IMP Iter'
-    df = df[df['Ride_W2'] == 0.5]
+    df = df[df['Ride_W2'] == 0]
     grouped = df.groupby(['MaxLabel', 'sortPath']).agg({
         'Objective': 'mean',
         '#IMP Iter': 'mean'
@@ -28,7 +28,7 @@ def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
     pivot_df = grouped.pivot(index='MaxLabel', columns='sortPath')
 
     # Create color palettes
-    palette = sns.color_palette("gist_earth", n_colors=4)[0:3][::-1]
+    palette = sns.color_palette("gist_earth", n_colors=3)
     line_colors = palette  # Colors for the lines
 
     sort_paths = pivot_df['Objective'].columns.tolist()
@@ -44,13 +44,13 @@ def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
     for i, sort_path in enumerate(sort_paths):
         if sort_path == 'PATH_SCORE  ':
             marker = 's'
-            label = 'Normalized Reduced Cost'
+            label = 'Normalized reduced cost'
         elif sort_path == 'LAMBDA_SCORE':
             marker = '^'
-            label = 'Lambda Score'
+            label = 'Lambda score'
         else:
             marker = 'o'
-            label = 'Reduced Cost'
+            label = 'Reduced cost'
 
         ax_line.plot(pivot_df.index, pivot_df[('Objective', sort_path)],
                      label=label,
@@ -77,13 +77,13 @@ def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
     for i, sort_path in enumerate(sort_paths):
         if sort_path == 'PATH_SCORE  ':
             marker = 's'
-            label = 'Normalized Reduced Cost'
+            label = 'Normalized reduced cost'
         elif sort_path == 'LAMBDA_SCORE':
             marker = '^'
-            label = 'Lambda Score'
+            label = 'Lambda score'
         else:
             marker = 'o'
-            label = 'Reduced Cost'
+            label = 'Reduced cost'
 
         axins.plot(pivot_df.index, pivot_df[('Objective', sort_path)],
                      label=label,
@@ -96,29 +96,27 @@ def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
     # Set limits for zoomed-in view (adjust these based on the area you want to zoom)
     x1, x2, y1, y2 = 4, 16.5, 184.7,185.4  # These values can be adjusted as needed
     axins.set_xlim(x1, x2)
-   # axins.set_ylim(158380, 158750)
-    axins.set_ylim(276450, 277100)
+    axins.set_ylim(158450, 158750)
+ #   axins.set_ylim(276450, 277100)
     axins.set_facecolor('#f7f7f7')
 
  #   axins.set_yticks([64000, 64100])  # Only show tick at 185
- #   axins.set_yticklabels(['158500', '158600'])
+    axins.set_yticks([158500, 158600, 158700])
+    axins.set_yticklabels(['158500', '158600', '158700'])
     axins.tick_params(axis='y', which='major', labelsize=config.tick_label_fsize)
 
     # Indicate zoomed-in area
     ax_line.indicate_inset_zoom(axins)
 
     fig_line.tight_layout()
-    line_figure_path = os.path.join(os.path.dirname(data_path), 'truncate_plot_line_05.png')
-    fig_line.savefig(line_figure_path, dpi=300, bbox_inches="tight")
+    line_figure_path = os.path.join(os.path.dirname(data_path), 'truncate_plot_line.pdf')
+    fig_line.savefig(line_figure_path, bbox_inches="tight")
     plt.close()
 
 
 def create_dynamic_iteration_bubble_plot_double(data_path: str, config: PlotConfig):
     # Read data
     df = read_csv_with_encoding(data_path)
-
-    isDropPickPossible = True
-    df = df[df['isDropPickPossible'] == isDropPickPossible]
 
     df['Dynamic_Pricing'] = df['Dynamic_Pricing'].astype(str)
 
@@ -249,8 +247,8 @@ def create_dynamic_iteration_bubble_plot_double(data_path: str, config: PlotConf
     # Adjust layout and save the figure
     fig.tight_layout(rect=[0, 0, 1, 0.85])
     figure_path = os.path.join(os.path.dirname(data_path),
-                               f'dynamic-iterations-bubble_{isDropPickPossible}.png')
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+                               f'dynamic-iterations-bubble.pdf')
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path

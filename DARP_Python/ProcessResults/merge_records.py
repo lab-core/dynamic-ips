@@ -72,7 +72,7 @@ class ResultMerger:
         # Modify group category
         data.loc[0, 'customer Group'] = get_group(data['#customers'][0])
 
-        data['Instance_category'] = data['Instance'].map(c.instance_category)
+        data['Instance_category'] = data['Instance'].map(c.NYC_DARP_Benchmark)
 
 
         # columns that need rounding
@@ -113,7 +113,10 @@ class ResultMerger:
                 axis=1
             )
             parameter_data["object_category"] = ("wait = 1, delay = " + parameter_data["Ride_W2"].astype(str))
-
+            if 'Relative_W5' in parameter_data.columns:
+                parameter_data["object_category2"] = ("delay = " + parameter_data["Ride_W2"].astype(str) +
+                                                      ", excess = " + parameter_data["Ride_W4"].astype(str) +
+                                                      ", Relative = " + parameter_data["Relative_W5"].astype(str))
             parameter_data['isSuccessorsLimited'] = parameter_data['isSuccessorsLimited'].astype(str)
         else:
             print("Parameter file is not found!!!")
@@ -202,17 +205,71 @@ class ResultMerger:
 
         return epoch_data
 
-    def _add_iteration_data(self, data: pd.DataFrame, summary_path: Path, suffix: str,
-                            iteration_mode: Literal['none', 'all', 'max', 'max_limited']) -> tuple[
-        pd.DataFrame, pd.DataFrame]:
+    def _add_basic_epoch_data(
+            self,
+            data: pd.DataFrame,
+            summary_path: Path,
+            suffix: str,
+            average: bool = False
+    ) -> pd.DataFrame:
+        """Add epoch runtime data, optionally averaged."""
+        epoch_path = self._find_file(summary_path.parent, "epochRuntime", suffix)
+        if not epoch_path:
+            print("epochRuntime file is not found!!!")
+            return pd.DataFrame()
+
+        epoch_data = pd.read_csv(epoch_path, index_col=False)
+
+        # Select relevant columns
+        epoch_cols = [
+            "EpochRuntime",
+            "Objective",
+            "waitTime",
+            "TripDelay",
+            "#passPerVehicle",
+            "#requestPerVehicle",
+            "#nodePerVehicle",
+        ]
+
+        # Filter to existing columns
+        epoch_cols = [col for col in epoch_cols if col in epoch_data.columns]
+        epoch_data = epoch_data[epoch_cols]
+
+        # Compute mean row
+        mean_data = epoch_data.mean().to_frame().T
+
+        # Add std for EpochRuntime
+        if "EpochRuntime" in epoch_data.columns:
+            mean_data["EpochRuntime_std"] = epoch_data["EpochRuntime"].std()
+
+        round_cols = [
+            "EpochRuntime",
+            "EpochRuntime_std",
+            "#passPerVehicle",
+            "#requestPerVehicle",
+            "#nodePerVehicle"
+        ]
+        for col in round_cols:
+            if col in mean_data.columns:
+                mean_data[col] = mean_data[col].round(2)
+
+        return mean_data
+
+    def _add_iteration_data(
+            self,
+            data: pd.DataFrame,
+            summary_path: Path,
+            suffix: str,
+            iteration_mode: Literal['none', 'all', 'max', 'max_limited']
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Add iteration-level data based on mode.
 
         Args:
             iteration_mode:
                 - 'none': No iteration data
                 - 'all': All iterations
-                - 'max': Maximum iterations only (grouped by subProIter)
-                - 'max_limited': Maximum iterations limited to ≤4
+                - 'max': Keep last LMP row and CG row for each (Epoch, subProIter)
+                - 'max_limited': Same as 'max' but limited to subProIter <= 4
         """
         if iteration_mode == 'none':
             return data, pd.DataFrame()
@@ -223,47 +280,102 @@ class ResultMerger:
             return data, pd.DataFrame()
 
         run_data = pd.read_csv(runtime_path, index_col=False)
+        filtered_run_data = run_data.copy()
 
-        # Filter based on model type
-        if 'Model' in run_data.columns:
-            # Try LMP first, fallback to all if not found
-            filtered_run_data = run_data[run_data['Model'] == "LMP"]
-            if filtered_run_data.empty:
-                filtered_run_data = run_data
-        else:
-            filtered_run_data = run_data
+        # Optional limit
+        if iteration_mode == 'max_limited' and 'subProIter' in filtered_run_data.columns:
+            filtered_run_data = filtered_run_data[filtered_run_data['subProIter'] <= 4].copy()
 
-        # Limit iterations if requested
-        if iteration_mode == 'max_limited':
-            filtered_run_data = filtered_run_data[filtered_run_data['subProIter'] <= 4]
+        # For 'all', return everything unchanged except adding empty columns if desired
+        if iteration_mode == 'all':
+            if 'MIP_GAP' not in filtered_run_data.columns:
+                filtered_run_data['MIP_GAP'] = pd.NA
+            if 'IP_time' not in filtered_run_data.columns:
+                filtered_run_data['IP_time'] = pd.NA
 
-        # Group by subProIter and get max iteration
-        if iteration_mode in ['max', 'max_limited']:
+            num_iterations = len(filtered_run_data)
+            data_repeated = pd.concat([data] * num_iterations, ignore_index=True)
+            return data_repeated, filtered_run_data
+
+        # For 'max' and 'max_limited':
+        # keep last LMP row + CG row for each (Epoch, subProIter)
+        group_cols = ['Epoch', 'subProIter'] if 'Epoch' in filtered_run_data.columns else ['subProIter']
+
+        selected_groups = []
+
+        for _, grp in filtered_run_data.groupby(group_cols, sort=False):
+            grp = grp.sort_values('MPIter').copy() if 'MPIter' in grp.columns else grp.copy()
+
+            lmp_rows = grp[grp['Model'] == 'LMP'] if 'Model' in grp.columns else pd.DataFrame()
+            cg_rows = grp[grp['Model'] == 'CG'] if 'Model' in grp.columns else pd.DataFrame()
+     #       rp_rows = grp[grp['Model'] == 'RP'] if 'Model' in grp.columns else pd.DataFrame()
+            isud_rows = grp[grp['Model'] == 'ISUD'] if 'Model' in grp.columns else pd.DataFrame()
+
+            # Keep the last LMP row
+            last_lmp = lmp_rows.tail(1).copy() if not lmp_rows.empty else pd.DataFrame()
+            first_row = grp.head(1).copy()
+
+            # Keep the CG row (if multiple, keep the last one)
+            cg_row = cg_rows.tail(1).copy() if not cg_rows.empty else pd.DataFrame()
+
+            pair_parts = []
+            if not last_lmp.empty:
+                pair_parts.append(last_lmp)
+            if not cg_row.empty:
+                pair_parts.append(cg_row)
+            if not isud_rows.empty:
+                pair_parts.append(first_row)
+                pair_parts.append(isud_rows)
+                first_obj = first_row['preObjective'].iloc[0]
+                final_obj = isud_rows['ObjectiveValue'].iloc[0]
+                isud_rows['RelativeImprove'] = 100 * (first_obj-final_obj)/first_obj
+
+            if not pair_parts:
+                continue
+
+            pair_df = pd.concat(pair_parts, ignore_index=False).copy()
+
+            # Default values
+            pair_df['MIP_GAP'] = pd.NA
+            pair_df['IP_time'] = pd.NA
+            pair_df['Iter_time'] = pd.NA
+
+            # Compute values only if both LMP and CG exist
+            if not last_lmp.empty and not cg_row.empty:
+                lmp_obj = last_lmp['ObjectiveValue'].iloc[0]
+                cg_obj = cg_row['ObjectiveValue'].iloc[0]
+
+                lmp_mp_time = last_lmp['MPTimeAcc.'].iloc[0]
+                cg_mp_time = cg_row['MPTimeAcc.'].iloc[0]
+
+                cg_sp_time = cg_row['SubProTime'].iloc[0]
+
+                # Absolute gap
+                mip_gap = 100 * (cg_obj - lmp_obj)/lmp_obj
+
+                # Time spent to get IP solution
+                ip_time = cg_mp_time - lmp_mp_time
+                iter_time = cg_sp_time + cg_mp_time
+
+                pair_df['MIP_GAP'] = mip_gap
+                pair_df['IP_time'] = ip_time
+                pair_df['Iter_time'] = iter_time
+
+            selected_groups.append(pair_df)
+
+        if selected_groups:
+            filtered_run_data = pd.concat(selected_groups, ignore_index=False)
             if 'MPIter' in filtered_run_data.columns:
-                filtered_run_data = filtered_run_data.loc[
-                    filtered_run_data.groupby('subProIter')['MPIter'].idxmax()
-                ]
-            elif 'IterTime' in filtered_run_data.columns:
-                filtered_run_data = filtered_run_data.loc[
-                    filtered_run_data.groupby('subProIter')['IterTime'].idxmax()
-                ]
+                filtered_run_data = filtered_run_data.sort_values(group_cols + ['MPIter']).reset_index(drop=True)
+            else:
+                filtered_run_data = filtered_run_data.sort_values(group_cols).reset_index(drop=True)
+        else:
+            filtered_run_data = pd.DataFrame()
 
-        # Select relevant columns
-        iter_cols = ['subProIter', 'ObjectiveValue', 'preObjective', 'MPTimeAcc.',
-                     'SubProTime', 'MPIter', 'IterTime', 'RelativeImprove',
-                     'vehicleChange', 'Model', 'nbColumns']
-        iter_cols = [col for col in iter_cols if col in filtered_run_data.columns]
+        num_iterations = len(filtered_run_data)
+        data_repeated = pd.concat([data] * num_iterations, ignore_index=True) if num_iterations > 0 else pd.DataFrame()
 
-        if 'MPTimeAcc.' in filtered_run_data.columns and 'SubProTime' in filtered_run_data.columns:
-            filtered_run_data['Iter_runtime'] = filtered_run_data['SubProTime'] + filtered_run_data['MPTimeAcc.']
-
-        run_data = filtered_run_data[iter_cols].reset_index(drop=True)
-
-        # Repeat summary/params data for each iteration
-        num_iterations = len(run_data)
-        data_repeated = pd.concat([data] * num_iterations, ignore_index=True)
-
-        return data_repeated, run_data
+        return data_repeated, filtered_run_data
 
     def merge(self,
               include_stats: bool = True,
@@ -281,8 +393,8 @@ class ResultMerger:
             iteration_mode: How to include iteration data:
                 - 'none': No iteration data
                 - 'all': All iterations
-                - 'max': Maximum iterations only (grouped by subProIter)
-                - 'max_limited': Maximum iterations limited to ≤4
+                - 'max': Maximum iterations only (grouped by subProIter, or by Epoch+subProIter when Epoch exists)
+                - 'max_limited': Maximum iterations limited to ≤4 (same grouping)
             output_filename: Name of output CSV file
 
         Returns:
@@ -332,7 +444,8 @@ class ResultMerger:
                 to_concat = [data, parameter_data]
 
                 if include_epoch:
-                    epoch_data = self._add_epoch_data(data, summary_path, suffix, epoch_average)
+    #                epoch_data = self._add_epoch_data(data, summary_path, suffix, epoch_average)
+                    epoch_data = self._add_basic_epoch_data(data, summary_path, suffix, epoch_average)
                     if not epoch_data.empty:
                         to_concat.append(epoch_data)
 
@@ -380,7 +493,7 @@ def merge_basic(instance_folder):
         include_stats=True,
         include_epoch=False,
         iteration_mode='none',
-        output_filename="results_basic.csv"
+        output_filename="results_epoch_avg.csv"
     )
 
 
@@ -424,8 +537,8 @@ def merge_complete(instance_folder):
     """Everything: stats + full epoch data + max iterations"""
     merger = ResultMerger(instance_folder)
     return merger.merge(
-        include_stats=True,
-        include_epoch=True,
+        include_stats=False,
+        include_epoch=False,
         epoch_average=False,
         iteration_mode='max',
         output_filename="results_complete.csv"

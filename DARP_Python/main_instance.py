@@ -51,4 +51,7 @@ def main_instance():
 
 
 if __name__ == '__main__':
+    # Use scripts/04_create_instances.py for the CLI entry point:
+    #   python scripts/04_create_instances.py --network own
+    #   python scripts/04_create_instances.py --network riley --start-hour 11 --end-hour 15
     main_instance()

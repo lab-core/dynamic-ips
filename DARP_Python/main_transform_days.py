@@ -29,7 +29,9 @@ def main_transform():
         print("You may need to run create_virtual_stops() first.")
 
 
-# Example usage
+# Use scripts/02_fetch_trips.py and scripts/03_transform_trips.py for CLI:
+#   python scripts/02_fetch_trips.py
+#   python scripts/03_transform_trips.py --network own
 if __name__ == "__main__":
     main_transform()
 

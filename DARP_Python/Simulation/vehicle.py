@@ -157,5 +157,5 @@ class Vehicle(object):
 
         output_dir = parent_folder + folder_name
         os.makedirs(output_dir, exist_ok=True)
-        fig.savefig(os.path.join(output_dir, f"{self.file_name}.png"), dpi=300, bbox_inches="tight")
+        fig.savefig(os.path.join(output_dir, f"{self.file_name}.pdf"), bbox_inches="tight")
         plt.close(fig)

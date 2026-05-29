@@ -69,9 +69,9 @@ def plot_requests_arrival(df_dataset, parent_folder, time_origin):
     plt.tight_layout()
 
     image_dir = parent_folder + "Request_Arrival/"
-    file_name = f"{limit}_{year}{month}{day}_requests.png"
+    file_name = f"{limit}_{year}{month}{day}_requests.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    plt.savefig(image_dir + file_name, bbox_inches="tight")
 
     plt.close(fig)
     return average_requests
@@ -212,9 +212,9 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     plt.tight_layout()
 
     image_dir = parent_folder + "Zoom_Images/"
-    file_name = f"{limit}_{year}{month}{day}_requests.png"
+    file_name = f"{limit}_{year}{month}{day}_requests.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    plt.savefig(image_dir + file_name, bbox_inches="tight")
 
     plt.close(fig)
     return average_requests
@@ -279,9 +279,9 @@ def plot_customer_arrival(df_dataset, parent_folder, time_origin):
     plt.tight_layout()
 
     image_dir = parent_folder + "Customer_Arrival/"
-    file_name = f"{limit}_{year}{month}{day}_customers.png"
+    file_name = f"{limit}_{year}{month}{day}_customers.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    plt.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    plt.savefig(image_dir + file_name, bbox_inches="tight")
 
     plt.close(fig)
     return average_customers
@@ -304,7 +304,7 @@ def plot_map_request_cells(district_network, dataset, parent_folder, file_name=N
 
     image_dir = parent_folder + "Request_Cells/"
     os.makedirs(image_dir, exist_ok=True)
-    fig.savefig(image_dir + file_name + '_pickup', dpi=300, bbox_inches="tight")
+    fig.savefig(image_dir + file_name + '_pickup', bbox_inches="tight")
     plt.close(fig)
 
     """ PLOT DROP OFF POINT """
@@ -323,7 +323,7 @@ def plot_map_request_cells(district_network, dataset, parent_folder, file_name=N
 
     image_dir = parent_folder + "Request_Cells/"
     os.makedirs(image_dir, exist_ok=True)
-    fig.savefig(image_dir + file_name + '_dropoff', dpi=300, bbox_inches="tight")
+    fig.savefig(image_dir + file_name + '_dropoff', bbox_inches="tight")
     plt.close(fig)
 
 def plot_districts_fill(district_network, trip_per_district, parent_folder, file_name):
@@ -351,7 +351,7 @@ def plot_districts_fill(district_network, trip_per_district, parent_folder, file
     # Save figure
     output_dir = os.path.join(parent_folder, "Request_Color_Maps")
     os.makedirs(output_dir, exist_ok=True)
-    fig.savefig(os.path.join(output_dir, f"{file_name}_colour.png"), dpi=300, bbox_inches="tight")
+    fig.savefig(os.path.join(output_dir, f"{file_name}_colour.pdf"), bbox_inches="tight")
     plt.close(fig)
 
 def calc_color(data, color=None):

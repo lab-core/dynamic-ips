@@ -1,6 +1,5 @@
 from matplotlib import pyplot as plt
 from typing import Dict, List, Optional, Tuple, Any, Union, Callable
-from Simulation.utilities import read_csv_with_encoding, darken_color
 from Visualization.plot_config import PlotConfig
 import seaborn as sns
 from matplotlib.ticker import MultipleLocator
@@ -249,7 +248,7 @@ def create_multi_subplot_profile_lineplots(
             ylim=subplot_cfg.get("ylim"),
             x_major_step=subplot_cfg.get("x_major_step"),
             y_major_step=subplot_cfg.get("y_major_step"),
-            linewidth=subplot_cfg.get("linewidth", 1.2),
+            linewidth=subplot_cfg.get("linewidth", 1),
             linestyle=subplot_cfg.get("linestyle", "-"),
             grid=subplot_cfg.get("grid", True),
             show_legend=subplot_show_legend,
@@ -305,6 +304,189 @@ def create_multi_subplot_profile_lineplots(
     else:
         fig.tight_layout()
 
-    fig.savefig(output_path, dpi=300, bbox_inches="tight")
+    fig.savefig(output_path, bbox_inches="tight")
+    plt.close(fig)
+    return output_path
+
+
+def create_multi_subplot_profile_lineplots(
+    df,
+    config: PlotConfig,
+    subplot_configs: List[Dict[str, Any]],
+    output_path: str,
+    fig_size: Optional[Tuple[float, float]] = None,
+    sharex: bool = False,
+    sharey: bool = False,
+    x_label_on_bottom_only: bool = True,
+    figure_title: Optional[str] = None,
+    tight_layout_rect: Optional[List[float]] = None,
+    shared_legend: bool = False,
+    shared_legend_config: Optional[Dict[str, Any]] = None,
+    grid_shape: Optional[Tuple[int, int]] = None,   # <<< NEW
+) -> str:
+    """
+    Create a series of line subplots.
+    If grid_shape is None, subplots are stacked vertically as before.
+    Otherwise a grid of (n_rows, n_cols) is used.
+
+    shared_legend:
+        If True, no legends are drawn on individual subplots.
+        A single, shared legend is drawn on the figure using handles/labels
+        from the first subplot.
+    """
+
+    n_subplots = len(subplot_configs)
+
+    # Determine grid shape
+    if grid_shape is not None:
+        n_rows, n_cols = grid_shape
+        if n_rows * n_cols != n_subplots:
+            raise ValueError(
+                f"grid_shape {grid_shape} does not match number of subplots ({n_subplots})"
+            )
+    else:
+        n_rows, n_cols = n_subplots, 1
+
+    # Figure size
+    if fig_size is None:
+        base_w, base_h = config.fig_size
+        # simple scaling with number of rows/cols
+        fig_size = (base_w * n_cols, base_h * n_rows / 2.0)
+
+    fig, axes = plt.subplots(
+        n_rows,
+        n_cols,
+        figsize=fig_size,
+        sharex=sharex,
+        sharey=sharey
+    )
+
+    # Normalize axes to a 1D list for easy indexing
+    if n_subplots == 1:
+        axes = [axes]
+    else:
+        axes = axes.flatten()
+
+    all_legend_handles: List[Any] = []
+    all_legend_labels: List[str] = []
+
+    for idx, subplot_cfg in enumerate(subplot_configs):
+        ax = axes[idx]
+
+        df_subplot = df.copy()
+        if subplot_cfg.get("filter") is not None:
+            df_subplot = subplot_cfg["filter"](df_subplot)
+
+        # Extract config
+        x_column = subplot_cfg["x_column"]
+        y_column = subplot_cfg["y_column"]
+        group_column = subplot_cfg.get("group_column")
+        groups = subplot_cfg.get("groups")
+        group_labels = subplot_cfg.get("group_labels")
+        palette = subplot_cfg.get("palette")
+
+        ylabel = subplot_cfg.get("ylabel", y_column)
+        xlabel = subplot_cfg.get("xlabel", "")
+
+        show_xlabel = subplot_cfg.get("show_xlabel", True)
+
+        # Handle x labels only on bottom row when shared x-axis
+        if sharex and x_label_on_bottom_only:
+            if grid_shape is None:
+                # old behavior: only last subplot gets labels
+                if idx < n_subplots - 1:
+                    ax.tick_params(labelbottom=False)
+                    show_xlabel = False
+            else:
+                # grid: only subplots in the last row get x labels
+                row = idx // n_cols
+                if row < n_rows - 1:
+                    ax.tick_params(labelbottom=False)
+                    show_xlabel = False
+
+        # Per-subplot target lines
+        target_lines = subplot_cfg.get("target_lines", None)
+
+        # Per-subplot legend control
+        subplot_show_legend = subplot_cfg.get("show_legend", True)
+        if shared_legend:
+            # Suppress individual legends when using a shared legend
+            subplot_show_legend = False
+
+        handles, labels = plot_profile_line_group(
+            ax=ax,
+            df=df_subplot,
+            x_column=x_column,
+            y_column=y_column,
+            group_column=group_column,
+            groups=groups,
+            config=config,
+            palette=palette,
+            group_labels=group_labels,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            show_xlabel=show_xlabel,
+            show_ylabel=subplot_cfg.get("show_ylabel", True),
+            xlim=subplot_cfg.get("xlim"),
+            ylim=subplot_cfg.get("ylim"),
+            x_major_step=subplot_cfg.get("x_major_step"),
+            y_major_step=subplot_cfg.get("y_major_step"),
+            linewidth=subplot_cfg.get("linewidth", 1),
+            linestyle=subplot_cfg.get("linestyle", "-"),
+            grid=subplot_cfg.get("grid", True),
+            show_legend=subplot_show_legend,
+            legend_loc=subplot_cfg.get("legend_config", {}).get("loc", "best"),
+            legend_bbox=subplot_cfg.get("legend_config", {}).get("bbox"),
+            legend_title=subplot_cfg.get("legend_config", {}).get("title"),
+            legend_ncol=subplot_cfg.get("legend_config", {}).get("ncol", 1),
+            target_lines=target_lines,
+        )
+
+        # Collect handles/labels for shared legend (use the first subplot)
+        if shared_legend and idx == 0:
+            all_legend_handles = handles
+            all_legend_labels = labels
+
+        if subplot_cfg.get("title"):
+            ax.set_title(
+                subplot_cfg["title"],
+                fontsize=config.title_fsize,
+                fontweight="bold",
+            )
+
+    # Shared legend at figure level
+    if shared_legend and all_legend_handles:
+        legend_cfg = shared_legend_config or {}
+        fig.legend(
+            all_legend_handles,
+            all_legend_labels,
+            loc=legend_cfg.get("loc", "upper center"),
+            bbox_to_anchor=legend_cfg.get("bbox", (0.5, 0.98)),
+            ncol=legend_cfg.get("ncol", len(all_legend_labels)),
+            fontsize=config.legend_fsize,
+            edgecolor=config.legend_edgecolor,
+            title=legend_cfg.get("title"),
+            title_fontproperties={
+                "weight": "bold",
+                "size": config.legend_title_fsize,
+            },
+            framealpha=legend_cfg.get("framealpha", 1.0),
+            facecolor=legend_cfg.get("facecolor", "white"),
+        )
+
+    if figure_title:
+        fig.suptitle(
+            figure_title,
+            fontsize=config.title_fsize + 2,
+            fontweight="bold",
+            y=1.02,
+        )
+
+    if tight_layout_rect:
+        fig.tight_layout(rect=tight_layout_rect)
+    else:
+        fig.tight_layout()
+
+    fig.savefig(output_path, bbox_inches="tight")
     plt.close(fig)
     return output_path

@@ -550,7 +550,7 @@ def create_multi_subplot_lineplots(
 
     # Save
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path
@@ -679,7 +679,7 @@ def create_comparison_lineplots(
         if isinstance(target_lines, (int, float)):
             shared_target_line_legend = {
                 'value': target_lines,
-                'label': f'Epoch Size ({target_lines}s)',
+                'label': f'Epoch size ({target_lines}s)',
                 'bbox': kwargs.get('legend_bbox2', (0.5, 0.92))
             }
         elif isinstance(target_lines, dict):
@@ -856,7 +856,160 @@ def plot_pruning_scatter_double(
 
     fig.tight_layout(rect=[0, 0, 1, 0.86])
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path, bbox_inches="tight")
+    plt.close(fig)
+
+    return figure_path
+
+
+def plot_pruning_scatter_single(
+    data_path: str,
+    config: PlotConfig,
+    output_filename,
+    category_labels,
+    category_column: str = "isSuccessorsLimited",
+    group_column: str = "Instance",
+    metrics: tuple = ("#LGenerated", "#LDominated"),
+    ride_w2_values: tuple = (0.0, 0.5),
+    categories: tuple = ("noPruning", "pruneNodes", "pruneArcs", "discardSuboptimalPath"),
+    palette=None,
+    ylabel: str = '# Labels(Generated/LDominated)',
+    color_reverse=True,
+    log_scale=True,
+    rotation=15,
+    ylim: tuple = (2_000_000, 2_000_000_000),
+    marker_generated: str = "o",
+    marker_dominated: str = "s",
+    alpha_fill: float = 0.20):
+
+    df = read_csv_with_encoding(data_path)
+
+    # Auto palette
+    if palette is None:
+        palette = sns.color_palette("gist_earth", n_colors=len(categories))
+
+    if color_reverse:
+        palette = palette[::-1]
+
+    colors = {cat: palette[i] for i, cat in enumerate(categories)}
+    labels = {cat: category_labels[i] for i, cat in enumerate(categories)}
+
+    gen_metric, dom_metric = metrics
+
+    # Single axis instead of (ax_left, ax_right)
+    fig, ax = plt.subplots(1, 1, figsize=(3,4))
+
+    # ---------------------------------------------------------
+    # Internal helper for plotting each axis
+    # ---------------------------------------------------------
+    def plot_on_axis(ax, df_filtered, ride_w2_value):
+        grouped = (
+            df_filtered.groupby([group_column, category_column])
+            .agg({gen_metric: "mean", dom_metric: "mean"})
+            .reset_index()
+        )
+
+        # Pivot to MultiIndex columns
+        pivot_df = grouped.pivot(index=group_column, columns=category_column)
+
+        # Axis style
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+        # Plot each category
+        for cat in categories:
+            if cat not in pivot_df.columns.levels[1]:
+                continue
+
+            y_gen = pivot_df[(gen_metric, cat)]
+            y_dom = pivot_df[(dom_metric, cat)]
+
+            ax.plot(
+                pivot_df.index,
+                y_gen,
+                label=f"{cat} ({gen_metric})",
+                color=colors[cat],
+                linestyle="-",
+                marker=marker_generated,
+                markersize = 5,
+            )
+            ax.plot(
+                pivot_df.index,
+                y_dom,
+                label=f"{cat} ({dom_metric})",
+                color=colors[cat],
+                linestyle=":",
+                marker=marker_dominated,
+                markersize=5,
+            )
+
+            ax.fill_between(
+                pivot_df.index,
+                y_gen,
+                y_dom,
+                color=colors[cat],
+                alpha=alpha_fill,
+            )
+
+        # Axis labels / scales
+        if log_scale:
+            ax.set_yscale('log')
+        ax.set_ylim(ylim)
+        ax.tick_params(axis="both", which="major", labelsize=config.tick_label_fsize)
+        ax.set_xticklabels(pivot_df.index, rotation=rotation)
+        ax.set_xlabel(
+            "Instances",
+            fontweight="bold",
+            fontsize=config.axis_label_fsize,
+        )
+
+    # ---------------------------------------------------------
+    # SINGLE plot (W_delay = ride_w2_values[0])
+    # ---------------------------------------------------------
+    df_left = df[df['Ride_W2'] == ride_w2_values[0]]
+    plot_on_axis(ax, df_left, ride_w2_values[0])
+    ax.set_ylabel(ylabel, fontweight="bold", fontsize=config.axis_label_fsize)
+
+    # ---------------------------------------------------------
+    # LEGENDS
+    # ---------------------------------------------------------
+
+    # Legend 1: pruning strategies
+    legend_pruning = [
+        mlines.Line2D([], [], color=colors[cat], linewidth=3, label=labels[cat])
+        for cat in categories
+    ]
+
+    fig.legend(
+        handles=legend_pruning,
+        loc="upper left",
+        bbox_to_anchor=(0.08, 0.95),
+        fontsize=config.legend_fsize,
+        labelspacing=0.45,
+        edgecolor=config.legend_edgecolor,
+        title="Pruning Strategies",
+        title_fontproperties={"weight": "bold", "size": config.legend_title_fsize},
+        handlelength=1.2,
+    )
+
+    # Legend 2: meaning of markers
+    legend_stats = [
+        mlines.Line2D([], [], color="black", linestyle="-", marker=marker_generated, markersize = 5, label='#Generated'),
+        mlines.Line2D([], [], color="black", linestyle=":", marker=marker_dominated, markersize = 5, label='#Dominated'),
+    ]
+
+    fig.legend(
+        handles=legend_stats,
+        loc="upper left",
+        bbox_to_anchor=(0.5, 0.91),
+        fontsize=config.legend_fsize,
+        edgecolor="none",
+        labelspacing=0.45,
+    )
+
+    fig.tight_layout(rect=[0, 0, 1, 0.76])
+    figure_path = os.path.join(os.path.dirname(data_path), output_filename)
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path
@@ -1006,7 +1159,7 @@ def plot_grouped_lines(
     fig.tight_layout(rect=[0, 0, 1, 0.95])
 
     figure_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(figure_path, dpi=300, bbox_inches="tight")
+    fig.savefig(figure_path, bbox_inches="tight")
     plt.close(fig)
 
     return figure_path
@@ -1207,7 +1360,7 @@ def create_grouped_lineplot(
     fig.tight_layout()
 
     save_path = os.path.join(os.path.dirname(data_path), output_filename)
-    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    fig.savefig(save_path, bbox_inches="tight")
     plt.close(fig)
 
     return save_path

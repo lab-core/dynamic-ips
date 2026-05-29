@@ -31,11 +31,14 @@ TEST_SIZE = {"small": [0,40000],
              "medium":[40000,50000],
              "large":[50000,70000]}
 
-TEST_GROUP = {"small": "< 40,000",
-              "medium": "40,000 - 50,000",
-              "large": "50,000 < "}
+TEST_GROUP = {"small": "1.< 40K",
+              "medium": "2.40K-50K",
+              "large": "3.50K < "}
 
 FOLDERS = {
+    'Phase_1': {
+        'compare': "1-compare",
+    },
     'Phase_2': {
         'nbPicks': "1-nbPicks",
         'pruning': "2-pruning",
@@ -48,14 +51,23 @@ FOLDERS = {
         'customer_weight': "9-customer_weight",
         'exact': "10-Exact_Full",
         'compare': "11-compare",
+        'obj_compare': "12-obj_compare",
+        'other': "Instances_2h-7",
     },
     'Phase_3': {
-        'return': "1.return",
-        'partial': "2.partial",
-        'initialDual': "3.dual",
-        'batch': "4.batch",
-        'compare': "5.compare",
+        'rebalance': "1-rebalance",
+        'profile': "2-profile",
+        'reOptimize': "6-reOptimize",
+        'prcocess': "4-prcocess",
+        'compare': "5-compare",
+        'anytime': "7-anytime",
+        'rebalance_anytime': "8-rebalance_anytime",
+        'shuttle': "9-shuttle",
+    },
+    'Phase_4': {
+        'isud': "1-isud",
     }
+
 }
 
 param_to_setting = {
@@ -65,15 +77,53 @@ param_to_setting = {
         'Ab_drop_0': 'Drop-Pick Allowed',
         'Ab_dynamic_0': '2 Pickups (fix)',
         'Ab_dynamic_1': '2 Pickups (fix)',
-        'no_commit_0': 'Full Configuration',
-        'no_commit_1': 'Full Configuration'
+        'commit_0': 'Full Configuration',
+        'commit_1': 'Full Configuration'
     }
 
-instance_category = {
+param_to_setting_labels = [
+    'Without Truncation',
+    'Drop-Pick Allowed',
+    '2 Pickups (fix)',
+    'Full Configuration'
+    ]
+
+NYC_DARP_Benchmark = {
+    # G1: R68889 with vehicle_counts (1400 1500 1600 1700)
+    "V1400_R68889": "4.High Demand",
+    "V1500_R68889": "3.Tight Supply",
+    "V1600_R68889": "2.Balanced Supply",
+    "V1700_R68889": "1.Excess Supply",
+
+    # G2: 72353 with vehicle_counts (1450 1550 1650 1750)
+    "V1450_R72353": "4.High Demand",
+    "V1550_R72353": "3.Tight Supply",
+    "V1650_R72353": "2.Balanced Supply",
+    "V1750_R72353": "1.Excess Supply",
+
+    # G3: R68462, R64942 with vehicle_counts (1300 1400 1500 1600)
+    "V1300_R68462": "4.High Demand",
+    "V1400_R68462": "3.Tight Supply",
+    "V1500_R68462": "2.Balanced Supply",
+    "V1600_R68462": "1.Excess Supply",
+
+    "V1300_R64942": "4.High Demand",
+    "V1400_R64942": "3.Tight Supply",
+    "V1500_R64942": "2.Balanced Supply",
+    "V1600_R64942": "1.Excess Supply",
+}
+
+
+Riley_Benchmark = {
     "V1200_R35576": "4.High Demand",
     "V1300_R35576": "3.Tight Supply",
     "V1400_R35576": "2.Balanced Supply",
     "V1500_R35576": "1.Excess Supply",
+
+    "V1300_R37722": "4.High Demand",
+    "V1400_R37722": "3.Tight Supply",
+    "V1500_R37722": "2.Balanced Supply",
+    "V1600_R37722": "1.Excess Supply",
 
     "V1200_R35725": "4.High Demand",
     "V1300_R35725": "3.Tight Supply",
@@ -85,10 +135,6 @@ instance_category = {
     "V1000_R25674": "2.Balanced Supply",
     "V1100_R25674": "1.Excess Supply",
 
-    "V1300_R37722": "4.High Demand",
-    "V1400_R37722": "3.Tight Supply",
-    "V1500_R37722": "2.Balanced Supply",
-    "V1600_R37722": "1.Excess Supply",
 }
 
 # Define columns for each data type
@@ -98,6 +144,7 @@ DATA_TYPE_COLUMNS = {
         'TripDelay',
         'CommitWaitTime',
         'AssignTime',
+        'ReadyTime'
     ],
     'vehicle': [
         'idleTime',
@@ -113,6 +160,7 @@ DATA_TYPE_COLUMNS = {
     'time': [
         'Epoch',
         'nbRequests',
+        'nbNewRequests',
         'nbNodes',
         'EpochRuntime',
         'ElapsedTime'
@@ -121,11 +169,28 @@ DATA_TYPE_COLUMNS = {
         '#ColumnsAdded',
         'nbNegative',
         'meanDual',
+        'maxDual'
         '#Idle',
         '#passPerVehicle',
         '#requestPerVehicle',
         '#nodePerVehicle',
         'totalRoutes',
+        'waitTime',
+        'TripDelay',
+        'LinearObjective',
+        'Objective',
+        '#SP Iter',
+    ],
+    'epochVehicle': [
+        'Epoch',
+        'nbOnboards',
+        'nbCommitted',
+        'nbRequests',
+        'nbNodes',
+        'length'
+        'avgPassPerStop',
+        'totalTripDelay',
+        'totalWait',
     ],
 }
 
@@ -133,6 +198,7 @@ DATA_TYPE_FILES = {
     'request': "Requests_{mode}.csv",
     'vehicle': "Vehicles_{mode}.csv",
     'time':    "epochRuntime_{mode}.csv",
+    'epochVehicle': "VehicleEpoch_{mode}.csv",
 }
 
 vehicle_groups = [
@@ -142,11 +208,28 @@ vehicle_groups = [
     "4.High Demand",
 ]
 
+customer_groups = [
+    "1.< 40K",
+    "2.40K-50K",
+    "3.50K < "]
+
+customer_groups_labels = [
+    "< 40K",
+    "40K-50K",
+    "50K < "]
+
 vehicle_groups_labels = [
     "Excess Supply",
     "Balanced Supply",
     "Tight Supply",
     "High Demand",
+]
+
+vehicle_groups_labels2 = [
+    "ES",
+    "BS",
+    "TS",
+    "HD",
 ]
 
 OBJECTIVES = [
@@ -155,10 +238,31 @@ OBJECTIVES = [
     "wait = 1, delay = 1",
 ]
 
+OBJECTIVES2 = [
+    "delay = 0.5, excess = 0, Relative = 0",
+    "delay = 1, excess = 0, Relative = 0",
+    "delay = 1, excess = 1, Relative = 0",
+    "delay = 0.5, excess = 0, Relative = 1",
+]
+
 OBJECTIVES_labels = [
-    "$W_{wait}$ = 1, $W_{delay}$ = 0",
-    "$W_{wait}$ = 1, $W_{delay}$ = 0.5",
-    "$W_{wait}$ = 1, $W_{delay}$ = 1",
+    r"$\omega_{wait}$ = 1, $\omega_{drop}$ = 0",
+    r"$\omega_{wait}$ = 1, $\omega_{drop}$ = 0.5",
+    r"$\omega_{wait}$ = 1, $\omega_{drop}$ = 1",
+]
+
+OBJECTIVES_labels3 = [
+    r"$\omega_{drop}$ = 0.5, $\lambda_{excess}$ = 1, $\lambda^i_{normal}$ = 1",
+    r"$\omega_{drop}$ = 1, $\lambda_{excess}$ = 1, $\lambda^i_{normal}$ = 1",
+    r"$\omega_{drop}$ = 1, $\lambda_{excess}$ = 0, $\lambda^i_{normal}$ = 1",
+    r"$\omega_{drop}$ = 0.5, $\lambda_{excess}$ = 1, $\lambda^i_{normal}$ = $t_i$",
+]
+
+OBJECTIVES_labels2 = [
+    r"B-CG-C $(\omega_{drop}$ = 0.5)",
+    r"B-CG-C $(\omega_{drop}$ = 1)",
+    "Total service time",
+    "Normalized B-CG-C",
 ]
 
 MODE_DICT = {
@@ -166,3 +270,5 @@ MODE_DICT = {
         'ANYTIME': 'A',
         'DYNAMIC': 'D',
     }
+
+Blue_Palette = ["#B4C6CC", "#26619C", "#0F2E3A", "#2B4363", "#6DAED5" , "#4783B1"]

@@ -10,7 +10,7 @@ import os
 import osmnx as ox
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
-def plot_virtual_stops(output_filename: str = "virtual_stops.png", input_stop_file: str = "virtual_stops.geojson",
+def plot_virtual_stops(output_filename: str = "virtual_stops.pdf", input_stop_file: str = "virtual_stops.geojson",
                        zoom_bounds: tuple = None, stop_color='steelblue'):
     """
     Plot the virtual stops that were created and saved by create_virtual_stops().
@@ -83,7 +83,7 @@ def plot_virtual_stops(output_filename: str = "virtual_stops.png", input_stop_fi
     os.makedirs(maps_dir, exist_ok=True)
     figure_path = os.path.join(maps_dir, output_filename)
     plt.tight_layout()
-    plt.savefig(figure_path, dpi=300, bbox_inches="tight")
+    plt.savefig(figure_path, bbox_inches="tight")
     plt.close()
 
     return figure_path
@@ -111,8 +111,8 @@ def plot_taxi_zone(add_basemap=True):
     plt.tight_layout()
     folder_path = os.path.join(c.DATA_DIR, 'maps')
     os.makedirs(folder_path, exist_ok=True)
-    figure_path = os.path.join(folder_path, 'taxi_zones.png')
-    plt.savefig(figure_path, dpi=300, bbox_inches="tight")
+    figure_path = os.path.join(folder_path, 'taxi_zones.pdf')
+    plt.savefig(figure_path, bbox_inches="tight")
     plt.close()
 
 
@@ -187,9 +187,9 @@ def plot_districtIDs(district_network, parent_folder):
     ax.set_axis_off()
 
     image_dir = parent_folder
-    file_name = "Districts.png"
+    file_name = "Districts.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    fig.savefig(image_dir + file_name, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -212,9 +212,9 @@ def plot_centers(district_network, parent_folder):
         ax.scatter(x, y, s=1, color='red')
     ax.set_axis_off()
     image_dir = parent_folder
-    file_name = "Centers.png"
+    file_name = "Centers.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    fig.savefig(image_dir + file_name, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -226,9 +226,9 @@ def plot_map_cells(district_network, parent_folder):
             plt.scatter(region.cells[:, 2], region.cells[:, 1], c="blue", s=1)
     ax.set_axis_off()
     image_dir = parent_folder
-    file_name = "Map_Cells.png"
+    file_name = "Map_Cells.pdf"
     os.makedirs(image_dir, exist_ok=True)
-    fig.savefig(image_dir + file_name, dpi=300, bbox_inches="tight")
+    fig.savefig(image_dir + file_name, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -236,10 +236,10 @@ def plot_map_cells(district_network, parent_folder):
 """
 Example:
 ----------
-    plot_virtual_stops(output_filename="rely_virtual_stops_with_zoom.png", input_stop_file="riley_virtual_stops.geojson",
+    plot_virtual_stops(output_filename="rely_virtual_stops_with_zoom.pdf", input_stop_file="riley_virtual_stops.geojson",
                        zoom_bounds=(585000, 588000, 4513000, 4516000), stop_color='maroon')
 
-    plot_virtual_stops(output_filename="virtual_stops_with_zoom.png", input_stop_file="virtual_stops.geojson",
+    plot_virtual_stops(output_filename="virtual_stops_with_zoom.pdf", input_stop_file="virtual_stops.geojson",
                        zoom_bounds=(585000, 588000, 4513000, 4516000))
     plot_virtual_stops()
 """
