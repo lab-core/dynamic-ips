@@ -1,10 +1,13 @@
 from pathlib import Path
+from typing import Optional
+
 import geopandas as gpd
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 
 import constants as c
+from Visualization.plot_config import PlotConfig
 import contextily as cx
 import os
 import osmnx as ox
@@ -116,7 +119,11 @@ def plot_taxi_zone(add_basemap=True):
     plt.close()
 
 
-def plot_districts(district_network, mapsize):
+def plot_districts(district_network, mapsize=None, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
+    if mapsize is None:
+        mapsize = config.district_map_size
     fig, ax = plt.subplots(figsize=mapsize)
     ax.set_aspect('equal')
     for region in district_network.districts:
@@ -126,16 +133,18 @@ def plot_districts(district_network, mapsize):
 
     ax.yaxis.set_major_locator(MultipleLocator(0.04))
     ax.xaxis.set_major_locator(MultipleLocator(0.04))
-    plt.xlabel('Longitude', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
-    plt.ylabel('Latitude', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.xlabel('Longitude', fontsize=config.axis_label_fsize, fontweight='bold')
+    plt.ylabel('Latitude', fontsize=config.axis_label_fsize, fontweight='bold')
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
 
     plt.tight_layout()
     return fig, ax
 
 
-def plot_districtIDs(district_network, parent_folder):
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+def plot_districtIDs(district_network, parent_folder, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
+    fig, ax = plot_districts(district_network, config=config)
 
     # Collect all region info first
     region_info = []
@@ -155,7 +164,7 @@ def plot_districtIDs(district_network, parent_folder):
         text_y = region.cells[closest_idx, 1]
         text_x = region.cells[closest_idx, 2]
 
-        plt.text(text_x, text_y, region.cartodb_id, fontsize=c.plot_config["region_fsize"])
+        plt.text(text_x, text_y, region.cartodb_id, fontsize=config.region_fsize)
         region_info.append(f"{region.cartodb_id} - {region.name}")
 
     # Create two-column text layout
@@ -180,7 +189,7 @@ def plot_districtIDs(district_network, parent_folder):
 
         # You might need to adjust the x-position (1.03) to accommodate wider text
         ax.text(1.03, 0.99, text_str, transform=ax.transAxes,
-                fontsize=c.plot_config["map_legend_fsize"],
+                fontsize=config.map_legend_fsize,
                 verticalalignment='top',
                 fontfamily='monospace')  # Monospace for better alignment
 
@@ -193,8 +202,10 @@ def plot_districtIDs(district_network, parent_folder):
     plt.close(fig)
 
 
-def plot_centers(district_network, parent_folder):
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+def plot_centers(district_network, parent_folder, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
+    fig, ax = plot_districts(district_network, config=config)
     for region in district_network.districts:
         if region.cells.size == 0:
             continue
@@ -218,8 +229,10 @@ def plot_centers(district_network, parent_folder):
     plt.close(fig)
 
 
-def plot_map_cells(district_network, parent_folder):
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+def plot_map_cells(district_network, parent_folder, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
+    fig, ax = plot_districts(district_network, config=config)
 
     for region in district_network.districts:
         if len(region.cells):

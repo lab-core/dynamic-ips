@@ -4,8 +4,10 @@ import Visualization.visualize_network as ivf
 import constants as c
 import json
 import numpy as np
+from typing import Optional
 
 from Network.district import District
+from Visualization.plot_config import PlotConfig
 
 
 class District_Network(object):
@@ -282,7 +284,7 @@ class District_Network(object):
         self.centers = pd.DataFrame(centers, columns=["Zone_ID", "Location_ID"])
 
     def read_network_data(self, manhattan_geo_file, stops_geojson=None,
-                          edge_matrix_file=None, make_plot=True):
+                          edge_matrix_file=None, make_plot=True, plot_config: Optional[PlotConfig] = None):
         self.read_district_data(manhattan_geo_file)
         if stops_geojson is not None:
             self.update_cells_from_geojson(stops_geojson)
@@ -306,6 +308,8 @@ class District_Network(object):
         file.close()
         map_folder = f"{c.DATA_DIR}/{"maps/"}"
         if make_plot:
-            ivf.plot_districtIDs(district_network=self, parent_folder=map_folder)
-            ivf.plot_centers(district_network=self, parent_folder=map_folder)
-            ivf.plot_map_cells(district_network=self, parent_folder=map_folder)
+            if plot_config is None:
+                plot_config = PlotConfig()
+            ivf.plot_districtIDs(district_network=self, parent_folder=map_folder, config=plot_config)
+            ivf.plot_centers(district_network=self, parent_folder=map_folder, config=plot_config)
+            ivf.plot_map_cells(district_network=self, parent_folder=map_folder, config=plot_config)

@@ -15,7 +15,7 @@ class PlotConfig:
     legend_title_fsize: int = 9
     legend_fsize: int = 8
     legend_edgecolor: str = 'none'
-    district_map_size: tuple[float, float] = (6, 4),
-    map_legend_fsize: int = 8,
-    region_fsize: int = 8,
-    title_fsize = 9
+    district_map_size: tuple[float, float] = (6, 4)
+    map_legend_fsize: int = 8
+    region_fsize: int = 8
+    title_fsize: int = 9

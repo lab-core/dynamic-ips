@@ -2,16 +2,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import constants as c
 import os
 from matplotlib import gridspec
 from matplotlib.patches import ConnectionPatch
 import math
+from typing import Optional
 
+from Visualization.plot_config import PlotConfig
 from Visualization.visualize_network import plot_districts
 
 
-def plot_requests_arrival(df_dataset, parent_folder, time_origin):
+def plot_requests_arrival(df_dataset, parent_folder, time_origin, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
     year = time_origin.year
     month = time_origin.month
     day = time_origin.day
@@ -27,7 +30,7 @@ def plot_requests_arrival(df_dataset, parent_folder, time_origin):
     # Extract hours and minutes from the index
     hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
 
-    fig, ax = plt.subplots(figsize=c.plot_config["fig_size_half"])
+    fig, ax = plt.subplots(figsize=config.fig_size_half)
 
     num_requests = df_grouped['count'].tolist()
     ax.plot(hour_list, num_requests, color='yellowgreen')
@@ -54,11 +57,11 @@ def plot_requests_arrival(df_dataset, parent_folder, time_origin):
     x_ticks.append(hour_list[-1])
     x_labels.append(hour_list[-1])
     plt.xticks(rotation=40)
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
     plt.xticks(x_ticks, x_labels)
-    ax.set_ylabel('Number of requests', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
+    ax.set_ylabel('Number of requests', fontsize=config.axis_label_fsize, fontweight='bold')
     ax.grid(axis='x', linestyle='--', color='lightgray')
-    ax.legend(loc='lower right', fontsize=c.plot_config["legend_fsize"], edgecolor=c.plot_config["legend_edgecolor"],
+    ax.legend(loc='lower right', fontsize=config.legend_fsize, edgecolor=config.legend_edgecolor,
               framealpha=1.0, facecolor='white')
 
     ax.set_xlim(x_ticks[0], x_ticks[-1])
@@ -76,7 +79,9 @@ def plot_requests_arrival(df_dataset, parent_folder, time_origin):
     plt.close(fig)
     return average_requests
 
-def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
+def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
     year = time_origin.year
     month = time_origin.month
     day = time_origin.day
@@ -93,7 +98,7 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
 
     # Create figure and define column widths (top left 2h gets less width)
-    fig = plt.figure(figsize=c.plot_config["fig_size"])
+    fig = plt.figure(figsize=config.fig_size)
     gs = gridspec.GridSpec(2, 2, width_ratios=[1, 2])  # 1:2 ratio for 2h vs 4h
 
     # Top zoomed plots
@@ -131,9 +136,9 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     x_ticks.append(hour_list[-1])
     x_labels.append(hour_list[-1])
     plt.xticks(rotation=40)
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
     plt.xticks(x_ticks, x_labels)
-    plot1.set_ylabel('Number of requests', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
+    plot1.set_ylabel('Number of requests', fontsize=config.axis_label_fsize, fontweight='bold')
     plot1.grid(axis='x', linestyle='--', color='lightgray')
     plot1.legend(fontsize=7, loc='lower right', facecolor='white')
 
@@ -159,9 +164,9 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     x_labels2 = [hour_list2[i] for i in range(0, len(hour_list2), num_ticks2)]
     x_ticks2.append(hour_list2[-1])
     x_labels2.append(hour_list2[-1])
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
     plt.xticks(x_ticks2, x_labels2)
-    plot2.set_ylabel('Number of requests', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
+    plot2.set_ylabel('Number of requests', fontsize=config.axis_label_fsize, fontweight='bold')
     plt.grid(axis='x', linestyle='--', color='lightgray')
     plot2.legend(fontsize=7,  facecolor='white')
     plot2.set_xlim('07:00', '09:00')
@@ -185,7 +190,7 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     x_labels3 = [hour_list3[i] for i in range(0, len(hour_list3), num_ticks3)]
     x_ticks3.append(hour_list3[-1])
     x_labels3.append(hour_list3[-1])
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
     plt.xticks(x_ticks3, x_labels3)
 #    plot3.set_ylabel('Number of requests', fontsize=text_size, fontweight='bold')
     plt.grid(axis='x', linestyle='--', color='lightgray')
@@ -219,7 +224,9 @@ def plot_zoom_request_arrival_4h(df_dataset, parent_folder, time_origin):
     plt.close(fig)
     return average_requests
 
-def plot_customer_arrival(df_dataset, parent_folder, time_origin):
+def plot_customer_arrival(df_dataset, parent_folder, time_origin, config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
     year = time_origin.year
     month = time_origin.month
     day = time_origin.day
@@ -235,7 +242,7 @@ def plot_customer_arrival(df_dataset, parent_folder, time_origin):
     # Extract hours and minutes from the index
     hour_list = [d.strftime('%H:%M') for d in df_grouped.index]
 
-    fig, ax = plt.subplots(figsize=c.plot_config["fig_size_half"])
+    fig, ax = plt.subplots(figsize=config.fig_size_half)
     num_customers = df_grouped['passenger_count'].tolist()
 
     ax.plot(hour_list, num_customers, color='orange')
@@ -262,13 +269,13 @@ def plot_customer_arrival(df_dataset, parent_folder, time_origin):
     x_ticks.append(hour_list[-1])
     x_labels.append(hour_list[-1])
     plt.xticks(rotation=40)
-    plt.tick_params(axis='both', labelsize=c.plot_config["tick_label_fsize"])
+    plt.tick_params(axis='both', labelsize=config.tick_label_fsize)
     plt.xticks(x_ticks, x_labels)
 
 #    plt.xlabel('Time', fontsize=text_size, fontweight='bold')
-    ax.set_ylabel('Number of customers', fontsize=c.plot_config["axis_label_fsize"], fontweight='bold')
+    ax.set_ylabel('Number of customers', fontsize=config.axis_label_fsize, fontweight='bold')
     ax.grid(axis='x', linestyle='--', color='lightgray')
-    ax.legend(loc='lower right', fontsize=c.plot_config["legend_fsize"], edgecolor=c.plot_config["legend_edgecolor"],
+    ax.legend(loc='lower right', fontsize=config.legend_fsize, edgecolor=config.legend_edgecolor,
               framealpha=1.0, facecolor='white')
 
     # Set x-axis limits to exclude the empty space before the first x-tick
@@ -287,9 +294,12 @@ def plot_customer_arrival(df_dataset, parent_folder, time_origin):
     return average_customers
 
 
-def plot_map_request_cells(district_network, dataset, parent_folder, file_name=None):
+def plot_map_request_cells(district_network, dataset, parent_folder, file_name=None,
+                           config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
     """ PLOT POCKUP POINTS """
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+    fig, ax = plot_districts(district_network, config=config)
     points = dataset["pickup_ID"]
     request_cells = []
     for item in points:
@@ -308,7 +318,7 @@ def plot_map_request_cells(district_network, dataset, parent_folder, file_name=N
     plt.close(fig)
 
     """ PLOT DROP OFF POINT """
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+    fig, ax = plot_districts(district_network, config=config)
     points = dataset["dropoff_ID"]
     request_cells = []
     for item in points:
@@ -326,7 +336,10 @@ def plot_map_request_cells(district_network, dataset, parent_folder, file_name=N
     fig.savefig(image_dir + file_name + '_dropoff', bbox_inches="tight")
     plt.close(fig)
 
-def plot_districts_fill(district_network, trip_per_district, parent_folder, file_name):
+def plot_districts_fill(district_network, trip_per_district, parent_folder, file_name,
+                        config: Optional[PlotConfig] = None):
+    if config is None:
+        config = PlotConfig()
     # Compute color tones and colormap bins
     color_ton, bins, colors = calc_color(trip_per_district)
     cmap = mpl.colors.ListedColormap(colors)
@@ -337,7 +350,7 @@ def plot_districts_fill(district_network, trip_per_district, parent_folder, file
     norm = mpl.colors.BoundaryNorm(bounds, ncolors=cmap.N)
 
     # Plot districts with colored fills
-    fig, ax = plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+    fig, ax = plot_districts(district_network, config=config)
     for idx, region in enumerate(district_network.districts):
         latitudes = region.coordinates[:, 0]
         longitudes = region.coordinates[:, 1]

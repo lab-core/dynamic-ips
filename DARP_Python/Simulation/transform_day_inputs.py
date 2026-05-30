@@ -158,8 +158,6 @@ def _build_stop_index(stops_latlon_path=None):
     """
     if stops_latlon_path is None:
         stops_latlon_path = os.path.join(c.STOP_DIR, "virtual_stops_latlon.geojson")
-    else:
-        stops_latlon_path = os.path.join(c.STOP_DIR, stops_latlon_path)
 
     if not os.path.exists(stops_latlon_path):
         raise FileNotFoundError(
@@ -326,7 +324,8 @@ def transform_json_file(input_file: str, output_file: str, year: int, stop_index
 
             # Transform using the existing function
             transformed = _transform_record(normalized_record, stop_index)
-            transformed_records.append(transformed)
+            if transformed is not None:
+                transformed_records.append(transformed)
 
             if (i + 1) % 1000 == 0:
                 print(f"Processed {i + 1} records...")
@@ -366,7 +365,7 @@ def transform_multiple_files(input_dir: str, output_dir: str, stop_index: Dict):
             continue
 
         input_path = os.path.join(input_dir, filename)
-        output_filename = f"transformed_{filename}"
+        output_filename = f"{filename}"
         output_path = os.path.join(output_dir, output_filename)
 
         print(f"Transforming {filename} (year: {year})...")

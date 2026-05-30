@@ -7,6 +7,9 @@ import math
 import os
 import random
 import numpy as np
+from typing import Optional
+
+from Visualization.plot_config import PlotConfig
 
 class Vehicle(object):
     def __init__(self, nb_districts, vehicle_data=None, nb_vehicle_per_district=None, file_name=None, nb_vehicles=None,
@@ -139,8 +142,11 @@ class Vehicle(object):
         file.write(df_as_string)
         file.close()
 
-    def plot_map_vehicle_cells(self, district_network, parent_folder, folder_name):
-        fig, ax = ivf.plot_districts(district_network, mapsize=c.plot_config["district_map_size"])
+    def plot_map_vehicle_cells(self, district_network, parent_folder, folder_name,
+                             config: Optional[PlotConfig] = None):
+        if config is None:
+            config = PlotConfig()
+        fig, ax = ivf.plot_districts(district_network, config=config)
         points = np.array(self.vehicle_data["depart_ID"].astype('int'))
 
         vehicle_cells = np.array(

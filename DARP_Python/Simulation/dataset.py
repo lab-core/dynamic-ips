@@ -6,6 +6,9 @@ import pandas as pd
 import Simulation.utilities as uf
 import constants as c
 import os
+from typing import Optional
+
+from Visualization.plot_config import PlotConfig
 
 
 class Dataset(object):
@@ -64,7 +67,7 @@ class Dataset(object):
         self.origin = dtime.datetime(year, month, day, 0, 0, 0)
 
     def prepare_dataset(self, parent_dir, capacity=None, network=None, start_hr=None, end_hr=None, start_min=None, end_min=None,
-                        restrict=None, visualize=False, remove_same=False):
+                        restrict=None, visualize=False, remove_same=False, plot_config: Optional[PlotConfig] = None):
         self.read_dataset_data()
 
         if network is not None:
@@ -78,9 +81,11 @@ class Dataset(object):
 
 
         if visualize:
-            ivf.plot_requests_arrival(self.dataset, parent_dir, self.origin)
-            ivf.plot_zoom_request_arrival_4h(self.dataset, parent_dir, self.origin)
-            ivf.plot_customer_arrival(self.dataset, parent_dir, self.origin)
+            if plot_config is None:
+                plot_config = PlotConfig()
+            ivf.plot_requests_arrival(self.dataset, parent_dir, self.origin, config=plot_config)
+            ivf.plot_zoom_request_arrival_4h(self.dataset, parent_dir, self.origin, config=plot_config)
+            ivf.plot_customer_arrival(self.dataset, parent_dir, self.origin, config=plot_config)
 
         if start_hr is not None:
             self.limit_time_dataset(start_hr, end_hr, start_min, end_min)
@@ -88,9 +93,9 @@ class Dataset(object):
         average_requests, average_customers = self.compute_average_requests()
         if visualize:
             ivf.plot_map_request_cells(district_network=network, dataset=self.dataset, parent_folder=parent_dir,
-                                       file_name=self.file_name)
+                                       file_name=self.file_name, config=plot_config)
             ivf.plot_districts_fill(district_network=network, trip_per_district=self.nb_trip_per_district,
-                                    parent_folder=parent_dir, file_name=self.file_name)
+                                    parent_folder=parent_dir, file_name=self.file_name, config=plot_config)
 
         print("\nThe number of trips after time limit:", self.nb_requests)
         print("The number of customers after time limit:", self.nb_customers)
