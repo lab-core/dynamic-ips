@@ -1,12 +1,17 @@
 # DARP_Python — Data Preparation and Result Analysis
 
-Python pipeline for the **dynamic-ips** project.  It covers two independent
+Python pipeline for the **dynamic-ips** project. It covers two independent
 workflows:
 
 1. **Data preparation** — build the network, fetch raw trip records, transform
    them, and generate solver-ready benchmark instances.
 2. **Result analysis** — post-process solver output and produce all figures for
-   the B-CG and A-CG analyses.
+   the **B-CG** (Batch-based Column Generation) and **A-CG** (Anytime
+   Column Generation) analyses.
+
+This pipeline does **not** implement the optimization algorithm; the solver
+itself is the C++ code in [`../DARP_IPS`](../DARP_IPS/README.md). For an
+overview of the whole project, see the [root README](../README.md).
 
 ---
 
@@ -45,10 +50,9 @@ DARP_Python/
 
 ---
 
-## Section 1 — Reproduce figures (reviewer path)
+## Section 1 — Reproduce figures
 
-This path assumes benchmark results already exist under `Outputs/`.
-Download pre-computed results from Zenodo and place them there, then run:
+This path assumes benchmark results already exist under `Outputs/`. The following options are available:
 
 **B-CG figures:**
 ```bash
@@ -71,12 +75,25 @@ for the full list of available folder keys.
 
 ---
 
-## Section 2 — Full pipeline from raw data
+## Section 2 — Building benchmark instances
 
-### Step 0 — Download data from Zenodo
+There are two ways to obtain solver-ready instances, depending on your goal:
 
-**Your own network (NYC-DARP):**
-Download from *(Zenodo link — to be added)* and unzip into:
+- **Reproduce results / compare against these benchmarks (recommended).** The
+  prepared networks and processed trip data for both the **NYC-DARP** (this
+  work) and **Riley** networks are already published on Zenodo. Download them
+  (Step 0), then go straight to **[Step 4](#step-4--create-benchmark-instances)**.
+  Steps 1–3 are **not** needed.
+- **Build your own network or dataset.** Only if you want to generate a *new*
+  network or use *different* dates / settings, run the optional
+  **[Steps 1–3](#steps-13-optional--build-your-own-network-and-data)** first,
+  then continue with Step 4.
+
+### Step 0 — Download prepared data from Zenodo
+
+**NYC-DARP network (this work):**
+Download from Zenodo ([doi:10.5281/zenodo.20452171](https://doi.org/10.5281/zenodo.20452171))
+and unzip into:
 ```
 DARP_Python/
 └── Data/
@@ -94,53 +111,27 @@ DARP_Python/
                                 edge_time_matrix.txt, ...
 ```
 
----
-
-### Step 1 — Build network (custom network only)
-
-If you downloaded the pre-built network files from Zenodo, skip this step.
-To rebuild the custom network from scratch:
-
-```bash
-python scripts/01_build_network.py           # all steps
-python scripts/01_build_network.py --steps stops     # virtual stops only
-python scripts/01_build_network.py --steps matrix    # OSRM matrix only
-python scripts/01_build_network.py --steps postprocess  # post-process only
-```
-
-> **Note:** Step 3 (matrix) requires an OSRM server.
-> The public server at `router.project-osrm.org` can be used for small runs
-> but may be slow for a full 1 700-stop matrix.
-
-Riley's network does not require this step — the matrix is provided on Zenodo.
+Once the data is in place, skip to [Step 4](#step-4--create-benchmark-instances).
 
 ---
 
-### Step 2 — Download raw trip records
+### Steps 1–3 (optional) — Build your own network and data
+
+These steps are only required when generating a network or dataset from scratch
+(e.g. a different region, dates, or stop settings). **If you downloaded the
+prepared data in Step 0, skip them.** Dates and paths are configured in
+`constants.py` (`DATES_2015`, `DATES_2016`, `DATA_DIR`, ...).
 
 ```bash
-python scripts/02_fetch_trips.py                # all configured dates (2015 + 2016)
-python scripts/02_fetch_trips.py --year 2015    # 2015 only
-python scripts/02_fetch_trips.py --year 2016    # 2016 only
+# Step 1 — Build the custom network (own data only).
+python scripts/01_build_network.py            # all steps
+
+# Step 2 — Download raw NYC TLC trip records → Data/days/
+python scripts/02_fetch_trips.py              # all configured dates
+
+# Step 3 — Assign virtual stop IDs to each trip → Data/transform_days/
+python scripts/03_transform_trips.py --network own 
 ```
-
-Dates are configured in `constants.py` (`DATES_2015`, `DATES_2016`).
-Records are saved to `Data/days/`.
-
-> Set `SODA_APP_TOKEN` in your environment to raise the Socrata API rate limit.
-
----
-
-### Step 3 — Transform trip records
-
-Assigns virtual stop IDs to each trip using a nearest-stop lookup.
-
-```bash
-python scripts/03_transform_trips.py --network own    # custom network
-python scripts/03_transform_trips.py --network riley  # Riley's network
-```
-
-Output goes to `Data/transform_days/`.
 
 ---
 
@@ -164,8 +155,11 @@ python scripts/04_create_instances.py --network own --no-vehicles
 
 ### Step 5 — Run the solver
 
-See `DARP_IPS/README.md` for build instructions and how to run the C++ solver
-on the generated instances.
+Build and run the C++ solver on the generated instances. See
+[`../DARP_IPS/README.md`](../DARP_IPS/README.md) for build instructions and how
+to run, and
+[`../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md)
+for generating and running experiment commands at scale.
 
 ---
 
@@ -180,32 +174,29 @@ python scripts/plot_ACG.py --gather-data --folders all
 
 ---
 
-## Section 3 — Data sources
+## Configuration
 
-### NYC-DARP (custom network)
-
-| File | Description |
-|------|-------------|
-| `virtual_stops_latlon.geojson` | Custom virtual stop locations (WGS84) |
-| `edge_matrix.json` | Raw OSRM pairwise travel-time / distance matrix |
-| `edge_time_matrix.txt` | Solver-ready duration matrix (post-processed) |
-| `taxi_zones.geojson` | NYC TLC Manhattan taxi-zone polygons |
-| `Data/days/*.json` | Raw NYC TLC taxi records (2015–2016) |
-
-### Riley et al. network
-
-| File | Description | Source |
-|------|-------------|--------|
-| `riley_virtual_stops_latlon.geojson` | 1 718-cell Manhattan grid stops | Zenodo |
-| `edge_time_matrix.txt` | OSRM travel-time matrix (OSRM + OSM) | Zenodo |
-
-Both networks share the same NYC TLC taxi-zone district definitions
-and the same raw day record files.
+All paths, dates, and scenario mappings are centralized in `constants.py`.
+Adjust `DATA_DIR`, `OUTPUT_DIR`, `DATES_2015`, and `DATES_2016` there before
+running the pipeline.
 
 ---
 
-## Configuration
+## Expected inputs and outputs
 
-All paths, dates, and scenario mappings are centralised in `constants.py`.
-Adjust `DATA_DIR`, `OUTPUT_DIR`, `DATES_2015`, and `DATES_2016` there
-before running the pipeline.
+- **Inputs:** network files and raw trip records under `Data/` (from Zenodo, or
+  rebuilt via the optional Steps 1–3); solver output under `Outputs/` for the
+  plotting path.
+- **Outputs:** solver-ready benchmark instances (TRIP, REQUESTS, INSTANCE, and
+  vehicle fleet files) from Step 4, and the B-CG / A-CG figures from the
+  plotting scripts. The `--gather-data` flag first merges per-epoch solver
+  results before plotting.
+
+---
+
+## Related documentation
+
+- [Root README](../README.md) — project overview and datasets.
+- [`../DARP_IPS/README.md`](../DARP_IPS/README.md) — build and run the C++ solver.
+- [`../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) — generate and run experiment commands.
+- [`../DARP_IPS/docs/parameters.md`](../DARP_IPS/docs/parameters.md) — solver parameter reference.
