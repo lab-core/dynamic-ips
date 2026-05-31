@@ -1,11 +1,9 @@
 import constants as c
-import Visualization.visualize_batch_CG as vf
-import Visualization.visualize_batch_custom as vc
-from ProcessResults.merge_records import merge_with_averaged_epoch, merge_with_all_iterations
+import Visualization.visualize_any_CG as vf
+from ProcessResults.merge_records import merge_with_averaged_epoch, merge_with_all_iterations, merge_basic, \
+    merge_complete
 from Visualization.plot_config import PlotConfig
 from typing import Iterable, Union
-
-from Visualization.visualize_others import create_pruning_labels_and_time_figure
 
 
 def setup_paths(phase: str, selected_folder: str) -> tuple[str, str]:
@@ -20,33 +18,59 @@ def setup_paths(phase: str, selected_folder: str) -> tuple[str, str]:
 """ rebalance evaluation"""
 def plot_rebalance(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
+    PARAMS       = ['Rebalance_no', 'Rebalance_6', 'Rebalance_5', 'Rebalance_4', 'Rebalance_3', 'Rebalance_2']
+    PARAM_LABELS = ['No rebalance', 'Wait ≥ 6min', 'Wait ≥ 5min', 'Wait ≥ 4min', 'Wait ≥ 3min', 'Wait ≥ 2min']
+    vf.create_rebalance_histo_by_supply(result_path, config, PARAMS, PARAM_LABELS)
+    vf.create_rebalance_vehicle_boxplot_double(result_path, config, PARAMS, PARAM_LABELS)
+    vf.create_rebalance_request_boxplot_double(result_path, config, PARAMS, PARAM_LABELS)
 
-""" partial evaluation"""
-def plot_partial(phase: str, selected_folder: str, config: PlotConfig) -> None:
+""" plot profile"""
+def plot_profile(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
+    vf.create_profile_boxplot(result_path, config)
+    vf.create_anytime_boxplot_double(result_path, config)
+    vf.create_anytime_improve_boxplot(result_path, config)
+
+""" reOptimize evaluation"""
+def plot_reOptimize(phase: str, selected_folder: str, config: PlotConfig) -> None:
+    result_folder, result_path = setup_paths(phase, selected_folder)
+    NO_POOL    = ['Full_cold', 'Full_warm',      'Pool_warm',      'Basis_warm'     ]
+    KEEP_POOL  = ['Full_cold', 'Full_warm_keep', 'Pool_warm_keep', 'Basis_warm_keep']
+    SE_METHODS = [
+        'Full network (dual cold-start)',
+        'Full network (dual warm-start)',
+        'Reduction by pool (dual warm-start)',
+        'Reduction by basis (dual warm-start)',
+    ]
+    PARAM_POOL  = ['Pool_warm',  'Pool_warm_keep' ]
+    PARAM_BASIS = ['Basis_warm', 'Basis_warm_keep']
+    DUAL_LABELS = ['Discard Basis & pool ', 'Keep Basis & Column pool']
+    vf.create_reOptimize_boxplot_triple(result_path, config, NO_POOL, KEEP_POOL, SE_METHODS)
+    vf.create_reOptimize_dual_profile(result_path, config, PARAM_POOL, PARAM_BASIS, DUAL_LABELS)
+    vf.create_reOptimize_time_request_profile(result_path, config, NO_POOL, KEEP_POOL, SE_METHODS)
 
 """ prcocess evaluation"""
 def plot_prcocess(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
+    vf.create_process_combined_boxplot(result_path, config)
 
-""" MP_method evaluation"""
-def plot_MP_method(phase: str, selected_folder: str, config: PlotConfig) -> None:
+
+""" rebalance evaluation"""
+def plot_rebalance_anytime(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
-
-""" compare evaluation"""
-def plot_compare(phase: str, selected_folder: str, config: PlotConfig) -> None:
-    result_folder, result_path = setup_paths(phase, selected_folder)
-    isud_path = c.OUTPUT_DIR + f"{phase}/{c.FOLDERS[phase][selected_folder]}" + "/" + "ISUD_results.csv"
-
+    PARAM_POOL  = ['Pool_warm_keep',  'no_rebalance_Pool' ]
+    PARAM_BASIS = ['Basis_warm_keep', 'no_rebalance_Basis']
+    LABELS      = ['With Rebalancing', 'Without Rebalancing']
+    vf.create_rebalance_anytime_time_request_profile(result_path, config, PARAM_POOL, PARAM_BASIS, LABELS)
 
 
 # --- mapping from folder name to plotting function ---
 PLOT_FUNCTIONS = {
     "rebalance": plot_rebalance,
-    "partial": plot_partial,
+    "profile": plot_profile,
     "prcocess": plot_prcocess,
-    "MP_method": plot_MP_method,
-    "compare": plot_compare,
+    "reOptimize": plot_reOptimize,
+    "rebalance_anytime": plot_rebalance_anytime
 }
 
 
@@ -91,16 +115,16 @@ def main(
         if gather_data:
             result_folder, _ = setup_paths(phase, folder)
             merge_with_averaged_epoch(result_folder)
-        #       merge_with_all_iterations(result_folder)
+#            merge_basic(result_folder)
+   #         merge_with_all_iterations(result_folder)
+   #         merge_complete(result_folder)
 
         print(f"[INFO] Running plots for folder '{folder}' in phase '{phase}'")
         plot_fn(phase=phase, selected_folder=folder, config=config)
 
 
 if __name__ == "__main__":
-    # Example: only run ablation plots
-    main("PyCharm", selected_folders="rebalance", gather_data=True)
-    # Example: run several
-    # main("PyCharm", selected_folders=["ablation", "multiObj"])
-    # Example: run everything
-    # main("PyCharm", selected_folders="all")
+    # Use scripts/plot_ACG.py for the CLI entry point:
+    #   python scripts/plot_ACG.py --folders rebalance_anytime
+    #   python scripts/plot_ACG.py --folders all
+    main("", selected_folders="rebalance_anytime", gather_data=False)
