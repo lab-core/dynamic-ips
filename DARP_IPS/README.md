@@ -1,6 +1,6 @@
 # DARP_IPS — Real-time Column Generation for Online Dial-a-Ride / Ridesharing
 
-This repository contains a C++ implementation for solving large-scale dial-a-ride / ridesharing problems using **Column Generation (CG)** in a **rolling-horizon (epoch-based)** setting. The approach is designed for real-time re-optimization: at each epoch, a static assignment/routing problem is solved, where the master problem is typically a **set partitioning** formulation and the subproblem generates feasible routes via **labeling / SPPRC-style** techniques.
+This repository contains a C++ implementation for solving large-scale dial-a-ride / ridesharing problems using **Column Generation (CG)** in a **rolling-horizon (epoch-based)** setting. The approach is designed for real-time re-optimization: at each epoch, a static dial-a-ride problem (DARP) is solved, where the master problem is typically a **set partitioning** formulation and the subproblem generates feasible routes via **labeling / SPPRC-style** techniques.
 
 The codebase supports commercial solver backends (**CPLEX** and/or **Gurobi**) for the master problem modeling/solving.
 
@@ -12,7 +12,7 @@ The codebase supports commercial solver backends (**CPLEX** and/or **Gurobi**) f
 - Column Generation framework (Master Problem + Route/Column generation)
 - Labeling / SPPRC subproblem for route generation
 - Real-time rolling-horizon execution (epoch-by-epoch re-optimization)
-- Optional backends for **CPLEX** (`src/CplexSolver`) and **Gurobi** (`src/GurobiSolver`)
+- Optional backends for **Gurobi** (`src/GurobiSolver`) and **CPLEX** (`src/CplexSolver`)
 - Utilities for configuration parsing, input/output, and metrics
 
 ---
@@ -21,11 +21,10 @@ The codebase supports commercial solver backends (**CPLEX** and/or **Gurobi**) f
 
 ```
 DARP_IPS/
-├─ datasets/                 # example datasets (if included)
-├─ my_datasets/              # local datasets (recommended to keep untracked)
-├─ include/                  # shared headers (if applicable)
+├─ Riley_Benchmark/           # public benchmark (Riley et al.)
+├─ NYC-DARP-Benchmark/        # extended benchmark (Amiri et al.) — keep untracked
 ├─ src/
-│  ├─ data/                  # core objects (Graph, Instance, Request, Vehicle, Route, Label, Parameters, metrics...)
+│  ├─ data/                   # core objects (Instance, Request, Vehicle, Route, Parameters,...)
 │  │  ├─ Graph.cpp/.h
 │  │  ├─ Greedy.cpp/.h
 │  │  ├─ Instance.cpp/.h
@@ -62,9 +61,9 @@ DARP_IPS/
 │     ├─ ReadWrite.cpp/.h
 │     ├─ Tools.cpp/.h
 │     └─ ...
-├─ realTimeMain.cpp          # entry point (real-time / rolling horizon)
-├─ AnyParameters.json        # example config (real-time)
-├─ BatchParameters.json      # example config (batch/offline experiments)
+├─ computational_scripts/    # experiment generation and SLURM submission
+├─ docs/                     # parameter reference
+├─ realTimeMain.cpp          # entry point (main function)
 ├─ CMakeLists.txt
 ├─ FindCPLEX.cmake
 └─ FindGUROBI.cmake
@@ -82,65 +81,46 @@ DARP_IPS/
 - **Boost** (development headers + libraries)
 
 ### Optional solver backends (choose one)
-- **IBM ILOG CPLEX** (license required), or
-- **Gurobi Optimizer** (license required)
+- **Gurobi Optimizer** (license required), or
+- **IBM ILOG CPLEX** (license required)
 
 > This repository does not include CPLEX/Gurobi binaries. You are responsible for installing them and ensuring your license is valid.
+
 ---
 
 ## Build
 
 ### 1) Clone
 ```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/lab-core/dynamic-ips.git
+cd dynamic-ips
 ```
 
 ### 2) Configure & compile (Release)
-Your project contains custom find-modules (`FindCPLEX.cmake`, `FindGUROBI.cmake`).
-Below are common patterns; adapt flags to match your CMake options/targets.
+The project contains custom find-modules (`FindCPLEX.cmake`, `FindGUROBI.cmake`).
+Below is the recommended pattern; adapt flags to match your CMake options/targets.
 
-#### Option A — Build with Gurobi
+#### Build with Gurobi
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_GUROBI=ON -DUSE_CPLEX=OFF
 cmake --build build -j
 ```
 
-#### Option B — Build with CPLEX
+#### Build with CPLEX
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_CPLEX=ON -DUSE_GUROBI=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_GUROBI=OFF -DUSE_CPLEX=ON
 cmake --build build -j
 ```
-
-#### Option C — Build without commercial solvers (if supported)
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-```
-
-### If CMake cannot find CPLEX/Gurobi
-You may need to define environment variables or cache entries that your `Find*.cmake` expects.
-
-Common examples:
-```bash
-# Gurobi (example)
-export GUROBI_HOME=/path/to/gurobi
-
-# CPLEX (example)
-export CPLEX_HOME=/path/to/CPLEX_Studio
-```
-
-If you still get errors, open `FindGUROBI.cmake` / `FindCPLEX.cmake` and check which variables they look for.
 
 ---
 
 ## Run
 
-Your executable is driven entirely by **command-line options** (no positional arguments).  
+The executable is driven entirely by **command-line options** (no positional arguments).  
 Run `--help` (or `-h`) to see the full usage message:
 
 ```bash
-./build/bin/<your_executable> --help
+bin/realtime_DARP --help
 ```
 
 ### Required arguments
@@ -148,96 +128,77 @@ Run `--help` (or `-h`) to see the full usage message:
 The program **requires** all of the following flags:
 
 ```text
---vehicle-folder <path>     Path to vehicle folder
---inst-folder <path>        Path to instance folder
+--data-dir <path>           Root directory containing the benchmark data
+--vehicle-folder <path>     Path to vehicle folder (relative to --data-dir)
+--inst-folder <path>        Path to instance folder (relative to --data-dir)
 --num-vehicles <int>        Number of vehicles (must be positive)
 --main-algo <int>           Main algorithm (non-negative integer)
 --sol-mode <int>            Solution mode (non-negative integer)
 --paramfile <string>        Parameter file name (e.g., AnyParameters or BatchParameters)
 --scenario <string>         Scenario name (must match an entry in the parameter JSON)
---save-scratch <int>        Save scratch flag (0/1/2)
+--output-dir <string>       Root directory for output files
 --initial-state <int>       Initial state (non-negative integer)
 ```
 
 ### Example — Run a specific instance
 ```bash
-./build/bin/<your_executable> --vehicle-folder ./vehicles --inst-folder ./instances --instance-name test.txt --num-vehicles 4 --main-algo 1 --sol-mode 0 --paramfile AnyParameters --scenario test --save-scratch 0 --initial-state 1
+bin/realtime_DARP --data-dir NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 --inst-folder Instances_4h-11 --instance-name 20150917_11-240m --num-vehicles 1450 --vehicle-capacity 4 --main-algo 2 --sol-mode 1 --paramfile AnyParameters --scenario Basis_warm_keep --save-scratch 0 --initial-state 1
 ```
 
 ---
-## Batch Experiments (predefined scenarios + SLURM)
 
-This repo includes:
-- `BatchParameters.json`: default parameters + a library of named **scenarios** (each scenario overrides a subset of parameters).
-- `run-batch.sh`: a SLURM array script that sweeps across **groups × instances × vehicle counts × scenarios**.
+## Running Experiments
 
-### Scenarios
-Scenarios are defined under `scenarios` in `BatchParameters.json` and can be selected via the CLI flag `--scenario <name>`.
+Experiment generation and execution (local and SLURM) are managed from `computational_scripts/`.  
+See [`computational_scripts/README_REPRODUCIBILITY.md`](computational_scripts/README_REPRODUCIBILITY.md) for the full workflow, including how to generate command files, run them locally, and submit SLURM array jobs.
 
-The provided scenario families include (examples):
-- `nbPick1..nbPick4`: vary `nbPick` (pickup concurrency/limit)
-- `initial_*`, `pruning_*`: small variants for initialization/pruning toggles
-- `truncate_*`: uses truncation / label limits and pruning flags
-- `dropPick_*`: enables/disables drop-before-pick flexibility
-- `dynamic_*`: enables/disables dynamic pricing switches
-- `Ab_*`: ablation settings with tighter time limits (e.g., `informTimeLimit`, `pickupDeviationWindow`)
-- `commit_*`, `no_commit_*`: variants that differ in commitment / lookahead-related limits
-- `multiObj_*`: multi-objective weight settings (`Wait_W1`, `Ride_W2`, `Req_W3`)
-- `Cust_W3`: includes a non-zero `Req_W3` weight
+---
 
-To add a new scenario, create a new entry in `BatchParameters.json` under `scenarios`.
+## Configuration
 
-### SLURM batch script (`run-batch.sh`)
-The script is configured as a SLURM array job and runs **one command per array task**. It loads modules (gcc/eigen/boost/gurobi), defines test groups (e.g., `G1`, `G2`, `G3`), builds a job list, and executes the command matching `SLURM_ARRAY_TASK_ID`.
+Solver behavior is controlled via JSON parameter files (located in `computational_scripts/parameters/`). 
+See [`docs/parameters.md`](docs/parameters.md) for the full parameter reference with types, defaults, and notes.
 
-Typical usage:
-```bash
-# Run all default groups (as configured in run-batch.sh)
-sbatch run-batch.sh
-
-# Run only a subset of groups (comma/space separated)
-sbatch --export=SELECTED_GROUPS=G1 run-batch.sh
-sbatch --export=SELECTED_GROUPS="G1,G3" run-batch.sh
-```
-
-The commands generated by `run-batch.sh` follow this pattern:
-```bash
-bin/realtime_DARP   --vehicle-folder <folder>   --inst-folder <folder>   --instance-name <instance>   --num-vehicles <N>   --main-algo <id>   --sol-mode <id>   --paramfile <BatchParameters.json>   --scenario <scenarioName>   --save-scratch 1   --initial-state <id>
-```
-
-> Note: `run-batch.sh` currently sets `BATCH_PARAMFILE="BatchParameters."`. If your binary expects a JSON filename, change this to `BatchParameters.json`.
-
-## Configuration (`AnyParameters.json`, `BatchParameters.json`)
-Solver behavior is controlled via JSON files. Typical parameters include:
-- input paths / dataset selection
-- epoch length and rolling-horizon settings
-- fleet size, capacity, time windows, max waiting time, detour constraints
-- solver time limits and CG iteration limits
-- objective weights (e.g., wait time + trip delay term)
-- logging/output settings
-- random seed for reproducibility
-
-To understand the exact parameter schema, inspect:
+To understand the exact parameter schema in code, inspect:
 - `src/data/Parameters.h` and `src/data/Parameters.cpp`
 - `src/utilities/ConfigParser.h` and `src/utilities/ConfigParser.cpp`
 
 ---
 
-## Input Data
-Place datasets in:
-- `datasets/` for small public examples, and/or
-- `my_datasets/` for larger/local data you do not want to commit.
+## Datasets
 
-**Important:** Document your dataset format here once finalized.
-A good minimum is:
-- expected files and their names
-- required columns for requests and vehicles
-- time units and coordinate system
-- example snippet (few rows)
+Both benchmarks are built on **New York City TLC** taxi trip records (2015–2016), using the Manhattan 200 m × 200 m grid with 1718 virtual stop locations. The travel-time matrix between stop locations is provided in `edge_time_matrix.txt` (constructed from OpenStreetMap).
 
-Implementation references:
-- `src/data/Instance.*`
-- `src/utilities/ReadWrite.*`
+### Riley_Benchmark
+
+> Riley, C., Legrain, A., & Van Hentenryck, P. (2026). Real-time ride-sharing operations - NYC TLC sub Dataset 2015-2016 [Data set]. Zenodo. https://doi.org/10.5281/zenodo.18745880
+
+| Folder | Description |
+|---|---|
+| `Instances_2h-7` | 24 instances, 7:00–9:00 AM (2-hour window) |
+| `Instances_2h-11` | 24 instances, 11:00 AM–1:00 PM (2-hour window) |
+| `Instances_30s` | Reduced instances (30 epochs, 12:00–1:00 PM) for sensitivity analysis |
+| `vehicles_uniform` | Initial vehicle positions for 7:00 AM instances (uniform distribution) |
+| `vehicles_byDemand` | Warm-start vehicle states for 11:00 AM instances |
+
+### NYC-DARP-Benchmark
+
+> Amiri, E., Legrain, A., & El Hallaoui, I. (2026). Manhattan Dial-a-Ride Benchmark Dataset with NYC TLC Taxi Trips, 2015–2016 (v1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.20452171
+
+| Folder | Description |
+|---|---|
+| `Instances_2h-7` | 24 instances, 7:00–9:00 AM (2-hour window) |
+| `Instances_2h-11` | 24 instances, 11:00 AM–1:00 PM (2-hour window) |
+| `Instances_4h-11` | 24 instances, 11:00 AM–3:00 PM (4-hour window) |
+| `Instances_16h-7` | 24 instances, 7:00 AM–11:00 PM (16-hour window) |
+| `vehicles_uniform` | Initial vehicle positions (uniform distribution); used for 7:00 AM and 16-hour instances |
+| `vehicles_warmStart_11` | Warm-start vehicle states for 11:00 AM instances |
+
+### Shared conventions
+
+**Naming:** Instance folders follow `YYYYMMDD_HH-Xm`, where `HH` is the start hour and `X` is the duration in minutes (e.g. `20150926_11-240m` = Sept 26 2015, 11:00 AM start, 4-hour window).
+
+**Warm-up:** For instances starting at 11:00 AM, a one-hour dry run (10:00–11:00 AM) is performed to generate a realistic initial vehicle state. The resulting vehicle positions and onboard passenger status are saved in the corresponding warm-start vehicle files.
 
 ---
 
@@ -251,14 +212,8 @@ The code can report:
 Check:
 - `src/data/SolutionMetrics.*`
 - `src/utilities/ReadWrite.*`
-  for what is written and where.
 
----
-
-## Reproducibility Notes
-- Use `Release` builds for consistent timing.
-- Set a fixed random seed in the JSON config.
-- When reporting results, include solver version (CPLEX/Gurobi), commit hash, and config file used.
+for what is written and where.
 
 ---
 

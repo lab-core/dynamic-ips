@@ -44,8 +44,7 @@ void GreedyModeler::solveInsertion(const PInstance &PInst) {
             if (PInst->parameters_->greedyReOptimize_ || PInst->requests_[i]->solVehicleID_ == LARGE_CONSTANT) {
                 deltaObjective.clear();
                 for (auto &GRoute: greedyRouteList_) {
-                    bool returnRoutes = PInst->parameters_->initialDual_ == GREEDY_D ||
-                        PInst->parameters_->initialDual_ == INITIAL_LP || PInst->parameters_->initialDual_ == INIT_CP;
+                    bool returnRoutes = PInst->parameters_->initialDual_ == GREEDY_D || PInst->parameters_->initialDual_ == INITIAL_LP;
                     GRoute->findInsertPlace(PInst->instGraph_->pickNodes_[i], PInst->instGraph_->dropNodes_[i],
                                             PInst->requests_[i]->maxTravelTime_, greedyLabelPool_,
                                             positionList_[(*GRoute->Vehicle_)->vehicleID_], PInst->parameters_->Wait_W1_,

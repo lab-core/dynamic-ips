@@ -1,0 +1,219 @@
+{
+  "name": "batch_paper",
+  "description": "Reproducibility matrix for the batch-based column generation experiments.",
+  "paramfile": "parameters/BatchParameters",
+  "main_algo": 2,
+  "sol_mode": 1,
+  "groups": {
+    "bG1": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1200,
+        1300,
+        1400,
+        1500
+      ],
+      "instances": [
+        "20150926_11-120m",
+        "20151025_11-120m"
+      ]
+    },
+    "bG2": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1300,
+        1400,
+        1500,
+        1600
+      ],
+      "instances": [
+        "20160109_11-120m"
+      ]
+    },
+    "bG3": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        800,
+        900,
+        1000,
+        1100
+      ],
+      "instances": [
+        "20151230_11-120m"
+      ]
+    },
+    "bG30S": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_30s",
+      "initial_state": 2,
+      "vehicle_counts": [
+        1400
+      ],
+      "auto_discover": true
+    },
+    "bG30S_1": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_30s",
+      "initial_state": 2,
+      "vehicle_counts": [
+        1400
+      ],
+      "instances": [
+        "20150926_11-120m_20",
+        "20151025_11-120m_3",
+        "20151230_11-120m_25",
+        "20160109_11-120m_22"
+      ]
+    },
+    "bG2h7": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_uniform",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-7",
+      "initial_state": 0,
+      "vehicle_counts": [
+        2000
+      ],
+      "auto_discover": true
+    }
+  },
+  "runs": [
+    {
+      "id": "limiting_pickups ",
+      "description": "Evaluating the impact of limiting #pickups.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG30S_1"
+      ],
+      "scenarios": [
+        "nbPick1",
+        "nbPick2",
+        "nbPick3",
+        "nbPick4"
+      ]
+    },
+    {
+      "id": "sensitivity_analysis",
+      "description": "Small 30-second instances, auto-discovered from disk.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG30S"
+      ],
+      "scenarios": [
+        "initial_0",
+        "pruning_0",
+        "truncate_0",
+        "dropPick_0",
+        "dynamic_0"
+      ]
+    },
+    {
+      "id": "commit_notify",
+      "description": "Evaluating the impact of committed pickup notification.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG1",
+        "bG2",
+        "bG3"
+      ],
+      "scenarios": [
+        "no_commit_0",
+        "commit_0"
+      ]
+    },
+    {
+      "id": "batch_ablation_wait",
+      "description": "Ablation scenarios for drop-pick, dynamic pricing, and truncation..",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG1",
+        "bG2",
+        "bG3"
+      ],
+      "scenarios": [
+        "Ab_drop_0",
+        "Ab_dynamic_0",
+        "Ab_truncate_0",
+        "multiObj_0"
+      ]
+    },
+    {
+      "id": "batch_ablation_multi",
+      "description": "Ablation scenarios for drop-pick, dynamic pricing, and truncation..",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG1",
+        "bG2",
+        "bG3"
+      ],
+      "scenarios": [
+        "Ab_drop_1",
+        "Ab_dynamic_1",
+        "Ab_truncate_1",
+        "multiObj_1"
+      ]
+    },
+
+    {
+      "id": "objective_sensitivity",
+      "description": "Objective sensitivity scenarios.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG1",
+        "bG2",
+        "bG3"
+      ],
+      "scenarios": [
+        "multiObj_0",
+        "multiObj_5",
+        "Relative",
+        "Relative_5",
+        "Jung",
+        "Total",
+        "Cust_W3"
+      ]
+    },
+    {
+      "id": "batch_compare_2h7",
+      "description": "Comparison on auto-discovered Riley 2h-7 uniform instances.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "bG2h7"
+      ],
+      "scenarios": [
+        "multiObj_5",
+        "multiObj_0"
+      ]
+    }
+  ]
+}

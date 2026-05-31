@@ -1,0 +1,326 @@
+{
+  "name": "anytime_paper",
+  "description": "Reproducibility matrix for the anytime column generation experiments.",
+  "paramfile": "parameters/AnyParameters",
+  "main_algo": 6,
+  "sol_mode": 2,
+  "groups": {
+    "aG1": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1400,
+        1500,
+        1600,
+        1700
+      ],
+      "instances": [
+        "20160512_11-240m"
+      ]
+    },
+    "aG2": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1450,
+        1550,
+        1650,
+        1750
+      ],
+      "instances": [
+        "20150917_11-240m"
+      ]
+    },
+    "aG3": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1300,
+        1400,
+        1500,
+        1600
+      ],
+      "instances": [
+        "20151110_11-240m",
+        "20160628_11-240m"
+      ]
+    },
+    "aG6": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 7,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1200
+      ],
+      "instances": [
+        "20150917_11-240m"
+      ]
+    },
+    "aG7": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 7,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1100
+      ],
+      "instances": [
+        "20151110_11-240m",
+        "20160628_11-240m"
+      ]
+    },
+    "aG8": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 7,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1150
+      ],
+      "instances": [
+        "20160512_11-240m"
+      ]
+    },
+    "aG9": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1400
+      ],
+      "instances": [
+        "20160512_11-240m"
+      ]
+    },
+    "aG10": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1450
+      ],
+      "instances": [
+        "20150917_11-240m"
+      ]
+    },
+    "aG11": {
+      "data_dir": "../NYC-DARP-Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_4h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1300
+      ],
+      "instances": [
+        "20151110_11-240m",
+        "20160628_11-240m"
+      ]
+    },
+    "aG2h7": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_uniform",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-7",
+      "initial_state": 0,
+      "vehicle_counts": [
+        2000
+      ],
+      "auto_discover": true
+    }
+  },
+  "runs": [
+    {
+      "id": "quality_profile",
+      "description": "Batch based evaluation to determine stopping policy.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG9",
+        "aG10",
+        "aG11"
+      ],
+      "scenarios": [
+        "profile_5",
+        "profile_10",
+        "profile_20",
+        "profile_30"
+      ]
+    },
+    {
+      "id": "information_reuse",
+      "description": "Evaluating the impact of information reuse and Reduced-Network Construction.",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG1",
+        "aG2",
+        "aG3"
+      ],
+      "scenarios": [
+        "Full_warm", "Basis_warm", "Pool_warm", "Full_cold",
+        "Full_warm_keep", "Basis_warm_keep", "Pool_warm_keep"
+      ]
+    },
+    {
+      "id": "anytime_rebalance",
+      "description": "Evaluating the impact of rebalancing on A-CG.",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG9",
+        "aG10",
+        "aG11"
+      ],
+      "scenarios": [
+        "no_rebalance_Basis", "Basis_warm_keep",
+        "no_rebalance_Pool", "Pool_warm_keep"
+      ]
+    },
+    {
+      "id": "greedy_shuttle",
+      "description": "Greedy shuttle-service experiments.",
+      "main_algo": 0,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG6",
+        "aG7",
+        "aG8",
+        "aG9",
+        "aG10",
+        "aG11"
+      ],
+      "scenarios": [
+        "Shuttle_Greedy"
+      ]
+    },
+    {
+      "id": "anytime_shuttle",
+      "description": "A-CG shuttle-service experiments.",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG6",
+        "aG7",
+        "aG8",
+        "aG9",
+        "aG10",
+        "aG11"
+      ],
+      "scenarios": [
+        "Shuttle_basis"
+      ]
+    },
+    {
+      "id": "A_CG_anytime",
+      "description": "A-CG flexible batching (Comparison of Real-time Strategies).",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG1",
+        "aG2",
+        "aG3"
+      ],
+      "scenarios": [
+        "Basis_warm_keep"
+      ]
+    },
+    {
+      "id": "B_CG_batching",
+      "description": "B-CG fixed batching (Comparison of Real-time Strategies).",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG1",
+        "aG2",
+        "aG3"
+      ],
+      "scenarios": [
+        "batch"
+      ]
+    },
+    {
+      "id": "greedy_sequential",
+      "description": "Sequential greedy baseline (Comparison of Real-time Strategies).",
+      "main_algo": 0,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG1",
+        "aG2",
+        "aG3"
+      ],
+      "scenarios": [
+        "Greedy"
+      ]
+    },
+    {
+      "id": "rebalancing_calibration",
+      "description": "Determining the relocation threshold.",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG1",
+        "aG2",
+        "aG3"
+      ],
+      "scenarios": [
+        "Rebalance_no", "Rebalance_2", "Rebalance_3",
+        "Rebalance_4", "Rebalance_5", "Rebalance_6"
+      ]
+    },
+    {
+      "id": "batch_prior_comparison",
+      "description": "Comparison with prior Studies (Riley Benchmark).",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG2h7"
+      ],
+      "scenarios": [
+        "Compare_rebalance",
+        "Compare_no_rebalance"
+      ]
+    },
+    {
+      "id": "anytime_prior_comparison",
+      "description": "Comparison with prior Studies (Riley Benchmark).",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG2h7"
+      ],
+      "scenarios": [
+        "Compare_rebalance",
+        "Compare_no_rebalance"
+      ]
+    }
+  ]
+}

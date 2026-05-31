@@ -162,23 +162,14 @@ enum WarmStart : int {
 enum InitialDual : int {
     PENALTIES = 0,
     LAST_LP = 1,
-    ADJUSTED = 2,
-    INIT_CP = 3,
-    BARRIER = 4,
-    LAGRANGIAN = 5,
-    INITIAL_LP = 6,
-    GREEDY_D = 7,
-    ZERO = 8,
-    RANDOM = 9,
-    DELAY = 10,
+    BARRIER = 2,
+    INITIAL_LP = 3,
+    GREEDY_D = 4
 };
 
 enum DualMethod : int {
     LMP = 0,
-    AUX_P = 1,
-    LP_CP = 2,
-    INTERIOR = 3,
-    LAGRANGE = 4
+    INTERIOR = 1
 };
 
 enum NodeStatus : int {
@@ -218,8 +209,7 @@ enum SortColumns : int {
     NORMAL_RC = 0,
     RC = 1,
     LAMBDA_S = 2,
-    COMP_C = 3,
-    WAIT_S = 4
+    COMP_C = 3
 };
 
 enum VarSign : int {
@@ -283,7 +273,7 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 11> initialDualNames = {
-        "PENALTIES", "LAST_LP", "ADJUSTED", "INIT_CP", "BARRIER", "LAGRANGE" , "INITIAL_LP", "GREEDY_D", "ZERO", "RANDOM", "DELAY"
+        "PENALTIES", "LAST_LP", "BARRIER", "INITIAL_LP", "GREEDY_D"
     };
 
     constexpr std::array<const char*, 5> dualMethodNames = {
@@ -311,7 +301,7 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 5> sortColumnsNames = {
-        "PATH_SCORE  ", "REDUCED_COST", "LAMBDA_SCORE", "COMP_SCORE ", "WAIT_SCORE "
+        "PATH_SCORE  ", "REDUCED_COST", "LAMBDA_SCORE", "COMP_SCORE "
     };
 
     constexpr std::array<const char*, 2> varSignNames = {

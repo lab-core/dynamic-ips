@@ -1,0 +1,58 @@
+{
+  "name": "smoke_test",
+  "description": "One short command to verify build, paths, and parameter parsing before launching the full experiment set.",
+  "groups": {
+    "smoke_bG1": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_30s",
+      "initial_state": 2,
+      "vehicle_counts": [
+        1200
+      ],
+      "instances": [
+        "20151025_11-120m_3"
+      ]
+    },
+    "smoke_bG2": {
+      "data_dir": "../Riley_Benchmark",
+      "vehicle_folder": "vehicles_warmStart_11",
+      "capacity": 4,
+      "inst_folder": "Instances_2h-11",
+      "initial_state": 1,
+      "vehicle_counts": [
+        1200
+      ],
+      "instances": [
+        "20150926_11-120m-11"
+      ]
+    }
+  },
+  "runs": [
+    {
+      "id": "smoke_small",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "smoke_bG1"
+      ],
+      "scenarios": [
+        "multiObj_5"
+      ]
+    },
+    {
+      "id": "smoke_batch",
+      "main_algo": 2,
+      "sol_mode": 1,
+      "paramfile": "parameters/BatchParameters",
+      "groups": [
+        "smoke_bG2"
+      ],
+      "scenarios": [
+        "multiObj_5"
+      ]
+    }
+  ]
+}
