@@ -11,11 +11,15 @@ DARP_IPS/cmake-build-release/*
 
 
 DARP_IPS/.idea/*
-DARP_Python/*
-DARP_IPS/datasets/Instances_30s/*
-DARP_Python/.idea/*
 DARP_IPS/.vscode/launch.json
 DARP_IPS/.vscode/settings.json
 DARP_IPS/.vscode/tasks.json
 DARP_IPS/src/solvers/.idea/workspace.xml
-DARP_IPS/my_datasets/Instances_30s/*
+Data/*
+Outputs/*
+DARP_IPS/src/data/.idea/*
+dataset/*
+DARP_IPS/.idea/misc.xml
+DARP_IPS/build-gurobi/*
+DARP_IPS/build-cplex/*
+NYC_Dataset_2015-2016.zip

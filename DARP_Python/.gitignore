@@ -1,0 +1,48 @@
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Downloaded and generated data (see README Step 0)
+Data/
+
+# Legacy local data paths
+maps/
+stops/
+arkive/
+
+# Personal scratch / test notebooks
+test_network.py
+test_code.ipynb
+test_*.ipynb
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log

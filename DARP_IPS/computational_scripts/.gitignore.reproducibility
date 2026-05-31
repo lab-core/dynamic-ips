@@ -1,0 +1,11 @@
+# Reproducibility outputs
+commands/*.txt
+results/*
+!results/.gitkeep
+
+# Build outputs
+build/
+bin/
+*.o
+*.so
+*.a
