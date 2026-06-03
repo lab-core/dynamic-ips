@@ -49,7 +49,8 @@ VEHICLES = [
 ]
 
 # Eight requests trickling in over the first three minutes.
-# Columns: passenger_count pickup_ID dropoff_ID request_time_sec pickup_district dropoff_district
+# Columns: passenger_count pickup_ID dropoff_ID request_time_sec
+# (the pickup/dropoff districts are derived from LOC_ZONE when written).
 REQUESTS = [
     (1, 0, 11, 0),
     (2, 3, 8, 30),

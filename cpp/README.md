@@ -155,6 +155,29 @@ cmake --build build -j
 
 ---
 
+## Tests
+
+The build includes a small test suite (disable with `-DBUILD_TESTING=OFF`). After
+building, run it from the build directory:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+Two kinds of tests are registered:
+
+- **`unit_tests`** — C++ unit and regression tests for the self-contained
+  pieces (command-line parsing, the vehicle/zone file readers). They link only
+  the solver-free `utilities` and `data` libraries, so they build and run
+  **without a Gurobi/CPLEX license**. Sources live in [`tests/`](tests/).
+- **`toy_regression`** — an end-to-end check that the bundled
+  [toy example](../data/ToyExample/README.md) still solves correctly (3 vehicles
+  serve all 8 requests, none rejected). It runs the compiled solver, so it is
+  only registered when a backend is enabled and requires the corresponding
+  license. Run just this one with `ctest --test-dir build -R toy_regression`.
+
+---
+
 ## Run
 
 ### Quick start — the built-in toy example

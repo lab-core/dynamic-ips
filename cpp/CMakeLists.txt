@@ -211,6 +211,16 @@ INCLUDE_DIRECTORIES(src)
 add_subdirectory(src)
 
 # ---------------------------------------------------------------------------
+# Tests (unit + regression). Disable with -DBUILD_TESTING=OFF.
+# Run them from the build directory with: ctest --output-on-failure
+# ---------------------------------------------------------------------------
+option(BUILD_TESTING "Build the unit and regression tests" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# ---------------------------------------------------------------------------
 # Build configuration summary
 # ---------------------------------------------------------------------------
 message(STATUS "----------------------------------------------------------------")

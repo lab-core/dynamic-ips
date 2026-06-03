@@ -10,4 +10,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(dynamic_ips)
 
+# Enable CTest at the top level so `ctest` works from a root-level build tree
+# (the tests themselves are defined under cpp/tests).
+enable_testing()
+
 add_subdirectory(cpp)
