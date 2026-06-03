@@ -1,4 +1,2 @@
-data/NYC-DARP-Benchmark filter=lfs diff=lfs merge=lfs -text
-data/Riley_Benchmark filter=lfs diff=lfs merge=lfs -text
 data/NYC-DARP-Benchmark/** filter=lfs diff=lfs merge=lfs -text
 data/Riley_Benchmark/** filter=lfs diff=lfs merge=lfs -text
