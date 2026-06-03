@@ -184,29 +184,59 @@ bin/realtime_DARP --help
 ### Required arguments
 
 ```text
---data-dir <path>           Root directory containing the benchmark data
---vehicle-folder <path>     Path to vehicle folder (relative to --data-dir)
 --inst-folder <path>        Path to instance folder (relative to --data-dir)
---num-vehicles <int>        Number of vehicles (must be positive)
---main-algo <int>           Main algorithm (non-negative integer)
---sol-mode <int>            Solution mode (non-negative integer)
+--main-algo <int|name>      Main algorithm: 0..6 or a name
+                            (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG)
+--sol-mode <int|name>       Solution mode: 0..2 or a name (STATIC, DYNAMIC, ANYTIME)
 --paramfile <string>        Parameter file name (e.g. AnyParameters or BatchParameters)
 --scenario <string>         Scenario name (must match an entry in the parameter JSON)
---output-dir <string>       Root directory for output files
---initial-state <int>       Initial state (non-negative integer)
 ```
 
-The values accepted by `--main-algo` and `--sol-mode` (e.g. which integer
-selects B-CG, A-CG, greedy, MIP, or offline) are documented in the
+`--main-algo` and `--sol-mode` accept either the integer code (backward
+compatible) or the case-insensitive enum name. The mapping from these settings
+to the B-CG / A-CG / greedy / MIP / offline workflows is documented in the
 [Parameter reference](parameters.md).
+
+### Optional arguments
+
+```text
+--data-dir <path>           Root data directory (default: current directory)
+--vehicle-folder <path>     Vehicle folder, relative to --data-dir (default: vehicles)
+--num-vehicles <int>        Fleet size; selects vehicles_<N>_4.txt in the folder.
+                            Omit to read the fleet from <folder>/vehicles.txt
+--vehicle-capacity <int>    Vehicle capacity (default: the per-vehicle value in the file)
+--initial-state <int>       Fleet state at the start of the simulation (default: 0):
+                              0 = fresh start (vehicles idle at their depots)
+                              1 = warm start (precomputed state + onboard passengers)
+                              2 = resume from a saved mid-simulation state
+--instance-name <string>    Specific instance (default: read instance list from file)
+--output-dir <path>         Output root (default: next to the instance data;
+                            or set DARP_OUTPUT_DIR)
+```
+
+**Fleet size and capacity come from the vehicle file, not its name.** With
+`--num-vehicles N`, the file `vehicles_<N>_4.txt` is selected (the benchmark
+convention for choosing a fleet size). When `--num-vehicles` is omitted, the
+solver reads `<vehicle-folder>/vehicles.txt` and takes the fleet size from its
+row count. Likewise, `--vehicle-capacity` overrides the capacity only when given;
+otherwise the per-vehicle capacity column of the file is used as-is.
+
+**`--initial-state`** selects how the fleet is initialized:
+
+| Value | Meaning |
+|---|---|
+| `0` | **Fresh start** — vehicles begin idle at their depots with no passengers. |
+| `1` | **Warm start** — load a precomputed initial fleet state and onboard passengers from the general `ONBOARDS_<file>` in the vehicle folder (e.g. the `vehicles_warmStart_11` sets). |
+| `2` | **Resume** — continue from a saved mid-simulation state, using the instance-specific `VEHICLES_`/`ONBOARDS_`/`WaitRequests_` files. |
 
 ### Example — run a specific instance
 
 ```bash
+# fleet size from the instance, algo/mode by name
 bin/realtime_DARP --data-dir ../data/NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 \
-  --inst-folder Instances_4h-11 --instance-name 20150917_11-240m --num-vehicles 1450 \
-  --vehicle-capacity 4 --main-algo 2 --sol-mode 1 --paramfile AnyParameters \
-  --scenario Basis_warm_keep --save-scratch 0 --initial-state 1
+  --inst-folder Instances_4h-11 --instance-name 20150917_11-240m \
+  --main-algo RT_CG --sol-mode DYNAMIC --paramfile AnyParameters \
+  --scenario Basis_warm_keep --initial-state 1
 ```
 
 > Run `bin/realtime_DARP --help` for the complete and authoritative list of

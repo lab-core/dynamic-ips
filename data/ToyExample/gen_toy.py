@@ -85,7 +85,8 @@ def write_vehicles() -> None:
              "depart_ID", "sink_ID", "zone_ID", "", "VEHICLES_INFO"]
     for v in VEHICLES:
         lines.append(" {0} {1} {2} {3} {4:4d} {5:4d} {6:3d}".format(*v))
-    _write(os.path.join("vehicles", f"vehicles_{len(VEHICLES)}_4.txt"), lines)
+    # The fleet size and capacity are read from the file contents, not the name.
+    _write(os.path.join("vehicles", "vehicles.txt"), lines)
 
 
 def write_instance() -> None:

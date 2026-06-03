@@ -22,6 +22,11 @@ public:
     // Read the instance file and store content in an instance object
     static PInstance readInstance(const std::string& strInstanceFile);
 
+    // Count the vehicles listed in a vehicle file (rows under VEHICLES_INFO).
+    // Used to derive the fleet size from the file content when --num-vehicles
+    // is not provided.
+    static int countVehicles(const std::string& strVehicleFile);
+
     // Read the vehicle file
     static void readVehiclesData(const std::string& strTripsFile, const PInstance &pInstance);
     static void readVehiclesDataF(const std::string& strTripsFile, const PInstance &pInstance, vector2D<PNode> &routeNodes);

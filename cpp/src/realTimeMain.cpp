@@ -33,7 +33,6 @@ int main(int argc, char** argv) {
 
     // Set up paths and constants
     std::string dataDir = config->dataDir_ + "/";
-    int numVehicles = config->numVehicles_;
 
     // Prepare instance names
     std::vector<std::string> instNames;
@@ -76,6 +75,18 @@ int main(int argc, char** argv) {
                 std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
                 Request::requestCount_ = 0;
                 PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+
+                // Resolve the fleet size. With --num-vehicles, the size-specific
+                // file "vehicles_<N>_4" was already selected. Without it, read the
+                // fleet straight from "<vehicle-folder>/vehicles.txt": its row
+                // count is the fleet size and its columns hold the capacities, so
+                // neither value is inferred from the file name.
+                int numVehicles = config->numVehicles_;
+                if (numVehicles <= 0) {
+                    config->vehicleFileName_ = "vehicles";
+                    inputPaths.setVehicleFiles(config->vehicleFolder_, config->vehicleFileName_);
+                    numVehicles = ReadWrite::countVehicles(inputPaths.getInputVehicleFileGeneral());
+                }
                 if (config->initialState_ < 2)
                     mainInst->nbVehicles_ = numVehicles;
 
@@ -109,8 +120,11 @@ int main(int argc, char** argv) {
 
                 ReadWrite::readDatafiles(inputPaths, mainInst, config->outputDir_,
                     config->scenario_, config->initialState_);
-                for (auto & vehicleObj : mainInst->vehicles_)
-                    vehicleObj->capacity_ = config->vehicleCapacity_;
+                // Override the per-vehicle capacity only when --vehicle-capacity
+                // was provided; otherwise keep the capacity read from the file.
+                if (config->vehicleCapacity_ > 0)
+                    for (auto & vehicleObj : mainInst->vehicles_)
+                        vehicleObj->capacity_ = config->vehicleCapacity_;
 
                 // Create solver and run appropriate algorithm
                 std::unique_ptr<BaseSolver> instanceSolver;

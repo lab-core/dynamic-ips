@@ -30,7 +30,7 @@ metric, and every stop/zone referenced by a request or vehicle exists.
 |---|---|
 | `edge_time_matrix.txt` | 12×12 travel-time matrix (`nbLocations = 12`) |
 | `Zones.txt` | zone id → center stop id |
-| `vehicles/vehicles_3_4.txt` | 3 vehicles, capacity 4 (`vehicles_<N>_4`) |
+| `vehicles/vehicles.txt` | 3 vehicles, capacity 4 (fleet size and capacity read from the file) |
 | `Instances_toy/toy/INSTANCE_toy.txt` | instance header (counts, sim start) |
 | `Instances_toy/toy/TRIP_toy.txt` | the 8 requests |
 | `ToyParameters.json` | solver parameters (scenario `toy`) |
@@ -48,14 +48,13 @@ to produce a different toy.
 
 ## Running explicitly
 
-The no-arg launch above is equivalent to:
+The no-arg launch above is equivalent to the following (fleet size and capacity
+are left to default from the instance and vehicle file):
 
 ```bash
 cpp/bin/realtime_DARP \
-  --data-dir data/ToyExample --vehicle-folder vehicles \
-  --inst-folder Instances_toy --instance-name toy \
-  --num-vehicles 3 --vehicle-capacity 4 \
-  --main-algo 2 --sol-mode 1 \
+  --data-dir data/ToyExample --inst-folder Instances_toy --instance-name toy \
+  --main-algo RT_CG --sol-mode DYNAMIC \
   --paramfile data/ToyExample/ToyParameters --scenario toy \
-  --initial-state 0 --output-dir data/ToyExample/runs
+  --output-dir data/ToyExample/runs
 ```

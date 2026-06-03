@@ -110,6 +110,11 @@ public:
     // this function defines the path to input data files
     void initializeInputs(const std::string& instFolder, const std::string& instanceName);
 
+    // (re)build the paths to the general vehicle and onboards files. Used when
+    // the fleet size — and therefore the file name "vehicles_<N>_4" — is only
+    // known after the instance has been read (i.e. --num-vehicles was omitted).
+    void setVehicleFiles(const std::string& vehicleFolder, const std::string& vehicleFileName);
+
     // this function defines the path to outputs
     void initializeOutputs(const std::string &algorithm, const std::string &solutionMode,
         const std::string &outputDir, int nbVehicles, const std::string& scenario);

@@ -73,6 +73,34 @@ PInstance ReadWrite::readInstance(const std::string& strInstanceFile) {
 }
 
 //************************************************************************
+// Count the vehicles in a vehicle file (rows under VEHICLES_INFO)
+//************************************************************************
+int ReadWrite::countVehicles(const std::string& strVehicleFile) {
+    std::fstream file;
+    file.open(strVehicleFile, std::fstream::in);
+    if (!file.is_open()) {
+        std::cout << "While trying to read the file " << strVehicleFile << std::endl;
+        std::cout << "The input file was not opened properly!" << std::endl;
+        throw myTools::myException("The input file was not opened properly!", __LINE__);
+    }
+
+    std::string title;
+    int count = 0;
+    while (file.good()) {
+        readUntilOneOfTwoChar(file, '\n', '\r', title);
+        if (strEndWith(title, "VEHICLES_INFO")) {
+            int vehicleID, capacity, departID, sinkID, zoneID;
+            float departTime, endTime;
+            // Count complete rows until the section / file ends.
+            while (file >> vehicleID >> capacity >> departTime >> endTime
+                        >> departID >> sinkID >> zoneID)
+                ++count;
+        }
+    }
+    return count;
+}
+
+//************************************************************************
 // Read the vehicle file
 //************************************************************************
 void ReadWrite::readVehiclesData(const std::string& strTripsFile, const PInstance &pInstance) {

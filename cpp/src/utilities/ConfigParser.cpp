@@ -3,23 +3,73 @@
 //
 
 #include "ConfigParser.h"
+#include "utilities/Types.h"
 #include <sys/stat.h>
+#include <array>
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <algorithm>
 
 // ProgramConfig implementation
-ProgramConfig::ProgramConfig() : numVehicles_(0), mainAlgo_(-1), solMode_(-1), initialState_(-1) {}
+// numVehicles_ / vehicleCapacity_ default to -1, meaning "not provided on the
+// command line — fall back to the instance / vehicle-file values".
+ProgramConfig::ProgramConfig()
+    : numVehicles_(-1), vehicleCapacity_(-1), mainAlgo_(-1), solMode_(-1),
+      initialState_(-1) {}
+
+namespace {
+/// @brief Uppercase a copy of a string and strip surrounding whitespace.
+std::string normalizeToken(const std::string& text) {
+    std::string out;
+    for (char c : text)
+        if (!std::isspace(static_cast<unsigned char>(c)))
+            out.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
+    return out;
+}
+
+/// @brief Parse a CLI value that may be either an integer index or one of the
+/// given enum names (case-insensitive). Numbers keep backward compatibility.
+///
+/// @param value Raw command-line value (e.g. "2" or "RT_CG").
+/// @param names Canonical enum names, indexed by enum value.
+/// @return The matching enum index, or -1 if the value is unrecognized.
+template <std::size_t N>
+int parseEnumArg(const std::string& value, const std::array<const char*, N>& names) {
+    try {
+        std::size_t pos = 0;
+        const int num = std::stoi(value, &pos);
+        if (pos == value.size())  // the whole token was numeric
+            return (num >= 0 && static_cast<std::size_t>(num) < N) ? num : -1;
+    } catch (const std::exception&) {
+        // Not an integer — fall through to name matching.
+    }
+    const std::string token = normalizeToken(value);
+    for (std::size_t i = 0; i < N; ++i)
+        if (normalizeToken(names[i]) == token)
+            return static_cast<int>(i);
+    return -1;
+}
+}  // namespace
 
 void ProgramConfig::printConfig() const {
     std::cout << "Configuration:\n";
+    const char* algoName = (mainAlgo_ >= 0 &&
+        static_cast<std::size_t>(mainAlgo_) < enum_strings::mainAlgorithmNames.size())
+        ? enum_strings::mainAlgorithmNames[mainAlgo_] : "UNKNOWN";
+    const char* modeName = (solMode_ >= 0 &&
+        static_cast<std::size_t>(solMode_) < enum_strings::solutionModeNames.size())
+        ? enum_strings::solutionModeNames[solMode_] : "UNKNOWN";
+
     std::cout << "  Data directory: " << dataDir_ << "\n";
     std::cout << "  Vehicle folder: " << vehicleFolder_ << "\n";
     std::cout << "  Instance folder: " << instFolder_ << "\n";
-    std::cout << "  Number of vehicles: " << numVehicles_ << "\n";
-    std::cout << "  Vehicle capacity: " << vehicleCapacity_ << "\n";
-    std::cout << "  Main algorithm: " << mainAlgo_ << "\n";
-    std::cout << "  Solution mode: " << solMode_ << "\n";
+    std::cout << "  Number of vehicles: "
+              << (numVehicles_ < 0 ? "(from vehicle file)" : std::to_string(numVehicles_)) << "\n";
+    std::cout << "  Vehicle capacity: "
+              << (vehicleCapacity_ < 0 ? "(from vehicle file)" : std::to_string(vehicleCapacity_)) << "\n";
+    std::cout << "  Main algorithm: " << mainAlgo_ << " (" << algoName << ")\n";
+    std::cout << "  Solution mode: " << solMode_ << " (" << modeName << ")\n";
     std::cout << "  Parameter file: " << paramFile_ << "\n";
     std::cout << "  Scenario name: " << scenario_ << "\n";
     std::cout << "  Output directory: " << (outputDir_.empty() ? "(local — next to instance data)" : outputDir_) << "\n";
@@ -39,42 +89,61 @@ void ProgramConfig::printConfig() const {
 
 // ConfigParser implementation
 void ConfigParser::printUsage(const char* programName) {
-    std::cout << "Usage: " << programName << " <options>\n\n"
+    std::cout << "Usage: " << programName << " <options>\n"
+              << "Running with no options solves the bundled toy example "
+                 "(data/ToyExample).\n\n"
               << "Required arguments:\n"
-              << "  --data-dir <path>           Path to data directory\n"
-              << "  --vehicle-folder <path>     Path to vehicle folder\n"
               << "  --inst-folder <path>        Path to instance folder\n"
-              << "  --num-vehicles <int>        Number of vehicles (must be positive)\n"
-              << "  --vehicle-capacity <int>    Vehicle capacity (must be positive)\n"
-              << "  --main-algo <int>           Main algorithm (non-negative integer)\n"
-              << "  --sol-mode <int>            Solution mode (non-negative integer)\n"
+              << "  --main-algo <int|name>      Main algorithm: 0..6 or a name\n"
+              << "                              (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG)\n"
+              << "  --sol-mode <int|name>       Solution mode: 0..2 or a name\n"
+              << "                              (STATIC, DYNAMIC, ANYTIME)\n"
               << "  --paramfile <string>        Parameter file name\n"
-              << "  --scenario <string>         Scenario name\n"
-              << "  --initial-state <int>       Initial state (non-negative integer)\n\n";
+              << "  --scenario <string>         Scenario name\n\n";
 
     std::cout << "Optional arguments:\n"
+              << "  --data-dir <path>           Root data directory (default: current directory)\n"
+              << "  --vehicle-folder <path>     Vehicle folder (default: vehicles)\n"
+              << "  --num-vehicles <int>        Fleet size; selects vehicles_<N>_4.txt.\n"
+              << "                              Omit to read the fleet from <folder>/vehicles.txt\n"
+              << "  --vehicle-capacity <int>    Vehicle capacity (default: the per-vehicle capacity in the file)\n"
+              << "  --initial-state <int>       Fleet state at the start of the simulation (default: 0):\n"
+              << "                                0 = fresh start: vehicles idle at their depots, no passengers\n"
+              << "                                1 = warm start: load the precomputed fleet state and onboard\n"
+              << "                                    passengers from the general ONBOARDS_<file> in the folder\n"
+              << "                                2 = resume: continue from a saved mid-simulation state\n"
+              << "                                    (instance-specific VEHICLES_/ONBOARDS_/WaitRequests_ files)\n"
               << "  --instance-name <string>    Specific instance name (if not provided, reads from file)\n"
               << "  --output-dir <path>         Root directory for output files (default: next to instance data)\n"
               << "                              Can also be set via the DARP_OUTPUT_DIR environment variable\n"
               << "  --help, -h                  Show this help message\n\n";
 
     std::cout << "Examples:\n"
-              << "  # Use all instances from file:\n"
+              << "  # Minimal run (algo/mode by name, fleet size from the instance):\n"
+              << "  " << programName << " --inst-folder ./instances --instance-name test \\\n"
+              << "                    --main-algo RT_CG --sol-mode DYNAMIC \\\n"
+              << "                    --paramfile AnyParameters --scenario test\n\n"
+              << "  # Explicit fleet, numeric algo/mode (backward compatible), HPC output:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
-              << "                    --num-vehicles 4 --vehicle-capacity 4 --main-algo 1 --sol-mode 0 \\\n"
-              << "                    --paramfile AnyParameters --scenario test --initial-state 0\n\n"
-              << "  # Write results to an HPC scratch directory:\n"
-              << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
-              << "                    --instance-name test.txt --num-vehicles 4 --main-algo 1 --sol-mode 0\\\n"
+              << "                    --instance-name test --num-vehicles 4 --vehicle-capacity 4 \\\n"
+              << "                    --main-algo 2 --sol-mode 1 \\\n"
               << "                    --paramfile AnyParameters --scenario test --initial-state 1 \\\n"
               << "                    --output-dir /scratch/myuser/dynamic-ips\n";
 }
 
 
 bool ConfigParser::validateConfig(const PConfig& config) {
-    if (config->numVehicles_ <= 0) {
+    // -1 is the "auto" sentinel (derive from the instance / vehicle file); any
+    // other non-positive value is an error.
+    if (config->numVehicles_ != -1 && config->numVehicles_ <= 0) {
         std::cerr << "Error: Number of vehicles must be positive (got "
                   << config->numVehicles_ << ").\n";
+        return false;
+    }
+
+    if (config->vehicleCapacity_ != -1 && config->vehicleCapacity_ <= 0) {
+        std::cerr << "Error: Vehicle capacity must be positive (got "
+                  << config->vehicleCapacity_ << ").\n";
         return false;
     }
 
@@ -154,15 +223,13 @@ bool ConfigParser::loadToyDefaults(const PConfig& config) {
     config->vehicleFolder_ = "vehicles";
     config->instFolder_ = "Instances_toy";
     config->instanceName_ = "toy";
-    config->numVehicles_ = 3;
-    config->vehicleCapacity_ = 4;
+    config->numVehicles_ = -1;     // take the fleet size from the instance
+    config->vehicleCapacity_ = -1;  // take the capacity from the vehicle file
     config->mainAlgo_ = 2;   // RT_CG
     config->solMode_ = 1;    // DYNAMIC (B-CG / BatchSolver)
     config->initialState_ = 0;
     config->paramFile_ = toyDir + "/ToyParameters";
     config->scenario_ = "toy";
-    config->vehicleFileName_ =
-        "vehicles_" + std::to_string(config->numVehicles_) + "_4";
     config->outputDir_ = toyDir + "/runs";
 
     std::cout << "No arguments provided — running the built-in toy example from "
@@ -203,8 +270,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
 
     // Check for required arguments
     std::vector<std::string> required = {
-        "--vehicle-folder", "--inst-folder", "--num-vehicles", "--main-algo", "--sol-mode",
-        "--paramfile", "--scenario", "--initial-state"
+        "--inst-folder", "--main-algo", "--sol-mode", "--paramfile", "--scenario"
     };
 
     for (const auto& req : required) {
@@ -217,16 +283,36 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
     // Parse and validate values
     try {
         config->dataDir_ = args["--data-dir"];
-        config->vehicleFolder_ = args["--vehicle-folder"];
+        // --vehicle-folder defaults to "vehicles"
+        config->vehicleFolder_ = args.count("--vehicle-folder") ? args["--vehicle-folder"] : "vehicles";
         config->instFolder_ = args["--inst-folder"];
-        config->numVehicles_ = std::stoi(args["--num-vehicles"]);
-        config->vehicleCapacity_ = std::stoi(args["--vehicle-capacity"]);
-        config->mainAlgo_ = std::stoi(args["--main-algo"]);
-        config->solMode_ = std::stoi(args["--sol-mode"]);
-        config->initialState_ = std::stoi(args["--initial-state"]);
+        // --num-vehicles / --vehicle-capacity default to -1 ("auto"): the fleet
+        // size is taken from the instance and the capacity from the vehicle file.
+        config->numVehicles_ = args.count("--num-vehicles") ? std::stoi(args["--num-vehicles"]) : -1;
+        config->vehicleCapacity_ = args.count("--vehicle-capacity") ? std::stoi(args["--vehicle-capacity"]) : -1;
+
+        // --main-algo / --sol-mode accept either an integer or an enum name.
+        config->mainAlgo_ = parseEnumArg(args["--main-algo"], enum_strings::mainAlgorithmNames);
+        if (config->mainAlgo_ < 0) {
+            std::cerr << "Error: Unknown --main-algo value '" << args["--main-algo"]
+                      << "'. Use 0..6 or a name (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG).\n";
+            return false;
+        }
+        config->solMode_ = parseEnumArg(args["--sol-mode"], enum_strings::solutionModeNames);
+        if (config->solMode_ < 0) {
+            std::cerr << "Error: Unknown --sol-mode value '" << args["--sol-mode"]
+                      << "'. Use 0..2 or a name (STATIC, DYNAMIC, ANYTIME).\n";
+            return false;
+        }
+
+        // --initial-state defaults to 0 (fresh start).
+        config->initialState_ = args.count("--initial-state") ? std::stoi(args["--initial-state"]) : 0;
         config->paramFile_ = args["--paramfile"];
         config->scenario_ = args["--scenario"];
-        config->vehicleFileName_ = "vehicles_" + std::to_string(config->numVehicles_) + "_4";
+        // The size-specific vehicle file name can only be built now if the fleet
+        // size was given; otherwise it is resolved once the instance is read.
+        if (config->numVehicles_ > 0)
+            config->vehicleFileName_ = "vehicles_" + std::to_string(config->numVehicles_) + "_4";
 
         // Optional instance name
         if (args.find("--instance-name") != args.end()) {
