@@ -50,9 +50,10 @@ jobs:
 
       - name: Configure (no solver) — Windows
         if: runner.os == 'Windows'
-        run: >
-          cmake -S . -B build -DSOLVER=NONE
-          -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+        shell: pwsh
+        # Quote the whole -D argument so PowerShell expands $env:VCPKG_INSTALLATION_ROOT
+        # (an unquoted value is passed to CMake literally and the toolchain is not found).
+        run: cmake -S . -B build -DSOLVER=NONE "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build unit tests
         run: cmake --build build --config Release --target unit_tests
