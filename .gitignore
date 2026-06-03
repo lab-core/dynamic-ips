@@ -1,7 +1,6 @@
 cpp/bin/*
-cpp/cmake-build-debug/*
 cpp/lib/*
-cpp/cmake-build-release/*
+**/cmake-build-*/
 .DS_Store
 **/.DS_Store
 *.csv

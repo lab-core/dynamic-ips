@@ -87,8 +87,37 @@ cpp/
 - **C++17** (or newer)
 - **GCC / G++** with C++17 support (e.g. GCC 9+ recommended)
 - **CMake** (≥ 3.16 recommended)
-- **Eigen3** (found via `FindEigen3.cmake` or system installation)
+- **Eigen3** (header-only linear-algebra library)
 - **Boost** (development headers + libraries)
+
+#### Installing Eigen3 and Boost
+
+Eigen3 is header-only, so installing it system-wide is enough:
+
+```bash
+# macOS (Homebrew)
+brew install eigen boost
+
+# Debian / Ubuntu
+sudo apt-get install libeigen3-dev libboost-all-dev
+```
+
+CMake locates Eigen3 in this order (see `cpp/CMakeLists.txt`):
+
+1. `find_package(Eigen3)` — finds a system-wide install automatically (e.g. the
+   Homebrew/apt packages above; on macOS Homebrew this is
+   `/usr/local/include/eigen3` or `/opt/homebrew/include/eigen3`).
+2. `-DEIGEN_DIR=/path/to/eigen-3.x.x` passed at configure time.
+3. The `EIGEN_DIR` environment variable.
+
+If you see `Eigen3 not found` during configuration, install the package above or
+point CMake at the headers explicitly:
+
+```bash
+cmake -S . -B build -DEIGEN_DIR=/path/to/eigen-3.x.x
+# or
+export EIGEN_DIR=/path/to/eigen-3.x.x
+```
 
 ### Solver backend (choose one)
 - **Gurobi Optimizer** (license required) — preferred, and the backend used in
@@ -103,27 +132,24 @@ cpp/
 
 ## Build
 
-### 1) Clone
+### Configure & compile (Release)
 
-```bash
-git clone https://github.com/lab-core/dynamic-ips.git
-cd dynamic-ips
-```
+Build from the `cpp/` directory (the commands below assume this). You can also
+build from the repository root — the top-level `CMakeLists.txt` forwards to
+`cpp/` — in which case the executable is still written to `cpp/bin/`.
 
-### 2) Configure & compile (Release)
-
-Build from the `cpp/` directory (adapt flags to match your CMake
-options/targets).
+The solver backend is selected with `-DSOLVER=<GUROBI|CPLEX>` (defaults to
+`GUROBI`).
 
 #### Build with Gurobi (preferred)
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_GUROBI=ON -DUSE_CPLEX=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSOLVER=GUROBI
 cmake --build build -j
 ```
 
 #### Build with CPLEX
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_GUROBI=OFF -DUSE_CPLEX=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSOLVER=CPLEX
 cmake --build build -j
 ```
 
