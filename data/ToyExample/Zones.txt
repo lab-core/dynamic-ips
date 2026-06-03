@@ -1,0 +1,10 @@
+COLUMNS
+
+Zone_ID
+Location_ID
+
+ZONE_INFO
+  1    5
+  2    6
+  3    8
+  4   11

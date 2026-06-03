@@ -15,6 +15,9 @@ cpp/.vscode/settings.json
 cpp/.vscode/tasks.json
 Outputs/
 Outputs_1/*
+# Toy example run outputs (keep the folder, ignore generated runs)
+data/ToyExample/runs/*
+!data/ToyExample/runs/.gitkeep
 dataset/*
 cpp/build-gurobi/*
 cpp/build-cplex/*

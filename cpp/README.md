@@ -157,8 +157,25 @@ cmake --build build -j
 
 ## Run
 
-The executable is driven entirely by **command-line options** (no positional
-arguments). Run with `--help` (or `-h`) to see the full usage message:
+### Quick start — the built-in toy example
+
+Running the executable with **no arguments** solves a tiny bundled instance
+([`data/ToyExample`](../data/ToyExample/README.md)) with the B-CG workflow. This
+is the fastest way to smoke-test a build:
+
+```bash
+# from the repository root (or cpp/, or the build/bin directory)
+cpp/bin/realtime_DARP
+```
+
+It auto-locates `data/ToyExample`, solves 8 requests with 3 vehicles, and writes
+outputs to `data/ToyExample/runs/` (git-ignored). For real experiments, pass
+options as below.
+
+### Running your own instances
+
+The executable is otherwise driven entirely by **command-line options** (no
+positional arguments). Run with `--help` (or `-h`) to see the full usage message:
 
 ```bash
 bin/realtime_DARP --help

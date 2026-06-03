@@ -1,0 +1,17 @@
+{
+  "scenarios": {
+    "toy": {
+      "Wait_W1": 1,
+      "Ride_W2": 0.5,
+      "informTimeLimit": 60,
+      "pickupDeviationWindow": 60,
+      "epochLength": 30,
+      "committedTime": 30,
+      "NumIter": 40,
+      "isDropPickPossible": 0,
+      "Dynamic_Pricing": 1,
+      "nbPick": 4,
+      "nbThreads": 4
+    }
+  }
+}

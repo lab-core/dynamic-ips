@@ -1,0 +1,14 @@
+COLUMNS
+
+vehicle_ID
+capacity
+depart_Time
+end_Time
+depart_ID
+sink_ID
+zone_ID
+
+VEHICLES_INFO
+ 0 4 0 90000    0    0   1
+ 1 4 0 90000    3    3   2
+ 2 4 0 90000    8    8   3

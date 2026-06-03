@@ -50,6 +50,14 @@ public:
 private:
     // Validate numeric arguments
     static bool validateConfig(const PConfig& config);
+
+    // Populate the configuration with the built-in ToyExample defaults, used
+    // when the program is launched with no command-line arguments. Locates the
+    // data/ToyExample folder relative to the current working directory.
+    //
+    // @param config Configuration object to fill in.
+    // @return true if the toy data folder was found and defaults were set.
+    static bool loadToyDefaults(const PConfig& config);
 };
 
 

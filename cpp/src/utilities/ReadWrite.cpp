@@ -670,13 +670,10 @@ void ReadWrite::readZones(const string &strZoneFile, const PInstance &pInstance)
         readUntilOneOfTwoChar(file, '\n', '\r', title);
         if (strEndWith(title, "ZONE_INFO")) {
             pInstance->nbZones_ = 0;
-            while (!file.eof()) {
-                // attributes for reading the trip requests file
-                int zoneID = -1, centerLocationID = -1;
-
-                file >> zoneID;
-                file >> centerLocationID;
-
+            // Guard the extraction so a failed read at end-of-file does not
+            // insert a spurious zone with an invalid (out-of-range) center.
+            int zoneID = -1, centerLocationID = -1;
+            while (file >> zoneID >> centerLocationID) {
                 pInstance->nbZones_++;
                 pInstance->zones_.insert(std::pair<int , PZone>(zoneID, std::make_shared<Zone>(zoneID, centerLocationID)));
                 for (auto & item : excludeIDs) {

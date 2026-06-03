@@ -57,8 +57,11 @@ dynamic-ips/
 ├── cpp/                    C++ column-generation solver
 ├── python/                 Data-preparation pipeline and result visualization
 ├── computational_scripts/  Experiment generation and SLURM submission
-└── data/                   Benchmark instance sets (Git LFS)
+└── data/                   Benchmark instance sets (Git LFS) + ToyExample
 ```
+
+`data/ToyExample/` is a tiny, self-contained instance that the solver runs by
+default when launched with no arguments — handy for smoke-testing a build.
 
 See the subfolder READMEs for full details:
 
@@ -71,6 +74,7 @@ See the subfolder READMEs for full details:
 
 | Goal | Where to look |
 |------|---------------|
+| Smoke-test a build on a tiny instance | [Toy example](data/ToyExample/README.md) — run `cpp/bin/realtime_DARP` with no args |
 | Build and run the solver | [C++ solver](cpp/README.md) |
 | Generate / run experiment commands (local or SLURM) | [Reproducibility guide](computational_scripts/README_REPRODUCIBILITY.md) |
 | Configure solver behavior (parameters) | [Parameter reference](cpp/parameters.md) |

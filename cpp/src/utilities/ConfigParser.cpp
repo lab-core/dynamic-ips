@@ -3,6 +3,7 @@
 //
 
 #include "ConfigParser.h"
+#include <sys/stat.h>
 #include <iostream>
 #include <map>
 #include <algorithm>
@@ -119,10 +120,60 @@ bool ConfigParser::validateConfig(const PConfig& config) {
     return true;
 }
 
+namespace {
+/// @brief Check whether a path exists and is a directory.
+bool isDirectory(const std::string& path) {
+    struct stat info{};
+    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+}
+}  // namespace
+
+bool ConfigParser::loadToyDefaults(const PConfig& config) {
+    // The binary may be launched from the repository root, from cpp/, or from
+    // the build/bin directory, so probe a few relative locations for the toy
+    // data folder and use the first that exists.
+    static const std::vector<std::string> kCandidates = {
+        "data/ToyExample", "../data/ToyExample",
+        "../../data/ToyExample", "../../../data/ToyExample"};
+
+    std::string toyDir;
+    for (const auto& candidate : kCandidates) {
+        if (isDirectory(candidate)) {
+            toyDir = candidate;
+            break;
+        }
+    }
+    if (toyDir.empty()) {
+        std::cerr << "Error: No arguments provided and the default toy example "
+                     "(data/ToyExample) could not be located from the current "
+                     "directory.\n";
+        return false;
+    }
+
+    config->dataDir_ = toyDir;
+    config->vehicleFolder_ = "vehicles";
+    config->instFolder_ = "Instances_toy";
+    config->instanceName_ = "toy";
+    config->numVehicles_ = 3;
+    config->vehicleCapacity_ = 4;
+    config->mainAlgo_ = 2;   // RT_CG
+    config->solMode_ = 1;    // DYNAMIC (B-CG / BatchSolver)
+    config->initialState_ = 0;
+    config->paramFile_ = toyDir + "/ToyParameters";
+    config->scenario_ = "toy";
+    config->vehicleFileName_ =
+        "vehicles_" + std::to_string(config->numVehicles_) + "_4";
+    config->outputDir_ = toyDir + "/runs";
+
+    std::cout << "No arguments provided — running the built-in toy example from "
+              << toyDir << ".\n"
+              << "Pass --help to see how to run your own instances.\n\n";
+    return true;
+}
+
 bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
     if (argc < 2) {
-        std::cerr << "Error: No arguments provided.\n";
-        return false;
+        return loadToyDefaults(config);
     }
 
     std::map<std::string, std::string> args;
