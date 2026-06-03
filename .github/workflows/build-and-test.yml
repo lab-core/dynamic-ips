@@ -1,0 +1,61 @@
+name: build-and-test
+
+# Build the solver-free libraries (SOLVER=NONE — no Gurobi/CPLEX, no license)
+# and run the unit/regression test suite on Linux, macOS, and Windows.
+
+on:
+  push:
+    branches: [main, cleaning]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # The benchmark data is in Git LFS and is not needed to build or test
+        # (the toy example is plain text), so skip LFS to save bandwidth.
+        with:
+          lfs: false
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libeigen3-dev libboost-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install eigen boost
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: vcpkg install eigen3 boost-dynamic-bitset --triplet x64-windows
+
+      - name: Configure (no solver) — Linux/macOS
+        if: runner.os != 'Windows'
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSOLVER=NONE
+
+      - name: Configure (no solver) — Windows
+        if: runner.os == 'Windows'
+        run: >
+          cmake -S . -B build -DSOLVER=NONE
+          -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build unit tests
+        run: cmake --build build --config Release --target unit_tests
+
+      - name: Run tests
+        run: ctest --test-dir build -C Release --output-on-failure

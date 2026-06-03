@@ -138,8 +138,9 @@ Build from the `cpp/` directory (the commands below assume this). You can also
 build from the repository root — the top-level `CMakeLists.txt` forwards to
 `cpp/` — in which case the executable is still written to `cpp/bin/`.
 
-The solver backend is selected with `-DSOLVER=<GUROBI|CPLEX>` (defaults to
-`GUROBI`).
+The solver backend is selected with `-DSOLVER=<GUROBI|CPLEX|NONE>` (defaults to
+`GUROBI`). `NONE` builds the solver-free libraries and tests only (no backend,
+no license) — see [Tests](#tests).
 
 #### Build with Gurobi (preferred)
 ```bash
@@ -164,6 +165,15 @@ building, run it from the build directory:
 ctest --test-dir build --output-on-failure
 ```
 
+The unit tests need no solver backend, so you can build and run them without a
+Gurobi/CPLEX license by configuring with `-DSOLVER=NONE` (this is what CI does):
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSOLVER=NONE
+cmake --build build --target unit_tests
+ctest --test-dir build -R unit_tests --output-on-failure
+```
+
 Two kinds of tests are registered:
 
 - **`unit_tests`** — C++ unit and regression tests for the self-contained
@@ -175,6 +185,10 @@ Two kinds of tests are registered:
   serve all 8 requests, none rejected). It runs the compiled solver, so it is
   only registered when a backend is enabled and requires the corresponding
   license. Run just this one with `ctest --test-dir build -R toy_regression`.
+
+The `unit_tests` build and run on every push / pull request via the
+[`build-and-test`](../.github/workflows/build-and-test.yml) GitHub Actions
+workflow, on Linux, macOS, and Windows (with `SOLVER=NONE`).
 
 ---
 

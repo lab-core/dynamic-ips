@@ -3,8 +3,8 @@
 //
 
 #include "InputPaths.h"
-#include <sys/stat.h>
 #include "utilities/MyTools.h"
+#include "utilities/PlatformCompat.h"
 #include <utility>
 
 //-----------------------------------------------------------------------------
@@ -92,14 +92,13 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     if (!outputDir.empty()) {
         // Write to the user-specified scratch/HPC directory
         const std::string instFolder = outputDir + "/" + instanceFolder_;
-        struct stat buffer{};
-        if (!(stat(instFolder.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
-            if (mkdir(instFolder.c_str(), 0777) == -1)
+        if (!platform::pathIsDirectory(instFolder)) {
+            if (!platform::makeDirectory(instFolder))
                 throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
         }
         parentDir = instFolder + "/" + instanceName_;
-        if (!(stat(parentDir.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))) {
-            if (mkdir(parentDir.c_str(), 0777) == -1)
+        if (!platform::pathIsDirectory(parentDir)) {
+            if (!platform::makeDirectory(parentDir))
                 throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
         }
     } else {
@@ -108,7 +107,7 @@ void InputPaths::initializeOutputs(const std::string &algorithm, const std::stri
     }
 
     const std::string folder_name = parentDir + "/" + runTag;
-    if (mkdir(folder_name.c_str(), 0777) != 0)
+    if (!platform::makeDirectory(folder_name))
         throw myTools::myException("Output directory can not be created!!!", __FILE__, __LINE__);
     outputDir_ = folder_name + "/";
     prefix_ = solutionMode[0];
@@ -147,8 +146,7 @@ void InputPaths::makeInstanceOutput(const std::string& instNum) {
     instanceNameOut_ = instanceName_ + "_" + instNum;
     std::string folder_name = dataDir_ + instanceFolder_+"_New";
     std::string outputDir = folder_name + "/" + instanceNameOut_ + "/";
-    char *path = const_cast<char *>(outputDir.c_str());
-    if (mkdir(path, 0777) != 0){
+    if (!platform::makeDirectory(outputDir)){
         std::cout << "Output directory can not be created!!!" << std::endl;
         throw myTools::myException("Output directory can not be created!!!", __LINE__);
     }

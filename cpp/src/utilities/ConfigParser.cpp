@@ -4,7 +4,7 @@
 
 #include "ConfigParser.h"
 #include "utilities/Types.h"
-#include <sys/stat.h>
+#include "utilities/PlatformCompat.h"
 #include <array>
 #include <cctype>
 #include <iostream>
@@ -195,8 +195,7 @@ bool ConfigParser::validateConfig(const PConfig& config) {
 namespace {
 /// @brief Check whether a path exists and is a directory.
 bool isDirectory(const std::string& path) {
-    struct stat info{};
-    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+    return platform::pathIsDirectory(path);
 }
 }  // namespace
 

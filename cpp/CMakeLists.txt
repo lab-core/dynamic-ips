@@ -9,11 +9,13 @@ project(DARP_IPS)
 #     cmake -DSOLVER=GUROBI ..
 # Defaults to GUROBI to match the previous default build configuration.
 # ---------------------------------------------------------------------------
-# Set Solver backend to use (CPLEX or GUROBI). Defaults to GUROBI; override on
-# the command line with -DSOLVER=CPLEX or -DSOLVER=GUROBI. Using a cache variable
-# (rather than a plain set) ensures the command-line value is honored.
-set(SOLVER "GUROBI" CACHE STRING "Solver backend to use (CPLEX or GUROBI)")
-set_property(CACHE SOLVER PROPERTY STRINGS CPLEX GUROBI)
+# Set Solver backend to use (CPLEX, GUROBI, or NONE). Defaults to GUROBI;
+# override on the command line with -DSOLVER=CPLEX / -DSOLVER=GUROBI / -DSOLVER=NONE.
+# NONE builds the solver-free libraries and tests only (no commercial backend,
+# no license) and is what CI uses. Using a cache variable (rather than a plain
+# set) ensures the command-line value is honored.
+set(SOLVER "GUROBI" CACHE STRING "Solver backend to use (CPLEX, GUROBI, or NONE)")
+set_property(CACHE SOLVER PROPERTY STRINGS CPLEX GUROBI NONE)
 
 if(SOLVER STREQUAL "CPLEX")
     set(USE_CPLEX  ON)
@@ -21,10 +23,13 @@ if(SOLVER STREQUAL "CPLEX")
 elseif(SOLVER STREQUAL "GUROBI")
     set(USE_CPLEX  OFF)
     set(USE_GUROBI ON)
+elseif(SOLVER STREQUAL "NONE")
+    set(USE_CPLEX  OFF)
+    set(USE_GUROBI OFF)
 else()
     message(FATAL_ERROR
-        "SOLVER must be either 'CPLEX' or 'GUROBI' (got '${SOLVER}'). "
-        "Configure with -DSOLVER=CPLEX or -DSOLVER=GUROBI.")
+        "SOLVER must be 'CPLEX', 'GUROBI', or 'NONE' (got '${SOLVER}'). "
+        "Configure with -DSOLVER=CPLEX, -DSOLVER=GUROBI, or -DSOLVER=NONE.")
 endif()
 
 
