@@ -73,7 +73,10 @@ void ProgramConfig::printConfig() const {
     std::cout << "  Parameter file: " << paramFile_ << "\n";
     std::cout << "  Scenario name: " << scenario_ << "\n";
     std::cout << "  Output directory: " << (outputDir_.empty() ? "(local — next to instance data)" : outputDir_) << "\n";
-    std::cout << "  Vehicle file: " << vehicleFileName_ << "\n";
+    // When --num-vehicles is omitted the size-specific name is not built here;
+    // the solver reads <vehicle-folder>/vehicles.txt once the instance is known.
+    std::cout << "  Vehicle file: "
+              << (vehicleFileName_.empty() ? "vehicles (fleet read from file)" : vehicleFileName_) << "\n";
 
     if (!instanceName_.empty()) {
         std::cout << "  Instance name: " << instanceName_ << "\n";
