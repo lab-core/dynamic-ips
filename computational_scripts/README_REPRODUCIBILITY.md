@@ -2,7 +2,7 @@
 
 This folder contains a clean reproducibility layer for the C++ executable. The
 Python script does **not** implement the algorithm; it only expands experiment
-matrices into command lines that call the C++ binary, usually `bin/realtime_DARP`.
+matrices into command lines that call the C++ binary, usually `../cpp/bin/realtime_DARP`.
 
 ## Directory layout
 
@@ -22,11 +22,14 @@ results/
 
 ## Build the C++ code
 
-Build the project so that the executable exists at:
+Build the [C++ solver](../cpp/README.md) so that the executable exists at:
 
 ```bash
-bin/realtime_DARP
+cpp/bin/realtime_DARP
 ```
+
+The scripts default to `EXE=../cpp/bin/realtime_DARP` (relative to
+`computational_scripts/`); override `EXE` if your build output is elsewhere.
 
 ## Quick smoke test
 
@@ -36,7 +39,7 @@ Generate one command:
 python scripts/make_commands.py \
   --config experiments/smoke_test.json \
   --commands-out commands/smoke_test.txt \
-  --output-dir ../../Outputs/smoke_test
+  --output-dir ../Outputs/smoke_test
 ```
 
 Inspect the command without running it:
@@ -63,7 +66,7 @@ scripts/run_commands.sh commands/smoke_test.txt
 python scripts/make_commands.py \
   --config experiments/B_CG.json \
   --commands-out commands/batch_tests.txt \
-  --output-dir ../../Outputs/Phase_2
+  --output-dir ../Outputs/Phase_2
 ```
 
 Run one subset only, for example the main batch run:
@@ -73,7 +76,7 @@ python scripts/make_commands.py \
   --config experiments/B_CG.json \
   --run commit_notify \
   --commands-out commands/commit_notify.txt \
-  --output-dir ../../Outputs/Phase_2
+  --output-dir ../Outputs/Phase_2
 ```
 
 Run generated commands locally:
@@ -100,7 +103,7 @@ START=1 STOP=5 scripts/run_commands.sh commands/batch_tests.txt
 python scripts/make_commands.py \
   --config experiments/A_CG.json \
   --commands-out commands/anytime_tests.txt \
-  --output-dir ../../Outputs/Phase_3
+  --output-dir ../Outputs/Phase_3
 ```
 
 Run generated commands locally:
@@ -123,7 +126,7 @@ sbatch --array=1-$(wc -l < commands/batch_tests.txt) \
   scripts/run_slurm_array.sh commands/batch_tests.txt
 ```
 
-Replace `/scratch/$USER/dynamic-ips` with the actual scratch path on your cluster (e.g. `$SCRATCH`, `$SLURM_TMPDIR`, or a path like `/home/$USER/scratch/dynamic-ips`). The script reads line `SLURM_ARRAY_TASK_ID` from the command file, so each array task runs one experiment. Submit from `computational_scripts/` so that all relative paths (`../bin/realtime_DARP`, `../Riley_Benchmark`, etc.) resolve correctly.
+Replace `/scratch/$USER/dynamic-ips` with the actual scratch path on your cluster (e.g. `$SCRATCH`, `$SLURM_TMPDIR`, or a path like `/home/$USER/scratch/dynamic-ips`). The script reads line `SLURM_ARRAY_TASK_ID` from the command file, so each array task runs one experiment. Submit from `computational_scripts/` so that all relative paths (`../cpp/bin/realtime_DARP`, `../data/Riley_Benchmark`, etc.) resolve correctly.
 
 Optional environment variables:
 
@@ -143,7 +146,7 @@ DRY_RUN=1 sbatch --array=1-5 scripts/run_slurm_array.sh commands/batch_tests.txt
 You can call the executable directly, or use `scripts/run_one.sh`:
 
 ```bash
-DATA_DIR=../Riley_Benchmark \
+DATA_DIR=../data/Riley_Benchmark \
 VEHICLE_FOLDER=vehicles_warmStart_11 \
 INST_FOLDER=Instances_2h-11 \
 INSTANCE_NAME=20150926_11-120m \
@@ -154,7 +157,7 @@ SOL_MODE=1 \
 PARAMFILE=parameters/BatchParameters \
 SCENARIO=multiObj_5 \
 INITIAL_STATE=1 \
-OUTPUT_DIR=../../Outputs/single_run \
+OUTPUT_DIR=../Outputs/single_run \
 scripts/run_one.sh
 ```
 
@@ -187,4 +190,4 @@ For these groups, the script lists all subdirectories under:
 <data_dir>/<inst_folder>/
 ```
 
-For example, `../Riley_Benchmark/Instances_2h-7/`.
+For example, `../data/Riley_Benchmark/Instances_2h-7/`.

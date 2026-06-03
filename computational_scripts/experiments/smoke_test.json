@@ -3,7 +3,7 @@
   "description": "One short command to verify build, paths, and parameter parsing before launching the full experiment set.",
   "groups": {
     "smoke_bG1": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_30s",
@@ -16,7 +16,7 @@
       ]
     },
     "smoke_bG2": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_2h-11",

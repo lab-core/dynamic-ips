@@ -10,15 +10,13 @@ cpp/cmake-build-release/*
 
 
 
-cpp/.idea/*
+**/.idea/
 cpp/.vscode/launch.json
 cpp/.vscode/settings.json
 cpp/.vscode/tasks.json
-cpp/src/solvers/.idea/workspace.xml
+Outputs/
 Outputs_1/*
-cpp/src/data/.idea/*
 dataset/*
-cpp/.idea/misc.xml
 cpp/build-gurobi/*
 cpp/build-cplex/*
 NYC_Dataset_2015-2016.zip

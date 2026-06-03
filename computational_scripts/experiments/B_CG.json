@@ -6,7 +6,7 @@
   "sol_mode": 1,
   "groups": {
     "bG1": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_2h-11",
@@ -23,7 +23,7 @@
       ]
     },
     "bG2": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_2h-11",
@@ -39,7 +39,7 @@
       ]
     },
     "bG3": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_2h-11",
@@ -55,7 +55,7 @@
       ]
     },
     "bG30S": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_30s",
@@ -66,7 +66,7 @@
       "auto_discover": true
     },
     "bG30S_1": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_30s",
@@ -82,7 +82,7 @@
       ]
     },
     "bG2h7": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_uniform",
       "capacity": 4,
       "inst_folder": "Instances_2h-7",

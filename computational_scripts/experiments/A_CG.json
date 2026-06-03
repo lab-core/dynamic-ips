@@ -6,7 +6,7 @@
   "sol_mode": 2,
   "groups": {
     "aG1": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -22,7 +22,7 @@
       ]
     },
     "aG2": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -38,7 +38,7 @@
       ]
     },
     "aG3": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -55,7 +55,7 @@
       ]
     },
     "aG6": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 7,
       "inst_folder": "Instances_4h-11",
@@ -68,7 +68,7 @@
       ]
     },
     "aG7": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 7,
       "inst_folder": "Instances_4h-11",
@@ -82,7 +82,7 @@
       ]
     },
     "aG8": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 7,
       "inst_folder": "Instances_4h-11",
@@ -95,7 +95,7 @@
       ]
     },
     "aG9": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -108,7 +108,7 @@
       ]
     },
     "aG10": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -121,7 +121,7 @@
       ]
     },
     "aG11": {
-      "data_dir": "../NYC-DARP-Benchmark",
+      "data_dir": "../data/NYC-DARP-Benchmark",
       "vehicle_folder": "vehicles_warmStart_11",
       "capacity": 4,
       "inst_folder": "Instances_4h-11",
@@ -135,7 +135,7 @@
       ]
     },
     "aG2h7": {
-      "data_dir": "../Riley_Benchmark",
+      "data_dir": "../data/Riley_Benchmark",
       "vehicle_folder": "vehicles_uniform",
       "capacity": 4,
       "inst_folder": "Instances_2h-7",

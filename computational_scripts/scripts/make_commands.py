@@ -148,7 +148,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate DARP experiment command files.")
     parser.add_argument("--config", required=True, type=Path, help="Path to experiments/*.json")
     parser.add_argument("--repo-root", default=".", type=Path, help="Repository root, used for auto-discovery")
-    parser.add_argument("--exe", default=os.environ.get("EXE", "../bin/realtime_DARP"), help="C++ executable path")
+    parser.add_argument("--exe", default=os.environ.get("EXE", "../cpp/bin/realtime_DARP"), help="C++ executable path")
     parser.add_argument("--output-dir", default=os.environ.get("OUTPUT_DIR", "results"), help="Output directory passed to the C++ code")
     parser.add_argument("--commands-out", type=Path, help="Write commands to this file")
     parser.add_argument("--dry-run", action="store_true", help="Print generated commands to stdout")

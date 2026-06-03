@@ -1,4 +1,4 @@
-# DARP_IPS — Real-time Column Generation Solver for Online Dial-a-Ride / Ridesharing
+# C++ Solver — Real-time Column Generation for Online Dial-a-Ride / Ridesharing
 
 This is the C++ solver for the **dynamic-ips** project. It solves large-scale
 dynamic **Dial-a-Ride Problems (DARP)** within a **rolling-horizon** framework.
@@ -19,7 +19,7 @@ solving the master problem.
 
 For a high-level overview of the project and datasets, see the
 [root README](../README.md). The Python pipeline that prepares data and plots
-results is documented in the [Python pipeline](../DARP_Python/README.md).
+results is documented in the [Python pipeline](../python/README.md).
 
 
 ---
@@ -27,11 +27,10 @@ results is documented in the [Python pipeline](../DARP_Python/README.md).
 ## Repository structure
 
 ```
-DARP_IPS/
-├─ Riley_Benchmark/           # public benchmark (Riley et al.)
-├─ NYC-DARP-Benchmark/        # extended benchmark (Amiri et al.) — keep untracked
+cpp/
+├─ include/                   # vendored third-party headers (json.hpp)
 ├─ src/
-│  ├─ data/                   # core objects (Instance, Request, Vehicle, Route, Parameters, ...)
+│  ├─ data/                   # core objects (Instance, Request, Vehicle, Route, Parameters, Graph, ...)
 │  │  ├─ Graph.cpp/.h
 │  │  ├─ Greedy.cpp/.h
 │  │  ├─ Instance.cpp/.h
@@ -44,7 +43,7 @@ DARP_IPS/
 │  ├─ solvers/                # algorithm implementations
 │  │  ├─ CG_Algorithm.cpp/.h
 │  │  ├─ LabelingSubProblem.cpp/.h
-│  │  ├─ MasterAlgorithm.cpp
+│  │  ├─ MasterAlgorithm.cpp/.h
 │  │  ├─ SubproModeler.cpp/.h
 │  │  ├─ GreedyModeler.cpp/.h
 │  │  ├─ AnytimeSolver.cpp/.h
@@ -52,29 +51,33 @@ DARP_IPS/
 │  │  ├─ OfflineSolver.cpp/.h
 │  │  └─ ...
 │  ├─ CplexSolver/            # CPLEX-based modeling/solving
-│  │  ├─ CPLEXSolver.cpp/.h
-│  │  ├─ MIPMasterProblem.cpp/.h
-│  │  ├─ CPLEXSubProblem.cpp/.h
-│  │  ├─ ReducedProblem.cpp/.h
+│  │  ├─ MP_Cplex.cpp/.h
+│  │  ├─ RP_Cplex.cpp/.h
+│  │  ├─ CP_Cplex.cpp/.h
+│  │  ├─ MIPSolver_Cplex.cpp/.h
 │  │  └─ ...
 │  ├─ GurobiSolver/           # Gurobi-based modeling/solving
 │  │  ├─ MP_Gurobi.cpp/.h
 │  │  ├─ RP_Gurobi.cpp/.h
-│  │  ├─ CP_Gurobi.cpp/.h
 │  │  ├─ CPModeler.cpp/.h
+│  │  ├─ MIPSolver_Gurobi.cpp/.h
 │  │  └─ ...
-│  └─ utilities/              # config parsing, IO tools, helpers
-│     ├─ ConfigParser.cpp/.h
-│     ├─ ReadWrite.cpp/.h
-│     ├─ Tools.cpp/.h
-│     └─ ...
-├─ computational_scripts/     # experiment generation and SLURM submission
-├─ docs/                      # parameter reference
-├─ realTimeMain.cpp           # entry point (main function)
+│  ├─ utilities/              # config parsing, IO tools, helpers
+│  │  ├─ ConfigParser.cpp/.h
+│  │  ├─ ReadWrite.cpp/.h
+│  │  ├─ Tools.cpp/.h
+│  │  └─ ...
+│  ├─ realTimeMain.cpp        # entry point (main function)
+│  └─ CMakeLists.txt
+├─ parameters.md              # parameter reference
 ├─ CMakeLists.txt
+├─ FindEigen3.cmake
 ├─ FindCPLEX.cmake
 └─ FindGUROBI.cmake
 ```
+
+> Benchmark instance sets live at the repository root under `../data/`, and the
+> experiment-generation and SLURM scripts under `../computational_scripts/`.
 
 ---
 
@@ -109,7 +112,7 @@ cd dynamic-ips
 
 ### 2) Configure & compile (Release)
 
-Build from the `DARP_IPS` directory (adapt flags to match your CMake
+Build from the `cpp/` directory (adapt flags to match your CMake
 options/targets).
 
 #### Build with Gurobi (preferred)
@@ -157,7 +160,7 @@ selects B-CG, A-CG, greedy, MIP, or offline) are documented in the
 ### Example — run a specific instance
 
 ```bash
-bin/realtime_DARP --data-dir NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 \
+bin/realtime_DARP --data-dir ../data/NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 \
   --inst-folder Instances_4h-11 --instance-name 20150917_11-240m --num-vehicles 1450 \
   --vehicle-capacity 4 --main-algo 2 --sol-mode 1 --paramfile AnyParameters \
   --scenario Basis_warm_keep --save-scratch 0 --initial-state 1
@@ -204,8 +207,10 @@ Manhattan network of virtual stop locations. The travel-time matrix between stop
 locations is provided as `edge_time_matrix.txt` (constructed from OpenStreetMap
 routing data).
 
-Instructions for downloading the data from Zenodo or regenerating instances are
-in the [Python pipeline](../DARP_Python/README.md).
+The benchmark folders live at the repository root under `data/` and are tracked
+with [Git LFS](https://git-lfs.com); run `git lfs pull` after cloning to fetch
+them. Instructions for downloading the data from Zenodo or regenerating
+instances are in the [Python pipeline](../python/README.md).
 
 ### Riley_Benchmark
 
@@ -271,6 +276,6 @@ For each run the solver writes the following files to `--output-dir`, named afte
 
 ## License
 
-TODO: No license is currently specified for this repository. See the
+Released under the [MIT License](../LICENSE); see the
 [root README](../README.md#license). CPLEX/Gurobi remain under their respective
 licenses and are not included here.

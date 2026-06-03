@@ -2,7 +2,7 @@
 # Run one DARP experiment directly. This is useful for README examples and smoke tests.
 set -euo pipefail
 
-EXE="${EXE:-../bin/realtime_DARP}"
+EXE="${EXE:-../cpp/bin/realtime_DARP}"
 OUTPUT_DIR="${OUTPUT_DIR:-results/single_run}"
 
 required=(DATA_DIR VEHICLE_FOLDER INST_FOLDER INSTANCE_NAME NUM_VEHICLES VEHICLE_CAPACITY MAIN_ALGO SOL_MODE PARAMFILE SCENARIO INITIAL_STATE)

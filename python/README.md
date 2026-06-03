@@ -1,4 +1,4 @@
-# DARP_Python — Data Preparation and Result Analysis
+# Python Pipeline — Data Preparation and Result Analysis
 
 Python pipeline for the **dynamic-ips** project. It covers two independent
 workflows:
@@ -28,7 +28,7 @@ Python 3.9 or later is required.
 ## Directory layout
 
 ```
-DARP_Python/
+python/
 ├── scripts/                    CLI entry points (start here)
 │   ├── 01_build_network.py     Build custom network (own data only)
 │   ├── 02_fetch_trips.py       Download NYC taxi day records
@@ -95,7 +95,7 @@ There are two ways to obtain solver-ready instances, depending on your goal:
 Download from Zenodo ([doi:10.5281/zenodo.20452171](https://doi.org/10.5281/zenodo.20452171))
 and unzip into:
 ```
-DARP_Python/
+python/
 └── Data/
     ├── stops/                  virtual_stops_latlon.geojson, edge_matrix.json, ...
     └── taxi_zones/             NYC TLC taxi zone shapefile
@@ -105,7 +105,7 @@ DARP_Python/
 Download from [doi:10.5281/zenodo.18745880](https://doi.org/10.5281/zenodo.18745880)
 and unzip into:
 ```
-DARP_Python/
+python/
 └── Data/
     └── manhattan-network/      riley_virtual_stops_latlon.geojson,
                                 edge_time_matrix.txt, ...
