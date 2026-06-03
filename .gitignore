@@ -1,7 +1,7 @@
-DARP_IPS/bin/*
-DARP_IPS/cmake-build-debug/*
-DARP_IPS/lib/*
-DARP_IPS/cmake-build-release/*
+cpp/bin/*
+cpp/cmake-build-debug/*
+cpp/lib/*
+cpp/cmake-build-release/*
 .DS_Store
 **/.DS_Store
 *.csv
@@ -10,16 +10,16 @@ DARP_IPS/cmake-build-release/*
 
 
 
-DARP_IPS/.idea/*
-DARP_IPS/.vscode/launch.json
-DARP_IPS/.vscode/settings.json
-DARP_IPS/.vscode/tasks.json
-DARP_IPS/src/solvers/.idea/workspace.xml
-Data/*
+cpp/.idea/*
+cpp/.vscode/launch.json
+cpp/.vscode/settings.json
+cpp/.vscode/tasks.json
+cpp/src/solvers/.idea/workspace.xml
 Outputs_1/*
-DARP_IPS/src/data/.idea/*
+cpp/src/data/.idea/*
 dataset/*
-DARP_IPS/.idea/misc.xml
-DARP_IPS/build-gurobi/*
-DARP_IPS/build-cplex/*
+cpp/.idea/misc.xml
+cpp/build-gurobi/*
+cpp/build-cplex/*
 NYC_Dataset_2015-2016.zip
+build/
