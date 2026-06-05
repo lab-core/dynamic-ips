@@ -105,12 +105,25 @@ void MIPSolver_Cplex::buildModel(PInstance &pInst){
     std::vector<PNode> nodes = concatenateVectors(pInst->instGraph_->pickNodes_, pInst->instGraph_->dropNodes_);
 
     // define objective function
+    const double wait_W1 = pInst->parameters_->Wait_W1_;
+    const double ride_W2 = pInst->parameters_->Ride_W2_;
     IloExpr objExpr(env_);
     for (auto & pickNode : pInst->instGraph_->pickNodes_) {
-        const int i = pickNode->related_Request_->taskIndex_;
-        objExpr += Z_[i] * pickNode->related_Request_->Req_W3_ * pickNode->related_Request_->penalty_;
+        const auto   req     = pickNode->related_Request_;
+        const int    iReq    = req->taskIndex_;
+        const int    pick    = pickNode->nodeIndex_;
+        const int    drop    = pickNode->pairNode_->nodeIndex_;
+        const double e_i     = pickNode->readyTime_;
+        const double Delta_i = pickNode->serviceTime_;
+        const double t_i_min = req->minTravelTime_;
+        const double w_coef  = wait_W1 * req->Req_W3_ / req->Relative_W5_;
+        const double r_coef  = ride_W2 * req->Req_W3_ / req->Relative_W5_;
+
+        objExpr += Z_[iReq] * req->Req_W3_ * req->penalty_;
         for (auto & vehicleObj : pInst->vehicles_) {
-            objExpr += (U_[vehicleObj->vehicleID_][pickNode->nodeIndex_] - pickNode->readyTime_);
+            const int v = vehicleObj->vehicleID_;
+            objExpr += w_coef * (U_[v][pick] - e_i);
+            objExpr += r_coef * (U_[v][drop] - U_[v][pick] - Delta_i - t_i_min + req->Ride_W4_);
         }
     }
 
@@ -251,6 +264,9 @@ void MIPSolver_Cplex::buildModel(PInstance &pInst){
             // Implied onboard dropoff time window (valid inequalities)
             addCons(U_[v][j] >= u_P + t_j_min + Delta_j);
             addCons(U_[v][j] <= latestPick + t_j_max + onNode->serviceTime_);
+
+            // ride delay for onboard passenger
+            objExpr += (ride_W2 * req->Req_W3_ / req->Relative_W5_) * (U_[v][j] - u_P - Delta_j - t_j_min + req->Ride_W4_);
         }
 
         // ----- arc-level constraints: time (1h), load (1n), capacity (1o) -----
@@ -293,10 +309,11 @@ void MIPSolver_Cplex::configureCplex() {
     Cplex_.setParam(IloCplex::Param::NodeAlgorithm,            kDualSimplex);
     Cplex_.setParam(IloCplex::Param::MIP::Limits::RepairTries, kRepairTries);
     Cplex_.setParam(IloCplex::Param::MIP::PolishAfter::Time,   kPolishAfterSeconds);
-    /*Cplex_.setParam(IloCplex::Param::TimeLimit, 3600);
-    Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
-    Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-    Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);*/
+    if (timeLimit_ > 0)
+        Cplex_.setParam(IloCplex::Param::TimeLimit, static_cast<double>(timeLimit_));
+    // Cplex_.setParam(IloCplex::Param::Threads, pInst->parameters_->nbThreads_);
+    // Cplex_.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+    // Cplex_.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, pInst->parameters_->MIPGap_);
 }
 
 void MIPSolver_Cplex::solveModel(PInstance &pInst, InputPaths &inputPaths) {

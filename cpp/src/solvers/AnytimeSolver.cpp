@@ -33,7 +33,8 @@ void AnytimeSolver::AnytimeHorizon(PInstance &mainInst, InputPaths &inputPaths, 
         simulationTime_->start();
         elapsedTime_ = simulationTime_->dSinceInit().count();
         if (nbReceivedRequest < mainInst->nbRequests_) {
-            if (mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ > simulationTime_->dSinceInit().count()) {
+            if (zSolution.empty() &&
+                mainInst->requests_[nbReceivedRequest]->requestTime_ - mainInst->simulationStartTime_ > simulationTime_->dSinceInit().count()) {
                 simulationTime_->stop();
                 simulationTime_->addTime(mainInst->requests_[nbReceivedRequest]->requestTime_ -
                         mainInst->simulationStartTime_ - simulationTime_->dSinceInit().count());

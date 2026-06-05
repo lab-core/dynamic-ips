@@ -175,6 +175,8 @@ void Instance::adjustParameters(const PConfig &config) const {
         parameters_->approach_ = ISUD;
     else if (parameters_->mainAlgorithm_ == GREEDY)
         parameters_->approach_ = Greedy;
+    else if (parameters_->mainAlgorithm_ == MIP)
+        parameters_->approach_ = MIP_SOLVER;
     else
         parameters_->approach_ = CG;
 }
@@ -199,7 +201,6 @@ void Instance::buildPartialData(const PInstance &mainInst, const std::vector<PRe
             addRequest(requestObj);
             requestObj->coveredVehicles_.reset();
             requestObj->coveredVehicles_.resize(nbVehicles_);
- //           requestObj->coveredVehicles_.flip();
             requestObj->insertedVehicles_.reset();
             requestObj->insertedVehicles_.resize(nbVehicles_);
             instGraph_->addNewNode(mainInst->instGraph_->pickNodes_[requestObj->getRequestId()]);
@@ -302,7 +303,6 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
                     if (vehicleObj->currentRoute_->routeNodes_[i]->type_ == PICKUP) {
                         addRequest(vehicleObj->currentRoute_->routeNodes_[i]->related_Request_);
                         instGraph_->addNewNode(vehicleObj->currentRoute_->routeNodes_[i]);
-//                    instGraph_->addNewNode(*vehicleObj->currentRoute_->routeNodes_[i]->pairNode_);
                         instGraph_->addNewNode(
                                 mainInst->instGraph_->dropNodes_[vehicleObj->currentRoute_->routeNodes_[i]->related_Request_->getRequestId()]);
                     }
@@ -329,8 +329,14 @@ void Instance::buildStaticData(const PInstance &mainInst, int lastRecRequests) {
         }
     }
 
-    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
+    for (auto & requestObj : mainInst->requests_) {
+        requestObj->coveredVehicles_.reset();
+        requestObj->coveredVehicles_.resize(nbVehicles_);
+        requestObj->insertedVehicles_.reset();
+        requestObj->insertedVehicles_.resize(nbVehicles_);
+    }
 
+    nbOnboards_ = static_cast<int>(instGraph_->onboards_.size());
     updateRequestOrder();
 }
 

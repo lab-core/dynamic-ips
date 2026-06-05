@@ -31,130 +31,148 @@ int main(int argc, char** argv) {
     config->printConfig();
     std::cout << std::endl;
 
-    // Set up paths and constants
-    std::string dataDir = config->dataDir_ + "/";
+    try {
+        // Set up paths and constants
+        std::string dataDir = config->dataDir_ + "/";
 
-    // Prepare instance names
-    std::vector<std::string> instNames;
+        // Prepare instance names
+        std::vector<std::string> instNames;
 
-    if (!config->instanceName_.empty()) {
-        // Use specific instance
-        instNames.push_back(config->instanceName_);
-        std::cout << "Processing specific instance: " << config->instFolder_
-                  << "/" << config->instanceName_ << std::endl;
-    } else {
-        // Read instances from file
-        std::string instanceNames = "datasets/InstanceNames.txt";
-        ReadWrite::readInstNames(instanceNames, instNames, 24, "_07-120m");
-        std::cout << "24 instances read from file!" << std::endl;
-    }
+        if (!config->instanceName_.empty()) {
+            // Use specific instance
+            instNames.push_back(config->instanceName_);
+            std::cout << "Processing specific instance: " << config->instFolder_
+                      << "/" << config->instanceName_ << std::endl;
+        } else {
+            // Read instances from file
+            std::string instanceNames = "datasets/InstanceNames.txt";
+            ReadWrite::readInstNames(instanceNames, instNames, 24, "_07-120m");
+            std::cout << "24 instances read from file!" << std::endl;
+        }
 
-    // Build the path of input files
-    InputPaths inputPaths(dataDir, config);
-    ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_);
+        // Build the path of input files
+        InputPaths inputPaths(dataDir, config);
+        ReadWrite::readDurations(inputPaths.getInputDurationData(), durationMatrix_);
 
-    int max_i = 1, max_j = 1;
-    if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
-        max_i = 7;
-        max_j = 1;
-    }
-    else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1")
-        max_i = 3;
-    else if (config->scenario_ == "dropPick" || config->scenario_ == "nbPickup")
-        max_i = 2;
+        int max_i = 1, max_j = 1;
+        if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
+            max_i = 7;
+            max_j = 1;
+        }
+        else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1")
+            max_i = 3;
+        else if (config->scenario_ == "dropPick" || config->scenario_ == "nbPickup")
+            max_i = 2;
 
-    for (auto & instanceName : instNames){
-        for (int i = 0; i < max_i; ++i) {
-            for (int j = 0; j < max_j; ++j) {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+        for (auto & instanceName : instNames){
+            for (int i = 0; i < max_i; ++i) {
+                for (int j = 0; j < max_j; ++j) {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-                // Create output files for epoch results
-                inputPaths.initializeInputs(config->instFolder_, instanceName);
+                    // Create output files for epoch results
+                    inputPaths.initializeInputs(config->instFolder_, instanceName);
 
-                // Read data files and initialize instance and parameters
-                std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
-                Request::requestCount_ = 0;
-                PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
+                    // Read data files and initialize instance and parameters
+                    std::cout << "# INITIALIZE OF THE MAIN INSTANCE" << std::endl;
+                    Request::requestCount_ = 0;
+                    PInstance mainInst = ReadWrite::readInstance(inputPaths.getInputInstanceData());
 
-                // Resolve the fleet size. With --num-vehicles, the size-specific
-                // file "vehicles_<N>_4" was already selected. Without it, read the
-                // fleet straight from "<vehicle-folder>/vehicles.txt": its row
-                // count is the fleet size and its columns hold the capacities, so
-                // neither value is inferred from the file name.
-                int numVehicles = config->numVehicles_;
-                if (numVehicles <= 0) {
-                    config->vehicleFileName_ = "vehicles";
-                    inputPaths.setVehicleFiles(config->vehicleFolder_, config->vehicleFileName_);
-                    numVehicles = ReadWrite::countVehicles(inputPaths.getInputVehicleFileGeneral());
-                }
-                if (config->initialState_ < 2)
-                    mainInst->nbVehicles_ = numVehicles;
-
-
-                ReadWrite::readParametersJson(inputPaths.getInputParamFile(), mainInst, config->scenario_);
-                mainInst->adjustParameters(config);
-
-                // Configure parameters based on parameter file
-                if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
-                    mainInst->parameters_->MaxLabel_ = (i + 1) * 5;
-                    mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
-                }
-                else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1") {
-                    mainInst->parameters_->pruneNodes_ = true;
-                    if (i >= 1) mainInst->parameters_->pruneArcs_ = true;
-                    if (i >= 2) mainInst->parameters_->discardSuboptimalPath_ = true;
-                }
-                else if (config->scenario_ == "dropPick") {
-                    mainInst->parameters_->isDropPickPossible_ = (i == 1);
-                }
-                else if (config->scenario_ == "nbPickup") {
-                    if (i == 0) {
-                        mainInst->parameters_->dynamicPricing_ =  true;
-                        mainInst->parameters_->partialPricing_ =  false;
+                    // Resolve the fleet size. With --num-vehicles, the size-specific
+                    // file "vehicles_<N>_4" was already selected. Without it, read the
+                    // fleet straight from "<vehicle-folder>/vehicles.txt": its row
+                    // count is the fleet size and its columns hold the capacities, so
+                    // neither value is inferred from the file name.
+                    int numVehicles = config->numVehicles_;
+                    if (numVehicles <= 0) {
+                        config->vehicleFileName_ = "vehicles";
+                        inputPaths.setVehicleFiles(config->vehicleFolder_, config->vehicleFileName_);
+                        numVehicles = ReadWrite::countVehicles(inputPaths.getInputVehicleFileGeneral());
                     }
-                    else {
-                        mainInst->parameters_->partialPricing_ =  true;
-                        mainInst->parameters_->dynamicPricing_ =  false;
-                    }
-                }
+                    if (config->initialState_ < 2)
+                        mainInst->nbVehicles_ = numVehicles;
 
-                ReadWrite::readDatafiles(inputPaths, mainInst, config->outputDir_,
-                    config->scenario_, config->initialState_);
-                // Override the per-vehicle capacity only when --vehicle-capacity
-                // was provided; otherwise keep the capacity read from the file.
-                if (config->vehicleCapacity_ > 0)
-                    for (auto & vehicleObj : mainInst->vehicles_)
-                        vehicleObj->capacity_ = config->vehicleCapacity_;
+                    ReadWrite::readParametersJson(inputPaths.getInputParamFile(), mainInst, config->scenario_);
+                    mainInst->adjustParameters(config);
 
-                // Create solver and run appropriate algorithm
-                std::unique_ptr<BaseSolver> instanceSolver;
-                switch (mainInst->parameters_->solutionMode_) {
-                    case DYNAMIC: {
-                        instanceSolver = std::make_unique<BatchSolver>(mainInst, inputPaths);
-                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
-                        break;
+                    if (mainInst->parameters_->solutionMode_ == ANYTIME && (mainInst->parameters_->mainAlgorithm_ == MIP ||
+                        mainInst->parameters_->mainAlgorithm_ == RT_CG)) {
+                        std::cout << "Error: algorithm '"
+                                  << enum_strings::mainAlgorithmNames[mainInst->parameters_->mainAlgorithm_]
+                                  << "' is not supported in ANYTIME mode.\n"
+                                  << "  Use A_CG, MP_ISUD, or GREEDY for ANYTIME mode.\n";
+                        throw myTools::myException("Incompatible mainAlgorithm + solutionMode combination!", __LINE__);
                     }
 
-                    case ANYTIME: {
-                        instanceSolver = std::make_unique<AnytimeSolver>(mainInst, inputPaths);
-                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
-                        break;
+                    // Configure parameters based on parameter file
+                    if (config->scenario_ == "truncate_0" || config->scenario_ == "truncate_1") {
+                        mainInst->parameters_->MaxLabel_ = (i + 1) * 5;
+                        mainInst->parameters_->sortPath_ = static_cast<SortPaths>(j);
+                    }
+                    else if (config->scenario_ == "pruning_0" || config->scenario_ == "pruning_1") {
+                        mainInst->parameters_->pruneNodes_ = true;
+                        if (i >= 1) mainInst->parameters_->pruneArcs_ = true;
+                        if (i >= 2) mainInst->parameters_->discardSuboptimalPath_ = true;
+                    }
+                    else if (config->scenario_ == "dropPick") {
+                        mainInst->parameters_->isDropPickPossible_ = (i == 1);
+                    }
+                    else if (config->scenario_ == "nbPickup") {
+                        if (i == 0) {
+                            mainInst->parameters_->dynamicPricing_ =  true;
+                            mainInst->parameters_->partialPricing_ =  false;
+                        }
+                        else {
+                            mainInst->parameters_->partialPricing_ =  true;
+                            mainInst->parameters_->dynamicPricing_ =  false;
+                        }
                     }
 
-                    case STATIC: {
-                        instanceSolver = std::make_unique<OfflineSolver>(mainInst, inputPaths);
-                        instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
-                        break;
+                    ReadWrite::readDatafiles(inputPaths, mainInst, config->outputDir_,
+                        config->scenario_, config->initialState_);
+                    // Override the per-vehicle capacity only when --vehicle-capacity
+                    // was provided; otherwise keep the capacity read from the file.
+                    if (config->vehicleCapacity_ > 0)
+                        for (auto & vehicleObj : mainInst->vehicles_)
+                            vehicleObj->capacity_ = config->vehicleCapacity_;
+
+                    // Create solver and run appropriate algorithm
+                    std::unique_ptr<BaseSolver> instanceSolver;
+                    switch (mainInst->parameters_->solutionMode_) {
+                        case DYNAMIC: {
+                            instanceSolver = std::make_unique<BatchSolver>(mainInst, inputPaths);
+                            instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                            break;
+                        }
+
+                        case ANYTIME: {
+                            instanceSolver = std::make_unique<AnytimeSolver>(mainInst, inputPaths);
+                            instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                            break;
+                        }
+
+                        case STATIC: {
+                            instanceSolver = std::make_unique<OfflineSolver>(mainInst, inputPaths);
+                            instanceSolver->doSimulation(mainInst, inputPaths, middleSave, saveTime);
+                            break;
+                        }
                     }
+                    // print final outputs
+                    Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
+                    finalStream << instanceSolver->toString(mainInst);
+                    finalStream.close();
+                    mainInst->writeFinalOutputs(inputPaths, config);
                 }
-                // print final outputs
-                Tools::LogOutput finalStream(inputPaths.getOutputFinalLog());
-                finalStream << instanceSolver->toString(mainInst);
-                finalStream.close();
-                mainInst->writeFinalOutputs(inputPaths, config);
             }
         }
+        std::cout << "Program completed successfully." << std::endl;
+        return 0;
     }
-    std::cout << "Program completed successfully." << std::endl;
-    return 0;
+    catch (const myTools::myException& e) {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        return 1;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Unexpected error: " << e.what() << std::endl;
+        return 1;
+    }
 }

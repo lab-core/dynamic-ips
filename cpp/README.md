@@ -222,8 +222,8 @@ bin/realtime_DARP --help
 
 ```text
 --inst-folder <path>        Path to instance folder (relative to --data-dir)
---main-algo <int|name>      Main algorithm: 0..6 or a name
-                            (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG)
+--main-algo <int|name>      Main algorithm: 0..4 or a name
+                            (GREEDY, MIP, RT_CG, MP_ISUD, A_CG)
 --sol-mode <int|name>       Solution mode: 0..2 or a name (STATIC, DYNAMIC, ANYTIME)
 --paramfile <string>        Parameter file name (e.g. AnyParameters or BatchParameters)
 --scenario <string>         Scenario name (must match an entry in the parameter JSON)
@@ -271,8 +271,8 @@ otherwise the per-vehicle capacity column of the file is used as-is.
 ```bash
 # fleet size from the instance, algo/mode by name
 bin/realtime_DARP --data-dir ../data/NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 \
-  --inst-folder Instances_4h-11 --instance-name 20150917_11-240m \
-  --main-algo RT_CG --sol-mode DYNAMIC --paramfile AnyParameters \
+  --inst-folder Instances_4h-11 --instance-name 20150917_11-240m --num-vehicles 1450 \
+  --main-algo RT_CG --sol-mode DYNAMIC --paramfile ../computational_scripts/parameters/AnyParameters \
   --scenario Basis_warm_keep --initial-state 1
 ```
 
@@ -328,13 +328,14 @@ instances are in the [Python pipeline](../python/README.md).
 > operations — NYC TLC sub Dataset 2015–2016 [Data set]. Zenodo.
 > https://doi.org/10.5281/zenodo.18745880
 
-| Folder | Description |
-|---|---|
-| `Instances_2h-7` | 24 instances, 7:00–9:00 AM (2-hour window) |
-| `Instances_2h-11` | 24 instances, 11:00 AM–1:00 PM (2-hour window) |
-| `Instances_30s` | Reduced instances (30 epochs, 12:00–1:00 PM) for sensitivity analysis |
-| `vehicles_uniform` | Initial vehicle positions for 7:00 AM instances (uniform distribution) |
-| `vehicles_byDemand` | Warm-start vehicle states for 11:00 AM instances |
+| Folder | Description                                                                     |
+|---|---------------------------------------------------------------------------------|
+| `Instances_2h-7` | 24 instances, 7:00–9:00 AM (2-hour window)                                      |
+| `Instances_2h-11` | 24 instances, 11:00 AM–1:00 PM (2-hour window)                                  |
+| `Instances_30s` | Reduced instances (30 epochs, 12:00–1:00 PM) for sensitivity analysis           |
+| `vehicles_uniform` | Initial vehicle positions for 7:00 AM instances (uniform distribution)          |
+| `vehicles_byDemand` | Initial vehicle positions for 7:00 AM instances (random distribution by demand) |
+| `vehicles_warmStart_11` | Warm-start vehicle states for 11:00 AM instances                                |
 
 ### NYC-DARP-Benchmark
 

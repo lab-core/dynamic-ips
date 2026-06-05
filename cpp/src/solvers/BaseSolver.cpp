@@ -50,7 +50,7 @@ BaseSolver::BaseSolver(const PInstance &mainInst, const InputPaths &inputPaths) 
     *pLogEpochVehicleStream_ << "Epoch,VehicleID,RouteID,nbOnboards,nbOnboards_nodes,nbCommitted,nbRequests,nbNodes,"
                                 "length,avgPassPerStop,totalWait,totalTripDelay,objCoef,key" << std::endl;
 
-    if (mainInst->parameters_->approach_ != Greedy) {
+    if (mainInst->parameters_->approach_ == CG || mainInst->parameters_->approach_ == ISUD) {
         pLogRunTimesStream_ = new Tools::LogOutput(inputPaths.getOutputEpochRunTime());
         *pLogRunTimesStream_ << "Epoch,nbRequests,nbNewRequests,nbNodes,EpochRuntime,ElapsedTime,MP_Runtime,"
                                   "RP_Runtime,MP_BuildRuntime,MP_SolveRuntime,CP_Runtime,CP_BuildRuntime,"
@@ -241,8 +241,12 @@ void BaseSolver::reconstructAvailableRoutes(const PInstance &mainInst, vector2D<
 void BaseSolver::buildEpochInstance(PInstance &mainInst, PInstance &EpochInst, float elapsedTime, int &nbReceivedRequest) {
     EpochInst->resetInstance();
 
-    if (mainInst->parameters_->approach_ == Greedy)
-        EpochInst->buildPartialData(mainInst, GreedyModel_->zSolution_ , elapsedTime, nbReceivedRequest);
+    if (mainInst->parameters_->mainAlgorithm_ == MIP)
+        EpochInst->buildPartialData(mainInst,
+            MIPModel_ ? MIPModel_->zSolution_ : GreedyModel_->zSolution_,
+            elapsedTime, nbReceivedRequest);
+    else if (mainInst->parameters_->approach_ == Greedy)
+        EpochInst->buildPartialData(mainInst, GreedyModel_->zSolution_, elapsedTime, nbReceivedRequest);
     else
         EpochInst->buildPartialData(mainInst, MP_solver_->zSolution_ , elapsedTime, nbReceivedRequest);
     if (EpochInst->parameters_->timeWindow_ == 0)
@@ -518,10 +522,10 @@ std::string BaseSolver::saveRuntimesGreedy(const PInstance &EpochInst) {
            << runtimeMetrics_->epochRuntime_ << ","
            << simulationTime_->dSinceInit().count() << ","
            << GreedyModel_->objValue_ << ","
-           << GreedyModel_->objValue_ << ","    
+           << GreedyModel_->objValue_ << ","
            << GreedyModel_->totalWaitTime_ << ","
            << GreedyModel_->totalTripDelay_ << ","
-           << rebalancingProcessTime_->dSinceStart().count()<< ","
+           << rebalancingProcessTime_->dSinceStart().count() << ","
            << GreedyModel_->greedyTime_->dSinceInit().count() - runtimeMetrics_->GreedyTime_ << ",";
 
     EpochInst->calcVehicleMetric();
@@ -538,10 +542,47 @@ std::string BaseSolver::saveRuntimesGreedy(const PInstance &EpochInst) {
     return repStr.str();
 }
 
+std::string BaseSolver::saveRuntimesMIP(const PInstance &EpochInst) {
+    const float  mipObjValue  = MIPModel_ ? MIPModel_->objValue_                                   : 0.0f;
+    const float  mipSolveTime = MIPModel_ ? static_cast<float>(MIPModel_->solveTime_->dSinceStart().count()) : 0.0f;
+    const size_t zCount       = MIPModel_ ? MIPModel_->zSolution_.size()                           : 0;
+
+    std::stringstream repStr;
+    runtimeMetrics_->epochRuntime_ = simulationTime_->dSinceStart().count();
+    avgEpochRuntime_ = simulationTime_->dSinceInit().count() / static_cast<float>(epoch_ + 1);
+    repStr << epoch_ << ","
+           << EpochInst->nbRequests_ << ","
+           << EpochInst->nbNewRequests_ << ","
+           << EpochInst->instGraph_->nbNodes_ - 2 * EpochInst->nbVehicles_ << ","
+           << runtimeMetrics_->epochRuntime_ << ","
+           << simulationTime_->dSinceInit().count() << ","
+           << mipObjValue << ","
+           << mipObjValue << ","
+           << 0.0f << ","
+           << 0.0f << ","
+           << rebalancingProcessTime_->dSinceStart().count() << ","
+           << mipSolveTime << ",";
+
+    EpochInst->calcVehicleMetric();
+
+    repStr << EpochInst->nbReturn_ << ","
+           << EpochInst->nbIdle_ << ","
+           << EpochInst->passPerVehicle_ << ","
+           << EpochInst->requestPerVehicle_ << ","
+           << EpochInst->nodePerVehicle_ << ","
+           << EpochInst->nbStateChanged_ << ","
+           << EpochInst->nbCommitted_ << ","
+           << zCount << "\n";
+    return repStr.str();
+}
+
 std::string BaseSolver::toString(const PInstance &mainInst) const {
     std::stringstream repStr;
     repStr << "*************************************************************************************" << std::endl;
-    repStr << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch_ << " EPOCHS " << std::endl;
+    if (epoch_ == 0)
+        repStr << "                              STATIC SOLUTION " << std::endl;
+    else
+        repStr << "                        FINAL VEHICLE ROUTES AFTER " << std::setw(3) << epoch_ << " EPOCHS " << std::endl;
     repStr << "                                    " <<  eu::toString(mainInst->parameters_->solutionMode_) << " MODE" << std::endl;
     repStr << "*************************************************************************************" << std::endl;
     repStr << std::endl << std::endl;
@@ -566,19 +607,25 @@ std::string BaseSolver::toString(const PInstance &mainInst) const {
     repStr << "#" << std::endl;
     repStr << mainInst->solutionToString();
     repStr << std::left << std::fixed << std::setprecision(2);
-    if (mainInst->parameters_->mainAlgorithm_ != GREEDY) {
+    if (mainInst->parameters_->mainAlgorithm_ != GREEDY && mainInst->parameters_->mainAlgorithm_ != MIP) {
         repStr << MP_solver_->toStringTimersTotal();
         repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count() << " (s)" << std::endl;
     }
-    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
-    if (mainInst->parameters_->mainAlgorithm_ != GREEDY)
-        repStr << MP_solver_->toStringTimersAvg(epoch_);
-    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
-    mainInst->instRepStr_ << epoch_-1 << "," ;
-    if (mainInst->parameters_->approach_ == Greedy)
-        createFinalOutputString(mainInst);
+    if (mainInst->parameters_->mainAlgorithm_ == MIP)
+        repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON MIP SOLVE" << " = " << totalMIPSolveTime_ << " (s)" << std::endl;
     else
+        repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count() << " (s)" << std::endl;
+    if (epoch_ > 0) {
+        if (mainInst->parameters_->mainAlgorithm_ != GREEDY && mainInst->parameters_->mainAlgorithm_ != MIP)
+            repStr << MP_solver_->toStringTimersAvg(epoch_);
+        repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON SOLVING SUB PROBLEMS" << " = " << subProblemTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+        if (mainInst->parameters_->mainAlgorithm_ != MIP)
+            repStr << std::setw(SENTENCE_SIZE) << "# TIME SPENT ON GREEDY" << " = " << GreedyModel_->greedyTime_->dSinceInit().count()/static_cast<float>(epoch_) << " (s)" << std::endl;
+    }
+    mainInst->instRepStr_ << std::max(0, epoch_-1) << ",";
+    if (mainInst->parameters_->approach_ == Greedy || mainInst->parameters_->approach_ == MIP_SOLVER)
+        createFinalOutputString(mainInst);
+    else if (mainInst->parameters_->approach_ == CG || mainInst->parameters_->approach_ == ISUD)
         MP_solver_->createFinalOutputString(mainInst, subProblemTime_->dSinceInit().count(),
             GreedyModel_->greedyTime_->dSinceInit().count(), rebalancingProcessTime_->dSinceInit().count());
 
@@ -744,8 +791,3 @@ void RuntimeMetrics::updateSubproblemMetrics(const PLabelingSubPro &subProblem) 
         }
     }
 }
-
-// RuntimeMetrics::updateSubproblemMetrics(const PCplexSubPro &) lives in
-// src/CplexSolver/SubProblem_Cplex.cpp.
-// RuntimeMetrics::updateSubproblemMetrics(const PGurobiSubPro &) lives in
-// src/GurobiSolver/SubProblem_Gurobi.cpp.

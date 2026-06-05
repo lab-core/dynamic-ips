@@ -1,7 +1,7 @@
 import constants as c
 import Visualization.visualize_batch_CG as vf
 import Visualization.visualize_batch_custom as vc
-from ProcessResults.merge_records import merge_with_averaged_epoch, merge_with_all_iterations
+from ProcessResults.merge_records import merge_with_averaged_epoch, merge_with_all_iterations, merge_basic
 from Visualization.plot_config import PlotConfig
 from typing import Iterable, Union
 
@@ -26,7 +26,8 @@ def plot_nbPick(phase: str, selected_folder: str, config: PlotConfig) -> None:
 """ Pruning Strategy"""
 def plot_pruning(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
-    create_pruning_labels_and_time_figure(result_path, config)
+    create_pruning_labels_and_time_figure(result_path, config, ride_w2_value=0, output_filename="pruning_labels_and_time.pdf")
+    create_pruning_labels_and_time_figure(result_path, config, ride_w2_value=0.5, output_filename="pruning_labels_and_time_5.pdf")
     vf.create_pruning_scatter_plot_double(result_path, config)
     vf.create_pruning_time_boxplot_double(result_path, config)
 
@@ -41,13 +42,11 @@ def plot_dropPick(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
     vf.create_dropPick_wait_time_baxplot_double(result_path, config)
     vf.create_dropPick_time_boxplot_double(result_path, config)
-    vf.create_dropPick_wait_barplot_double(result_path, config)
 
 """ Dynamic Pickups"""
 def plot_dynamic(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
     vf.create_runtime_iter_box_violin(result_path, config)
-    vf.create_dynamic_iter_violinplot_double(result_path, config)
     vf.create_dynamic_wait_time_baxplot_double(result_path, config)
     vf.create_dynamic_time_boxplot_double(result_path, config)
     vf.create_dynamic_avgtime_boxplot_double(result_path, config)
@@ -57,26 +56,24 @@ def plot_dynamic(phase: str, selected_folder: str, config: PlotConfig) -> None:
 """ Commit evaluation"""
 def plot_commit(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
-    vf.create_commit_wait_response_baxplot_double(result_path, config)
     vf.create_commit_wait_response_baxplot_group(result_path, config)
-    vf.create_commit_wait_boxplot_double(result_path, config)
-    vf.create_commit_response_boxplot_double(result_path, config)
+    vf.create_commit_wait_response_baxplot_group(result_path, config, outlier=False)
+
 
 """ Ablation evaluation"""
 def plot_ablation(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
     PARAM_MAP    = c.param_to_setting          # dict: paramFile value → display label
     PARAM_LABELS = c.param_to_setting_labels   # list of display labels (ordered)
-    vf.create_ablation_iter_violinplot_single(result_path, config)
     vf.create_ablation_request_boxplot_fourth(result_path, config, PARAM_MAP, PARAM_LABELS)
     vf.create_ablation_request_boxplot_triple(result_path, config)
-    vf.create_ablation_iter_violinplot_double(result_path, config)
     vf.create_ablation_wait_boxplot_double(result_path, config)
     vf.create_ablation_time_boxplot_double(result_path, config)
 
 """ multiObj evaluation"""
 def plot_multiObj(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
+
     vf.create_multiObj_vehicle_std_plot(result_path, config)
     vf.create_multiObj_multi_std_plot(result_path, config)
     vf.create_multiObj_time_request_profile(result_path, config)
@@ -86,40 +83,31 @@ def plot_multiObj(phase: str, selected_folder: str, config: PlotConfig) -> None:
 
     vf.create_multiObj_request_boxplot_triple(result_path, config)
     vf.create_multiObj_time_request_profile(result_path, config)
-    """
-    vf.create_multiObj_gap_violinplots(result_path, config)
-    
+
     vf.create_multiObj_request_boxplot_double(result_path, config)
     vf.create_multiObj_request_boxplot_triple(result_path, config)
     vf.create_multiObj_vehicle_KPI_boxplot(result_path, config)
-    
-    vf.create_multiObj_time_dual_profile(result_path, config)
+
     vf.create_epoch_vehicle_boxplot(result_path, config)
     
     vf.create_multiObj_time_boxplot_double(result_path, config)
     vf.create_multiObj_wait_grouped(result_path, config)
     vf.create_multiObj_tripdelay_grouped(result_path, config)
     vf.create_multiObj_passenger_grouped(result_path, config)
-    vf.create_multiObj_idle_grouped(result_path, config)
-    
+
     vf.create_multiObj_passenger_profile(result_path, config)
-    vf.create_multiObj_wait_delay_profile(result_path, config)
-    vf.create_multiObj_vehicle_std_shade_plot(result_path, config)
     vf.create_multiObj_vehicle_boxplot_double(result_path, config)
-    vf.create_multiObj_vehicle_heatmap(result_path, config)
-    """
+
 
 """ customer_weight evaluation"""
 def plot_customer_weight(phase: str, selected_folder: str, config: PlotConfig) -> None:
     result_folder, result_path = setup_paths(phase, selected_folder)
     vf.create_custW3_barplot(result_path, config)
     vf.create_custW3_time_boxplot_three(result_path, config)
-    """
     vf.create_custW3_wait_grouped(result_path, config)
     vf.create_custW3_waitcust_grouped(result_path, config)
-    vf.create_custW3_time_boxplot_double(result_path, config)
     vf.create_custW3_time_boxplot_forth(result_path, config)
-    """
+
 
 
 """ compare evaluation"""
@@ -132,11 +120,11 @@ def plot_compare(phase: str, selected_folder: str, config: PlotConfig) -> None:
 
     vf.create_compare_barplot_single(result_path, isud_path, config)
     vf.create_compare_request_boxplot_triple(result_path, isud_path, config)
-    """
+
     vf.create_compare_wait_grouped(result_path, config)
     vf.create_compare_request_boxplot_double(result_path, config)
     vf.create_compare_time_boxplot_double(result_path, config)
-    """
+
 
 """ obj formulation evaluation"""
 def plot_obj_compare(phase: str, selected_folder: str, config: PlotConfig) -> None:
@@ -203,8 +191,12 @@ def main(
 
         if gather_data:
             result_folder, _ = setup_paths(phase, folder)
-            merge_with_averaged_epoch(result_folder)
-     #       merge_with_all_iterations(result_folder)
+            if folder == "pruning":
+                merge_with_all_iterations(result_folder)
+            elif folder == "compare":
+                merge_basic(result_folder)
+            else:
+                merge_with_averaged_epoch(result_folder)
 
         print(f"[INFO] Running plots for folder '{folder}' in phase '{phase}'")
         plot_fn(phase=phase, selected_folder=folder, config=config)

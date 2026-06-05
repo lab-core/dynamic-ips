@@ -97,8 +97,8 @@ void ConfigParser::printUsage(const char* programName) {
                  "(data/ToyExample).\n\n"
               << "Required arguments:\n"
               << "  --inst-folder <path>        Path to instance folder\n"
-              << "  --main-algo <int|name>      Main algorithm: 0..6 or a name\n"
-              << "                              (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG)\n"
+              << "  --main-algo <int|name>      Main algorithm: 0..4 or a name\n"
+              << "                              (GREEDY, MIP, RT_CG, MP_ISUD, A_CG)\n"
               << "  --sol-mode <int|name>       Solution mode: 0..2 or a name\n"
               << "                              (STATIC, DYNAMIC, ANYTIME)\n"
               << "  --paramfile <string>        Parameter file name\n"
@@ -297,7 +297,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
         config->mainAlgo_ = parseEnumArg(args["--main-algo"], enum_strings::mainAlgorithmNames);
         if (config->mainAlgo_ < 0) {
             std::cerr << "Error: Unknown --main-algo value '" << args["--main-algo"]
-                      << "'. Use 0..6 or a name (GREEDY, MIP, RT_CG, MP_ISUD, MP_MIP, MP_CP, A_CG).\n";
+                      << "'. Use 0..4 or a name (GREEDY, MIP, RT_CG, MP_ISUD, A_CG).\n";
             return false;
         }
         config->solMode_ = parseEnumArg(args["--sol-mode"], enum_strings::solutionModeNames);

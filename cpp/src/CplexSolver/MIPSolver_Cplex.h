@@ -32,6 +32,7 @@ public:
     IloNumVarArray Z_;
 
     float objValue_;
+    float timeLimit_ = 0.0f;
     int nbNodes_;
     int nbRequests_;
     int nbVehicles_;
@@ -45,6 +46,7 @@ public:
 
     virtual ~MIPSolver_Cplex();
 
+    void setTimeLimit(float seconds) { timeLimit_ = seconds; }
     void initializeModel(PInstance &pInst);
     void buildModel(PInstance &pInst);
     void configureCplex();

@@ -168,23 +168,20 @@ def preprocess_nested_data(
             # ===============================================================
             # 🔹 NON-AGGREGATED MODE — return full expanded rows
             # ===============================================================
-            for i in range(len(nested_data)):
-                row_dict = {
-                    instance_column: instance_id,
-                    algorithm_column: row[algorithm_column],
-                }
+            chunk = nested_data[existing_columns].copy()
 
-                for p in preserve_columns:
-                    if p in row:
-                        row_dict[p] = row[p]
-
+            if transform_func:
                 for col in existing_columns:
-                    v = nested_data[col].iloc[i]
-                    if transform_func:
-                        v = transform_func(v)
-                    row_dict[col] = v
+                    chunk[col] = chunk[col].map(transform_func)
 
-                rows.append(row_dict)
+            chunk[instance_column] = instance_id
+            chunk[algorithm_column] = row[algorithm_column]
+
+            for p in preserve_columns:
+                if p in row:
+                    chunk[p] = row[p]
+
+            rows.append(chunk)
 
         except Exception as e:
             print(f"Error reading {file_path}: {e}")
@@ -192,7 +189,9 @@ def preprocess_nested_data(
     # ===============================================================
     # RETURN FINAL OUTPUT
     # ===============================================================
-    return pd.DataFrame(aggregated_rows if aggregate_func else rows)
+    if aggregate_func:
+        return pd.DataFrame(aggregated_rows)
+    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
 
 
 def extract_all_columns_for_data_type(

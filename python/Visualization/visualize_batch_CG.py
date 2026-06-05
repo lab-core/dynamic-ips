@@ -15,13 +15,11 @@ from Visualization.visualize_scatter_plots import plot_pruning_scatter_double, c
     create_grouped_lineplot, plot_pruning_scatter_single
 from Visualization.visualize_violin_plots import create_multi_subplot_violinplots
 
-outlier = True
-
 
 # ---------------------------------------------------------------------------
 # Box plots
 # ---------------------------------------------------------------------------
-def create_pruning_time_boxplot_double(data_path: str, config: PlotConfig):
+def create_pruning_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
     """Create double boxplot for pruning strategies comparison."""
 
     return create_comparison_boxplots(
@@ -46,12 +44,12 @@ def create_pruning_time_boxplot_double(data_path: str, config: PlotConfig):
         legend_bbox2=(0.42, 0.865),  # bbox_anchor_legend2
         legend_ncol=2,
         color_reverse=True,
-        show_outliers=True,
+        show_outliers=outlier,
         fig_size=config.fig_size,
         tight_layout_rect=(0, 0, 1, 0.8)
     )
 
-def create_pruning_time_boxplot_single(data_path: str, config: PlotConfig):
+def create_pruning_time_boxplot_single(data_path: str, config: PlotConfig, outlier: bool = True):
     """Single subplot showing runtime for different sorting strategies."""
 
     # Define filtering function
@@ -104,7 +102,7 @@ def create_pruning_time_boxplot_single(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.81),
     )
 
-def create_dropPick_time_boxplot_double(data_path: str, config: PlotConfig):
+def create_dropPick_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
     """Create double boxplot for drop-pick options comparison."""
 
     return create_comparison_boxplots(
@@ -127,13 +125,13 @@ def create_dropPick_time_boxplot_double(data_path: str, config: PlotConfig):
         legend_bbox2=(0.4, 0.89),  # bbox_anchor_legend2
         legend_ncol=2,
         color_reverse=True,
-        show_outliers=True,
+        show_outliers=outlier,
         fig_size=config.fig_size,
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
 
-def create_dropPick_wait_time_baxplot_double(data_path: str, config: PlotConfig) -> str:
+def create_dropPick_wait_time_baxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     main_df = read_csv_with_encoding(data_path)
     main_df = main_df[main_df['Ride_W2'] == 0]
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
@@ -248,7 +246,7 @@ def create_dropPick_wait_time_baxplot_double(data_path: str, config: PlotConfig)
 
     return figure_path
 
-def create_dynamic_wait_time_baxplot_double(data_path: str, config: PlotConfig) -> str:
+def create_dynamic_wait_time_baxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
     main_df = main_df[main_df['Ride_W2'] == 0]
@@ -320,7 +318,7 @@ def create_dynamic_wait_time_baxplot_double(data_path: str, config: PlotConfig) 
     return figure_path
 
 
-def create_dynamic_time_boxplot_double(data_path: str, config: PlotConfig):
+def create_dynamic_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
     """Create double boxplot for dynamic pricing comparison with drop-pick filter."""
 
     return create_comparison_boxplots(
@@ -343,13 +341,13 @@ def create_dynamic_time_boxplot_double(data_path: str, config: PlotConfig):
         legend_bbox2=(0.43, 0.89),  # bbox_anchor_legend2
         legend_ncol=2,
         color_reverse=True,
-        show_outliers=True,
+        show_outliers=outlier,
         fig_size=config.fig_size,
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
 
-def create_dynamic_avgtime_boxplot_double(data_path: str, config: PlotConfig):
+def create_dynamic_avgtime_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
     """Create double boxplot for dynamic average time comparison."""
 
     # Preprocess function to calculate average time
@@ -377,14 +375,14 @@ def create_dynamic_avgtime_boxplot_double(data_path: str, config: PlotConfig):
         legend_bbox2=(0.43, 0.89),  # bbox_anchor_legend2
         legend_ncol=2,
         color_reverse=True,
-        show_outliers=True,
+        show_outliers=outlier,
         fig_size=config.fig_size,
         additional_filter=preprocess_avgtime,
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
 
-def create_truncate_time_boxplot(data_path: str, config: PlotConfig):
+def create_truncate_time_boxplot(data_path: str, config: PlotConfig, outlier: bool = True):
     """Single subplot showing runtime for different sorting strategies."""
 
     # Define filtering function
@@ -409,33 +407,32 @@ def create_truncate_time_boxplot(data_path: str, config: PlotConfig):
         target_lines={'Epoch size (30s)': 30},
         rotation=0,
         additional_filter=preprocess_truncate,
-        show_outliers=True,
+        show_outliers=outlier,
         ylim = (0 , 530),
         legend_loc = 'upper left',
     )
 
 
-def create_commit_response_boxplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess commit wait time data
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column='CommitWaitTime',
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
-        transform_func=lambda x: x / 60,  # Convert to minutes
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'Algorithm_Name']
-    )
-
-    # Save to temporary file
-    temp_path = os.path.join(os.path.dirname(data_path), 'temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+def create_commit_response_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
+    temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column='CommitWaitTime',
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
+            transform_func=lambda x: x / 60,  # Convert to minutes
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'Algorithm_Name', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Create comparison boxplot
     figure_path = create_comparison_boxplots(
@@ -461,34 +458,29 @@ def create_commit_response_boxplot_double(data_path: str, config: PlotConfig):
         fig_size=config.fig_size
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
 
-def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess commit wait time data
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column='WaitTime',
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
-        transform_func=lambda x: x / 60,  # Convert to minutes
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'Algorithm_Name']
-    )
-
-    # Save to temporary file
-    temp_path = os.path.join(os.path.dirname(data_path), 'temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
+    temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column='WaitTime',
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
+            transform_func=lambda x: x / 60,  # Convert to minutes
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'Algorithm_Name', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Create comparison boxplot
     figure_path = create_comparison_boxplots(
@@ -514,35 +506,29 @@ def create_commit_wait_boxplot_double(data_path: str, config: PlotConfig):
         fig_size=config.fig_size
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_commit_wait_response_baxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'CommitWaitTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'Algorithm_Name']
-    )
-    processed_df = processed_df[processed_df['Ride_W2'] == 0]
-
-    # Save to temporary file
+def create_commit_wait_response_baxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'CommitWaitTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'Algorithm_Name', 'Instance_category']
+        )
+        processed_df = processed_df[processed_df['Ride_W2'] == 0]
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -600,35 +586,29 @@ def create_commit_wait_response_baxplot_double(data_path: str, config: PlotConfi
         tight_layout_rect=(0, 0, 1, 0.9),
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_commit_wait_response_baxplot_group(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'CommitWaitTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'Algorithm_Name', 'Instance_category']
-    )
-    processed_df = processed_df[processed_df['Ride_W2'] == 0]
-
-    # Save to temporary file
+def create_commit_wait_response_baxplot_group(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'CommitWaitTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'Algorithm_Name', 'Instance_category']
+        )
+        processed_df = processed_df[processed_df['Ride_W2'] == 0]
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -646,7 +626,7 @@ def create_commit_wait_response_baxplot_group(data_path: str, config: PlotConfig
             'show_outliers': outlier,
             'show_legend': False,  # we will use a shared legend
  #           'ylim': (0, 99),
-            'ylim': (0, 16.8),
+ #           'ylim': (0, 16.8),
         },
         {  # RIGHT: Response Times
             'item_column': 'Instance_category',
@@ -662,7 +642,7 @@ def create_commit_wait_response_baxplot_group(data_path: str, config: PlotConfig
             'show_outliers': outlier,
             'show_legend': False,  # we will use a shared legend
  #           'ylim' : (0, 98),
-            'ylim': (0, 16.8),
+  #          'ylim': (0, 16.8),
         }
     ]
 
@@ -690,38 +670,34 @@ def create_commit_wait_response_baxplot_group(data_path: str, config: PlotConfig
         tight_layout_rect=(0, 0, 1, 0.9),
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
 
-def create_ablation_wait_boxplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
+def create_ablation_wait_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
+    temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
 
-    # Create the 'setting' column by mapping paramFile values
-    main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
- #   main_df = main_df[main_df['Dynamic_Pricing'] == True]
+        # Create the 'setting' column by mapping paramFile values
+        main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
 
-    # Preprocess commit wait time data
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
-        transform_func=lambda x: x / 60,  # Convert to minutes
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-
-    # Save to temporary file
-    temp_path = os.path.join(os.path.dirname(data_path), 'temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+        # Preprocess commit wait time data
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],  # Filter unrealistic values
+            transform_func=lambda x: x / 60,  # Convert to minutes
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Create comparison boxplot
     figure_path = create_comparison_boxplots(
@@ -770,37 +746,32 @@ def create_ablation_wait_boxplot_double(data_path: str, config: PlotConfig):
         fig_size=config.fig_size
     )
 
-    # Clean up
- #   if os.path.exists(temp_path):
- #       os.remove(temp_path)
-
     return figure_path
 
 
-def create_ablation_time_boxplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
+def create_ablation_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
+    temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
 
-    # Create the 'setting' column by mapping paramFile values
-    main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
-   # main_df = main_df[main_df['Dynamic_Pricing'] == True]
-    # Preprocess commit wait time data
+        # Create the 'setting' column by mapping paramFile values
+        main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
 
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', 'Epoch',
-                      '#nodePerVehicle', '#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-
-    # Save to temporary file
-    temp_path = os.path.join(os.path.dirname(data_path), 'temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', 'Epoch',
+                          '#nodePerVehicle', '#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Create comparison boxplot
     figure_path = create_comparison_boxplots(
@@ -925,59 +896,29 @@ def create_ablation_time_boxplot_double(data_path: str, config: PlotConfig):
         fig_size=config.fig_size
     )
 
-    figure_path = create_comparison_boxplots(
-        data_path=temp_path,
-        config=config,
-        comparison_column='Ride_W2',
-        comparison_values=[0, 0.5],
-        item_column='Instance_category',
-        category_column='setting',
-        value_column='#SP Iter',
-        categories=c.param_to_setting_labels,
-        category_labels=c.param_to_setting_labels,
-        legend_title='Setting',
-        ylabel='# Iterations per Epoch',
-        output_filename=f'ablation_iter_boxplot_{outlier}.pdf',
-        width=0.35,
-        gap_factors=[0, 0, 0, 0],
-        rotation=15,
-        legend_bbox=(0.55, 0.99),
-        legend_ncol=2,
-        color_reverse=True,
-        show_outliers=outlier,
-        tight_layout_rect=(0, 0, 1, 0.85),
-        fig_size=config.fig_size
-    )
-
-    # Clean up
- #   if os.path.exists(temp_path):
- #       os.remove(temp_path)
-
     return figure_path
 
 
-def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category']
-    )
-
-    # Save to temporary file
+def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -1081,50 +1022,43 @@ def create_multiObj_request_boxplot_double(data_path: str, config: PlotConfig) -
         tight_layout_rect=(0, 0, 1, 0.9),
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_multiObj_request_boxplot_triple(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_request_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category']
-    )
-    processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
-
-    # Save to temporary file
+def create_multiObj_request_boxplot_triple(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_request_df.to_csv(request_path, index=False)
-
-    processed_time_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category']
-    )
-
-    # Save to temporary file
     time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_time_df.to_csv(time_path, index=False)
+    if os.path.exists(request_path) and os.path.exists(time_path):
+        processed_request_df = read_csv_with_encoding(request_path)
+        processed_time_df = read_csv_with_encoding(time_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_request_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category']
+        )
+        processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
+        processed_request_df.to_csv(request_path, index=False)
+
+        processed_time_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category']
+        )
+        processed_time_df.to_csv(time_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -1189,14 +1123,9 @@ def create_multiObj_request_boxplot_triple(data_path: str, config: PlotConfig) -
         tight_layout_rect=[0.0, 0.0, 1.0, 0.88],
     )
 
-    # Clean up
-    if os.path.exists(request_path):
-        os.remove(request_path)
-        os.remove(time_path)
-
     return figure_path
 
-def create_multiObj_vehicle_KPI_boxplot_double(data_path: str, config: PlotConfig) -> str:
+def create_multiObj_vehicle_KPI_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
 
@@ -1291,27 +1220,25 @@ def create_multiObj_vehicle_KPI_boxplot_double(data_path: str, config: PlotConfi
     return figure_path
 
 
-def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='vehicle',
-        value_column=['idleTime', 'driveFullTime', 'driveEmptyTime', 'TripDelay'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category']
-    )
-
-    # Save to temporary file
+def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'vehicle_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='vehicle',
+            value_column=['idleTime', 'driveFullTime', 'driveEmptyTime', 'TripDelay'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -1415,13 +1342,9 @@ def create_multiObj_vehicle_boxplot_double(data_path: str, config: PlotConfig) -
         tight_layout_rect=(0, 0, 1, 0.9),
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_multiObj_vehicle_KPI_boxplot(data_path: str, config: PlotConfig) -> str:
+def create_multiObj_vehicle_KPI_boxplot(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
 
@@ -1523,26 +1446,24 @@ def create_multiObj_vehicle_KPI_boxplot(data_path: str, config: PlotConfig) -> s
 
     return figure_path
 
-def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category']
-    )
-
-    # Save to temporary file
+def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -1647,33 +1568,27 @@ def create_multiObj_time_boxplot_double(data_path: str, config: PlotConfig) -> s
         tight_layout_rect=[0, 0, 1, 0.9],
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
 
-def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['#LGenerated', 'EpochRuntime', 'totalRoutes', 'meanDual'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category', 'Req_W3']
-    )
-
-    # Save to temporary file
+def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['#LGenerated', 'EpochRuntime', 'totalRoutes', 'meanDual'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category', 'Req_W3']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     category_labels = [
         "Ignore Customer Weight",
@@ -1785,13 +1700,9 @@ def create_custW3_time_boxplot_double(data_path: str, config: PlotConfig) -> str
         tight_layout_rect=(0, 0, 1, 0.9),
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_custW3_time_boxplot_forth(data_path: str, config: PlotConfig) -> str:
+def create_custW3_time_boxplot_forth(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
 
@@ -1927,7 +1838,7 @@ def create_custW3_time_boxplot_forth(data_path: str, config: PlotConfig) -> str:
 
     return figure_path
 
-def create_custW3_time_boxplot_three(data_path: str, config: PlotConfig) -> str:
+def create_custW3_time_boxplot_three(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     main_df = read_csv_with_encoding(data_path)
 
@@ -2033,28 +1944,26 @@ def create_custW3_time_boxplot_three(data_path: str, config: PlotConfig) -> str:
 
     return figure_path
 
-def create_compare_request_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['object_category', 'customer Group']
-    )
-
-    # Save to temporary file
+def create_compare_request_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['object_category', 'customer Group']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -2154,32 +2063,26 @@ def create_compare_request_boxplot_double(data_path: str, config: PlotConfig) ->
         tight_layout_rect=[0, 0, 1, 0.88],
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_compare_time_boxplot_double(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['object_category', 'customer Group']
-    )
-
-    # Save to temporary file
+def create_compare_time_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['object_category', 'customer Group']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -2280,13 +2183,9 @@ def create_compare_time_boxplot_double(data_path: str, config: PlotConfig) -> st
         tight_layout_rect=[0, 0, 1, 0.88],
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
-def create_epoch_vehicle_boxplot(data_path: str, config: PlotConfig) -> None:
+def create_epoch_vehicle_boxplot(data_path: str, config: PlotConfig, outlier: bool = True) -> None:
     # Read summary config CSV
     main_df = read_csv_with_encoding(data_path)
     main_df = main_df[main_df['Instance_category'] == '4.High Demand']
@@ -2325,7 +2224,7 @@ def create_epoch_vehicle_boxplot(data_path: str, config: PlotConfig) -> None:
 
         print(f"Saved vehicle boxplot → {output_path}")
 
-def create_compare_request_boxplot_triple(data_path: str, data_path_ISUD: str, config: PlotConfig) -> str:
+def create_compare_request_boxplot_triple(data_path: str, data_path_ISUD: str, config: PlotConfig, outlier: bool = True) -> str:
     import pandas as pd
     # -----------------------------
     # 1. Read data from both sources
@@ -2372,40 +2271,39 @@ def create_compare_request_boxplot_triple(data_path: str, data_path_ISUD: str, c
     categories = {k: k for k in category_keys}
     category_labels = list(categories.values())
 
-    # Preprocess data (same as before)
-
-    processed_request_df = preprocess_nested_data(
-        df=df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Algorithm_Name', 'customer Group']
-    )
-    processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
-
-    # Save to temporary file
+    # Use cached preprocessed data if available, otherwise build it
     request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_request_df.to_csv(request_path, index=False)
-
-    processed_time_df = preprocess_nested_data(
-        df=df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['Algorithm_Name', 'customer Group']
-    )
-
-    # Save to temporary file
     time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_time_df.to_csv(time_path, index=False)
+    if os.path.exists(request_path) and os.path.exists(time_path):
+        processed_request_df = read_csv_with_encoding(request_path)
+        processed_time_df = read_csv_with_encoding(time_path)
+    else:
+        processed_request_df = preprocess_nested_data(
+            df=df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Algorithm_Name', 'customer Group', 'object_category']
+        )
+        processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
+        processed_request_df.to_csv(request_path, index=False)
+
+        processed_time_df = preprocess_nested_data(
+            df=df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['Algorithm_Name', 'customer Group', 'object_category']
+        )
+        processed_time_df.to_csv(time_path, index=False)
 
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
@@ -2490,14 +2388,9 @@ def create_compare_request_boxplot_triple(data_path: str, data_path_ISUD: str, c
  #       tight_layout_rect=[0.0, 0.0, 1.0, 0.88],
     )
 
-    # Clean up
-    if os.path.exists(request_path):
-        os.remove(request_path)
-     #   os.remove(time_path)
-
     return figure_path
 
-def create_compare_isud_boxplot_double(data_path: str, data_path_ISUD: str, config: PlotConfig) -> str:
+def create_compare_isud_boxplot_double(data_path: str, data_path_ISUD: str, config: PlotConfig, outlier: bool = True) -> str:
     import pandas as pd
     # -----------------------------
     # 1. Read data from both sources
@@ -2540,40 +2433,39 @@ def create_compare_isud_boxplot_double(data_path: str, data_path_ISUD: str, conf
     categories = {k: k for k in category_keys}
     category_labels = list(categories.values())
 
-    # Preprocess data (same as before)
-
-    processed_request_df = preprocess_nested_data(
-        df=df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Algorithm_Name', 'customer Group']
-    )
-    processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
-
-    # Save to temporary file
+    # Use cached preprocessed data if available, otherwise build it
     request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
-    processed_request_df.to_csv(request_path, index=False)
-
-    processed_time_df = preprocess_nested_data(
-        df=df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['Algorithm_Name', 'customer Group']
-    )
-
-    # Save to temporary file
     time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_time_df.to_csv(time_path, index=False)
+    if os.path.exists(request_path) and os.path.exists(time_path):
+        processed_request_df = read_csv_with_encoding(request_path)
+        processed_time_df = read_csv_with_encoding(time_path)
+    else:
+        processed_request_df = preprocess_nested_data(
+            df=df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Algorithm_Name', 'customer Group', 'object_category']
+        )
+        processed_request_df['TripDelay'] = processed_request_df['TripDelay'] - 0.5
+        processed_request_df.to_csv(request_path, index=False)
+
+        processed_time_df = preprocess_nested_data(
+            df=df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['Algorithm_Name', 'customer Group', 'object_category']
+        )
+        processed_time_df.to_csv(time_path, index=False)
 
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
@@ -2640,11 +2532,6 @@ def create_compare_isud_boxplot_double(data_path: str, data_path_ISUD: str, conf
         palette = palette,
  #       tight_layout_rect=[0.0, 0.0, 1.0, 0.88],
     )
-
-    # Clean up
-    if os.path.exists(request_path):
-        os.remove(request_path)
-     #   os.remove(time_path)
 
     return figure_path
 
@@ -4187,27 +4074,26 @@ def create_compare_isud_barplot_single(
 
     return figure_path
 
-def create_multiObj_gap_violinplots(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-    main_df['GAP'] = 100 * (main_df['Objective'] - main_df['LinearObjective']) / main_df['Objective']
-
-    # Preprocess data (same as before)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['GAP', 'EpochRuntime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['object_category', 'Instance_category', 'GAP']
-    )
-
-    # Save to temporary file
+def create_multiObj_gap_violinplots(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
     temp_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
-    processed_df.to_csv(temp_path, index=False)
+    if os.path.exists(temp_path):
+        processed_df = read_csv_with_encoding(temp_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        main_df['GAP'] = 100 * (main_df['Objective'] - main_df['LinearObjective']) / main_df['Objective']
+
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['GAP', 'EpochRuntime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['object_category', 'Instance_category', 'GAP']
+        )
+        processed_df.to_csv(temp_path, index=False)
 
     # Two subplot configurations: left = WaitTime, right = CommitWaitTime
     subplot_configs_1 = [
@@ -4256,44 +4142,43 @@ def create_multiObj_gap_violinplots(data_path: str, config: PlotConfig) -> str:
         },
     )
 
-    # Clean up
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
     return figure_path
 
 
-def create_ablation_iter_violinplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Create the 'setting' column by mapping paramFile values
-    main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
-   # main_df = main_df[main_df['Dynamic_Pricing'] == True]
-    # Preprocess commit wait time data
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-
-    processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
-    processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
-
-    processed_df_0 = processed_df_0[processed_df_0['Instance_category'] != '4.High Demand']
-    processed_df_5 = processed_df_5[processed_df_5['Instance_category'] != '4.High Demand']
-
+def create_ablation_iter_violinplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
     temp_path_0 = os.path.join(os.path.dirname(data_path), 'time_temp_0.csv')
-    processed_df_0.to_csv(temp_path_0, index=False)
-
     temp_path_5 = os.path.join(os.path.dirname(data_path), 'time_temp_5.csv')
-    processed_df_5.to_csv(temp_path_5, index=False)
+    if os.path.exists(temp_path_0) and os.path.exists(temp_path_5):
+        processed_df_0 = read_csv_with_encoding(temp_path_0)
+        processed_df_5 = read_csv_with_encoding(temp_path_5)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+
+        # Create the 'setting' column by mapping paramFile values
+        main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
+       # main_df = main_df[main_df['Dynamic_Pricing'] == True]
+        # Preprocess commit wait time data
+
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+
+        processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
+        processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
+
+        processed_df_0 = processed_df_0[processed_df_0['Instance_category'] != '4.High Demand']
+        processed_df_5 = processed_df_5[processed_df_5['Instance_category'] != '4.High Demand']
+
+        processed_df_0.to_csv(temp_path_0, index=False)
+        processed_df_5.to_csv(temp_path_5, index=False)
 
     subplot_configs_1 = [
         {  # LEFT: Problem Size
@@ -4356,43 +4241,42 @@ def create_ablation_iter_violinplot_double(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.85)
     )
 
-    # Clean up
- #   if os.path.exists(temp_path):
- #       os.remove(temp_path)
-
     return figure_path
 
-def create_ablation_iter_violinplot_single(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    # Create the 'setting' column by mapping paramFile values
-    main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
-   # main_df = main_df[main_df['Dynamic_Pricing'] == True]
-    # Preprocess commit wait time data
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-
-    processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
-    processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
-
-    processed_df_0 = processed_df_0[processed_df_0['Instance_category'] != '4.High Demand']
-    processed_df_5 = processed_df_5[processed_df_5['Instance_category'] != '4.High Demand']
-
+def create_ablation_iter_violinplot_single(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
     temp_path_0 = os.path.join(os.path.dirname(data_path), 'time_temp_0.csv')
-    processed_df_0.to_csv(temp_path_0, index=False)
-
     temp_path_5 = os.path.join(os.path.dirname(data_path), 'time_temp_5.csv')
-    processed_df_5.to_csv(temp_path_5, index=False)
+    if os.path.exists(temp_path_0) and os.path.exists(temp_path_5):
+        processed_df_0 = read_csv_with_encoding(temp_path_0)
+        processed_df_5 = read_csv_with_encoding(temp_path_5)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+
+        # Create the 'setting' column by mapping paramFile values
+        main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
+       # main_df = main_df[main_df['Dynamic_Pricing'] == True]
+        # Preprocess commit wait time data
+
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+
+        processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
+        processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
+
+        processed_df_0 = processed_df_0[processed_df_0['Instance_category'] != '4.High Demand']
+        processed_df_5 = processed_df_5[processed_df_5['Instance_category'] != '4.High Demand']
+
+        processed_df_0.to_csv(temp_path_0, index=False)
+        processed_df_5.to_csv(temp_path_5, index=False)
 
     subplot_configs_1 = [
         {  # LEFT: Problem Size
@@ -4477,35 +4361,34 @@ def create_ablation_iter_violinplot_single(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.9)
     )
 
-    # Clean up
- #   if os.path.exists(temp_path):
- #       os.remove(temp_path)
-
     return figure_path
 
-def create_dynamic_iter_violinplot_double(data_path: str, config: PlotConfig):
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
-    processed_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,  # Keep all values for boxplot
-        additional_columns=['Ride_W2', 'Dynamic_Pricing']
-    )
-
-    processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
-    processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
-
+def create_dynamic_iter_violinplot_double(data_path: str, config: PlotConfig, outlier: bool = True):
+    # Use cached preprocessed data if available, otherwise build it
     temp_path_0 = os.path.join(os.path.dirname(data_path), 'time_temp_0.csv')
-    processed_df_0.to_csv(temp_path_0, index=False)
-
     temp_path_5 = os.path.join(os.path.dirname(data_path), 'time_temp_5.csv')
-    processed_df_5.to_csv(temp_path_5, index=False)
+    if os.path.exists(temp_path_0) and os.path.exists(temp_path_5):
+        processed_df_0 = read_csv_with_encoding(temp_path_0)
+        processed_df_5 = read_csv_with_encoding(temp_path_5)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+
+        processed_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,  # Keep all values for boxplot
+            additional_columns=['Ride_W2', 'Dynamic_Pricing']
+        )
+
+        processed_df_0 = processed_df[processed_df['Ride_W2'] == 0]
+        processed_df_5 = processed_df[processed_df['Ride_W2'] == 0.5]
+
+        processed_df_0.to_csv(temp_path_0, index=False)
+        processed_df_5.to_csv(temp_path_5, index=False)
 
     subplot_configs_1 = [
         {  # LEFT: Problem Size
@@ -4566,10 +4449,6 @@ def create_dynamic_iter_violinplot_double(data_path: str, config: PlotConfig):
         tight_layout_rect=(0, 0, 1, 0.87)
     )
 
-    # Clean up
- #   if os.path.exists(temp_path):
- #       os.remove(temp_path)
-
     return figure_path
 
 def create_runtime_iter_box_violin(
@@ -4579,6 +4458,7 @@ def create_runtime_iter_box_violin(
     color_reverse: bool = False,
     palette_name: str = "gist_earth",
     palette=None,
+    outlier: bool = True
 ) -> str:
     """
     Create one figure with two subplots, only for Ride_W2 == 0:
@@ -4790,98 +4670,50 @@ def create_runtime_iter_box_violin(
     return figure_path
 
 
-def create_ablation_request_boxplot_triple(data_path: str, config: PlotConfig) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
+def create_ablation_request_boxplot_triple(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
+    # Use cached preprocessed data if available, otherwise build it
+    request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
+    time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
+    if os.path.exists(request_path) and os.path.exists(time_path):
+        processed_request_df = read_csv_with_encoding(request_path)
+        processed_time_df = read_csv_with_encoding(time_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
 
-    # Create the 'setting' column by mapping paramFile values
-    main_df['setting'] = main_df['paramFile'].map(c.param_to_setting)
+        processed_request_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_request_df.to_csv(request_path, index=False)
 
-    processed_request_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
+        processed_time_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', '#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_time_df.to_csv(time_path, index=False)
 
-    processed_time_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', '#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-
-    processed_request_df_0 = processed_request_df[processed_request_df['Ride_W2'] == 0]
-    processed_request_df_5 = processed_request_df[processed_request_df['Ride_W2'] == 0.5]
-
-    processed_time_df_0 = processed_time_df[processed_time_df['Ride_W2'] == 0]
-    processed_time_df_5 = processed_time_df[processed_time_df['Ride_W2'] == 0.5]
-
-    # Two subplot configurations: left = WaitTime, right = CommitWaitTime
-    subplot_configs_1 = [
-        {  # 1: Waiting Times
-   #         'data_path': request_path,
-            'data_df': processed_request_df_0,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': 'WaitTime',
-            'categories': c.param_to_setting_labels,
-            'category_labels': c.param_to_setting_labels,
-            'ylabel': 'Waiting Times (min)',
-            'xlabel': 'Waiting Times',
-            'rotation': 20,
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # we will use a shared legend
-        },
-        {  # 2: Trip delay
-  #          'data_path': request_path,
-            'data_df': processed_time_df_0,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': 'EpochRuntime',
-            'categories': c.param_to_setting_labels,
-            'category_labels': c.param_to_setting_labels,
-            'ylabel': 'Epoch Runtime (s)',
-            'xlabel': 'Runtime',
-            'rotation': 20,
-            'target_lines': 30,
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # shared legend only
-        },
-        {  # 3. nbRequests
-      #      'data_path': time_path,  # <--- per-subplot
-            'data_df': processed_time_df_0,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': '#passPerVehicle',
-            'categories': c.param_to_setting_labels,
-            'category_labels': c.param_to_setting_labels,
-            'ylabel': 'Initial Vehicle Load',
-            'xlabel': 'Initial Onboard Passengers',
-            'rotation': 20,
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # shared legend only
-        },
+    ride_w2_variants = [
+        (0, processed_request_df[processed_request_df['Ride_W2'] == 0],
+            processed_time_df[processed_time_df['Ride_W2'] == 0]),
+        (5, processed_request_df[processed_request_df['Ride_W2'] == 0.5],
+            processed_time_df[processed_time_df['Ride_W2'] == 0.5]),
     ]
 
-
-    # Shared legend configuration (top center)
     shared_legend_config = {
         'loc': 'upper center',
         'bbox': (0.6, 0.99),
@@ -4889,148 +4721,126 @@ def create_ablation_request_boxplot_triple(data_path: str, config: PlotConfig) -
         'title': 'Setting'
     }
 
-    # Create ONE figure with two subplots
-    figure_path = create_multi_subplot_boxplots(
-        data_path=data_path,
-        config=config,
-        subplot_configs=subplot_configs_1,
-        output_filename=f'ablation_triple_boxplot_{outlier}.pdf',
-        fig_size=(9.5, 4),
-        n_rows=1,
-        n_cols=3,
-        shared_legend=True,
-        shared_legend_config=shared_legend_config,
-        additional_filter=None,
-        color_reverse=False,
-        tight_layout_rect=[0.0, 0.0, 1.0, 0.88],
-    )
+    figure_path = None
+    for num, data_df_request, data_df_time in ride_w2_variants:
+        subplot_configs_1 = [
+            {  # Waiting Times
+                'data_df': data_df_request,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': 'WaitTime',
+                'categories': c.param_to_setting_labels,
+                'category_labels': c.param_to_setting_labels,
+                'ylabel': 'Waiting Times (min)',
+                'xlabel': 'Waiting Times',
+                'rotation': 20,
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+            {  # Epoch Runtime
+                'data_df': data_df_time,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': 'EpochRuntime',
+                'categories': c.param_to_setting_labels,
+                'category_labels': c.param_to_setting_labels,
+                'ylabel': 'Epoch Runtime (s)',
+                'xlabel': 'Runtime',
+                'rotation': 20,
+                'target_lines': 30,
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+            {  # Initial Vehicle Load
+                'data_df': data_df_time,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': '#passPerVehicle',
+                'categories': c.param_to_setting_labels,
+                'category_labels': c.param_to_setting_labels,
+                'ylabel': 'Initial Vehicle Load',
+                'xlabel': 'Initial Onboard Passengers',
+                'rotation': 20,
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+        ]
+
+        figure_path = create_multi_subplot_boxplots(
+            data_path=data_path,
+            config=config,
+            subplot_configs=subplot_configs_1,
+            output_filename=f'ablation_triple_boxplot_{num}_{outlier}.pdf',
+            fig_size=(9.5, 4),
+            n_rows=1,
+            n_cols=3,
+            shared_legend=True,
+            shared_legend_config=shared_legend_config,
+            additional_filter=None,
+            color_reverse=False,
+            tight_layout_rect=[0.0, 0.0, 1.0, 0.88],
+        )
 
     return figure_path
 
 
 def create_ablation_request_boxplot_fourth(data_path: str, config: PlotConfig,
-                                          param_map=None, param_labels=None) -> str:
-    # Read main data
-    main_df = read_csv_with_encoding(data_path)
-
+                                          param_map=None, param_labels=None, outlier: bool = True) -> str:
     # Create the 'setting' column by mapping paramFile values
     _param_map    = param_map    or c.param_to_setting
     _param_labels = param_labels or c.param_to_setting_labels
-    main_df['setting'] = main_df['paramFile'].map(_param_map)
 
-    processed_request_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='request',
-        value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        filter_condition=lambda df: df[df['TripDelay'] >= 0],
-        transform_func=lambda x: x / 60,  # seconds -> minutes
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
-    processed_request_df['TripDelay'] = processed_request_df['TripDelay']-0.5
+    # Use cached preprocessed data if available, otherwise build it
+    request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
+    time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
+    if os.path.exists(request_path) and os.path.exists(time_path):
+        processed_request_df = read_csv_with_encoding(request_path)
+        processed_time_df = read_csv_with_encoding(time_path)
+    else:
+        main_df = read_csv_with_encoding(data_path)
+        main_df['setting'] = main_df['paramFile'].map(_param_map)
 
-    processed_time_df = preprocess_nested_data(
-        df=main_df,
-        data_path=data_path,
-        data_type='time',
-        value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', '#SP Iter'],
-        instance_column='Instance',
-        algorithm_column='Algorithm',
-        aggregate_func=None,
-        additional_columns=['Ride_W2', 'setting', 'Instance_category']
-    )
+        processed_request_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='request',
+            value_column=['WaitTime', 'TripDelay', 'CommitWaitTime', 'AssignTime'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            filter_condition=lambda df: df[df['TripDelay'] >= 0],
+            transform_func=lambda x: x / 60,  # seconds -> minutes
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_request_df['TripDelay'] = processed_request_df['TripDelay']-0.5
+        processed_request_df.to_csv(request_path, index=False)
 
-    processed_request_df_0 = processed_request_df[processed_request_df['Ride_W2'] == 0]
-    processed_request_df_5 = processed_request_df[processed_request_df['Ride_W2'] == 0.5]
+        processed_time_df = preprocess_nested_data(
+            df=main_df,
+            data_path=data_path,
+            data_type='time',
+            value_column=['nbRequests', 'EpochRuntime', '#passPerVehicle', '#requestPerVehicle', 'Epoch',
+                          '#nodePerVehicle', '#SP Iter'],
+            instance_column='Instance',
+            algorithm_column='Algorithm',
+            aggregate_func=None,
+            additional_columns=['Ride_W2', 'setting', 'Instance_category']
+        )
+        processed_time_df.to_csv(time_path, index=False)
 
-    processed_time_df_0 = processed_time_df[processed_time_df['Ride_W2'] == 0]
-    processed_time_df_5 = processed_time_df[processed_time_df['Ride_W2'] == 0.5]
-
-    data_df_time = processed_time_df_0
-    data_df_request = processed_request_df_0
-    num = 0
-
-    # Two subplot configurations: left = WaitTime, right = CommitWaitTime
-    subplot_configs_1 = [
-        {  # 2: Trip delay
-            #          'data_path': request_path,
-            'data_df': data_df_time,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': 'EpochRuntime',
-            'categories': _param_labels,
-            'category_labels': _param_labels,
-            'ylabel': 'Epoch Runtime (s)',
-            'xlabel': 'Demand Category',
-  #          'ylim': (0,68),
-            'ylim': (0, 305),
-            'rotation': 15,
-            'target_lines': 30,
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # shared legend only
-        },
-        {  # 3. nbRequests
-            #      'data_path': time_path,  # <--- per-subplot
-            'data_df': data_df_time,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': '#passPerVehicle',
-            'categories': _param_labels,
-            'category_labels': _param_labels,
-            'ylabel': 'Initial Vehicle Load',
-            'xlabel': 'Demand Category',
-            'rotation': 15,
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # shared legend only
-        },
-
-        {  # 3. nbRequests
-            #      'data_path': time_path,  # <--- per-subplot
-            'data_df': data_df_time,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': 'nbRequests',
-            'categories': _param_labels,
-            'category_labels': _param_labels,
-            'ylabel': '# Pending Requests',
-            'xlabel': 'Demand Category',
-            'rotation': 15,
- #           'ylim': (0, 850),
-            'ylim': (0, 2950),
-            'width': 0.4,
-            'show_outliers': outlier,
-            'show_legend': False,  # shared legend only
-        },
-        {  # 1: Waiting Times
-   #         'data_path': request_path,
-            'data_df': data_df_request,
-            'item_column': 'Instance_category',
-            'x_tick_labels': c.vehicle_groups_labels,
-            'category_column': 'setting',
-            'value_column': 'WaitTime',
-            'categories': _param_labels,
-            'category_labels': _param_labels,
-            'ylabel': 'Waiting Times (min)',
-            'xlabel': 'Demand Category',
-            'rotation': 15,
-            'width': 0.4,
-  #          'ylim': (0, 18.2),
-            'ylim': (0, 34),
-            'show_outliers': outlier,
-            'show_legend': False,  # we will use a shared legend
-        },
+    ride_w2_variants = [
+        (0, processed_time_df[processed_time_df['Ride_W2'] == 0],
+            processed_request_df[processed_request_df['Ride_W2'] == 0]),
+        (5, processed_time_df[processed_time_df['Ride_W2'] == 0.5],
+            processed_request_df[processed_request_df['Ride_W2'] == 0.5]),
     ]
 
-
-    # Shared legend configuration (top center)
     shared_legend_config = {
         'loc': 'upper center',
         'bbox': (0.5, 0.99),
@@ -5043,22 +4853,90 @@ def create_ablation_request_boxplot_fourth(data_path: str, config: PlotConfig,
         'bbox': (0.33, 0.9)
     }
 
-    # Create ONE figure with two subplots
-    figure_path = create_multi_subplot_boxplots(
-        data_path=data_path,
-        config=config,
-        subplot_configs=subplot_configs_1,
-        output_filename=f'ablation_fourth_boxplot_{num}_{outlier}.pdf',
-        fig_size=(13, 4),
-        n_rows=1,
-        n_cols=4,
-        shared_legend=True,
-        shared_legend_config=shared_legend_config,
-        shared_target_line_legend=shared_target_line_legend,
-        additional_filter=None,
-        color_reverse=False,
-        tight_layout_rect=[0.0, 0.0, 1.0, 0.86],
-    )
+    figure_path = None
+    for num, data_df_time, data_df_request in ride_w2_variants:
+        subplot_configs_1 = [
+            {  # Epoch Runtime
+                'data_df': data_df_time,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': 'EpochRuntime',
+                'categories': _param_labels,
+                'category_labels': _param_labels,
+                'ylabel': 'Epoch Runtime (s)',
+                'xlabel': 'Demand Category',
+                'ylim': (0, 305),
+                'rotation': 15,
+                'target_lines': 30,
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+            {  # Initial Vehicle Load
+                'data_df': data_df_time,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': '#passPerVehicle',
+                'categories': _param_labels,
+                'category_labels': _param_labels,
+                'ylabel': 'Initial Vehicle Load',
+                'xlabel': 'Demand Category',
+                'rotation': 15,
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+            {  # Pending Requests
+                'data_df': data_df_time,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': 'nbRequests',
+                'categories': _param_labels,
+                'category_labels': _param_labels,
+                'ylabel': '# Pending Requests',
+                'xlabel': 'Demand Category',
+                'rotation': 15,
+                'ylim': (0, 2950),
+                'width': 0.4,
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+            {  # Waiting Times
+                'data_df': data_df_request,
+                'item_column': 'Instance_category',
+                'x_tick_labels': c.vehicle_groups_labels,
+                'category_column': 'setting',
+                'value_column': 'WaitTime',
+                'categories': _param_labels,
+                'category_labels': _param_labels,
+                'ylabel': 'Waiting Times (min)',
+                'xlabel': 'Demand Category',
+                'rotation': 15,
+                'width': 0.4,
+                'ylim': (0, 34),
+                'show_outliers': outlier,
+                'show_legend': False,
+            },
+        ]
+
+        figure_path = create_multi_subplot_boxplots(
+            data_path=data_path,
+            config=config,
+            subplot_configs=subplot_configs_1,
+            output_filename=f'ablation_fourth_boxplot_{num}_{outlier}.pdf',
+            fig_size=(13, 4),
+            n_rows=1,
+            n_cols=4,
+            shared_legend=True,
+            shared_legend_config=shared_legend_config,
+            shared_target_line_legend=shared_target_line_legend,
+            additional_filter=None,
+            color_reverse=False,
+            tight_layout_rect=[0.0, 0.0, 1.0, 0.86],
+        )
 
     return figure_path
 
@@ -5171,7 +5049,7 @@ def create_multiObj_multi_std_plot(data_path: str, config: PlotConfig) -> None:
         )
 
 
-def create_obj_compare_request_boxplot_triple(data_path: str, config: PlotConfig) -> str:
+def create_obj_compare_request_boxplot_triple(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
     time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
@@ -5305,7 +5183,7 @@ def create_obj_compare_request_boxplot_triple(data_path: str, config: PlotConfig
 
     return figure_path
 
-def create_obj_compare_request_boxplot_fourth(data_path: str, config: PlotConfig) -> str:
+def create_obj_compare_request_boxplot_fourth(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     request_path = os.path.join(os.path.dirname(data_path), 'request_temp_data.csv')
     time_path = os.path.join(os.path.dirname(data_path), 'time_temp_data.csv')
@@ -5464,7 +5342,7 @@ def create_obj_compare_request_boxplot_fourth(data_path: str, config: PlotConfig
 
     return figure_path
 
-def create_obj_compare_vehicle_KPI_boxplot_double(data_path: str, config: PlotConfig) -> str:
+def create_obj_compare_vehicle_KPI_boxplot_double(data_path: str, config: PlotConfig, outlier: bool = True) -> str:
     # Read main data
     time_path = os.path.join(os.path.dirname(data_path), 'vehicle_temp_data.csv')
     # Preprocess data (same as before)

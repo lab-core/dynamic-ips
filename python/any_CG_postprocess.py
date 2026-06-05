@@ -114,10 +114,11 @@ def main(
 
         if gather_data:
             result_folder, _ = setup_paths(phase, folder)
-            merge_with_averaged_epoch(result_folder)
-#            merge_basic(result_folder)
-   #         merge_with_all_iterations(result_folder)
-   #         merge_complete(result_folder)
+            if folder == "profile":
+                merge_with_all_iterations(result_folder)
+            else:
+                merge_with_averaged_epoch(result_folder)
+
 
         print(f"[INFO] Running plots for folder '{folder}' in phase '{phase}'")
         plot_fn(phase=phase, selected_folder=folder, config=config)
@@ -127,4 +128,4 @@ if __name__ == "__main__":
     # Use scripts/plot_ACG.py for the CLI entry point:
     #   python scripts/plot_ACG.py --folders rebalance_anytime
     #   python scripts/plot_ACG.py --folders all
-    main("", selected_folders="rebalance_anytime", gather_data=False)
+    main("", selected_folders="profile", gather_data=False)

@@ -30,6 +30,7 @@ public:
     std::vector<GRBVar>                           Z_;   // Z_[i]
 
     float objValue_;
+    float timeLimit_ = 0.0f;
     int   nbNodes_;
     int   nbRequests_;
     int   nbVehicles_;
@@ -43,6 +44,7 @@ public:
     MIPSolver_Gurobi();
     virtual ~MIPSolver_Gurobi();
 
+    void setTimeLimit(float seconds) { timeLimit_ = seconds; }
     void initializeModel(PInstance &pInst);
     void buildModel(PInstance &pInst);
     void configureGurobi();

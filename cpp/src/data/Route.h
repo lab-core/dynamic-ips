@@ -71,7 +71,6 @@ public:
 
     // function to reconstruct the generated routes in the pool from the last epoch based on the current state
     bool reConstructRoute(const PVehicle & vehicle);
-    bool reConstruct1(const PVehicle &vehicle, float wait_W1, float ride_W2);
     bool reConstruct(const PVehicle &vehicle, float wait_W1, float ride_W2);
 
     // function to add node to the solution route

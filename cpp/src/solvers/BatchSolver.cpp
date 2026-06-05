@@ -44,7 +44,8 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
             mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
         }
 
-        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY) {
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY &&
+            EpochInst->parameters_->mainAlgorithm_ != MIP) {
             if (mainInst->parameters_->routeRecycle_) {
                 if (!MP_solver_->availableRoutes_.empty()) {
                     updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
@@ -60,7 +61,8 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
 
 
         buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
-        if (mainInst->parameters_->routeRecycle_) {
+        if (mainInst->parameters_->routeRecycle_ &&
+            mainInst->parameters_->mainAlgorithm_ != MIP) {
             // Process available routes: create columns and add keys to duplicates set
             for (size_t vehicleID = 0; vehicleID < MP_solver_->availableRoutes_.size(); ++vehicleID) {
                 for (auto &routeObj : MP_solver_->availableRoutes_[vehicleID]) {
@@ -89,7 +91,8 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         }
 
         if (EpochInst->nbRequests_ == 0) {
-            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
+            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY &&
+                EpochInst->parameters_->mainAlgorithm_ != MIP)
                 MP_solver_->availableRoutes_.clear();
             simulationTime_->stop();
             epoch_++;
@@ -99,21 +102,32 @@ void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool
         if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
             GreedyModel_->GreedySolver(EpochInst);
             handleVehicleReturn(EpochInst);
+            zSolution = GreedyModel_->zSolution_;
         }
-        else
+        else if (EpochInst->parameters_->mainAlgorithm_ == MIP) {
+#if defined(DARP_USE_CPLEX)
+            MIPModel_ = std::make_unique<MIPSolver_Cplex>();
+#elif defined(DARP_USE_GUROBI)
+            MIPModel_ = std::make_unique<MIPSolver_Gurobi>();
+#endif
+            MIPModel_->setTimeLimit(EpochInst->parameters_->epochLength_);
+            MIPModel_->SolveMIP(EpochInst, inputPaths);
+            zSolution = MIPModel_->zSolution_;
+            totalMIPSolveTime_ += MIPModel_->solveTime_->dSinceStart().count();
+        }
+        else {
             solveEpoch(EpochInst, mainInst, inputPaths);
+            zSolution = MP_solver_->zSolution_;
+        }
 
         elapsedTime_ = static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_;
         EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_ + elapsedTime_);
-        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-            *pLogRunTimesStream_ << saveRuntimes(EpochInst);
-        else
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
             *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
-
-        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY)
-            zSolution = MP_solver_->zSolution_;
+        else if (EpochInst->parameters_->mainAlgorithm_ == MIP)
+            *pLogRunTimesStream_ << saveRuntimesMIP(EpochInst);
         else
-            zSolution = GreedyModel_->zSolution_;
+            *pLogRunTimesStream_ << saveRuntimes(EpochInst);
         epoch_++;
         simulationTime_->stop();
     }

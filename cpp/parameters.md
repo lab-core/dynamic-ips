@@ -73,14 +73,14 @@ experiment, it is noted in the **Notes** column.
 | `NumColumn` | int | `50` | Max number of columns (routes) added to the RMP per vehicle per CG iteration                                                               | &Omega; |
 | `sortColumn` | int | `1` | Column ordering before adding to RMP: `0` = `NORMAL_RC`, `1` = `RC` (reduced cost), `2` = `LAMBDA_S`, `3` = `COMP_C`                       | |
 | `Route_Recycle` | bool | `0` | Reuse routes from the previous epoch as a warm start / persistent pool (`1` = enabled)                                                     | "keep" scenarios |
-| `reducedCostThreshold` | double | `100.0` | Reduced-cost threshold &gamma; above which pooled columns are pruned (used in `BY_POOL` reuse)                                             | &gamma;; experiments use `150` |
+| `reducedCostThreshold` | double | `100.0` | Reduced-cost threshold &gamma; above which pooled columns are pruned (used in `BY_POOL` reuse)                                             |  |
 | `InitialDual` | int | `1` | Dual initialization: `0` = `PENALTIES`, `1` = `LAST_LP`, `2` = `BARRIER`, `3` = `INITIAL_LP`, `4` = `GREEDY_D`,                            | `0` = cold start, `1` = dual warm start |
 | `DualMethod` | int | `0` | Dual extraction method: `0` = `LMP`, `1` = `INTERIOR`                                                                   | |
 | `SmoothDual` | bool | `0` | Apply smoothing to dual variables between CG iterations (`1` = enabled)                                                                    | |
 | `warmStart` | int | `1` | Primal warm-start strategy: `0` = `GREEDY_START`, `1` = `PRE_SOLUTION`, `2` = `EMPTY_ROUTES`                                               | |
 | `MIPGap` | float | `0.001` | MIP relative optimality gap (`0.001` = 0.1 %)                                                                                              | |
 | `solutionMode` | int | `1` | Solve mode: `0` = `STATIC` (offline), `1` = `DYNAMIC` (B&ndash;CG / fixed-epoch batching), `2` = `ANYTIME` (A&ndash;CG / flexible horizon) | |
-| `mainAlgorithm` | int | `0` | Algorithm variant: `0` = `GREEDY`, `1` = `MIP`, `2` = `RT_CG` (B&ndash;CG), `3` = `MP_ISUD`, `4` = `MP_MIP`, `5` = `MP_CP`, `6` = `A_CG`   | |
+| `mainAlgorithm` | int | `0` | Algorithm variant: `0` = `GREEDY`, `1` = `MIP`, `2` = `RT_CG` (B&ndash;CG), `3` = `MP_ISUD`, `4` = `A_CG`                             | |
 
 ---
 

@@ -1,0 +1,13 @@
+contextily
+geopandas
+matplotlib
+networkx
+numpy
+osmnx
+pandas
+requests
+seaborn
+scikit-learn
+shapely
+tqdm
+urllib3

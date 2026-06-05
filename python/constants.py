@@ -57,12 +57,12 @@ FOLDERS = {
     'Phase_3': {
         'rebalance': "1-rebalance",
         'profile': "2-profile",
-        'reOptimize': "6-reOptimize",
+        'reOptimize': "3-reOptimize",
         'prcocess': "4-prcocess",
         'compare': "5-compare",
-        'anytime': "7-anytime",
-        'rebalance_anytime': "8-rebalance_anytime",
-        'shuttle': "9-shuttle",
+        'shuttle': "6-shuttle",
+        'rebalance_anytime': "7-rebalance_anytime",
+        'anytime': "8-anytime",
     },
     'Phase_4': {
         'isud': "1-isud",
@@ -88,7 +88,9 @@ param_to_setting_labels = [
     'Full Configuration'
     ]
 
-NYC_DARP_Benchmark = {
+Supply_scenarios = {
+    # NYC_DARP_Benchmark
+
     # G1: R68889 with vehicle_counts (1400 1500 1600 1700)
     "V1400_R68889": "4.High Demand",
     "V1500_R68889": "3.Tight Supply",
@@ -111,10 +113,8 @@ NYC_DARP_Benchmark = {
     "V1400_R64942": "3.Tight Supply",
     "V1500_R64942": "2.Balanced Supply",
     "V1600_R64942": "1.Excess Supply",
-}
 
-
-Riley_Benchmark = {
+    # Riley_Benchmark
     "V1200_R35576": "4.High Demand",
     "V1300_R35576": "3.Tight Supply",
     "V1400_R35576": "2.Balanced Supply",
@@ -134,7 +134,6 @@ Riley_Benchmark = {
     "V900_R25674": "3.Tight Supply",
     "V1000_R25674": "2.Balanced Supply",
     "V1100_R25674": "1.Excess Supply",
-
 }
 
 # Define columns for each data type

@@ -20,10 +20,15 @@ void OfflineSolver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bo
     }
 
     simulationTime_->start();
-//    preprocessTime_->start();
+
     int nbReceivedRequest = mainInst->nbOnboards_;
     PInstance StaticInst = std::make_shared<Instance>(*mainInst);
     StaticInst->buildStaticData(mainInst, nbReceivedRequest);
+
+    if (MP_solver_) {
+        MP_solver_->duplicatesRoutes_.clear();
+        MP_solver_->duplicatesRoutes_.resize(StaticInst->nbVehicles_);
+    }
 
     for (auto &vehicleObj: StaticInst->vehicles_){
         if (StaticInst->nbRequests_ != 0) {
@@ -43,7 +48,12 @@ void OfflineSolver::staticSolver(PInstance &mainInst, InputPaths &inputPaths, bo
 #elif defined(DARP_USE_GUROBI)
             MIPModel_ = std::make_unique<MIPSolver_Gurobi>();
 #endif
+            MIPModel_->setTimeLimit(static_cast<float>(StaticInst->parameters_->solveTimeLimit_));
+            MIPSolveTime_->start();
             MIPModel_->SolveMIP(StaticInst, inputPaths);
+            MIPSolveTime_->stop();
+            totalMIPSolveTime_ += MIPSolveTime_->dSinceStart().count();
+            *pLogRunTimesStream_ << saveRuntimesMIP(StaticInst);
             MIPModel_.reset();
             break;
         case GREEDY:

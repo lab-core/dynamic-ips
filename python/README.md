@@ -73,6 +73,13 @@ python scripts/plot_ACG.py --folders reOptimize rebalance_anytime
 Run `python scripts/plot_BCG.py --help` or `python scripts/plot_ACG.py --help`
 for the full list of available folder keys.
 
+> **Note:** If you have just obtained solver results and the per-epoch output files have not been merged yet, run with `--gather-data` once before plotting. This merges the raw epoch records into the format both plotting scripts expect. Subsequent runs on the same results do not need the flag.
+>
+> ```bash
+> python scripts/plot_BCG.py --folders all --gather-data
+> python scripts/plot_ACG.py --folders all --gather-data
+> ```
+
 ---
 
 ## Section 2 — Building benchmark instances

@@ -129,8 +129,8 @@ def _plot_grouped_bars(ax, pivot_df, categories, palette, config,
 
     # Set labels and ticks
     ax.set_xticks(positions + width * n_bars / 2)
-    ax.set_xticklabels(c.customer_groups_labels, rotation=rotation, fontsize=config.tick_label_fsize)
- #   ax.set_xticklabels(pivot_df.index, rotation=rotation, fontsize=config.tick_label_fsize)
+ #   ax.set_xticklabels(c.customer_groups_labels, rotation=rotation, fontsize=config.tick_label_fsize)
+    ax.set_xticklabels(pivot_df.index, rotation=rotation, fontsize=config.tick_label_fsize)
 
     if show_ylabel:
         ax.set_ylabel(ylabel, fontsize=config.axis_label_fsize, fontweight='bold')

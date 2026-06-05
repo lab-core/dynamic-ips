@@ -225,39 +225,6 @@ bool Route::reConstructRoute(const PVehicle & vehicle){
     return true;
 }
 
-bool Route::reConstruct1(const PVehicle & vehicle, float wait_W1, float ride_W2){
-    PRoute newRoute = std::make_shared<Route>(vehicleID_);
-    newRoute->addSource(vehicle->departNode_, vehicle->departTime_, vehicle->numPassengers_);
-
-    for (int i = vehicle->removeNodes_.size()+1; i < routeNodes_.size(); ++i) {
-        newRoute->addNode(routeNodes_[i]);
-        if (routeNodes_[i]->type_ == PICKUP) {
-            if (newRoute->plannedReachTime_[i] > routeNodes_[i]->related_Request_->latestPickup_)
-                return false;
-        }
-        else if (routeNodes_[i]->type_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
-            if (newRoute->plannedReachTime_[i] - routeNodes_[i]->pairNode_->nodeDepartTime_ > routeNodes_[i]->related_Request_->maxTravelTime_)
-                return false;
-        }
-    }
-    if (newRoute->routeRequests_.empty())
-        return false;
-    newRoute->calculateTripDelay(wait_W1, ride_W2);
-    plannedDepartTime_ = newRoute->plannedDepartTime_;
-    plannedReachTime_ = newRoute->plannedReachTime_;
-    plannedDelay_ = newRoute->plannedDelay_;
-    totalWait_ = newRoute->totalWait_;
-    totalTripDelay_ = newRoute->totalTripDelay_;
-    objCoef_ = newRoute->objCoef_;
-    routeRequests_ = newRoute->routeRequests_;
-    routeNodes_ = newRoute->routeNodes_;
-    plannedPassengers_ = newRoute->plannedPassengers_;
-    nbCommitted_ = newRoute->nbCommitted_;
-    routeSize_ = newRoute->routeSize_;
-    waitScore_ = newRoute->totalWait_ / newRoute->routeRequests_.size();
-    return true;
-}
-
 bool Route::reConstruct(const PVehicle& vehicle, float wait_W1, float ride_W2)
 {
     Route tmp(vehicleID_); // stack temp: no make_shared, no heap alloc
@@ -455,7 +422,7 @@ void Route::calcMarginalCosts(float wait_W1, float ride_W2) {
                 float tripDelay = 0.0;
                 float waitTime = 0.0;
                 if (routeNodes_[i]->type_ == PICKUP) {
-                    waitTime = plannedReachTime_[i] - routeNodes_[i]->related_Request_->requestTime_;
+                    waitTime = plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
                     for (size_t j = i + 1; j < routeNodes_.size(); ++j) {
                         if (routeNodes_[i]->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
                             tripDelay = plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_;
@@ -485,15 +452,15 @@ void Route::calculateTripDelay(float wait_W1, float ride_W2) {
     totalTripDelay_ = 0.0;
     objCoef_ = 0.0;
     for (size_t i = 1; i < routeNodes_.size(); ++i) {
-        if (routeNodes_[i]->type_ != SINK && routeNodes_[i]->type_ != SOURCE) {
+        if (routeNodes_[i]->initialType_ != SINK && routeNodes_[i]->initialType_ != SOURCE) {
             float tripDelay = 0.0;
             float waitTime = 0.0;
-            if (routeNodes_[i]->type_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
+            if (routeNodes_[i]->initialType_ == DROPOFF && routeNodes_[i]->related_Request_->requestStatus_ == ON_BOARD) {
                 tripDelay = plannedReachTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_ -
                     (routeNodes_[i]->related_Request_->pickTime_ + routeNodes_[i]->serviceTime_);
             }
-            else if (routeNodes_[i]->type_ == PICKUP) {
-                waitTime = plannedReachTime_[i] - routeNodes_[i]->related_Request_->requestTime_;
+            else if (routeNodes_[i]->initialType_ == PICKUP) {
+                waitTime = plannedReachTime_[i] - routeNodes_[i]->initialReadyTime_;
                 for (size_t j = i + 1; j < routeNodes_.size(); ++j) {
                     if (routeNodes_[i]->related_Request_->getRequestId() == routeNodes_[j]->related_Request_->getRequestId()) {
                         tripDelay = plannedReachTime_[j] - plannedDepartTime_[i] - routeNodes_[i]->related_Request_->minTravelTime_;

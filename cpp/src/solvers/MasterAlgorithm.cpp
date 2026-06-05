@@ -808,10 +808,10 @@ void MasterAlgorithm::checkCoveredVehicles(PInstance &pInst) {
 
     // Reset coverage / insertion flags
     for (auto & requestObj: pInst->requests_) {
-        if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_BASIS) {
+        /*if (pInst->parameters_->labelingReOptimizeStrategy_ != BY_BASIS) {
             requestObj->coveredVehicles_.reset();
             requestObj->coveredVehicles_.resize(nbVehicles_);
-        }
+        }*/
         requestObj->insertedVehicles_.reset();
         requestObj->insertedVehicles_.resize(nbVehicles_);
     }

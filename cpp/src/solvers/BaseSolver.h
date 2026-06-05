@@ -17,10 +17,12 @@
 
 #ifdef DARP_USE_CPLEX
 #include "CplexSolver/SubProblem_Cplex.h"
+#include "CplexSolver/MIPSolver_Cplex.h"
 #endif
 #ifdef DARP_USE_GUROBI
 #include "GurobiSolver/MP_Gurobi.h"
 #include "GurobiSolver/SubProblem_Gurobi.h"
+#include "GurobiSolver/MIPSolver_Gurobi.h"
 #endif
 
 
@@ -35,13 +37,16 @@ public:
     PRuntimeMetrics runtimeMetrics_;                      // Runtime metrics
     myTools::SharedVector<PLabel> labelsPool_;            // Pool of generated labels used for recycling
     PMasterAlgorithm MP_solver_;                          // Master Problem solver
-    PGreedyModeler GreedyModel_;                          // Greedy modeler (fast insertion heuristic)// 3-index MIP (backend chosen at compile time)
+    PGreedyModeler GreedyModel_;                          // Greedy modeler (fast insertion heuristic)
+    PMIPSolver MIPModel_;                                 // 3-index MIP solver (null when not in use)
+    
 
     // Shared state
-    float elapsedTime_;                                   // elapsed time of the simulation  
+    float elapsedTime_;                                   // elapsed time of the simulation
     float avgEpochRuntime_;                               // average epoch runtime
     int epoch_;                                           // current epoch number
     float objValue_;                                      // objective value of the current epoch
+    float totalMIPSolveTime_ = 0.0f;                       // MIP solve time for the most recent epoch
 
     // Timers
     myTools::Timer *simulationTime_;                      // timer for total simulation time
@@ -111,6 +116,7 @@ public:
     // function to print epoch runTime to file
     std::string saveRuntimes(const PInstance & EpochInst);
     std::string saveRuntimesGreedy(const PInstance & EpochInst);
+    std::string saveRuntimesMIP(const PInstance & EpochInst);
 
     // function to generate final output string of the simulation
     std::string toString(const PInstance & mainInst) const;

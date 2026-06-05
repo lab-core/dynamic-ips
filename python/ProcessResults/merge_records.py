@@ -1,10 +1,13 @@
+import warnings
 from pathlib import Path
 from typing import Optional, Literal
 import pandas as pd
 from tqdm import tqdm
 import constants as c
 from Simulation.utilities import get_instance_value, get_group
-
+from pandas.errors import PerformanceWarning, ParserWarning
+warnings.simplefilter("ignore", PerformanceWarning)
+warnings.simplefilter("ignore", ParserWarning)
 
 class ResultMerger:
     """Configurable merger for optimization results with flexible data inclusion."""
@@ -72,7 +75,7 @@ class ResultMerger:
         # Modify group category
         data.loc[0, 'customer Group'] = get_group(data['#customers'][0])
 
-        data['Instance_category'] = data['Instance'].map(c.NYC_DARP_Benchmark)
+        data['Instance_category'] = data['Instance'].map(c.Supply_scenarios)
 
 
         # columns that need rounding
@@ -515,9 +518,9 @@ def merge_with_all_iterations(instance_folder):
     return merger.merge(
         include_stats=True,
         include_epoch=True,
-        epoch_average=False,
+        epoch_average=True,
         iteration_mode='all',
-        output_filename="results_full_iterations.csv"
+        output_filename="results_epoch_avg.csv"
     )
 
 

@@ -934,7 +934,7 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
         if (getStatus() != GRB_OPTIMAL) {
             status_ = INFEASIBLE;
             std::cout << "Failed to optimize the problem" << std::endl;
-            myTools::myException::throwError("CP solution is not valid!!!");
+  //          myTools::myException::throwError("CP solution is not valid!!!");
         }
         else {
             // Get dual values
@@ -1052,9 +1052,6 @@ void CPModeler::solveCPModel(PInstance &pInst, std::vector<PRequest> &zSolution,
                 status_ = POSITIVE_VALUE;
             }
         }
- //       if (!isColumnDisjoint(routeSolution, pInst->nbRequests_, pInst->nbVehicles_))
- //           myTools::myException::throwError("CP solution is not valid!!!");
-  //      model_->update();
     }
     catch (GRBException& e) {
         std::cerr << "Error in solveCPModel: " << e.getMessage() << std::endl;

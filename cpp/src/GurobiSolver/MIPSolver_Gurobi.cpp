@@ -134,15 +134,25 @@ void MIPSolver_Gurobi::buildModel(PInstance &pInst) {
     // -----------------------------------------------------------------------
     // Objective (1a) + Req_W3_-weighted penalty (local addition, not in paper)
     // -----------------------------------------------------------------------
+    const double wait_W1 = pInst->parameters_->Wait_W1_;
+    const double ride_W2 = pInst->parameters_->Ride_W2_;
     GRBLinExpr objExpr;
     for (auto & pickNode : pInst->instGraph_->pickNodes_) {
-        const auto   req  = pickNode->related_Request_;
-        const int    iReq = req->taskIndex_;
-        const double e_i  = pickNode->readyTime_;
+        const auto   req     = pickNode->related_Request_;
+        const int    iReq    = req->taskIndex_;
+        const int    pick    = pickNode->nodeIndex_;
+        const int    drop    = pickNode->pairNode_->nodeIndex_;
+        const double e_i     = pickNode->readyTime_;
+        const double Delta_i = pickNode->serviceTime_;
+        const double t_i_min = req->minTravelTime_;
+        const double w_coef  = wait_W1 * req->Req_W3_ / req->Relative_W5_;
+        const double r_coef  = ride_W2 * req->Req_W3_ / req->Relative_W5_;
 
         objExpr += Z_[iReq] * req->Req_W3_ * req->penalty_;
         for (auto & vehicleObj : pInst->vehicles_) {
-            objExpr += (U_[vehicleObj->vehicleID_][pickNode->nodeIndex_] - e_i);
+            const int v = vehicleObj->vehicleID_;
+            objExpr += w_coef * (U_[v][pick] - e_i);
+            objExpr += r_coef * (U_[v][drop] - U_[v][pick] - Delta_i - t_i_min + req->Ride_W4_);
         }
     }
 
@@ -279,6 +289,9 @@ void MIPSolver_Gurobi::buildModel(PInstance &pInst) {
             // Implied onboard dropoff time window
             addCons(U_[v][j] >= u_P        + t_j_min + Delta_j);
             addCons(U_[v][j] <= latestPick + t_j_max + onNode->serviceTime_);
+
+            // ride delay for onboard passenger
+            objExpr += (ride_W2 * req->Req_W3_ / req->Relative_W5_) * (U_[v][j] - u_P - Delta_j - t_j_min + req->Ride_W4_);
         }
 
         // ----- arc-level constraints: time (1h), load (1n), capacity (1o) -----
@@ -329,7 +342,8 @@ void MIPSolver_Gurobi::configureGurobi() {
     Model_.set(GRB_DoubleParam_ImproveStartTime, kImproveStartTime);
 
     // Other useful knobs (commented out, mirroring the CPLEX original):
-    // Model_.set(GRB_DoubleParam_TimeLimit, 3600);
+    if (timeLimit_ > 0)
+        Model_.set(GRB_DoubleParam_TimeLimit, static_cast<double>(timeLimit_));
     // Model_.set(GRB_IntParam_Threads,      pInst->parameters_->nbThreads_);
     // Model_.set(GRB_IntParam_Presolve,     0);
     // Model_.set(GRB_DoubleParam_MIPGap,    pInst->parameters_->MIPGap_);

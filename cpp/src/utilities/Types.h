@@ -131,15 +131,14 @@ enum MainAlgorithm : int {
     MIP = 1,            // full 3-index MIP (CPLEX or Gurobi at compile time)
     RT_CG = 2,
     MP_ISUD = 3,
-    MP_MIP = 4,
-    MP_CP = 5,
-    A_CG = 6
+    A_CG = 4
 };
 
 enum Approach : int {
     ISUD = 0,
     CG = 1,
-    Greedy = 2
+    Greedy = 2,
+    MIP_SOLVER = 3
 };
 
 enum ISUDVariant : int {
@@ -261,7 +260,7 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 7> mainAlgorithmNames = {
-        "GREEDY", "MIP", "RT_CG", "MP_ISUD", "MP_MIP", "MP_CP", "A_CG"
+        "GREEDY", "MIP", "RT_CG", "MP_ISUD", "A_CG"
     };
 
     constexpr std::array<const char*, 3> solutionModeNames = {
@@ -324,8 +323,8 @@ namespace enum_strings {
         "SOURCE ", "SINK   ", "PICKUP ", "DROPOFF"
     };
 
-    constexpr std::array<const char*, 3> approachNames = {
-        "ISUD ", "CG  ", "Greedy"
+    constexpr std::array<const char*, 4> approachNames = {
+        "ISUD ", "CG  ", "Greedy", "MIP_SOLVER"
     };
 
     constexpr std::array<const char*, 2> isudVariantNames = {

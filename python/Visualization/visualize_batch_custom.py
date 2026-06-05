@@ -9,12 +9,12 @@ from Visualization.plot_config import PlotConfig
 import seaborn as sns
 
 
-def create_truncate_objective_scatter(data_path: str, config: PlotConfig):
+def create_truncate_objective_scatter(data_path: str, config: PlotConfig, Ride_W2=0, index=""):
     # Read data
     df = read_csv_with_encoding(data_path)
 
     # Group by 'MaxLabel' and 'sortPath' and calculate the mean for '(Lim)wait/req' and '#IMP Iter'
-    df = df[df['Ride_W2'] == 0]
+    df = df[df['Ride_W2'] == Ride_W2]
     grouped = df.groupby(['MaxLabel', 'sortPath']).agg({
         'Objective': 'mean',
         '#IMP Iter': 'mean'

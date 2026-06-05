@@ -797,6 +797,9 @@ def plot_pruning_scatter_double(
             ax.set_yscale('log')
         ax.set_ylim(ylim)
         ax.tick_params(axis="both", which="major", labelsize=config.tick_label_fsize)
+        x = range(len(pivot_df.index))
+
+        ax.set_xticks(x)
         ax.set_xticklabels(pivot_df.index, rotation=rotation)
         ax.set_xlabel(
             f"$W_{{delay}}$ = {ride_w2_value}",
