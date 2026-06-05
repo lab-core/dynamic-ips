@@ -259,7 +259,7 @@ namespace enum_strings {
         "MIP_SUB", "LABEL_SETTING"
     };
 
-    constexpr std::array<const char*, 7> mainAlgorithmNames = {
+    constexpr std::array<const char*, 5> mainAlgorithmNames = {
         "GREEDY", "MIP", "RT_CG", "MP_ISUD", "A_CG"
     };
 

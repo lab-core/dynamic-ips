@@ -46,7 +46,9 @@ int parseEnumArg(const std::string& value, const std::array<const char*, N>& nam
     }
     const std::string token = normalizeToken(value);
     for (std::size_t i = 0; i < N; ++i)
-        if (normalizeToken(names[i]) == token)
+        // Guard against a names array declared larger than its initializer list
+        // (trailing entries are null), which would otherwise crash normalizeToken.
+        if (names[i] != nullptr && normalizeToken(names[i]) == token)
             return static_cast<int>(i);
     return -1;
 }
