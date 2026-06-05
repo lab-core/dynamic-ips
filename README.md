@@ -1,4 +1,8 @@
 # dynamic-ips — Online Dial-a-Ride with Column Generation
+[![Linux build](https://img.shields.io/github/actions/workflow/status/lab-core/dynamic-ips/build-and-test.yml?branch=main&label=Linux)](https://github.com/lab-core/dynamic-ips/actions/workflows/build-and-test.yml)
+[![macOS build](https://img.shields.io/github/actions/workflow/status/lab-core/dynamic-ips/build-and-test.yml?branch=main&label=macOS)](https://github.com/lab-core/dynamic-ips/actions/workflows/build-and-test.yml)
+[![Windows build](https://img.shields.io/github/actions/workflow/status/lab-core/dynamic-ips/build-and-test.yml?branch=main&label=Windows)](https://github.com/lab-core/dynamic-ips/actions/workflows/build-and-test.yml)
+
 This repository implements optimization methods for **dynamic ride-sharing**:
 passenger requests arrive continuously over time and become eligible for service
 only after their release times. The goal is to assign requests to vehicles in
