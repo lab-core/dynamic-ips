@@ -26,7 +26,7 @@ bool parse(const std::vector<std::string>& args, PConfig& out) {
 
 // A minimal set of the still-required arguments, with algo/mode as names.
 std::vector<std::string> requiredArgs() {
-    return {"--inst-folder", "inst", "--main-algo", "RT_CG",
+    return {"--inst-folder", "inst", "--main-algo", "B_CG",
             "--sol-mode", "DYNAMIC", "--paramfile", "p", "--scenario", "s"};
 }
 
@@ -35,7 +35,7 @@ std::vector<std::string> requiredArgs() {
 TEST(main_algo_and_sol_mode_accept_names) {
     PConfig cfg;
     CHECK(parse(requiredArgs(), cfg));
-    CHECK_EQ(cfg->mainAlgo_, static_cast<int>(RT_CG));   // 2
+    CHECK_EQ(cfg->mainAlgo_, static_cast<int>(B_CG));   // 2
     CHECK_EQ(cfg->solMode_, static_cast<int>(DYNAMIC));  // 1
 }
 

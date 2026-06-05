@@ -171,7 +171,7 @@ std::string Instance::solutionToString() {
 void Instance::adjustParameters(const PConfig &config) const {
     parameters_->mainAlgorithm_ = static_cast<MainAlgorithm>(config->mainAlgo_);
     parameters_->solutionMode_ = static_cast<SolutionMode>(config->solMode_);
-    if (parameters_->mainAlgorithm_ == MP_ISUD)
+    if (parameters_->mainAlgorithm_ == F_ICG)
         parameters_->approach_ = ISUD;
     else if (parameters_->mainAlgorithm_ == GREEDY)
         parameters_->approach_ = Greedy;

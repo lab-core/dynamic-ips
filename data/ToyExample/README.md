@@ -2,7 +2,7 @@
 
 A tiny, self-contained Dial-a-Ride instance used as the **default run** of the
 C++ solver. Running the executable with **no command-line arguments** loads this
-folder and solves it with the B-CG (`RT_CG` / `DYNAMIC`) workflow:
+folder and solves it with the B-CG (`DYNAMIC`) workflow:
 
 ```bash
 cpp/bin/realtime_DARP        # no args -> solves data/ToyExample
@@ -54,7 +54,7 @@ are left to default from the instance and vehicle file):
 ```bash
 cpp/bin/realtime_DARP \
   --data-dir data/ToyExample --inst-folder Instances_toy --instance-name toy \
-  --main-algo RT_CG --sol-mode DYNAMIC \
+  --main-algo B_CG --sol-mode DYNAMIC \
   --paramfile data/ToyExample/ToyParameters --scenario toy \
   --output-dir data/ToyExample/runs
 ```

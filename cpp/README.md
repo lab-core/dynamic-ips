@@ -223,7 +223,7 @@ bin/realtime_DARP --help
 ```text
 --inst-folder <path>        Path to instance folder (relative to --data-dir)
 --main-algo <int|name>      Main algorithm: 0..4 or a name
-                            (GREEDY, MIP, RT_CG, MP_ISUD, A_CG)
+                            (GREEDY, MIP, B_CG, F_ICG, A_CG)
 --sol-mode <int|name>       Solution mode: 0..2 or a name (STATIC, DYNAMIC, ANYTIME)
 --paramfile <string>        Parameter file name (e.g. AnyParameters or BatchParameters)
 --scenario <string>         Scenario name (must match an entry in the parameter JSON)
@@ -272,7 +272,7 @@ otherwise the per-vehicle capacity column of the file is used as-is.
 # fleet size from the instance, algo/mode by name
 bin/realtime_DARP --data-dir ../data/NYC-DARP-Benchmark --vehicle-folder vehicles_warmStart_11 \
   --inst-folder Instances_4h-11 --instance-name 20150917_11-240m --num-vehicles 1450 \
-  --main-algo RT_CG --sol-mode DYNAMIC --paramfile ../computational_scripts/parameters/AnyParameters \
+  --main-algo B_CG --sol-mode DYNAMIC --paramfile ../computational_scripts/parameters/AnyParameters \
   --scenario Basis_warm_keep --initial-state 1
 ```
 
@@ -367,7 +367,7 @@ warm-start vehicle files.
 
 ## Outputs and metrics
 
-For each run the solver writes the following files to `--output-dir`, named after the instance with a suffix encoding the solution mode and algorithm (e.g. `<instance>_D_RT_CG.*`).
+For each run the solver writes the following files to `--output-dir`, named after the instance with a suffix encoding the solution mode and algorithm (e.g. `<instance>_D_B_CG.*`).
 
 | File | Contents |
 |---|---|

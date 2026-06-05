@@ -129,8 +129,8 @@ enum SubproblemAlgorithm : int {
 enum MainAlgorithm : int {
     GREEDY = 0,
     MIP = 1,            // full 3-index MIP (CPLEX or Gurobi at compile time)
-    RT_CG = 2,
-    MP_ISUD = 3,
+    B_CG = 2,
+    F_ICG = 3,
     A_CG = 4
 };
 
@@ -260,7 +260,7 @@ namespace enum_strings {
     };
 
     constexpr std::array<const char*, 5> mainAlgorithmNames = {
-        "GREEDY", "MIP", "RT_CG", "MP_ISUD", "A_CG"
+        "GREEDY", "MIP", "B_CG", "F_ICG", "A_CG"
     };
 
     constexpr std::array<const char*, 3> solutionModeNames = {

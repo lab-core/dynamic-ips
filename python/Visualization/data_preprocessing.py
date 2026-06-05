@@ -10,6 +10,9 @@ from functools import reduce
 from Simulation.utilities import read_csv_with_encoding
 import constants as c
 
+# Maps current algorithm names back to their legacy equivalents used in old output filenames.
+_ALGO_FILE_FALLBACK = {'B_CG': 'RT_CG', 'F_ICG': 'MP_ISUD'}
+
 
 def preprocess_nested_data(
         df: pd.DataFrame,
@@ -48,9 +51,17 @@ def preprocess_nested_data(
     aggregated_rows = []
 
     def build_file_path(row):
-        mode = f"{c.MODE_DICT.get(row['Mode'])}_{row[algorithm_column]}"
+        algo = row[algorithm_column]
+        mode = f"{c.MODE_DICT.get(row['Mode'])}_{algo}"
         file_name = c.DATA_TYPE_FILES[data_type].format(mode=mode)
-        return os.path.join(base_path, row['Test_Folder'], file_name)
+        path = os.path.join(base_path, row['Test_Folder'], file_name)
+        if not os.path.exists(path) and algo in _ALGO_FILE_FALLBACK:
+            legacy_mode = f"{c.MODE_DICT.get(row['Mode'])}_{_ALGO_FILE_FALLBACK[algo]}"
+            legacy_name = c.DATA_TYPE_FILES[data_type].format(mode=legacy_mode)
+            legacy_path = os.path.join(base_path, row['Test_Folder'], legacy_name)
+            if os.path.exists(legacy_path):
+                return legacy_path
+        return path
 
     # ---------------------------------------------------------------
     # Traverse parent CSV rows

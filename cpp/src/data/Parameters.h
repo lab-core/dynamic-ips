@@ -64,7 +64,7 @@ public:
     float pickupDeviationWindow_;           // allowable deviation window for committed pickup time
 
     Approach approach_;                     // solution approach: ISUD, CG, Greedy, MIP_SOLVER
-    MainAlgorithm mainAlgorithm_;           // main algorithm: GREEDY, MIP, RT_CG, MP_ISUD, A_CG
+    MainAlgorithm mainAlgorithm_;           // main algorithm: GREEDY, MIP, B_CG, F_ICG, A_CG
     SolutionMode solutionMode_;             // solution mode: STATIC, DYNAMIC, ANYTIME
     
     // CG Parameters

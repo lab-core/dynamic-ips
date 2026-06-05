@@ -95,11 +95,11 @@ int main(int argc, char** argv) {
                     mainInst->adjustParameters(config);
 
                     if (mainInst->parameters_->solutionMode_ == ANYTIME && (mainInst->parameters_->mainAlgorithm_ == MIP ||
-                        mainInst->parameters_->mainAlgorithm_ == RT_CG)) {
+                        mainInst->parameters_->mainAlgorithm_ == B_CG)) {
                         std::cout << "Error: algorithm '"
                                   << enum_strings::mainAlgorithmNames[mainInst->parameters_->mainAlgorithm_]
                                   << "' is not supported in ANYTIME mode.\n"
-                                  << "  Use A_CG, MP_ISUD, or GREEDY for ANYTIME mode.\n";
+                                  << "  Use A_CG, F_ICG, or GREEDY for ANYTIME mode.\n";
                         throw myTools::myException("Incompatible mainAlgorithm + solutionMode combination!", __LINE__);
                     }
 

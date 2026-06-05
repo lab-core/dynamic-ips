@@ -85,7 +85,7 @@ void CG_Algorithm::solveRMP_LP(PInstance &pInst, int epoch, const InputPaths &in
 void CG_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, float subProTime) {
     timeLimit_ = availableTime_;
     epochTime_ += subProTime;
-    if (pInst->parameters_->mainAlgorithm_ == RT_CG)
+    if (pInst->parameters_->mainAlgorithm_ == B_CG)
         solveRMP_LP(pInst, epoch, inputPaths, subProTime);
     else if (pInst->parameters_->mainAlgorithm_ == A_CG)
         solveMP_CG(pInst, epoch, inputPaths, subProTime);
@@ -94,7 +94,7 @@ void CG_Algorithm::solve(PInstance &pInst, int epoch, InputPaths &inputPaths, fl
 void CG_Algorithm::getIPSolution(const PInstance &pInst, int epoch, const InputPaths &inputPaths, float subProTime) {
     setObjValue();
 
-    if (pInst->parameters_->mainAlgorithm_ == RT_CG) {
+    if (pInst->parameters_->mainAlgorithm_ == B_CG) {
         timeLimit_ = std::max(availableTime_, 10.0f);
 
         solveRMP_IP(pInst, epoch, inputPaths, subProTime);
@@ -113,7 +113,7 @@ bool CG_Algorithm::shouldTerminate(const PInstance &pInst, float previousObj, fl
             return true;
         }
     }
-    else if (pInst->parameters_->mainAlgorithm_ == RT_CG){
+    else if (pInst->parameters_->mainAlgorithm_ == B_CG){
         if (previousLpObj == lpObjValue_) {
             std::cout << "No changes in LP Objective" << std::endl;
             return true;

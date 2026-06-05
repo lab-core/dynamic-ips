@@ -401,12 +401,19 @@ def create_rebalance_histo_by_supply(data_path: str, config: PlotConfig,
         ('ActiveTime', 'Vehicle serving time (minutes)', 'servingTime_histo', 'upper left'),
     ]
 
-    def _build_vehicle_df(meta_df, vehicle_file_name: str) -> pd.DataFrame:
+    def _build_vehicle_df(meta_df, vehicle_file_names) -> pd.DataFrame:
+        if isinstance(vehicle_file_names, str):
+            vehicle_file_names = [vehicle_file_names]
         plot_data = []
         for vr in paramFiles:
             for _, row in meta_df[meta_df['paramFile'] == vr].iterrows():
-                file_path = os.path.join(base_path, row['Test_Folder'], vehicle_file_name)
-                if not os.path.exists(file_path):
+                file_path = next(
+                    (os.path.join(base_path, row['Test_Folder'], n)
+                     for n in vehicle_file_names
+                     if os.path.exists(os.path.join(base_path, row['Test_Folder'], n))),
+                    None
+                )
+                if file_path is None:
                     continue
                 test_data = pd.read_csv(file_path)
                 test_data['IdleTime'] = test_data['idleTime'] / 60
@@ -430,7 +437,7 @@ def create_rebalance_histo_by_supply(data_path: str, config: PlotConfig,
     os.makedirs(histo_by_category_dir, exist_ok=True)
     for vehicle_cat in c.vehicle_groups:
         vehicle_filtered_df = df[df['Instance_category'] == vehicle_cat]
-        result_df = _build_vehicle_df(vehicle_filtered_df, 'Vehicles_D_RT_CG.csv')
+        result_df = _build_vehicle_df(vehicle_filtered_df, ['Vehicles_D_B_CG.csv', 'Vehicles_D_RT_CG.csv'])
         if result_df is not None:
             create_histograms_for_metrics(
                 data_df=result_df,
@@ -455,7 +462,7 @@ def create_rebalance_histo_by_supply(data_path: str, config: PlotConfig,
             )
 
     # 2) Overall (no vehicle_cat filter)
-    overall_df = _build_vehicle_df(df, 'Vehicles_D_RT_CG.csv')
+    overall_df = _build_vehicle_df(df, ['Vehicles_D_B_CG.csv', 'Vehicles_D_RT_CG.csv'])
     if overall_df is not None:
         create_histograms_for_metrics(
             data_df=overall_df,
@@ -2940,7 +2947,7 @@ def create_anytime_time_request_profile(data_path: str, config: PlotConfig) -> N
     os.makedirs(folder_path, exist_ok=True)
     main_df["test"] = (main_df["Instance"] + "_E" + main_df["epochLength"].astype(str))
 
-    Algorithm = ['MP_ISUD', 'A_CG']
+    Algorithm = ['F_ICG', 'A_CG']
     Labels = ['F-ICG', 'B-CG']
 
     processed_df = preprocess_nested_data(
@@ -3063,7 +3070,7 @@ def create_anytime_dual_profile(data_path: str, config: PlotConfig) -> None:
 
         processed_time_df.to_csv(time_path, index=False)
 
-    Algorithm = ['MP_ISUD', 'A_CG']
+    Algorithm = ['F_ICG', 'A_CG']
     Labels = ['F-ICG', 'B-CG']
 
     base_path = os.path.dirname(data_path)

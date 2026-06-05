@@ -12,6 +12,10 @@ warnings.simplefilter("ignore", ParserWarning)
 class ResultMerger:
     """Configurable merger for optimization results with flexible data inclusion."""
 
+    # Maps old solver-output algorithm names to their current equivalents.
+    # Applied at CSV load time so all downstream code sees only new names.
+    _ALGO_RENAMES = {'RT_CG': 'B_CG', 'MP_ISUD': 'F_ICG'}
+
     def __init__(self, instance_folder: str):
         self.root_folder = Path(c.OUTPUT_DIR) / instance_folder
         self.mode_dict = {'ANYTIME': 'A', 'DYNAMIC': 'D'}
@@ -19,17 +23,17 @@ class ResultMerger:
             ('GREEDY', 'ANYTIME', 'FALSE','FALSE'): 'Greedy',
             ('GREEDY', 'ANYTIME', 'TRUE', 'FALSE'): 'Greedy-R',
             ('GREEDY', 'ANYTIME', 'TRUE', 'TRUE'): 'Greedy-CR',
-            ('RT_CG', 'DYNAMIC', 'FALSE', 'FALSE'): 'B-CG',
-            ('RT_CG', 'DYNAMIC', 'FALSE', 'TRUE'): 'B-CG-C',
-            ('RT_CG', 'DYNAMIC', 'TRUE', 'TRUE'): 'B-CG-CR',
+            ('B_CG', 'DYNAMIC', 'FALSE', 'FALSE'): 'B-CG',
+            ('B_CG', 'DYNAMIC', 'FALSE', 'TRUE'): 'B-CG-C',
+            ('B_CG', 'DYNAMIC', 'TRUE', 'TRUE'): 'B-CG-CR',
             ('A_CG', 'ANYTIME', 'FALSE', 'TRUE'): 'A-CG-C',
             ('A_CG', 'ANYTIME', 'TRUE', 'TRUE'): 'A-CG-CR',
-            ('MP_ISUD', 'DYNAMIC', 'FALSE', 'FALSE'): 'B-ICG',
-            ('MP_ISUD', 'DYNAMIC', 'FALSE', 'TRUE'): 'B-ICG-C',
-            ('MP_ISUD', 'DYNAMIC', 'TRUE', 'TRUE'): 'B-ICG-CR',
-            ('MP_ISUD', 'ANYTIME', 'FALSE', 'FALSE'): 'A-ICG',
-            ('MP_ISUD', 'ANYTIME', 'FALSE', 'TRUE'): 'A-ICG-C',
-            ('MP_ISUD', 'ANYTIME', 'TRUE', 'TRUE'): 'A-ICG-CR',
+            ('F_ICG', 'DYNAMIC', 'FALSE', 'FALSE'): 'B-ICG',
+            ('F_ICG', 'DYNAMIC', 'FALSE', 'TRUE'): 'B-ICG-C',
+            ('F_ICG', 'DYNAMIC', 'TRUE', 'TRUE'): 'B-ICG-CR',
+            ('F_ICG', 'ANYTIME', 'FALSE', 'FALSE'): 'A-ICG',
+            ('F_ICG', 'ANYTIME', 'FALSE', 'TRUE'): 'A-ICG-C',
+            ('F_ICG', 'ANYTIME', 'TRUE', 'TRUE'): 'A-ICG-CR',
         }
 
     def _get_file_suffix(self, data: pd.DataFrame) -> str:
@@ -38,23 +42,34 @@ class ResultMerger:
         alg = data['Algorithm'].iloc[-1]
         return f"{mode}_{alg}"
 
+    # Reverse of _ALGO_RENAMES: maps current name → legacy name for file lookups.
+    _ALGO_FILE_FALLBACK = {'B_CG': 'RT_CG', 'F_ICG': 'MP_ISUD'}
+
     def _find_file(self, directory: Path, prefix: str, suffix: str) -> Optional[Path]:
-        """Find file matching pattern prefix_suffix.csv"""
-        pattern = f"{prefix}_{suffix}.csv"
-        file_path = directory / pattern
-        return file_path if file_path.exists() else None
+        """Find file matching pattern prefix_suffix.csv, with legacy-name fallback."""
+        file_path = directory / f"{prefix}_{suffix}.csv"
+        if file_path.exists():
+            return file_path
+        for new_name, old_name in self._ALGO_FILE_FALLBACK.items():
+            if new_name in suffix:
+                legacy_path = directory / f"{prefix}_{suffix.replace(new_name, old_name)}.csv"
+                if legacy_path.exists():
+                    return legacy_path
+        return None
 
     def _read_summary_and_params(self, summary_path: Path) -> tuple[pd.DataFrame, pd.DataFrame, str]:
         """Read summary and parameter files, return data and suffix."""
         data = pd.read_csv(summary_path, index_col=False)
+        if 'Algorithm' in data.columns:
+            data['Algorithm'] = data['Algorithm'].replace(self._ALGO_RENAMES)
         suffix = self._get_file_suffix(data)
 
-        # Set specific columns to zero if Algorithm is not MP_ISUD
+        # Set specific columns to zero if Algorithm is not F_ICG
         if 'Algorithm' in data.columns:
             isud_columns = ['#RP Iter', '#Zoom Iter', 'CPFails']
             for col in isud_columns:
                 if col in data.columns:
-                    data.loc[data['Algorithm'] != 'MP_ISUD', col] = 0
+                    data.loc[data['Algorithm'] != 'F_ICG', col] = 0
 
         # Modify Instance column based on test size
         if '#requests' in data.columns:

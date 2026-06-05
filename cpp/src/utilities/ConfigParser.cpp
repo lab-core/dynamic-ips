@@ -31,7 +31,7 @@ std::string normalizeToken(const std::string& text) {
 /// @brief Parse a CLI value that may be either an integer index or one of the
 /// given enum names (case-insensitive). Numbers keep backward compatibility.
 ///
-/// @param value Raw command-line value (e.g. "2" or "RT_CG").
+/// @param value Raw command-line value (e.g. "2" or "B_CG").
 /// @param names Canonical enum names, indexed by enum value.
 /// @return The matching enum index, or -1 if the value is unrecognized.
 template <std::size_t N>
@@ -100,7 +100,7 @@ void ConfigParser::printUsage(const char* programName) {
               << "Required arguments:\n"
               << "  --inst-folder <path>        Path to instance folder\n"
               << "  --main-algo <int|name>      Main algorithm: 0..4 or a name\n"
-              << "                              (GREEDY, MIP, RT_CG, MP_ISUD, A_CG)\n"
+              << "                              (GREEDY, MIP, B_CG, F_ICG, A_CG)\n"
               << "  --sol-mode <int|name>       Solution mode: 0..2 or a name\n"
               << "                              (STATIC, DYNAMIC, ANYTIME)\n"
               << "  --paramfile <string>        Parameter file name\n"
@@ -126,7 +126,7 @@ void ConfigParser::printUsage(const char* programName) {
     std::cout << "Examples:\n"
               << "  # Minimal run (algo/mode by name, fleet size from the instance):\n"
               << "  " << programName << " --inst-folder ./instances --instance-name test \\\n"
-              << "                    --main-algo RT_CG --sol-mode DYNAMIC \\\n"
+              << "                    --main-algo B_CG --sol-mode DYNAMIC \\\n"
               << "                    --paramfile AnyParameters --scenario test\n\n"
               << "  # Explicit fleet, numeric algo/mode (backward compatible), HPC output:\n"
               << "  " << programName << " --vehicle-folder ./vehicles --inst-folder ./instances \\\n"
@@ -229,7 +229,7 @@ bool ConfigParser::loadToyDefaults(const PConfig& config) {
     config->instanceName_ = "toy";
     config->numVehicles_ = -1;     // take the fleet size from the instance
     config->vehicleCapacity_ = -1;  // take the capacity from the vehicle file
-    config->mainAlgo_ = 2;   // RT_CG
+    config->mainAlgo_ = 2;   // B_CG
     config->solMode_ = 1;    // DYNAMIC (B-CG / BatchSolver)
     config->initialState_ = 0;
     config->paramFile_ = toyDir + "/ToyParameters";
@@ -299,7 +299,7 @@ bool ConfigParser::parseArguments(int argc, char** argv, PConfig& config) {
         config->mainAlgo_ = parseEnumArg(args["--main-algo"], enum_strings::mainAlgorithmNames);
         if (config->mainAlgo_ < 0) {
             std::cerr << "Error: Unknown --main-algo value '" << args["--main-algo"]
-                      << "'. Use 0..4 or a name (GREEDY, MIP, RT_CG, MP_ISUD, A_CG).\n";
+                      << "'. Use 0..4 or a name (GREEDY, MIP, B_CG, F_ICG, A_CG).\n";
             return false;
         }
         config->solMode_ = parseEnumArg(args["--sol-mode"], enum_strings::solutionModeNames);
